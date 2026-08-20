@@ -36,6 +36,14 @@ class Hotel extends Model
         return $this->hasMany(PaketHotel::class, 'id_hotel');
     }
 
+       // Relasi many-to-many dengan PaketTour
+    public function paketTours()
+    {
+        return $this->belongsToMany(PaketTour::class, 'hotel_paket_tour', 'id_hotel', 'id_paket_tour')
+                    ->withPivot('durasi_menginap', 'harga_hotel', 'urutan', 'catatan')
+                    ->withTimestamps();
+    }
+
     public function hargaHotelPerBulans()
     {
         return $this->hasMany(HargaHotelPerBulan::class, 'hotel', 'nama_hotel');

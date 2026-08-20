@@ -8,6 +8,8 @@
                 <th class="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Negara</th>
                 <th class="px-4 py-3 text-center text-xs font-semibold text-gray-500 uppercase tracking-wider">Durasi
                 </th>
+                <th class="px-4 py-3 text-center text-xs font-semibold text-gray-500 uppercase tracking-wider">Jumlah
+                    Hotel</th>
                 <th class="px-4 py-3 text-right text-xs font-semibold text-gray-500 uppercase tracking-wider">Harga/Orang
                 </th>
                 <th class="px-4 py-3 text-center text-xs font-semibold text-gray-500 uppercase tracking-wider">Aksi</th>
@@ -27,6 +29,12 @@
                     </td>
                     <td class="px-4 py-3 text-center">
                         <span class="text-sm text-gray-600">{{ $item->durasi_hari ?? '-' }} Hari</span>
+                    </td>
+                    <td class="px-4 py-3 text-center">
+                        <span
+                            class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                            {{ $item->hotels->count() }} Hotel
+                        </span>
                     </td>
                     <td class="px-4 py-3 text-right font-medium text-gray-800">
                         {{ $item->harga_per_orang_formatted }}
@@ -55,7 +63,7 @@
                 </tr>
             @empty
                 <tr>
-                    <td colspan="6" class="px-4 py-12 text-center">
+                    <td colspan="7" class="px-4 py-12 text-center">
                         <div class="flex flex-col items-center">
                             <div class="w-16 h-16 bg-gray-100 rounded-2xl flex items-center justify-center mb-3">
                                 <i class="fas fa-route text-gray-300 text-3xl"></i>

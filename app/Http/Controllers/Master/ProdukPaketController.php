@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Master;
 use App\Http\Controllers\Controller;
 use App\Models\Hotel;
 use App\Models\PaketTour;
+use App\Models\Perlengkapan;
 use App\Models\StatusKeberangkatan;
 use App\Services\ProdukPaketService;
 use Illuminate\Http\Request;
@@ -35,10 +36,11 @@ class ProdukPaketController extends Controller
     public function create()
     {
         $hotels = Hotel::orderBy('nama_hotel')->get();
-        // HAPUS ->with('produk') karena tidak ada relasi produk di PaketTour
         $paketTours = PaketTour::orderBy('kota_tujuan')->get();
         $statusKeberangkatans = StatusKeberangkatan::orderBy('nama_status')->get();
-        return view('produk-pakets.create', compact('hotels', 'paketTours', 'statusKeberangkatans'));
+        $perlengkapans = Perlengkapan::orderBy('nama_perlengkapan')->get();
+
+        return view('produk-pakets.create', compact('hotels', 'paketTours', 'statusKeberangkatans', 'perlengkapans'));
     }
 
     public function store(Request $request)
@@ -63,6 +65,10 @@ class ProdukPaketController extends Controller
             'harga_muthowwif' => 'nullable|integer|min:0',
             'kategori' => 'nullable|string|max:50',
             'is_active' => 'nullable|boolean',
+            'perlengkapans' => 'nullable|array',
+            'perlengkapans.*.id_perlengkapan' => 'nullable|exists:perlengkapans,id_perlengkapan',
+            'perlengkapans.*.kuantitas' => 'nullable|integer|min:1',
+            'perlengkapans.*.catatan' => 'nullable|string|max:255',
         ]);
 
         $validated['include_tur'] = $request->boolean('include_tur', false);
@@ -73,6 +79,17 @@ class ProdukPaketController extends Controller
             $validated['paket_tour_id'] = null;
         }
 
+        // Filter perlengkapan yang memiliki id_perlengkapan
+        $perlengkapanData = [];
+        if ($request->has('perlengkapans') && is_array($request->perlengkapans)) {
+            foreach ($request->perlengkapans as $item) {
+                if (!empty($item['id_perlengkapan'])) {
+                    $perlengkapanData[] = $item;
+                }
+            }
+        }
+        $validated['perlengkapans'] = $perlengkapanData;
+
         $produk = $this->service->create($validated);
 
         return redirect()->route('master.produk.index')
@@ -81,19 +98,20 @@ class ProdukPaketController extends Controller
 
     public function show($id)
     {
-        $produk = $this->service->getById($id);
-        $produk->load(['hotelMekkah', 'hotelMadinah', 'hotelTransit', 'paketTour', 'statusKeberangkatan']);
+        $produk = $this->service->getByIdWithRelations($id);
         return view('produk-pakets.show', compact('produk'));
     }
 
     public function edit($id)
     {
-        $produk = $this->service->getById($id);
+        $produk = $this->service->getByIdWithRelations($id);
+
         $hotels = Hotel::orderBy('nama_hotel')->get();
-        // HAPUS ->with('produk') karena tidak ada relasi produk di PaketTour
         $paketTours = PaketTour::orderBy('kota_tujuan')->get();
         $statusKeberangkatans = StatusKeberangkatan::orderBy('nama_status')->get();
-        return view('produk-pakets.edit', compact('produk', 'hotels', 'paketTours', 'statusKeberangkatans'));
+        $perlengkapans = Perlengkapan::orderBy('nama_perlengkapan')->get();
+
+        return view('produk-pakets.edit', compact('produk', 'hotels', 'paketTours', 'statusKeberangkatans', 'perlengkapans'));
     }
 
     public function update(Request $request, $id)
@@ -118,6 +136,10 @@ class ProdukPaketController extends Controller
             'harga_muthowwif' => 'nullable|integer|min:0',
             'kategori' => 'nullable|string|max:50',
             'is_active' => 'nullable|boolean',
+            'perlengkapans' => 'nullable|array',
+            'perlengkapans.*.id_perlengkapan' => 'nullable|exists:perlengkapans,id_perlengkapan',
+            'perlengkapans.*.kuantitas' => 'nullable|integer|min:1',
+            'perlengkapans.*.catatan' => 'nullable|string|max:255',
         ]);
 
         $validated['include_tur'] = $request->boolean('include_tur', false);
@@ -127,6 +149,17 @@ class ProdukPaketController extends Controller
         if (!$validated['include_tur']) {
             $validated['paket_tour_id'] = null;
         }
+
+        // Filter perlengkapan yang memiliki id_perlengkapan
+        $perlengkapanData = [];
+        if ($request->has('perlengkapans') && is_array($request->perlengkapans)) {
+            foreach ($request->perlengkapans as $item) {
+                if (!empty($item['id_perlengkapan'])) {
+                    $perlengkapanData[] = $item;
+                }
+            }
+        }
+        $validated['perlengkapans'] = $perlengkapanData;
 
         $produk = $this->service->update($id, $validated);
 
@@ -155,9 +188,6 @@ class ProdukPaketController extends Controller
         }
     }
 
-    /**
-     * Update status keberangkatan produk
-     */
     public function updateStatusKeberangkatan(Request $request, $id)
     {
         try {

@@ -26,7 +26,7 @@
                 <p class="text-xs text-gray-400 mt-0.5">Lengkapi data paket tour dengan benar</p>
             </div>
 
-            <form action="{{ route('master.paket-tour.store') }}" method="POST">
+            <form action="{{ route('master.paket-tour.store') }}" method="POST" id="paketTourForm">
                 @csrf
 
                 <div class="p-6 space-y-6">
@@ -86,6 +86,125 @@
                         @enderror
                     </div>
 
+                    <!-- Hotel Section -->
+                    <div class="border-t border-gray-200 pt-6">
+                        <div class="flex items-center justify-between mb-4">
+                            <div>
+                                <h6 class="text-sm font-semibold text-gray-700">Daftar Hotel</h6>
+                                <p class="text-xs text-gray-400">Tambahkan hotel yang digunakan dalam tour ini</p>
+                            </div>
+                            <button type="button" onclick="addHotelRow()"
+                                class="inline-flex items-center px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition text-sm font-medium">
+                                <i class="fas fa-plus mr-2"></i> Tambah Hotel
+                            </button>
+                        </div>
+
+                        <div id="hotelContainer">
+                            @php
+                                $oldHotels = old('hotels', []);
+                            @endphp
+
+                            @if (count($oldHotels) > 0)
+                                @foreach ($oldHotels as $index => $hotel)
+                                    <div class="hotel-row bg-gray-50 rounded-xl p-4 mb-3 border border-gray-200">
+                                        <div class="grid grid-cols-1 md:grid-cols-4 gap-3">
+                                            <div>
+                                                <label class="block text-xs font-medium text-gray-600 mb-1">Pilih
+                                                    Hotel</label>
+                                                <select name="hotels[{{ $index }}][id_hotel]"
+                                                    class="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-yellow-500 text-sm">
+                                                    <option value="">Pilih Hotel</option>
+                                                    @foreach ($hotels as $h)
+                                                        <option value="{{ $h->id_hotel }}"
+                                                            {{ ($hotel['id_hotel'] ?? '') == $h->id_hotel ? 'selected' : '' }}>
+                                                            {{ $h->nama_hotel }}
+                                                        </option>
+                                                    @endforeach
+                                                </select>
+                                                @error("hotels.{$index}.id_hotel")
+                                                    <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+                                                @enderror
+                                            </div>
+                                            <div>
+                                                <label class="block text-xs font-medium text-gray-600 mb-1">Durasi Menginap
+                                                    (Malam)</label>
+                                                <input type="number" name="hotels[{{ $index }}][durasi_menginap]"
+                                                    value="{{ $hotel['durasi_menginap'] ?? 1 }}"
+                                                    class="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-yellow-500 text-sm"
+                                                    min="1" placeholder="1">
+                                            </div>
+                                            <div>
+                                                <label class="block text-xs font-medium text-gray-600 mb-1">Harga
+                                                    Hotel</label>
+                                                <input type="number" name="hotels[{{ $index }}][harga_hotel]"
+                                                    value="{{ $hotel['harga_hotel'] ?? 0 }}"
+                                                    class="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-yellow-500 text-sm"
+                                                    placeholder="0">
+                                            </div>
+                                            <div class="flex items-end">
+                                                <input type="hidden" name="hotels[{{ $index }}][urutan]"
+                                                    value="{{ $index + 1 }}">
+                                                <button type="button" onclick="removeHotelRow(this)"
+                                                    class="w-full px-3 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition text-sm font-medium">
+                                                    <i class="fas fa-trash mr-1"></i> Hapus
+                                                </button>
+                                            </div>
+                                        </div>
+                                        <div class="mt-2">
+                                            <label class="block text-xs font-medium text-gray-600 mb-1">Catatan</label>
+                                            <input type="text" name="hotels[{{ $index }}][catatan]"
+                                                value="{{ $hotel['catatan'] ?? '' }}"
+                                                class="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-yellow-500 text-sm"
+                                                placeholder="Catatan khusus untuk hotel ini (opsional)">
+                                        </div>
+                                    </div>
+                                @endforeach
+                            @else
+                                <!-- Default 1 row -->
+                                <div class="hotel-row bg-gray-50 rounded-xl p-4 mb-3 border border-gray-200">
+                                    <div class="grid grid-cols-1 md:grid-cols-4 gap-3">
+                                        <div>
+                                            <label class="block text-xs font-medium text-gray-600 mb-1">Pilih Hotel</label>
+                                            <select name="hotels[0][id_hotel]"
+                                                class="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-yellow-500 text-sm">
+                                                <option value="">Pilih Hotel</option>
+                                                @foreach ($hotels as $h)
+                                                    <option value="{{ $h->id_hotel }}">{{ $h->nama_hotel }}</option>
+                                                @endforeach
+                                            </select>
+                                        </div>
+                                        <div>
+                                            <label class="block text-xs font-medium text-gray-600 mb-1">Durasi Menginap
+                                                (Malam)</label>
+                                            <input type="number" name="hotels[0][durasi_menginap]" value="1"
+                                                class="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-yellow-500 text-sm"
+                                                min="1" placeholder="1">
+                                        </div>
+                                        <div>
+                                            <label class="block text-xs font-medium text-gray-600 mb-1">Harga Hotel</label>
+                                            <input type="number" name="hotels[0][harga_hotel]" value="0"
+                                                class="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-yellow-500 text-sm"
+                                                placeholder="0">
+                                        </div>
+                                        <div class="flex items-end">
+                                            <input type="hidden" name="hotels[0][urutan]" value="1">
+                                            <button type="button" onclick="removeHotelRow(this)"
+                                                class="w-full px-3 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition text-sm font-medium">
+                                                <i class="fas fa-trash mr-1"></i> Hapus
+                                            </button>
+                                        </div>
+                                    </div>
+                                    <div class="mt-2">
+                                        <label class="block text-xs font-medium text-gray-600 mb-1">Catatan</label>
+                                        <input type="text" name="hotels[0][catatan]"
+                                            class="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-yellow-500 text-sm"
+                                            placeholder="Catatan khusus untuk hotel ini (opsional)">
+                                    </div>
+                                </div>
+                            @endif
+                        </div>
+                    </div>
+
                     <!-- Buttons -->
                     <div class="flex items-center justify-end gap-3 pt-4 border-t border-gray-100">
                         <a href="{{ route('master.paket-tour.index') }}"
@@ -101,4 +220,77 @@
             </form>
         </div>
     </div>
+
+    @push('scripts')
+        <script>
+            let hotelIndex = {{ count(old('hotels', [0])) }};
+
+            function addHotelRow() {
+                const container = document.getElementById('hotelContainer');
+                const row = document.createElement('div');
+                row.className = 'hotel-row bg-gray-50 rounded-xl p-4 mb-3 border border-gray-200';
+                row.innerHTML = `
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-3">
+                    <div>
+                        <label class="block text-xs font-medium text-gray-600 mb-1">Pilih Hotel</label>
+                        <select name="hotels[${hotelIndex}][id_hotel]"
+                            class="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-yellow-500 text-sm">
+                            <option value="">Pilih Hotel</option>
+                            @foreach ($hotels as $h)
+                                <option value="{{ $h->id_hotel }}">{{ $h->nama_hotel }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-medium text-gray-600 mb-1">Durasi Menginap (Malam)</label>
+                        <input type="number" name="hotels[${hotelIndex}][durasi_menginap]"
+                            value="1"
+                            class="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-yellow-500 text-sm"
+                            min="1" placeholder="1">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-medium text-gray-600 mb-1">Harga Hotel</label>
+                        <input type="number" name="hotels[${hotelIndex}][harga_hotel]"
+                            value="0"
+                            class="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-yellow-500 text-sm"
+                            placeholder="0">
+                    </div>
+                    <div class="flex items-end">
+                        <input type="hidden" name="hotels[${hotelIndex}][urutan]" value="${hotelIndex + 1}">
+                        <button type="button" onclick="removeHotelRow(this)"
+                            class="w-full px-3 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition text-sm font-medium">
+                            <i class="fas fa-trash mr-1"></i> Hapus
+                        </button>
+                    </div>
+                </div>
+                <div class="mt-2">
+                    <label class="block text-xs font-medium text-gray-600 mb-1">Catatan</label>
+                    <input type="text" name="hotels[${hotelIndex}][catatan]"
+                        class="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-yellow-500 text-sm"
+                        placeholder="Catatan khusus untuk hotel ini (opsional)">
+                </div>
+            `;
+                container.appendChild(row);
+                hotelIndex++;
+            }
+
+            function removeHotelRow(button) {
+                const row = button.closest('.hotel-row');
+                const container = document.getElementById('hotelContainer');
+                if (container.children.length > 1) {
+                    row.remove();
+                    // Reindex urutan
+                    const rows = container.querySelectorAll('.hotel-row');
+                    rows.forEach((r, idx) => {
+                        const urutanInput = r.querySelector('input[name*="[urutan]"]');
+                        if (urutanInput) {
+                            urutanInput.value = idx + 1;
+                        }
+                    });
+                } else {
+                    alert('Minimal harus ada 1 hotel!');
+                }
+            }
+        </script>
+    @endpush
 @endsection

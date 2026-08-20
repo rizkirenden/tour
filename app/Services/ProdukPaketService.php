@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Models\ProdukPaket;
+use App\Models\PaketProdukPerlengkapan;
 use Illuminate\Support\Facades\DB;
 
 class ProdukPaketService
@@ -19,12 +20,27 @@ class ProdukPaketService
             });
         }
 
-        return $query->orderBy('created_at', 'desc')->paginate(10);
+        return $query->with(['perlengkapans', 'paketTour'])
+                     ->orderBy('created_at', 'desc')
+                     ->paginate(10);
     }
 
     public function getById($id)
     {
         return ProdukPaket::findOrFail($id);
+    }
+
+    public function getByIdWithRelations($id)
+    {
+        return ProdukPaket::with([
+            'hotelMekkah',
+            'hotelMadinah',
+            'hotelTransit',
+            'paketTour',
+            'paketTour.hotels',
+            'statusKeberangkatan',
+            'perlengkapans'
+        ])->findOrFail($id);
     }
 
     public function create(array $data)
@@ -51,7 +67,19 @@ class ProdukPaketService
                 $data['paket_tour_id'] = null;
             }
 
-            return ProdukPaket::create($data);
+            // Extract perlengkapan data
+            $perlengkapanData = $data['perlengkapans'] ?? [];
+            unset($data['perlengkapans']);
+
+            // Create produk
+            $produk = ProdukPaket::create($data);
+
+            // Sync perlengkapan
+            if (!empty($perlengkapanData)) {
+                $this->syncPerlengkapans($produk->id_produk, $perlengkapanData);
+            }
+
+            return $produk->fresh();
         });
     }
 
@@ -59,16 +87,30 @@ class ProdukPaketService
     {
         return DB::transaction(function () use ($id, $data) {
             $produk = $this->getById($id);
-            
+
             $data['include_tur'] = $data['include_tur'] ?? false;
             $data['is_active'] = $data['is_active'] ?? true;
-            
+
             // Jika include_tur = false, set paket_tour_id menjadi null
             if (!$data['include_tur']) {
                 $data['paket_tour_id'] = null;
             }
-            
+
+            // Extract perlengkapan data
+            $perlengkapanData = $data['perlengkapans'] ?? [];
+            unset($data['perlengkapans']);
+
+            // Update produk
             $produk->update($data);
+
+            // Sync perlengkapan
+            if (!empty($perlengkapanData)) {
+                $this->syncPerlengkapans($id, $perlengkapanData);
+            } else {
+                // Hapus semua perlengkapan jika tidak ada yang dipilih
+                PaketProdukPerlengkapan::where('id_produk', $id)->delete();
+            }
+
             return $produk->fresh();
         });
     }
@@ -83,9 +125,6 @@ class ProdukPaketService
         });
     }
 
-    /**
-     * Toggle status produk
-     */
     public function toggleStatus($id)
     {
         return DB::transaction(function () use ($id) {
@@ -101,6 +140,43 @@ class ProdukPaketService
         });
     }
 
+    public function updateStatusKeberangkatan($id, $statusId)
+    {
+        return DB::transaction(function () use ($id, $statusId) {
+            $produk = $this->getById($id);
+            $produk->update(['status_keberangkatan_id' => $statusId]);
+            return $produk->fresh();
+        });
+    }
+
+    public function syncPerlengkapans($produkId, array $perlengkapanData)
+    {
+        return DB::transaction(function () use ($produkId, $perlengkapanData) {
+            // Hapus semua relasi lama
+            PaketProdukPerlengkapan::where('id_produk', $produkId)->delete();
+
+            foreach ($perlengkapanData as $item) {
+                if (!empty($item['id_perlengkapan'])) {
+                    PaketProdukPerlengkapan::create([
+                        'id_produk' => $produkId,
+                        'id_perlengkapan' => $item['id_perlengkapan'],
+                        'kuantitas' => $item['kuantitas'] ?? 1,
+                        'catatan' => $item['catatan'] ?? null,
+                    ]);
+                }
+            }
+
+            return true;
+        });
+    }
+
+    public function getPerlengkapanByProduk($produkId)
+    {
+        return PaketProdukPerlengkapan::with('perlengkapan')
+                                     ->where('id_produk', $produkId)
+                                     ->get();
+    }
+
     private function generateKodeProduk()
     {
         $prefix = 'PKT';
@@ -109,13 +185,4 @@ class ProdukPaketService
         $number = str_pad($last + 1, 3, '0', STR_PAD_LEFT);
         return "{$prefix}-{$number}-{$year}";
     }
-
-    public function updateStatusKeberangkatan($id, $statusId)
-{
-    return DB::transaction(function () use ($id, $statusId) {
-        $produk = $this->getById($id);
-        $produk->update(['status_keberangkatan_id' => $statusId]);
-        return $produk->fresh();
-    });
-}
 }

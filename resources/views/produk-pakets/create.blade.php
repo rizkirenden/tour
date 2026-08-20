@@ -26,7 +26,7 @@
                 <p class="text-xs text-gray-400 mt-0.5">Lengkapi data produk paket dengan benar</p>
             </div>
 
-            <form action="{{ route('master.produk.store') }}" method="POST">
+            <form action="{{ route('master.produk.store') }}" method="POST" id="produkForm">
                 @csrf
 
                 <div class="p-6 space-y-6">
@@ -166,7 +166,8 @@
                             <div>
                                 <label class="block text-sm font-medium text-gray-700 mb-1.5">Durasi Mekkah</label>
                                 <input type="number" name="durasi_mekkah" value="{{ old('durasi_mekkah', 4) }}"
-                                    class="w-full px-4 py-2 border border-gray-200 rounded-xl focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500 text-sm">
+                                    class="w-full px-4 py-2 border border-gray-200 rounded-xl focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500 text-sm"
+                                    min="0">
                                 @error('durasi_mekkah')
                                     <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
                                 @enderror
@@ -174,7 +175,8 @@
                             <div>
                                 <label class="block text-sm font-medium text-gray-700 mb-1.5">Durasi Madinah</label>
                                 <input type="number" name="durasi_madinah" value="{{ old('durasi_madinah', 4) }}"
-                                    class="w-full px-4 py-2 border border-gray-200 rounded-xl focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500 text-sm">
+                                    class="w-full px-4 py-2 border border-gray-200 rounded-xl focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500 text-sm"
+                                    min="0">
                                 @error('durasi_madinah')
                                     <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
                                 @enderror
@@ -182,7 +184,8 @@
                             <div>
                                 <label class="block text-sm font-medium text-gray-700 mb-1.5">Durasi Transit</label>
                                 <input type="number" name="durasi_transit" value="{{ old('durasi_transit', 1) }}"
-                                    class="w-full px-4 py-2 border border-gray-200 rounded-xl focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500 text-sm">
+                                    class="w-full px-4 py-2 border border-gray-200 rounded-xl focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500 text-sm"
+                                    min="0">
                                 @error('durasi_transit')
                                     <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
                                 @enderror
@@ -206,7 +209,7 @@
                                     @foreach ($hotels->where('kota', 'Mekkah') as $hotel)
                                         <option value="{{ $hotel->id_hotel }}"
                                             {{ old('hotel_mekkah_default') == $hotel->id_hotel ? 'selected' : '' }}>
-                                            {{ $hotel->nama_hotel }} - {{ $hotel->bintang }}★ ({{ $hotel->tipe_hotel }})
+                                            {{ $hotel->nama_hotel }} - {{ $hotel->bintang }}★
                                         </option>
                                     @endforeach
                                 </select>
@@ -222,7 +225,7 @@
                                     @foreach ($hotels->where('kota', 'Madinah') as $hotel)
                                         <option value="{{ $hotel->id_hotel }}"
                                             {{ old('hotel_madinah_default') == $hotel->id_hotel ? 'selected' : '' }}>
-                                            {{ $hotel->nama_hotel }} - {{ $hotel->bintang }}★ ({{ $hotel->tipe_hotel }})
+                                            {{ $hotel->nama_hotel }} - {{ $hotel->bintang }}★
                                         </option>
                                     @endforeach
                                 </select>
@@ -238,7 +241,7 @@
                                     @foreach ($hotels->where('kota', 'Transit') as $hotel)
                                         <option value="{{ $hotel->id_hotel }}"
                                             {{ old('hotel_transit_default') == $hotel->id_hotel ? 'selected' : '' }}>
-                                            {{ $hotel->nama_hotel }} - {{ $hotel->bintang }}★ ({{ $hotel->tipe_hotel }})
+                                            {{ $hotel->nama_hotel }} - {{ $hotel->bintang }}★
                                         </option>
                                     @endforeach
                                 </select>
@@ -250,13 +253,134 @@
                     </div>
 
                     <!-- ============================================ -->
-                    <!-- 5. OPTIONS & PAKET TOUR -->
+                    <!-- 5. PERLENGKAPAN INCLUDE -->
+                    <!-- ============================================ -->
+                    <div class="border-b border-gray-200 pb-4">
+                        <h6 class="text-sm font-semibold text-gray-700 mb-4 flex items-center">
+                            <i class="fas fa-box text-yellow-500 mr-2"></i> Perlengkapan Include
+                            <span class="ml-2 text-xs text-gray-400">(Pilih perlengkapan yang termasuk dalam paket)</span>
+                        </h6>
+
+                        <div class="space-y-3">
+                            <div id="perlengkapanContainer">
+                                @php
+                                    $oldPerlengkapans = old('perlengkapans', []);
+                                    $perlengkapanCount = count($oldPerlengkapans) > 0 ? count($oldPerlengkapans) : 1;
+                                @endphp
+
+                                @if (count($oldPerlengkapans) > 0)
+                                    @foreach ($oldPerlengkapans as $index => $item)
+                                        <div
+                                            class="perlengkapan-row bg-gray-50 rounded-lg p-3 border border-gray-200 mb-3">
+                                            <div class="grid grid-cols-1 md:grid-cols-4 gap-3">
+                                                <div>
+                                                    <label class="block text-xs font-medium text-gray-600 mb-1">Pilih
+                                                        Perlengkapan</label>
+                                                    <select name="perlengkapans[{{ $index }}][id_perlengkapan]"
+                                                        class="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-yellow-500 text-sm">
+                                                        <option value="">-- Pilih Perlengkapan --</option>
+                                                        @foreach ($perlengkapans as $p)
+                                                            <option value="{{ $p->id_perlengkapan }}"
+                                                                {{ ($item['id_perlengkapan'] ?? '') == $p->id_perlengkapan ? 'selected' : '' }}>
+                                                                {{ $p->nama_perlengkapan }} - {{ $p->kategori }} -
+                                                                {{ $p->harga_satuan_formatted }}
+                                                            </option>
+                                                        @endforeach
+                                                    </select>
+                                                    @error("perlengkapans.{$index}.id_perlengkapan")
+                                                        <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+                                                    @enderror
+                                                </div>
+                                                <div>
+                                                    <label
+                                                        class="block text-xs font-medium text-gray-600 mb-1">Kuantitas</label>
+                                                    <input type="number"
+                                                        name="perlengkapans[{{ $index }}][kuantitas]"
+                                                        value="{{ $item['kuantitas'] ?? 1 }}"
+                                                        class="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-yellow-500 text-sm"
+                                                        min="1" placeholder="1">
+                                                    @error("perlengkapans.{$index}.kuantitas")
+                                                        <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+                                                    @enderror
+                                                </div>
+                                                <div>
+                                                    <label
+                                                        class="block text-xs font-medium text-gray-600 mb-1">Catatan</label>
+                                                    <input type="text"
+                                                        name="perlengkapans[{{ $index }}][catatan]"
+                                                        value="{{ $item['catatan'] ?? '' }}"
+                                                        class="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-yellow-500 text-sm"
+                                                        placeholder="Catatan (opsional)">
+                                                    @error("perlengkapans.{$index}.catatan")
+                                                        <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+                                                    @enderror
+                                                </div>
+                                                <div class="flex items-end">
+                                                    <button type="button" onclick="removePerlengkapanRow(this)"
+                                                        class="w-full px-3 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition text-sm font-medium">
+                                                        <i class="fas fa-trash mr-1"></i> Hapus
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    @endforeach
+                                @else
+                                    <!-- Default 1 row -->
+                                    <div class="perlengkapan-row bg-gray-50 rounded-lg p-3 border border-gray-200">
+                                        <div class="grid grid-cols-1 md:grid-cols-4 gap-3">
+                                            <div>
+                                                <label class="block text-xs font-medium text-gray-600 mb-1">Pilih
+                                                    Perlengkapan</label>
+                                                <select name="perlengkapans[0][id_perlengkapan]"
+                                                    class="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-yellow-500 text-sm">
+                                                    <option value="">-- Pilih Perlengkapan --</option>
+                                                    @foreach ($perlengkapans as $p)
+                                                        <option value="{{ $p->id_perlengkapan }}">
+                                                            {{ $p->nama_perlengkapan }} - {{ $p->kategori }} -
+                                                            {{ $p->harga_satuan_formatted }}
+                                                        </option>
+                                                    @endforeach
+                                                </select>
+                                            </div>
+                                            <div>
+                                                <label
+                                                    class="block text-xs font-medium text-gray-600 mb-1">Kuantitas</label>
+                                                <input type="number" name="perlengkapans[0][kuantitas]" value="1"
+                                                    class="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-yellow-500 text-sm"
+                                                    min="1" placeholder="1">
+                                            </div>
+                                            <div>
+                                                <label class="block text-xs font-medium text-gray-600 mb-1">Catatan</label>
+                                                <input type="text" name="perlengkapans[0][catatan]"
+                                                    class="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-yellow-500 text-sm"
+                                                    placeholder="Catatan (opsional)">
+                                            </div>
+                                            <div class="flex items-end">
+                                                <button type="button" onclick="removePerlengkapanRow(this)"
+                                                    class="w-full px-3 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition text-sm font-medium">
+                                                    <i class="fas fa-trash mr-1"></i> Hapus
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                @endif
+                            </div>
+
+                            <button type="button" onclick="addPerlengkapanRow()"
+                                class="inline-flex items-center px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition text-sm font-medium">
+                                <i class="fas fa-plus mr-2"></i> Tambah Perlengkapan
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- ============================================ -->
+                    <!-- 6. OPSI LAINNYA -->
                     <!-- ============================================ -->
                     <div class="border-b border-gray-200 pb-4">
                         <h6 class="text-sm font-semibold text-gray-700 mb-4 flex items-center">
                             <i class="fas fa-cogs text-yellow-500 mr-2"></i> Opsi Lainnya
                         </h6>
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                             <div>
                                 <label class="block text-sm font-medium text-gray-700 mb-1.5">Include Tur</label>
                                 <select name="include_tur" id="include_tur"
@@ -281,43 +405,27 @@
                                     <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
                                 @enderror
                             </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1.5">Status Keberangkatan</label>
+                                <select name="status_keberangkatan_id"
+                                    class="w-full px-4 py-2 border border-gray-200 rounded-xl focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500 text-sm">
+                                    <option value="">-- Pilih Status --</option>
+                                    @foreach ($statusKeberangkatans as $status)
+                                        <option value="{{ $status->id_status }}"
+                                            {{ old('status_keberangkatan_id') == $status->id_status ? 'selected' : '' }}>
+                                            {{ $status->nama_status }}
+                                        </option>
+                                    @endforeach
+                                </select>
+                                @error('status_keberangkatan_id')
+                                    <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+                                @enderror
+                            </div>
                         </div>
                     </div>
 
                     <!-- ============================================ -->
-                    <!-- 6. STATUS KEBERANGKATAN -->
-                    <!-- ============================================ -->
-                    <div class="border-b border-gray-200 pb-4">
-                        <h6 class="text-sm font-semibold text-gray-700 mb-4 flex items-center">
-                            <i class="fas fa-plane-departure text-yellow-500 mr-2"></i> Status Keberangkatan
-                        </h6>
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1.5">Status Keberangkatan</label>
-                            <select name="status_keberangkatan_id"
-                                class="w-full px-4 py-2 border border-gray-200 rounded-xl focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500 text-sm">
-                                <option value="">-- Pilih Status Keberangkatan --</option>
-                                @foreach ($statusKeberangkatans as $status)
-                                    <option value="{{ $status->id_status }}"
-                                        {{ old('status_keberangkatan_id') == $status->id_status ? 'selected' : '' }}>
-                                        {{ $status->nama_status }}
-                                        @if ($status->warna)
-                                            ({{ $status->warna }})
-                                        @endif
-                                    </option>
-                                @endforeach
-                            </select>
-                            @error('status_keberangkatan_id')
-                                <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
-                            @enderror
-                            <p class="text-xs text-gray-400 mt-1">
-                                <i class="fas fa-info-circle mr-1"></i>
-                                Pilih status keberangkatan untuk produk ini
-                            </p>
-                        </div>
-                    </div>
-
-                    <!-- ============================================ -->
-                    <!-- 6. PILIH PAKET TOUR (Muncul Jika Include Tur = Ya) -->
+                    <!-- 7. PILIH PAKET TOUR -->
                     <!-- ============================================ -->
                     <div id="paketTourSection" class="border-b border-gray-200 pb-4" style="display: none;">
                         <h6 class="text-sm font-semibold text-gray-700 mb-4 flex items-center">
@@ -335,10 +443,7 @@
                                         {{ old('paket_tour_id') == $tour->id_paket_tour ? 'selected' : '' }}>
                                         {{ $tour->kota_tujuan ?? 'Tour' }} - {{ $tour->negara ?? '' }}
                                         ({{ $tour->durasi_hari ?? 0 }} Hari)
-                                        - Rp {{ number_format($tour->harga_per_orang ?? 0, 0, ',', '.') }}
-                                        @if ($tour->produk)
-                                            ({{ $tour->produk->nama_produk }})
-                                        @endif
+                                        - {{ $tour->harga_per_orang_formatted }}
                                     </option>
                                 @endforeach
                             </select>
@@ -352,7 +457,9 @@
                         </div>
                     </div>
 
-                    <!-- Buttons -->
+                    <!-- ============================================ -->
+                    <!-- BUTTONS -->
+                    <!-- ============================================ -->
                     <div class="flex items-center justify-end gap-3 pt-4">
                         <a href="{{ route('master.produk.index') }}"
                             class="px-4 py-2 bg-gray-200 text-gray-700 rounded-xl hover:bg-gray-300 transition-colors text-sm font-medium">
@@ -387,12 +494,65 @@
                 }
             }
 
-            // Event listener untuk include_tur
             if (includeTurSelect) {
                 includeTurSelect.addEventListener('change', togglePaketTour);
-                // Cek kondisi awal
                 togglePaketTour();
             }
         });
+
+        let perlengkapanIndex = {{ count(old('perlengkapans', [0])) }};
+
+        function addPerlengkapanRow() {
+            const container = document.getElementById('perlengkapanContainer');
+            const row = document.createElement('div');
+            row.className = 'perlengkapan-row bg-gray-50 rounded-lg p-3 border border-gray-200 mb-3';
+            row.innerHTML = `
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-3">
+                <div>
+                    <label class="block text-xs font-medium text-gray-600 mb-1">Pilih Perlengkapan</label>
+                    <select name="perlengkapans[${perlengkapanIndex}][id_perlengkapan]"
+                        class="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-yellow-500 text-sm">
+                        <option value="">-- Pilih Perlengkapan --</option>
+                        @foreach ($perlengkapans as $p)
+                            <option value="{{ $p->id_perlengkapan }}">
+                                {{ $p->nama_perlengkapan }} - {{ $p->kategori }} - {{ $p->harga_satuan_formatted }}
+                            </option>
+                        @endforeach
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-xs font-medium text-gray-600 mb-1">Kuantitas</label>
+                    <input type="number" name="perlengkapans[${perlengkapanIndex}][kuantitas]"
+                        value="1"
+                        class="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-yellow-500 text-sm"
+                        min="1" placeholder="1">
+                </div>
+                <div>
+                    <label class="block text-xs font-medium text-gray-600 mb-1">Catatan</label>
+                    <input type="text" name="perlengkapans[${perlengkapanIndex}][catatan]"
+                        class="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-yellow-500 text-sm"
+                        placeholder="Catatan (opsional)">
+                </div>
+                <div class="flex items-end">
+                    <button type="button" onclick="removePerlengkapanRow(this)"
+                        class="w-full px-3 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition text-sm font-medium">
+                        <i class="fas fa-trash mr-1"></i> Hapus
+                    </button>
+                </div>
+            </div>
+        `;
+            container.appendChild(row);
+            perlengkapanIndex++;
+        }
+
+        function removePerlengkapanRow(button) {
+            const row = button.closest('.perlengkapan-row');
+            const container = document.getElementById('perlengkapanContainer');
+            if (container.children.length > 1) {
+                row.remove();
+            } else {
+                alert('Minimal harus ada 1 perlengkapan!');
+            }
+        }
     </script>
 @endpush

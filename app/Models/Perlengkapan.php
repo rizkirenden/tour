@@ -25,6 +25,20 @@ class Perlengkapan extends Model
         'harga_satuan' => 'integer',
     ];
 
+    // Relasi many-to-many dengan ProdukPaket
+    public function produkPakets()
+    {
+        return $this->belongsToMany(ProdukPaket::class, 'paket_produk_perlengkapan', 'id_perlengkapan', 'id_produk')
+                    ->withPivot('kuantitas', 'catatan')
+                    ->withTimestamps();
+    }
+
+    // Relasi langsung ke pivot
+    public function paketProdukPerlengkapans()
+    {
+        return $this->hasMany(PaketProdukPerlengkapan::class, 'id_perlengkapan', 'id_perlengkapan');
+    }
+
     // Accessor untuk format harga
     public function getHargaSatuanFormattedAttribute()
     {
@@ -57,5 +71,17 @@ class Perlengkapan extends Model
         ];
 
         return $icons[$this->kategori] ?? 'fa-box';
+    }
+
+    // Scope untuk filter
+    public function scopeByKategori($query, $kategori)
+    {
+        return $query->where('kategori', $kategori);
+    }
+
+    public function scopeSearch($query, $search)
+    {
+        return $query->where('nama_perlengkapan', 'like', "%{$search}%")
+                     ->orWhere('kode_perlengkapan', 'like', "%{$search}%");
     }
 }
