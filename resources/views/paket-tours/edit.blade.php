@@ -79,35 +79,18 @@
                         @enderror
                     </div>
 
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1.5">Harga Include</label>
-                            <select name="harga_include"
-                                class="w-full px-4 py-2 border border-gray-200 rounded-xl focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500 text-sm">
-                                <option value="1"
-                                    {{ old('harga_include', $paketTour->harga_include) == 1 ? 'selected' : '' }}>Include
-                                </option>
-                                <option value="0"
-                                    {{ old('harga_include', $paketTour->harga_include) == 0 ? 'selected' : '' }}>Tidak
-                                    Include</option>
-                            </select>
-                            @error('harga_include')
-                                <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
-                            @enderror
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1.5">Harga Per Orang</label>
+                        <div class="relative">
+                            <span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm">Rp</span>
+                            <input type="number" name="harga_per_orang"
+                                value="{{ old('harga_per_orang', $paketTour->harga_per_orang) }}"
+                                class="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-xl focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500 text-sm"
+                                placeholder="0">
                         </div>
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1.5">Harga Per Orang</label>
-                            <div class="relative">
-                                <span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm">Rp</span>
-                                <input type="number" name="harga_per_orang"
-                                    value="{{ old('harga_per_orang', $paketTour->harga_per_orang) }}"
-                                    class="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-xl focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500 text-sm"
-                                    placeholder="0">
-                            </div>
-                            @error('harga_per_orang')
-                                <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
-                            @enderror
-                        </div>
+                        @error('harga_per_orang')
+                            <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+                        @enderror
                     </div>
 
                     <div class="flex items-center justify-end gap-3 pt-4 border-t border-gray-100">

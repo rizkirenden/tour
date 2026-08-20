@@ -30,7 +30,6 @@ class PaketTourService
     public function create(array $data)
     {
         return DB::transaction(function () use ($data) {
-            $data['harga_include'] = $data['harga_include'] ?? true;
             $data['harga_per_orang'] = $data['harga_per_orang'] ?? 0;
             
             return PaketTour::create($data);
@@ -41,7 +40,6 @@ class PaketTourService
     {
         return DB::transaction(function () use ($id, $data) {
             $paketTour = $this->getById($id);
-            $data['harga_include'] = $data['harga_include'] ?? true;
             $paketTour->update($data);
             return $paketTour->fresh();
         });

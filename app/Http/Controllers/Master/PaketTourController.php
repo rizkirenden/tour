@@ -40,7 +40,6 @@ class PaketTourController extends Controller
             'negara' => 'nullable|string|max:50',
             'durasi_hari' => 'nullable|integer|min:1',
             'deskripsi' => 'nullable|string',
-            'harga_include' => 'nullable|boolean',
             'harga_per_orang' => 'nullable|integer|min:0',
         ]);
 
@@ -69,7 +68,6 @@ class PaketTourController extends Controller
             'negara' => 'nullable|string|max:50',
             'durasi_hari' => 'nullable|integer|min:1',
             'deskripsi' => 'nullable|string',
-            'harga_include' => 'nullable|boolean',
             'harga_per_orang' => 'nullable|integer|min:0',
         ]);
 

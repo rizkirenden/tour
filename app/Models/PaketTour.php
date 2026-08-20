@@ -17,12 +17,10 @@ class PaketTour extends Model
         'negara',
         'durasi_hari',
         'deskripsi',
-        'harga_include',
         'harga_per_orang',
     ];
 
     protected $casts = [
-        'harga_include' => 'boolean',
         'harga_per_orang' => 'integer',
         'durasi_hari' => 'integer',
     ];
@@ -37,13 +35,5 @@ class PaketTour extends Model
     public function getHargaPerOrangFormattedAttribute()
     {
         return $this->harga_per_orang ? 'Rp ' . number_format($this->harga_per_orang, 0, ',', '.') : '-';
-    }
-
-    // Accessor untuk badge include
-    public function getIncludeBadgeAttribute()
-    {
-        return $this->harga_include 
-            ? '<span class="px-2 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-700">Include</span>'
-            : '<span class="px-2 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-700">Tidak Include</span>';
     }
 }

@@ -45,7 +45,6 @@
                         <div>
                             <div class="flex items-center gap-3 flex-wrap">
                                 <h2 class="text-2xl font-bold text-gray-800">{{ $paketTour->kota_tujuan ?? 'Tour' }}</h2>
-                                {!! $paketTour->include_badge !!}
                             </div>
                             <p class="text-gray-500 text-sm mt-1">
                                 <i class="fas fa-map-marker-alt mr-1"></i> {{ $paketTour->negara ?? '-' }}
@@ -84,10 +83,6 @@
                             <i class="fas fa-dollar-sign text-yellow-500 mr-2"></i> Detail Harga
                         </h6>
                         <dl class="space-y-3">
-                            <div class="flex justify-between text-sm">
-                                <dt class="text-gray-500">Harga Include</dt>
-                                <dd>{!! $paketTour->include_badge !!}</dd>
-                            </div>
                             <div class="flex justify-between text-sm">
                                 <dt class="text-gray-500">Harga Per Orang</dt>
                                 <dd class="font-medium text-gray-700">{{ $paketTour->harga_per_orang_formatted }}</dd>
