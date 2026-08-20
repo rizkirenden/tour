@@ -49,6 +49,10 @@
                                 <span class="px-3 py-1 bg-yellow-500 text-white text-xs font-medium rounded-full">
                                     {{ $produk->kategori ?? 'Umum' }}
                                 </span>
+                                <span
+                                    class="px-3 py-1 {{ $produk->is_active ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700' }} text-xs font-medium rounded-full">
+                                    {{ $produk->is_active ? 'Aktif' : 'Tidak Aktif' }}
+                                </span>
                             </div>
                             <p class="text-gray-500 text-sm mt-1">
                                 <i class="fas fa-tag mr-1"></i> Kode: {{ $produk->kode_produk ?? 'Tidak ada' }}
@@ -86,6 +90,28 @@
                                 <dt class="text-gray-500">Durasi Hari</dt>
                                 <dd class="font-medium text-gray-700">{{ $produk->durasi_hari }} Hari</dd>
                             </div>
+                            <div class="flex justify-between text-sm">
+                                <dt class="text-gray-500">Include Tur</dt>
+                                <dd class="font-medium text-gray-700">
+                                    <span
+                                        class="px-2 py-0.5 rounded-full text-xs font-medium {{ $produk->include_tur ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-500' }}">
+                                        {{ $produk->include_tur ? 'Ya' : 'Tidak' }}
+                                    </span>
+                                </dd>
+                            </div>
+                            <div class="flex justify-between text-sm">
+                                <dt class="text-gray-500">Status Keberangkatan</dt>
+                                <dd class="font-medium text-gray-700">
+                                    @if ($produk->statusKeberangkatan)
+                                        <span class="px-2 py-0.5 rounded-full text-xs font-medium"
+                                            style="background-color: {{ $produk->statusKeberangkatan->warna ?? '#e5e7eb' }}20; color: {{ $produk->statusKeberangkatan->warna ?? '#374151' }};">
+                                            {{ $produk->statusKeberangkatan->nama_status }}
+                                        </span>
+                                    @else
+                                        <span class="text-gray-400">-</span>
+                                    @endif
+                                </dd>
+                            </div>
                         </dl>
                     </div>
 
@@ -115,6 +141,11 @@
                                 <dd class="font-medium text-gray-700">Rp
                                     {{ number_format($produk->harga_muthowwif ?? 0, 0, ',', '.') }}</dd>
                             </div>
+                            <div class="flex justify-between text-sm border-t border-gray-200 pt-2 mt-2">
+                                <dt class="text-gray-600 font-medium">Total Harga per Orang</dt>
+                                <dd class="font-bold text-yellow-600">Rp
+                                    {{ number_format($produk->total_harga_per_orang, 0, ',', '.') }}</dd>
+                            </div>
                         </dl>
                     </div>
 
@@ -136,7 +167,7 @@
                                 <dt class="text-gray-500">Durasi Transit</dt>
                                 <dd class="font-medium text-gray-700">{{ $produk->durasi_transit ?? 0 }} Hari</dd>
                             </div>
-                            <div class="flex justify-between text-sm font-medium">
+                            <div class="flex justify-between text-sm font-medium border-t border-gray-200 pt-2 mt-2">
                                 <dt class="text-gray-600">Total Durasi</dt>
                                 <dd class="text-yellow-600">{{ $produk->durasi_hari }} Hari</dd>
                             </div>
@@ -151,53 +182,89 @@
                         <dl class="space-y-3">
                             <div class="flex justify-between text-sm">
                                 <dt class="text-gray-500">Hotel Mekkah</dt>
-                                <dd class="font-medium text-gray-700">{{ $produk->hotel_mekkah_default ?? '-' }}</dd>
+                                <dd class="font-medium text-gray-700">
+                                    @if ($produk->hotelMekkah)
+                                        {{ $produk->hotelMekkah->nama_hotel }}
+                                        <span class="text-xs text-gray-400 block">
+                                            {{ $produk->hotelMekkah->kota }} - {{ $produk->hotelMekkah->bintang_text }}
+                                        </span>
+                                    @else
+                                        <span class="text-gray-400">-</span>
+                                    @endif
+                                </dd>
                             </div>
                             <div class="flex justify-between text-sm">
                                 <dt class="text-gray-500">Hotel Madinah</dt>
-                                <dd class="font-medium text-gray-700">{{ $produk->hotel_madinah_default ?? '-' }}</dd>
+                                <dd class="font-medium text-gray-700">
+                                    @if ($produk->hotelMadinah)
+                                        {{ $produk->hotelMadinah->nama_hotel }}
+                                        <span class="text-xs text-gray-400 block">
+                                            {{ $produk->hotelMadinah->kota }} - {{ $produk->hotelMadinah->bintang_text }}
+                                        </span>
+                                    @else
+                                        <span class="text-gray-400">-</span>
+                                    @endif
+                                </dd>
                             </div>
                             <div class="flex justify-between text-sm">
                                 <dt class="text-gray-500">Hotel Transit</dt>
-                                <dd class="font-medium text-gray-700">{{ $produk->hotel_transit_default ?? '-' }}</dd>
+                                <dd class="font-medium text-gray-700">
+                                    @if ($produk->hotelTransit)
+                                        {{ $produk->hotelTransit->nama_hotel }}
+                                        <span class="text-xs text-gray-400 block">
+                                            {{ $produk->hotelTransit->kota }} - {{ $produk->hotelTransit->bintang_text }}
+                                        </span>
+                                    @else
+                                        <span class="text-gray-400">-</span>
+                                    @endif
+                                </dd>
                             </div>
                         </dl>
                     </div>
 
-                    <!-- Opsi Lainnya -->
-                    <div class="bg-gray-50 rounded-xl p-5 border border-gray-100 lg:col-span-2">
-                        <h6 class="text-sm font-semibold text-gray-700 mb-4 flex items-center">
-                            <i class="fas fa-cogs text-yellow-500 mr-2"></i> Opsi Lainnya
-                        </h6>
-                        <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
-                            <div class="flex items-center gap-2">
-                                <span class="text-gray-500 text-sm">Kapasitas Kamar:</span>
-                                <span class="font-medium text-gray-700">{{ $produk->kapasitas_kamar_default ?? 3 }}
-                                    Orang</span>
-                            </div>
-                            <div class="flex items-center gap-2">
-                                <span class="text-gray-500 text-sm">Multiple Hotel:</span>
-                                <span
-                                    class="px-2 py-0.5 rounded-full text-xs font-medium {{ $produk->multiple_hotel_enabled ? 'bg-yellow-100 text-yellow-700' : 'bg-gray-100 text-gray-500' }}">
-                                    {{ $produk->multiple_hotel_enabled ? 'Ya' : 'Tidak' }}
-                                </span>
-                            </div>
-                            <div class="flex items-center gap-2">
-                                <span class="text-gray-500 text-sm">Include Tur:</span>
-                                <span
-                                    class="px-2 py-0.5 rounded-full text-xs font-medium {{ $produk->include_tur ? 'bg-yellow-100 text-yellow-700' : 'bg-gray-100 text-gray-500' }}">
-                                    {{ $produk->include_tur ? 'Ya' : 'Tidak' }}
-                                </span>
-                            </div>
-                            <div class="flex items-center gap-2">
-                                <span class="text-gray-500 text-sm">Status:</span>
-                                <span
-                                    class="px-2 py-0.5 rounded-full text-xs font-medium {{ $produk->is_active ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700' }}">
-                                    {{ $produk->is_active ? 'Aktif' : 'Tidak Aktif' }}
-                                </span>
+                    <!-- Paket Tour -->
+                    @if ($produk->include_tur && $produk->paketTour)
+                        <div class="bg-gray-50 rounded-xl p-5 border border-gray-100 lg:col-span-2">
+                            <h6 class="text-sm font-semibold text-gray-700 mb-4 flex items-center">
+                                <i class="fas fa-route text-yellow-500 mr-2"></i> Paket Tour
+                            </h6>
+                            <div class="bg-white rounded-lg p-4 border border-gray-200">
+                                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
+                                    <div>
+                                        <span class="text-gray-500">Kota Tujuan:</span>
+                                        <span
+                                            class="font-medium text-gray-700">{{ $produk->paketTour->kota_tujuan ?? '-' }}</span>
+                                    </div>
+                                    <div>
+                                        <span class="text-gray-500">Negara:</span>
+                                        <span
+                                            class="font-medium text-gray-700">{{ $produk->paketTour->negara ?? '-' }}</span>
+                                    </div>
+                                    <div>
+                                        <span class="text-gray-500">Durasi:</span>
+                                        <span
+                                            class="font-medium text-gray-700">{{ $produk->paketTour->durasi_hari ?? '-' }}
+                                            Hari</span>
+                                    </div>
+                                </div>
+                                <div class="mt-2 text-sm">
+                                    <span class="text-gray-500">Harga Per Orang:</span>
+                                    <span
+                                        class="font-medium text-yellow-600">{{ $produk->paketTour->harga_per_orang_formatted }}</span>
+                                </div>
+                                <div class="mt-2 text-sm">
+                                    <span class="text-gray-500">Include:</span>
+                                    {!! $produk->paketTour->include_badge !!}
+                                </div>
+                                @if ($produk->paketTour->deskripsi)
+                                    <div class="mt-2 text-sm text-gray-600">
+                                        <span class="text-gray-500">Deskripsi:</span>
+                                        {{ $produk->paketTour->deskripsi }}
+                                    </div>
+                                @endif
                             </div>
                         </div>
-                    </div>
+                    @endif
 
                     <!-- Deskripsi -->
                     @if ($produk->deskripsi)
@@ -208,6 +275,25 @@
                             <p class="text-sm text-gray-600 leading-relaxed">{{ $produk->deskripsi }}</p>
                         </div>
                     @endif
+
+                    <!-- Informasi Tambahan -->
+                    <div class="bg-gray-50 rounded-xl p-5 border border-gray-100 lg:col-span-2">
+                        <h6 class="text-sm font-semibold text-gray-700 mb-4 flex items-center">
+                            <i class="fas fa-calendar-alt text-yellow-500 mr-2"></i> Informasi Tambahan
+                        </h6>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div class="flex justify-between text-sm">
+                                <dt class="text-gray-500">Dibuat Pada</dt>
+                                <dd class="font-medium text-gray-700">
+                                    {{ $produk->created_at ? $produk->created_at->format('d M Y H:i') : '-' }}</dd>
+                            </div>
+                            <div class="flex justify-between text-sm">
+                                <dt class="text-gray-500">Terakhir Diperbarui</dt>
+                                <dd class="font-medium text-gray-700">
+                                    {{ $produk->updated_at ? $produk->updated_at->format('d M Y H:i') : '-' }}</dd>
+                            </div>
+                        </div>
+                    </div>
                 </div>
 
                 <!-- Aksi Bawah -->

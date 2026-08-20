@@ -103,6 +103,7 @@
                             <span class="ml-3">Perlengkapan</span>
                         </a>
                     </li>
+                    {{-- 
                     <li>
                         <a href="{{ route('master.paket-hotel.index') }}"
                             class="flex items-center px-3 py-2 rounded-lg text-sm transition-all duration-200 {{ request()->routeIs('master.paket-hotel.*') ? 'bg-yellow-500/50 text-white' : 'text-yellow-200 hover:bg-yellow-500/30 hover:text-white' }}">
@@ -110,6 +111,7 @@
                             <span class="ml-3">Paket Hotel</span>
                         </a>
                     </li>
+                    --}}
                     <li>
                         <a href="{{ route('master.paket-tour.index') }}"
                             class="flex items-center px-3 py-2 rounded-lg text-sm transition-all duration-200 {{ request()->routeIs('master.paket-tour.*') ? 'bg-yellow-500/50 text-white' : 'text-yellow-200 hover:bg-yellow-500/30 hover:text-white' }}">

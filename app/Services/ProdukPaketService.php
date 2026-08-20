@@ -34,16 +34,22 @@ class ProdukPaketService
                 $data['kode_produk'] = $this->generateKodeProduk();
             }
 
-            $data['multiple_hotel_enabled'] = $data['multiple_hotel_enabled'] ?? false;
+            // Set default values
             $data['include_tur'] = $data['include_tur'] ?? false;
             $data['is_active'] = $data['is_active'] ?? true;
-            $data['kapasitas_kamar_default'] = $data['kapasitas_kamar_default'] ?? 4;
+            $data['paket_tour_id'] = $data['paket_tour_id'] ?? null;
+            $data['status_keberangkatan_id'] = $data['status_keberangkatan_id'] ?? null;
             $data['durasi_mekkah'] = $data['durasi_mekkah'] ?? 4;
             $data['durasi_madinah'] = $data['durasi_madinah'] ?? 4;
             $data['durasi_transit'] = $data['durasi_transit'] ?? 1;
             $data['harga_visa'] = $data['harga_visa'] ?? 0;
             $data['harga_handling'] = $data['harga_handling'] ?? 0;
             $data['harga_muthowwif'] = $data['harga_muthowwif'] ?? 0;
+
+            // Jika include_tur = false, set paket_tour_id menjadi null
+            if (!$data['include_tur']) {
+                $data['paket_tour_id'] = null;
+            }
 
             return ProdukPaket::create($data);
         });
@@ -53,9 +59,15 @@ class ProdukPaketService
     {
         return DB::transaction(function () use ($id, $data) {
             $produk = $this->getById($id);
-            $data['multiple_hotel_enabled'] = $data['multiple_hotel_enabled'] ?? false;
+            
             $data['include_tur'] = $data['include_tur'] ?? false;
             $data['is_active'] = $data['is_active'] ?? true;
+            
+            // Jika include_tur = false, set paket_tour_id menjadi null
+            if (!$data['include_tur']) {
+                $data['paket_tour_id'] = null;
+            }
+            
             $produk->update($data);
             return $produk->fresh();
         });
@@ -97,4 +109,13 @@ class ProdukPaketService
         $number = str_pad($last + 1, 3, '0', STR_PAD_LEFT);
         return "{$prefix}-{$number}-{$year}";
     }
+
+    public function updateStatusKeberangkatan($id, $statusId)
+{
+    return DB::transaction(function () use ($id, $statusId) {
+        $produk = $this->getById($id);
+        $produk->update(['status_keberangkatan_id' => $statusId]);
+        return $produk->fresh();
+    });
+}
 }

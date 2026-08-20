@@ -14,12 +14,12 @@ return new class extends Migration
             $table->string('nama_produk', 100);
             $table->text('deskripsi')->nullable();
             $table->bigInteger('harga_dasar');
-            $table->string('hotel_mekkah_default', 100)->nullable();
-            $table->string('hotel_madinah_default', 100)->nullable();
-            $table->string('hotel_transit_default', 100)->nullable();
-            $table->boolean('multiple_hotel_enabled')->default(0);
+            $table->foreignId('hotel_mekkah_default')->nullable()->constrained('hotels', 'id_hotel');
+            $table->foreignId('hotel_madinah_default')->nullable()->constrained('hotels', 'id_hotel');
+            $table->foreignId('hotel_transit_default')->nullable()->constrained('hotels', 'id_hotel');
             $table->boolean('include_tur')->default(0);
-            $table->integer('kapasitas_kamar_default')->default(4);
+            $table->foreignId('paket_tour_id')->nullable()->constrained('paket_tours', 'id_paket_tour')->onDelete('set null');
+            $table->foreignId('status_keberangkatan_id')->nullable()->constrained('status_keberangkatans', 'id_status')->onDelete('set null');
             $table->integer('durasi_mekkah')->default(4);
             $table->integer('durasi_madinah')->default(4);
             $table->integer('durasi_transit')->default(1);

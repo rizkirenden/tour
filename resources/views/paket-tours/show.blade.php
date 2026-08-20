@@ -44,13 +44,11 @@
                     <div class="flex flex-wrap items-start justify-between gap-4">
                         <div>
                             <div class="flex items-center gap-3 flex-wrap">
-                                <h2 class="text-2xl font-bold text-gray-800">{{ $paketTour->produk->nama_produk ?? '-' }}
-                                </h2>
+                                <h2 class="text-2xl font-bold text-gray-800">{{ $paketTour->kota_tujuan ?? 'Tour' }}</h2>
                                 {!! $paketTour->include_badge !!}
                             </div>
                             <p class="text-gray-500 text-sm mt-1">
-                                <i class="fas fa-map-marker-alt mr-1"></i> {{ $paketTour->kota_tujuan ?? '-' }},
-                                {{ $paketTour->negara ?? '-' }}
+                                <i class="fas fa-map-marker-alt mr-1"></i> {{ $paketTour->negara ?? '-' }}
                             </p>
                         </div>
                         <div class="text-right">
@@ -66,10 +64,6 @@
                             <i class="fas fa-info-circle text-yellow-500 mr-2"></i> Informasi Tour
                         </h6>
                         <dl class="space-y-3">
-                            <div class="flex justify-between text-sm">
-                                <dt class="text-gray-500">Produk</dt>
-                                <dd class="font-medium text-gray-700">{{ $paketTour->produk->nama_produk ?? '-' }}</dd>
-                            </div>
                             <div class="flex justify-between text-sm">
                                 <dt class="text-gray-500">Kota Tujuan</dt>
                                 <dd class="font-medium text-gray-700">{{ $paketTour->kota_tujuan ?? '-' }}</dd>
@@ -93,10 +87,6 @@
                             <div class="flex justify-between text-sm">
                                 <dt class="text-gray-500">Harga Include</dt>
                                 <dd>{!! $paketTour->include_badge !!}</dd>
-                            </div>
-                            <div class="flex justify-between text-sm">
-                                <dt class="text-gray-500">Harga Tambahan</dt>
-                                <dd class="font-medium text-gray-700">{{ $paketTour->harga_tambahan_formatted }}</dd>
                             </div>
                             <div class="flex justify-between text-sm">
                                 <dt class="text-gray-500">Harga Per Orang</dt>

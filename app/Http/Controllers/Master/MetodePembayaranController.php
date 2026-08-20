@@ -47,7 +47,7 @@ class MetodePembayaranController extends Controller
 
         $metode = $this->service->create($validated);
 
-        return redirect()->route('metode-pembayarans.index')
+        return redirect()->route('master.metode-pembayaran.index')
             ->with('success', "Metode pembayaran '{$metode->nama_bank}' berhasil ditambahkan!");
     }
 
@@ -77,7 +77,7 @@ class MetodePembayaranController extends Controller
 
         $metode = $this->service->update($id, $validated);
 
-        return redirect()->route('metode-pembayarans.index')
+        return redirect()->route('master.metode-pembayaran.index')
             ->with('success', "Metode pembayaran '{$metode->nama_bank}' berhasil diperbarui!");
     }
 
@@ -85,7 +85,7 @@ class MetodePembayaranController extends Controller
     {
         $nama = $this->service->delete($id);
 
-        return redirect()->route('metode-pembayarans.index')
+        return redirect()->route('master.metode-pembayaran.index')
             ->with('success', "Metode pembayaran '{$nama}' berhasil dihapus!");
     }
 

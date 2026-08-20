@@ -3,7 +3,6 @@
         <thead>
             <tr class="border-b border-gray-200">
                 <th class="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">No</th>
-                <th class="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Produk</th>
                 <th class="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Kota Tujuan
                 </th>
                 <th class="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Negara</th>
@@ -21,9 +20,6 @@
                 <tr class="hover:bg-gray-50 transition-colors duration-150">
                     <td class="px-4 py-3">
                         <span class="text-sm text-gray-600">{{ $data->firstItem() + $index }}</span>
-                    </td>
-                    <td class="px-4 py-3">
-                        <p class="font-medium text-gray-800">{{ $item->produk->nama_produk ?? '-' }}</p>
                     </td>
                     <td class="px-4 py-3">
                         <span class="text-sm text-gray-600">{{ $item->kota_tujuan ?? '-' }}</span>

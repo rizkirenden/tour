@@ -114,10 +114,33 @@
                                 placeholder="Contoh: Arab Saudi">
                         </div>
                         <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1.5">Kota</label>
+                            <label class="block text-sm font-medium text-gray-700 mb-1.5">
+                                Kota <span class="text-red-500">*</span>
+                            </label>
                             <input type="text" name="kota" value="{{ old('kota') }}"
                                 class="w-full px-4 py-2 border border-gray-200 rounded-xl focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500 text-sm"
-                                placeholder="Contoh: Makkah">
+                                placeholder="Contoh: Mekkah, Madinah, atau Transit">
+                            @error('kota')
+                                <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+                            @enderror
+                            <div class="mt-1.5 flex flex-wrap gap-2">
+                                <span
+                                    class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                                    Mekkah
+                                </span>
+                                <span
+                                    class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                                    Madinah
+                                </span>
+                                <span
+                                    class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-purple-100 text-purple-800">
+                                    Transit
+                                </span>
+                                <span class="text-xs text-gray-400 ml-1">
+                                    <i class="fas fa-info-circle mr-1"></i>
+                                    Contoh Input
+                                </span>
+                            </div>
                         </div>
                     </div>
 

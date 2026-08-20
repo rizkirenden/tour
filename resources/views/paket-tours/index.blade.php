@@ -34,15 +34,6 @@
                     <input type="text" id="search" placeholder="Cari paket tour..."
                         class="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500 text-sm">
                 </div>
-                <div class="relative max-w-xs">
-                    <select id="filter_produk"
-                        class="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500 text-sm appearance-none bg-white">
-                        <option value="">Semua Produk</option>
-                        @foreach ($produkOptions as $produk)
-                            <option value="{{ $produk->id_produk }}">{{ $produk->nama_produk }}</option>
-                        @endforeach
-                    </select>
-                </div>
                 <button onclick="applyFilter()"
                     class="px-4 py-2 bg-yellow-500 text-white rounded-lg hover:bg-yellow-600 transition text-sm font-medium">
                     <i class="fas fa-search mr-2"></i> Cari

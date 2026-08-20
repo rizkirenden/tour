@@ -21,6 +21,7 @@ Route::get('/', [DashboardController::class, 'index'])->name('dashboard');
 Route::prefix('master')->name('master.')->group(function () {
     Route::resource('produk', ProdukPaketController::class);
     Route::patch('produk/{id}/toggle-status', [ProdukPaketController::class, 'toggleStatus'])->name('produk.toggle-status');
+    Route::patch('produk/{id}/update-status-keberangkatan', [ProdukPaketController::class, 'updateStatusKeberangkatan'])->name('produk.update-status-keberangkatan');
 
     Route::resource('metode-pembayaran', MetodePembayaranController::class);
     Route::patch('metode-pembayaran/{id}/toggle-status', [MetodePembayaranController::class, 'toggleStatus'])->name('metode-pembayaran.toggle-status');

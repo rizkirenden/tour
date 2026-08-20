@@ -3,6 +3,9 @@
 namespace App\Http\Controllers\Master;
 
 use App\Http\Controllers\Controller;
+use App\Models\Hotel;
+use App\Models\PaketTour;
+use App\Models\StatusKeberangkatan;
 use App\Services\ProdukPaketService;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
@@ -20,17 +23,22 @@ class ProdukPaketController extends Controller
     {
         $filters = $request->only(['search']);
         $data = $this->service->getAll($filters);
+        $statusKeberangkatans = StatusKeberangkatan::orderBy('nama_status')->get();
 
         if ($request->ajax()) {
-            return view('produk-pakets.table', compact('data'));
+            return view('produk-pakets.table', compact('data', 'statusKeberangkatans'));
         }
 
-        return view('produk-pakets.index', compact('data'));
+        return view('produk-pakets.index', compact('data', 'statusKeberangkatans'));
     }
 
     public function create()
     {
-        return view('produk-pakets.create');
+        $hotels = Hotel::orderBy('nama_hotel')->get();
+        // HAPUS ->with('produk') karena tidak ada relasi produk di PaketTour
+        $paketTours = PaketTour::orderBy('kota_tujuan')->get();
+        $statusKeberangkatans = StatusKeberangkatan::orderBy('nama_status')->get();
+        return view('produk-pakets.create', compact('hotels', 'paketTours', 'statusKeberangkatans'));
     }
 
     public function store(Request $request)
@@ -40,12 +48,12 @@ class ProdukPaketController extends Controller
             'nama_produk' => 'required|string|max:100',
             'deskripsi' => 'nullable|string',
             'harga_dasar' => 'required|integer|min:0',
-            'hotel_mekkah_default' => 'nullable|string|max:100',
-            'hotel_madinah_default' => 'nullable|string|max:100',
-            'hotel_transit_default' => 'nullable|string|max:100',
-            'multiple_hotel_enabled' => 'nullable|boolean',
+            'hotel_mekkah_default' => 'nullable|exists:hotels,id_hotel',
+            'hotel_madinah_default' => 'nullable|exists:hotels,id_hotel',
+            'hotel_transit_default' => 'nullable|exists:hotels,id_hotel',
             'include_tur' => 'nullable|boolean',
-            'kapasitas_kamar_default' => 'nullable|integer|in:3,4',
+            'paket_tour_id' => 'nullable|exists:paket_tours,id_paket_tour',
+            'status_keberangkatan_id' => 'nullable|exists:status_keberangkatans,id_status',
             'durasi_mekkah' => 'nullable|integer|min:0',
             'durasi_madinah' => 'nullable|integer|min:0',
             'durasi_transit' => 'nullable|integer|min:0',
@@ -57,9 +65,13 @@ class ProdukPaketController extends Controller
             'is_active' => 'nullable|boolean',
         ]);
 
-        $validated['multiple_hotel_enabled'] = $request->boolean('multiple_hotel_enabled', false);
         $validated['include_tur'] = $request->boolean('include_tur', false);
         $validated['is_active'] = $request->boolean('is_active', true);
+
+        // Jika include_tur = false, set paket_tour_id menjadi null
+        if (!$validated['include_tur']) {
+            $validated['paket_tour_id'] = null;
+        }
 
         $produk = $this->service->create($validated);
 
@@ -70,13 +82,18 @@ class ProdukPaketController extends Controller
     public function show($id)
     {
         $produk = $this->service->getById($id);
+        $produk->load(['hotelMekkah', 'hotelMadinah', 'hotelTransit', 'paketTour', 'statusKeberangkatan']);
         return view('produk-pakets.show', compact('produk'));
     }
 
     public function edit($id)
     {
         $produk = $this->service->getById($id);
-        return view('produk-pakets.edit', compact('produk'));
+        $hotels = Hotel::orderBy('nama_hotel')->get();
+        // HAPUS ->with('produk') karena tidak ada relasi produk di PaketTour
+        $paketTours = PaketTour::orderBy('kota_tujuan')->get();
+        $statusKeberangkatans = StatusKeberangkatan::orderBy('nama_status')->get();
+        return view('produk-pakets.edit', compact('produk', 'hotels', 'paketTours', 'statusKeberangkatans'));
     }
 
     public function update(Request $request, $id)
@@ -86,12 +103,12 @@ class ProdukPaketController extends Controller
             'nama_produk' => 'required|string|max:100',
             'deskripsi' => 'nullable|string',
             'harga_dasar' => 'required|integer|min:0',
-            'hotel_mekkah_default' => 'nullable|string|max:100',
-            'hotel_madinah_default' => 'nullable|string|max:100',
-            'hotel_transit_default' => 'nullable|string|max:100',
-            'multiple_hotel_enabled' => 'nullable|boolean',
+            'hotel_mekkah_default' => 'nullable|exists:hotels,id_hotel',
+            'hotel_madinah_default' => 'nullable|exists:hotels,id_hotel',
+            'hotel_transit_default' => 'nullable|exists:hotels,id_hotel',
             'include_tur' => 'nullable|boolean',
-            'kapasitas_kamar_default' => 'nullable|integer|in:3,4',
+            'paket_tour_id' => 'nullable|exists:paket_tours,id_paket_tour',
+            'status_keberangkatan_id' => 'nullable|exists:status_keberangkatans,id_status',
             'durasi_mekkah' => 'nullable|integer|min:0',
             'durasi_madinah' => 'nullable|integer|min:0',
             'durasi_transit' => 'nullable|integer|min:0',
@@ -103,9 +120,13 @@ class ProdukPaketController extends Controller
             'is_active' => 'nullable|boolean',
         ]);
 
-        $validated['multiple_hotel_enabled'] = $request->boolean('multiple_hotel_enabled', false);
         $validated['include_tur'] = $request->boolean('include_tur', false);
         $validated['is_active'] = $request->boolean('is_active', true);
+
+        // Jika include_tur = false, set paket_tour_id menjadi null
+        if (!$validated['include_tur']) {
+            $validated['paket_tour_id'] = null;
+        }
 
         $produk = $this->service->update($id, $validated);
 
@@ -121,9 +142,6 @@ class ProdukPaketController extends Controller
             ->with('success', "Produk paket '{$nama}' berhasil dihapus!");
     }
 
-    /**
-     * Toggle status produk (Aktif/Nonaktif)
-     */
     public function toggleStatus($id)
     {
         try {
@@ -134,6 +152,29 @@ class ProdukPaketController extends Controller
         } catch (\Exception $e) {
             return redirect()->back()
                 ->with('error', 'Gagal mengubah status produk: ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * Update status keberangkatan produk
+     */
+    public function updateStatusKeberangkatan(Request $request, $id)
+    {
+        try {
+            $validated = $request->validate([
+                'status_keberangkatan_id' => 'nullable|exists:status_keberangkatans,id_status',
+            ]);
+
+            $produk = $this->service->getById($id);
+            $produk->update([
+                'status_keberangkatan_id' => $validated['status_keberangkatan_id']
+            ]);
+
+            return redirect()->back()
+                ->with('success', "Status keberangkatan produk '{$produk->nama_produk}' berhasil diperbarui!");
+        } catch (\Exception $e) {
+            return redirect()->back()
+                ->with('error', 'Gagal mengupdate status keberangkatan: ' . $e->getMessage());
         }
     }
 }
