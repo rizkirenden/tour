@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Master;
 
 use App\Http\Controllers\Controller;
 use App\Services\HotelService;
+use App\Models\Kamar;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
 
@@ -41,18 +42,21 @@ class HotelController extends Controller
             'lokasi' => 'nullable|string',
             'tipe_hotel' => 'nullable|string',
             'bintang' => 'nullable|integer|min:1|max:5',
-            'tipe_kamar' => 'nullable|string|max:50',
-            'harga_per_malam' => 'nullable|integer|min:0',
-            'kapasitas' => 'nullable|integer|min:1',
             'negara' => 'nullable|string|max:50',
-            'kota' => 'nullable|string|max:50',
+            'kota' => 'required|string|max:50',
             'fasilitas' => 'nullable|string',
+            'kamars' => 'required|array|min:1',
+            'kamars.*.tipe_kamar' => 'required|string|max:50',
+            'kamars.*.kapasitas' => 'required|integer|min:1',
+            'kamars.*.jumlah_kamar' => 'nullable|integer|min:1',
+            'kamars.*.harga_per_malam' => 'nullable|numeric|min:0',
+            'kamars.*.fasilitas_kamar' => 'nullable|string',
         ]);
 
         $hotel = $this->service->create($validated);
 
         return redirect()->route('master.hotel.index')
-            ->with('success', "Hotel '{$hotel->nama_hotel}' berhasil ditambahkan!");
+            ->with('success', "Hotel '{$hotel->nama_hotel}' berhasil ditambahkan dengan " . $hotel->kamars->count() . ' tipe kamar!');
     }
 
     public function show($id)
@@ -75,12 +79,16 @@ class HotelController extends Controller
             'lokasi' => 'nullable|string',
             'tipe_hotel' => 'nullable|string',
             'bintang' => 'nullable|integer|min:1|max:5',
-            'tipe_kamar' => 'nullable|string|max:50',
-            'harga_per_malam' => 'nullable|integer|min:0',
-            'kapasitas' => 'nullable|integer|min:1',
             'negara' => 'nullable|string|max:50',
-            'kota' => 'nullable|string|max:50',
+            'kota' => 'required|string|max:50',
             'fasilitas' => 'nullable|string',
+            'kamars' => 'array|min:1',
+            'kamars.*.id_kamar' => 'nullable|exists:kamars,id_kamar',
+            'kamars.*.tipe_kamar' => 'required|string|max:50',
+            'kamars.*.kapasitas' => 'required|integer|min:1',
+            'kamars.*.jumlah_kamar' => 'nullable|integer|min:1',
+            'kamars.*.harga_per_malam' => 'nullable|numeric|min:0',
+            'kamars.*.fasilitas_kamar' => 'nullable|string',
         ]);
 
         $hotel = $this->service->update($id, $validated);
@@ -95,5 +103,55 @@ class HotelController extends Controller
 
         return redirect()->route('master.hotel.index')
             ->with('success', "Hotel '{$nama}' berhasil dihapus!");
+    }
+
+    // Method untuk manage kamar
+    public function kamarIndex($hotelId)
+    {
+        $hotel = $this->service->getById($hotelId);
+        return view('hotels.kamar.index', compact('hotel'));
+    }
+
+    public function kamarStore(Request $request, $hotelId)
+    {
+        $validated = $request->validate([
+            'tipe_kamar' => 'required|string|max:50',
+            'kapasitas' => 'required|integer|min:1',
+            'jumlah_kamar' => 'required|integer|min:1',
+            'harga_per_malam' => 'nullable|numeric|min:0',
+            'fasilitas_kamar' => 'nullable|string',
+        ]);
+
+        $validated['id_hotel'] = $hotelId;
+        Kamar::create($validated);
+
+        return redirect()->route('master.hotel.kamar.index', $hotelId)
+            ->with('success', 'Kamar berhasil ditambahkan!');
+    }
+
+    public function kamarUpdate(Request $request, $hotelId, $kamarId)
+    {
+        $validated = $request->validate([
+            'tipe_kamar' => 'required|string|max:50',
+            'kapasitas' => 'required|integer|min:1',
+            'jumlah_kamar' => 'required|integer|min:1',
+            'harga_per_malam' => 'nullable|numeric|min:0',
+            'fasilitas_kamar' => 'nullable|string',
+        ]);
+
+        $kamar = Kamar::where('id_kamar', $kamarId)->where('id_hotel', $hotelId)->firstOrFail();
+        $kamar->update($validated);
+
+        return redirect()->route('master.hotel.kamar.index', $hotelId)
+            ->with('success', 'Kamar berhasil diperbarui!');
+    }
+
+    public function kamarDestroy($hotelId, $kamarId)
+    {
+        $kamar = Kamar::where('id_kamar', $kamarId)->where('id_hotel', $hotelId)->firstOrFail();
+        $kamar->delete();
+
+        return redirect()->route('master.hotel.kamar.index', $hotelId)
+            ->with('success', 'Kamar berhasil dihapus!');
     }
 }

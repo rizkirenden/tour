@@ -75,7 +75,6 @@ class PaketTourService
                         'id_paket_tour' => $paketTourId,
                         'id_hotel' => $hotel['id_hotel'],
                         'durasi_menginap' => $hotel['durasi_menginap'] ?? 1,
-                        'harga_hotel' => $hotel['harga_hotel'] ?? 0,
                         'urutan' => $hotel['urutan'] ?? 0,
                         'catatan' => $hotel['catatan'] ?? null,
                     ]);

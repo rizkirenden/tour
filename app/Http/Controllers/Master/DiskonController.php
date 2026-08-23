@@ -5,7 +5,6 @@ namespace App\Http\Controllers\Master;
 use App\Http\Controllers\Controller;
 use App\Services\DiskonService;
 use Illuminate\Http\Request;
-use Illuminate\Validation\Rule;
 
 class DiskonController extends Controller
 {
@@ -37,9 +36,8 @@ class DiskonController extends Controller
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'kode_diskon' => 'required|string|max:50|unique:diskons,kode_diskon',
             'nama_diskon' => 'required|string|max:100',
-            'persen_diskon' => 'required|numeric|min:0|max:100',
+            'nilai_diskon' => 'required|integer|min:0',
             'berlaku_untuk_produk' => 'nullable|string|max:100',
             'kuota' => 'nullable|integer|min:1',
             'sudah_digunakan' => 'nullable|integer|min:0',
@@ -69,9 +67,8 @@ class DiskonController extends Controller
     public function update(Request $request, $id)
     {
         $validated = $request->validate([
-            'kode_diskon' => ['required', 'string', 'max:50', Rule::unique('diskons', 'kode_diskon')->ignore($id, 'id_diskon')],
             'nama_diskon' => 'required|string|max:100',
-            'persen_diskon' => 'required|numeric|min:0|max:100',
+            'nilai_diskon' => 'required|integer|min:0',
             'berlaku_untuk_produk' => 'nullable|string|max:100',
             'kuota' => 'nullable|integer|min:1',
             'sudah_digunakan' => 'nullable|integer|min:0',

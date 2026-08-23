@@ -15,8 +15,7 @@ class DiskonService
         if (!empty($filters['search'])) {
             $search = $filters['search'];
             $query->where(function($q) use ($search) {
-                $q->where('kode_diskon', 'like', "%{$search}%")
-                  ->orWhere('nama_diskon', 'like', "%{$search}%")
+                $q->where('nama_diskon', 'like', "%{$search}%")
                   ->orWhere('berlaku_untuk_produk', 'like', "%{$search}%");
             });
         }
@@ -33,6 +32,7 @@ class DiskonService
     {
         return DB::transaction(function () use ($data) {
             $data['sudah_digunakan'] = $data['sudah_digunakan'] ?? 0;
+            $data['nilai_diskon'] = (int) ($data['nilai_diskon'] ?? 0);
             return Diskon::create($data);
         });
     }
@@ -42,6 +42,7 @@ class DiskonService
         return DB::transaction(function () use ($id, $data) {
             $diskon = $this->getById($id);
             $data['sudah_digunakan'] = $data['sudah_digunakan'] ?? 0;
+            $data['nilai_diskon'] = (int) ($data['nilai_diskon'] ?? 0);
             $diskon->update($data);
             return $diskon->fresh();
         });

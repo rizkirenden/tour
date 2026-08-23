@@ -37,7 +37,6 @@ class PaketTourController extends Controller
 
     public function store(Request $request)
     {
-        // Ubah validasi: id_hotel tidak required, tapi jika ada harus valid
         $validated = $request->validate([
             'kota_tujuan' => 'nullable|string|max:50',
             'negara' => 'nullable|string|max:50',
@@ -45,9 +44,8 @@ class PaketTourController extends Controller
             'deskripsi' => 'nullable|string',
             'harga_per_orang' => 'nullable|integer|min:0',
             'hotels' => 'nullable|array',
-            'hotels.*.id_hotel' => 'nullable|exists:hotels,id_hotel', // Ganti required jadi nullable
+            'hotels.*.id_hotel' => 'nullable|exists:hotels,id_hotel',
             'hotels.*.durasi_menginap' => 'nullable|integer|min:1',
-            'hotels.*.harga_hotel' => 'nullable|integer|min:0',
             'hotels.*.urutan' => 'nullable|integer|min:0',
             'hotels.*.catatan' => 'nullable|string',
         ]);
@@ -87,7 +85,6 @@ class PaketTourController extends Controller
 
     public function update(Request $request, $id)
     {
-        // Ubah validasi: id_hotel tidak required, tapi jika ada harus valid
         $validated = $request->validate([
             'kota_tujuan' => 'nullable|string|max:50',
             'negara' => 'nullable|string|max:50',
@@ -95,9 +92,8 @@ class PaketTourController extends Controller
             'deskripsi' => 'nullable|string',
             'harga_per_orang' => 'nullable|integer|min:0',
             'hotels' => 'nullable|array',
-            'hotels.*.id_hotel' => 'nullable|exists:hotels,id_hotel', // Ganti required jadi nullable
+            'hotels.*.id_hotel' => 'nullable|exists:hotels,id_hotel',
             'hotels.*.durasi_menginap' => 'nullable|integer|min:1',
-            'hotels.*.harga_hotel' => 'nullable|integer|min:0',
             'hotels.*.urutan' => 'nullable|integer|min:0',
             'hotels.*.catatan' => 'nullable|string',
         ]);

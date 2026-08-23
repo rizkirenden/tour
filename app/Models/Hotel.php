@@ -18,25 +18,24 @@ class Hotel extends Model
         'lokasi',
         'tipe_hotel',
         'bintang',
-        'tipe_kamar',
-        'harga_per_malam',
-        'kapasitas',
         'negara',
         'kota',
         'fasilitas',
     ];
 
-    protected $casts = [
-        'harga_per_malam' => 'integer',
-        'is_active' => 'boolean'
-    ];
+    // Relasi ke Kamar (One-to-Many)
+    public function kamars()
+    {
+        return $this->hasMany(Kamar::class, 'id_hotel');
+    }
 
+    // Relasi ke PaketHotel
     public function paketHotels()
     {
         return $this->hasMany(PaketHotel::class, 'id_hotel');
     }
 
-       // Relasi many-to-many dengan PaketTour
+    // Relasi many-to-many dengan PaketTour
     public function paketTours()
     {
         return $this->belongsToMany(PaketTour::class, 'hotel_paket_tour', 'id_hotel', 'id_paket_tour')
@@ -44,41 +43,28 @@ class Hotel extends Model
                     ->withTimestamps();
     }
 
-    public function hargaHotelPerBulans()
-    {
-        return $this->hasMany(HargaHotelPerBulan::class, 'hotel', 'nama_hotel');
-    }
-
-    public function kamars()
-    {
-        return $this->hasMany(Kamar::class, 'id_hotel');
-    }
-
+    // Accessor untuk nama hotel
     public function getNamaHotelAttribute($value)
     {
         return ucwords(strtolower($value));
     }
 
-    public function getHargaPerMalamFormattedAttribute()
-    {
-        return 'Rp ' . number_format($this->harga_per_malam, 0, ',', '.');
-    }
-
+    // Accessor untuk bintang label
     public function getBintangLabelAttribute()
     {
         return str_repeat('★', $this->bintang) . str_repeat('☆', 5 - $this->bintang);
     }
 
-    public function getIsActiveLabelAttribute()
+    // Accessor untuk bintang text (emoji)
+    public function getBintangTextAttribute()
     {
-        return $this->is_active ? 'Aktif' : 'Nonaktif';
+        if (empty($this->bintang) || $this->bintang == 0) {
+            return '-';
+        }
+        return str_repeat('⭐', (int)$this->bintang);
     }
 
-    public function scopeActive($query)
-    {
-        return $query->where('is_active', 1);
-    }
-
+    // Scope queries
     public function scopeByLokasi($query, $lokasi)
     {
         return $query->where('lokasi', $lokasi);
@@ -87,12 +73,5 @@ class Hotel extends Model
     public function scopeByBintang($query, $bintang)
     {
         return $query->where('bintang', $bintang);
-    }
-     public function getBintangTextAttribute()
-    {
-        if (empty($this->bintang) || $this->bintang == 0) {
-            return '-';
-        }
-        return str_repeat('⭐', (int)$this->bintang);
     }
 }

@@ -16,7 +16,9 @@ class Jamaah extends Model
         'id_keberangkatan',
         'id_keluarga',
         'hubungan_keluarga',
+        'is_kepala_keluarga',
         'produk_paket',
+        'id_diskon',
         'nama_lengkap',
         'telepon',
         'alamat',
@@ -36,18 +38,17 @@ class Jamaah extends Model
         'jenis_pendampingan',
         'agent',
         'fee_agent',
-        'harga_tiket_pergi',
-        'harga_tiket_pulang',
+        'harga_tiket_pergi_domestik',
+        'harga_tiket_pulang_domestik',
         'total_tiket_domestik',
+        'harga_tiket_pergi_international',
+        'harga_tiket_pulang_international',
+        'total_tiket_international',
         'hotel_mekkah',
         'hotel_madinah',
         'hotel_transit',
-        'tipe_kamar',
-        'selisih_hotel_mekkah',
-        'selisih_hotel_madinah',
-        'total_selisih_hotel',
         'total_tagihan_sebelum_diskon',
-        'persen_diskon',
+        'nilai_diskon', // Ganti persen_diskon
         'total_diskon',
         'total_tagihan_setelah_diskon',
         'total_dibayar',
@@ -60,84 +61,108 @@ class Jamaah extends Model
     protected $casts = [
         'tanggal_lahir' => 'date',
         'fee_agent' => 'integer',
-        'harga_tiket_pergi' => 'integer',
-        'harga_tiket_pulang' => 'integer',
+        'harga_tiket_pergi_domestik' => 'integer',
+        'harga_tiket_pulang_domestik' => 'integer',
         'total_tiket_domestik' => 'integer',
-        'selisih_hotel_mekkah' => 'integer',
-        'selisih_hotel_madinah' => 'integer',
-        'total_selisih_hotel' => 'integer',
+        'harga_tiket_pergi_international' => 'integer',
+        'harga_tiket_pulang_international' => 'integer',
+        'total_tiket_international' => 'integer',
         'total_tagihan_sebelum_diskon' => 'integer',
-        'persen_diskon' => 'decimal:2',
+        'nilai_diskon' => 'integer',
         'total_diskon' => 'integer',
         'total_tagihan_setelah_diskon' => 'integer',
         'total_dibayar' => 'integer',
-        'sisa_tagihan' => 'integer'
+        'sisa_tagihan' => 'integer',
+        'bulan_keberangkatan' => 'integer',
+        'tahun_keberangkatan' => 'integer',
+        'is_kepala_keluarga' => 'boolean',
     ];
-
-    public function departure()
-    {
-        return $this->belongsTo(Departure::class, 'id_keberangkatan', 'nama_keberangkatan');
-    }
 
     public function keluarga()
     {
-        return $this->belongsTo(Keluarga::class, 'id_keluarga');
+        return $this->belongsTo(Keluarga::class, 'id_keluarga', 'id_keluarga');
     }
 
-    public function produkPaket()
+    public function transaksis()
+    {
+        return $this->hasMany(TransaksiPembayaran::class, 'id_jamaah', 'id_jamaah');
+    }
+
+    public function produkPaketData()
     {
         return $this->belongsTo(ProdukPaket::class, 'produk_paket', 'nama_produk');
     }
 
-    public function hotelRequests()
+    public function diskon()
     {
-        return $this->hasMany(JamaahHotelRequest::class, 'jamaah', 'nama_lengkap');
+        return $this->belongsTo(Diskon::class, 'id_diskon', 'id_diskon');
     }
 
-    public function invoices()
+    public function getKepalaKeluargaLabelAttribute()
     {
-        return $this->hasMany(Invoice::class, 'jamaah', 'nama_lengkap');
+        return $this->is_kepala_keluarga ? 'Ya' : 'Tidak';
     }
 
-    public function transaksiPemasukan()
+    public function getStatusPembayaranBadgeAttribute()
     {
-        return $this->hasMany(TransaksiPemasukan::class, 'jamaah', 'nama_lengkap');
-    }
-
-    public function perlengkapanJamaahs()
-    {
-        return $this->hasMany(PerlengkapanJamaah::class, 'id_jamaah');
-    }
-
-    public function kamarJamaahs()
-    {
-        return $this->hasMany(KamarJamaah::class, 'id_jamaah');
-    }
-
-    public function getNamaLengkapAttribute($value)
-    {
-        return ucwords(strtolower($value));
-    }
-
-    public function getStatusPembayaranLabelAttribute()
-    {
-        $statuses = [
-            'Belum Bayar' => 'Belum Bayar',
-            'DP' => 'DP',
-            'Setoran' => 'Setoran',
-            'Lunas' => 'Lunas'
+        $colors = [
+            'Belum Bayar' => 'bg-red-100 text-red-700',
+            'DP' => 'bg-yellow-100 text-yellow-700',
+            'Setoran' => 'bg-blue-100 text-blue-700',
+            'Lunas' => 'bg-green-100 text-green-700'
         ];
-        return $statuses[$this->status_pembayaran] ?? $this->status_pembayaran;
+        $color = $colors[$this->status_pembayaran] ?? 'bg-gray-100 text-gray-700';
+        return '<span class="px-2 py-1 rounded-full text-xs font-medium ' . $color . '">' . $this->status_pembayaran . '</span>';
     }
 
     public function getJenisKelaminLabelAttribute()
     {
-        return $this->jenis_kelamin === 'L' ? 'Laki-laki' : 'Perempuan';
+        return $this->jenis_kelamin == 'L' ? 'Laki-laki' : ($this->jenis_kelamin == 'P' ? 'Perempuan' : '-');
     }
 
-    public function getTotalTagihanFormattedAttribute()
+    public function getTanggalLahirFormattedAttribute()
+    {
+        return $this->tanggal_lahir ? $this->tanggal_lahir->format('d/m/Y') : '-';
+    }
+
+    public function getFeeAgentFormattedAttribute()
+    {
+        return 'Rp ' . number_format($this->fee_agent, 0, ',', '.');
+    }
+
+    public function getTotalTiketDomestikFormattedAttribute()
+    {
+        return 'Rp ' . number_format($this->total_tiket_domestik, 0, ',', '.');
+    }
+
+    public function getTotalTiketInternationalFormattedAttribute()
+    {
+        return 'Rp ' . number_format($this->total_tiket_international, 0, ',', '.');
+    }
+
+    public function getTotalTagihanSebelumDiskonFormattedAttribute()
+    {
+        return 'Rp ' . number_format($this->total_tagihan_sebelum_diskon, 0, ',', '.');
+    }
+
+    public function getTotalDiskonFormattedAttribute()
+    {
+        return 'Rp ' . number_format($this->total_diskon, 0, ',', '.');
+    }
+
+    public function getNilaiDiskonFormattedAttribute()
+    {
+        return 'Rp ' . number_format($this->nilai_diskon, 0, ',', '.');
+    }
+
+    public function getTotalTagihanSetelahDiskonFormattedAttribute()
     {
         return 'Rp ' . number_format($this->total_tagihan_setelah_diskon, 0, ',', '.');
+    }
+
+    public function getTotalDibayarFormattedAttribute()
+    {
+        return 'Rp ' . number_format($this->total_dibayar, 0, ',', '.');
     }
 
     public function getSisaTagihanFormattedAttribute()
@@ -145,8 +170,46 @@ class Jamaah extends Model
         return 'Rp ' . number_format($this->sisa_tagihan, 0, ',', '.');
     }
 
-    public function setNamaLengkapAttribute($value)
+    public function getFotoKtpUrlAttribute()
     {
-        $this->attributes['nama_lengkap'] = ucwords(strtolower($value));
+        return $this->foto_ktp ? asset('storage/' . $this->foto_ktp) : null;
+    }
+
+    public function getFotoVaksinUrlAttribute()
+    {
+        return $this->foto_vaksin ? asset('storage/' . $this->foto_vaksin) : null;
+    }
+
+    public function getFotoVisaUrlAttribute()
+    {
+        return $this->foto_visa ? asset('storage/' . $this->foto_visa) : null;
+    }
+
+    public function getDiskonNamaAttribute()
+    {
+        return $this->diskon ? $this->diskon->nama_diskon : '-';
+    }
+
+    public function getDiskonValueAttribute()
+    {
+        return $this->diskon ? $this->diskon->nilai_diskon : 0;
+    }
+
+    public function scopeFilter($query, array $filters)
+    {
+        $query->when($filters['search'] ?? null, function ($query, $search) {
+            $query->where('nama_lengkap', 'like', '%' . $search . '%')
+                ->orWhere('nomor_paspor', 'like', '%' . $search . '%')
+                ->orWhere('id_keberangkatan', 'like', '%' . $search . '%')
+                ->orWhere('produk_paket', 'like', '%' . $search . '%');
+        });
+
+        $query->when($filters['status_pembayaran'] ?? null, function ($query, $status) {
+            $query->where('status_pembayaran', $status);
+        });
+
+        $query->when($filters['jenis_kelamin'] ?? null, function ($query, $gender) {
+            $query->where('jenis_kelamin', $gender);
+        });
     }
 }

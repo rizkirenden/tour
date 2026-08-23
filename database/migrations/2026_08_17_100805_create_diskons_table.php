@@ -10,9 +10,8 @@ return new class extends Migration
     {
         Schema::create('diskons', function (Blueprint $table) {
             $table->id('id_diskon');
-            $table->string('kode_diskon', 50)->unique();
             $table->string('nama_diskon', 100);
-            $table->decimal('persen_diskon', 5, 2);
+            $table->integer('nilai_diskon')->default(0)->comment('Nilai diskon dalam Rupiah');
             $table->string('berlaku_untuk_produk', 100)->nullable();
             $table->integer('kuota')->nullable();
             $table->integer('sudah_digunakan')->default(0);

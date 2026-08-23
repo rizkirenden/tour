@@ -9,7 +9,7 @@
                 <th class="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Lokasi</th>
                 <th class="px-4 py-3 text-center text-xs font-semibold text-gray-500 uppercase tracking-wider">Bintang
                 </th>
-                <th class="px-4 py-3 text-right text-xs font-semibold text-gray-500 uppercase tracking-wider">Harga/Malam
+                <th class="px-4 py-3 text-center text-xs font-semibold text-gray-500 uppercase tracking-wider">Tipe Kamar
                 </th>
                 <th class="px-4 py-3 text-center text-xs font-semibold text-gray-500 uppercase tracking-wider">Aksi</th>
             </tr>
@@ -36,8 +36,27 @@
                     <td class="px-4 py-3 text-center">
                         <span class="text-sm text-gray-600">{{ $item->bintang_text }}</span>
                     </td>
-                    <td class="px-4 py-3 text-right font-medium text-gray-800">
-                        {{ $item->harga_per_malam_formatted }}
+                    <td class="px-4 py-3 text-center">
+                        @if ($item->kamars->isNotEmpty())
+                            <div class="flex flex-col items-center">
+                                <span
+                                    class="inline-flex items-center px-2.5 py-1 bg-blue-100 text-blue-700 rounded-lg text-xs font-medium">
+                                    <i class="fas fa-door-open mr-1 text-xs"></i>
+                                    {{ $item->kamars->count() }} Tipe
+                                </span>
+                                <div class="text-xs text-gray-400 mt-1">
+                                    @php
+                                        $kamars = $item->kamars->take(2);
+                                    @endphp
+                                    {{ $kamars->pluck('tipe_kamar')->implode(', ') }}
+                                    @if ($item->kamars->count() > 2)
+                                        +{{ $item->kamars->count() - 2 }} lainnya
+                                    @endif
+                                </div>
+                            </div>
+                        @else
+                            <span class="text-xs text-gray-400">-</span>
+                        @endif
                     </td>
                     <td class="px-4 py-3">
                         <div class="flex items-center justify-center gap-1.5">
@@ -85,7 +104,7 @@
 @push('scripts')
     <script>
         function confirmDelete(id) {
-            if (confirm('Yakin ingin menghapus hotel ini?')) {
+            if (confirm('Yakin ingin menghapus hotel ini? Semua data kamar terkait juga akan dihapus.')) {
                 document.getElementById('delete-form-' + id).submit();
             }
         }

@@ -19,16 +19,21 @@
         <div class="px-6 py-4 border-b border-gray-200 flex flex-wrap items-center justify-between gap-3">
             <div>
                 <h5 class="text-sm font-semibold text-gray-700">Daftar Paket Tour</h5>
-                <p class="text-xs text-gray-400 mt-0.5">Kelola paket tour untuk setiap produk</p>
+                <p class="text-xs text-gray-400 mt-0.5">Kelola semua paket tour</p>
             </div>
-            <a href="{{ route('master.paket-tour.create') }}"
-                class="inline-flex items-center px-4 py-2 bg-yellow-500 text-white rounded-lg hover:bg-yellow-600 transition text-sm font-medium shadow-sm hover:shadow">
-                <i class="fas fa-plus mr-2"></i> Tambah Paket Tour
-            </a>
+            <div class="flex items-center gap-3">
+                <span class="text-xs text-gray-500">
+                    Total: <span class="font-medium text-gray-700">{{ $data->total() }}</span> paket
+                </span>
+                <a href="{{ route('master.paket-tour.create') }}"
+                    class="inline-flex items-center px-4 py-2 bg-yellow-500 text-white rounded-lg hover:bg-yellow-600 transition text-sm font-medium shadow-sm hover:shadow">
+                    <i class="fas fa-plus mr-2"></i> Tambah Paket Tour
+                </a>
+            </div>
         </div>
 
         <div class="p-6">
-            <div class="flex flex-wrap gap-3 mb-4">
+            <div class="flex gap-3 mb-4">
                 <div class="relative flex-1 max-w-xs">
                     <i class="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm"></i>
                     <input type="text" id="search" placeholder="Cari paket tour..."
@@ -55,19 +60,13 @@
     <script>
         function applyFilter() {
             const search = document.getElementById('search').value;
-            const produkId = document.getElementById('filter_produk').value;
-            let url = `{{ route('master.paket-tour.index') }}?ajax=true`;
-            if (search) url += `&search=${search}`;
-            if (produkId) url += `&produk_id=${produkId}`;
-
-            fetch(url)
+            fetch(`{{ route('master.paket-tour.index') }}?search=${search}&ajax=true`)
                 .then(response => response.text())
                 .then(html => document.getElementById('table-container').innerHTML = html);
         }
 
         function resetFilter() {
             document.getElementById('search').value = '';
-            document.getElementById('filter_produk').value = '';
             applyFilter();
         }
 
@@ -75,10 +74,6 @@
         document.getElementById('search').addEventListener('keyup', function() {
             clearTimeout(timeout);
             timeout = setTimeout(applyFilter, 400);
-        });
-
-        document.getElementById('filter_produk').addEventListener('change', function() {
-            applyFilter();
         });
     </script>
 @endpush

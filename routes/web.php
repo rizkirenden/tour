@@ -14,6 +14,8 @@ use App\Http\Controllers\Master\DiskonController;
 use App\Http\Controllers\Master\PerlengkapanController;
 use App\Http\Controllers\Master\PaketHotelController;
 use App\Http\Controllers\Master\PaketTourController;
+use App\Http\Controllers\Transaksional\JamaahController;
+use App\Http\Controllers\Transaksional\KeluargaController;
 
 Route::get('/', [DashboardController::class, 'index'])->name('dashboard');
 
@@ -27,6 +29,13 @@ Route::prefix('master')->name('master.')->group(function () {
     Route::patch('metode-pembayaran/{id}/toggle-status', [MetodePembayaranController::class, 'toggleStatus'])->name('metode-pembayaran.toggle-status');
 
     Route::resource('hotel', HotelController::class);
+      // Routes untuk manage kamar
+    Route::prefix('hotel/{hotelId}/kamar')->name('hotel.kamar.')->group(function() {
+        Route::get('/', [HotelController::class, 'kamarIndex'])->name('index');
+        Route::post('/', [HotelController::class, 'kamarStore'])->name('store');
+        Route::put('/{kamarId}', [HotelController::class, 'kamarUpdate'])->name('update');
+        Route::delete('/{kamarId}', [HotelController::class, 'kamarDestroy'])->name('destroy');
+    });
     Route::resource('kategori-pengeluaran', KategoriPengeluaranController::class);
     Route::resource('status-keberangkatan', StatusKeberangkatanController::class);
     Route::resource('jenis-transaksi', JenisTransaksiController::class);
@@ -36,4 +45,17 @@ Route::prefix('master')->name('master.')->group(function () {
     Route::resource('perlengkapan', PerlengkapanController::class);
     Route::resource('paket-hotel', PaketHotelController::class);
     Route::resource('paket-tour', PaketTourController::class);
+});
+
+// Transaksional Routes
+Route::prefix('transaksional')->name('transaksional.')->group(function () {
+    Route::resource('keluarga', KeluargaController::class);
+    Route::get('keluarga/{id}/pembayaran', [KeluargaController::class, 'pembayaran'])->name('keluarga.pembayaran');
+    Route::post('keluarga/{id}/bayar', [KeluargaController::class, 'bayar'])->name('keluarga.bayar');
+
+    Route::resource('jamaah', JamaahController::class);
+    Route::get('jamaah/{id}/pembayaran', [JamaahController::class, 'pembayaran'])->name('jamaah.pembayaran');
+    Route::post('jamaah/{id}/bayar', [JamaahController::class, 'bayar'])->name('jamaah.bayar');
+    Route::delete('jamaah/bukti/{id}', [JamaahController::class, 'hapusBukti'])->name('jamaah.hapus-bukti');
+    Route::delete('jamaah/transaksi/{id}', [JamaahController::class, 'hapusTransaksi'])->name('jamaah.hapus-transaksi');
 });

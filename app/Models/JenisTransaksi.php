@@ -15,11 +15,36 @@ class JenisTransaksi extends Model
     protected $fillable = [
         'kode',
         'nama',
-        'keterangan'
+        'keterangan',
+        'is_active',
     ];
 
-    public function transaksiPemasukans()
+    protected $casts = [
+        'is_active' => 'boolean',
+    ];
+
+    public function transaksis()
     {
-        return $this->hasMany(TransaksiPemasukan::class, 'jenis_transaksi', 'nama');
+        return $this->hasMany(TransaksiPembayaran::class, 'id_jenis_transaksi', 'id_jenis');
+    }
+
+    public function detailHargaProduk()
+    {
+        return $this->hasMany(DetailHargaProduk::class, 'id_jenis_transaksi', 'id_jenis');
+    }
+
+    public function getKodeNamaAttribute()
+    {
+        return $this->kode . ' - ' . $this->nama;
+    }
+
+    public function scopeActive($query)
+    {
+        return $query->where('is_active', true);
+    }
+
+    public function getKodeNamaKeteranganAttribute()
+    {
+        return $this->kode . ' - ' . $this->nama . ' (' . $this->keterangan . ')';
     }
 }

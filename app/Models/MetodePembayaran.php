@@ -17,15 +17,25 @@ class MetodePembayaran extends Model
         'nama_bank',
         'nomor_rekening',
         'atas_nama',
-        'is_active'
+        'is_active',
     ];
 
     protected $casts = [
-        'is_active' => 'boolean'
+        'is_active' => 'boolean',
     ];
 
-    public function transaksiPemasukans()
+    public function transaksis()
     {
-        return $this->hasMany(TransaksiPemasukan::class, 'metode_pembayaran', 'nama_bank');
+        return $this->hasMany(TransaksiPembayaran::class, 'id_metode_pembayaran', 'id_metode');
+    }
+
+    public function getNamaLengkapAttribute()
+    {
+        return $this->kode_bank . ' - ' . $this->nama_bank;
+    }
+
+    public function scopeActive($query)
+    {
+        return $query->where('is_active', 1);
     }
 }

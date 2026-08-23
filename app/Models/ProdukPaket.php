@@ -16,20 +16,14 @@ class ProdukPaket extends Model
         'kode_produk',
         'nama_produk',
         'deskripsi',
-        'harga_dasar',
-        'hotel_mekkah_default',
-        'hotel_madinah_default',
-        'hotel_transit_default',
         'include_tur',
         'paket_tour_id',
-        'status_keberangkatan_id',
+        'harga_dasar',
+        'durasi_perjalanan',
         'durasi_mekkah',
         'durasi_madinah',
-        'durasi_transit',
         'durasi_hari',
-        'harga_visa',
-        'harga_handling',
-        'harga_muthowwif',
+        'flyer',
         'kategori',
         'is_active',
     ];
@@ -37,27 +31,8 @@ class ProdukPaket extends Model
     protected $casts = [
         'include_tur' => 'boolean',
         'is_active' => 'boolean',
-        'harga_dasar' => 'integer',
-        'harga_visa' => 'integer',
-        'harga_handling' => 'integer',
-        'harga_muthowwif' => 'integer'
+        'harga_dasar' => 'integer', // Cast ke integer
     ];
-
-    // Relasi ke Hotel
-    public function hotelMekkah()
-    {
-        return $this->belongsTo(Hotel::class, 'hotel_mekkah_default', 'id_hotel');
-    }
-
-    public function hotelMadinah()
-    {
-        return $this->belongsTo(Hotel::class, 'hotel_madinah_default', 'id_hotel');
-    }
-
-    public function hotelTransit()
-    {
-        return $this->belongsTo(Hotel::class, 'hotel_transit_default', 'id_hotel');
-    }
 
     // Relasi ke Paket Tour
     public function paketTour()
@@ -65,120 +40,42 @@ class ProdukPaket extends Model
         return $this->belongsTo(PaketTour::class, 'paket_tour_id', 'id_paket_tour');
     }
 
-    // Relasi ke Status Keberangkatan
-    public function statusKeberangkatan()
+    // Accessor untuk URL flyer
+    public function getFlyerUrlAttribute()
     {
-        return $this->belongsTo(StatusKeberangkatan::class, 'status_keberangkatan_id', 'id_status');
+        if ($this->flyer) {
+            return asset('storage/' . $this->flyer);
+        }
+        return null;
     }
 
-    // Relasi many-to-many dengan Perlengkapan melalui pivot
-    public function perlengkapans()
-    {
-        return $this->belongsToMany(Perlengkapan::class, 'paket_produk_perlengkapan', 'id_produk', 'id_perlengkapan')
-                    ->withPivot('kuantitas', 'catatan')
-                    ->withTimestamps()
-                    ->orderBy('paket_produk_perlengkapan.created_at');
-    }
-
-    // Relasi langsung ke pivot (untuk akses langsung)
-    public function paketProdukPerlengkapans()
-    {
-        return $this->hasMany(PaketProdukPerlengkapan::class, 'id_produk', 'id_produk');
-    }
-
-    public function paketPerlengkapans()
-    {
-        return $this->hasMany(PaketPerlengkapan::class, 'id_produk');
-    }
-
-    public function paketHotels()
-    {
-        return $this->hasMany(PaketHotel::class, 'id_produk');
-    }
-
-    public function departures()
-    {
-        return $this->hasMany(Departure::class, 'produk_paket', 'nama_produk');
-    }
-
-    public function jamaahs()
-    {
-        return $this->hasMany(Jamaah::class, 'produk_paket', 'nama_produk');
-    }
-
-    // Accessor untuk harga
+    // Accessor untuk harga dasar formatted
     public function getHargaDasarFormattedAttribute()
     {
         return 'Rp ' . number_format($this->harga_dasar, 0, ',', '.');
     }
 
-    public function getHargaVisaFormattedAttribute()
-    {
-        return 'Rp ' . number_format($this->harga_visa ?? 0, 0, ',', '.');
-    }
-
-    public function getHargaHandlingFormattedAttribute()
-    {
-        return 'Rp ' . number_format($this->harga_handling ?? 0, 0, ',', '.');
-    }
-
-    public function getHargaMuthowwifFormattedAttribute()
-    {
-        return 'Rp ' . number_format($this->harga_muthowwif ?? 0, 0, ',', '.');
-    }
-
-    public function getTotalHargaPerOrangAttribute()
-    {
-        return $this->harga_dasar + ($this->harga_visa ?? 0) + ($this->harga_handling ?? 0) + ($this->harga_muthowwif ?? 0);
-    }
-
-    public function getTotalHargaPerOrangFormattedAttribute()
-    {
-        return 'Rp ' . number_format($this->total_harga_per_orang, 0, ',', '.');
-    }
-
-    // Accessor untuk total harga perlengkapan
-    public function getTotalHargaPerlengkapanAttribute()
+    // Method untuk menghitung total durasi
+    public function calculateTotalDurasi()
     {
         $total = 0;
-        foreach ($this->perlengkapans as $item) {
-            $total += ($item->pivot->kuantitas ?? 1) * ($item->harga_satuan ?? 0);
+
+        if ($this->durasi_perjalanan) {
+            $total += $this->durasi_perjalanan;
         }
-        return $total;
+        $total += $this->durasi_mekkah ?? 0;
+        $total += $this->durasi_madinah ?? 0;
+
+        return (int) $total;
     }
 
-    public function getTotalHargaPerlengkapanFormattedAttribute()
+    // Accessor untuk durasi perjalanan
+    public function getDurasiPerjalananFormattedAttribute()
     {
-        return 'Rp ' . number_format($this->total_harga_perlengkapan, 0, ',', '.');
-    }
-
-    // Accessor untuk menampilkan nama hotel
-    public function getHotelMekkahNamaAttribute()
-    {
-        return $this->hotelMekkah ? $this->hotelMekkah->nama_hotel : '-';
-    }
-
-    public function getHotelMadinahNamaAttribute()
-    {
-        return $this->hotelMadinah ? $this->hotelMadinah->nama_hotel : '-';
-    }
-
-    public function getHotelTransitNamaAttribute()
-    {
-        return $this->hotelTransit ? $this->hotelTransit->nama_hotel : '-';
-    }
-
-    public function getTotalHargaPaketTourHotelAttribute()
-    {
-        if ($this->paketTour) {
-            return $this->paketTour->total_harga_hotel;
+        if ($this->durasi_perjalanan) {
+            return $this->durasi_perjalanan . ' Hari';
         }
-        return 0;
-    }
-
-    public function getTotalHargaPaketTourHotelFormattedAttribute()
-    {
-        return 'Rp ' . number_format($this->total_harga_paket_tour_hotel, 0, ',', '.');
+        return '-';
     }
 
     // Accessor status

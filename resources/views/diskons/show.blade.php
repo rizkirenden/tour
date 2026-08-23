@@ -43,20 +43,14 @@
                     class="bg-gradient-to-r from-yellow-50 to-yellow-100/50 rounded-xl p-6 mb-6 border border-yellow-200/50">
                     <div class="flex flex-wrap items-start justify-between gap-4">
                         <div>
-                            <div class="flex items-center gap-3 flex-wrap">
-                                <h2 class="text-2xl font-bold text-gray-800">{{ $diskon->nama_diskon }}</h2>
-                                <span
-                                    class="inline-flex px-3 py-1 bg-yellow-100 text-yellow-700 rounded-lg text-xs font-mono font-semibold">
-                                    {{ $diskon->kode_diskon }}
-                                </span>
-                            </div>
+                            <h2 class="text-2xl font-bold text-gray-800">{{ $diskon->nama_diskon }}</h2>
                             <p class="text-gray-500 text-sm mt-1">
                                 <i class="fas fa-tag mr-1"></i> {{ $diskon->berlaku_untuk_produk ?? 'Semua Produk' }}
                             </p>
                         </div>
                         <div class="text-right">
-                            <p class="text-3xl font-bold text-yellow-600">{{ $diskon->persen_diskon_formatted }}</p>
-                            <p class="text-sm text-gray-500">Diskon</p>
+                            <p class="text-3xl font-bold text-yellow-600">{{ $diskon->nilai_diskon_formatted }}</p>
+                            <p class="text-sm text-gray-500">Nilai Diskon</p>
                         </div>
                     </div>
                 </div>
@@ -68,16 +62,12 @@
                         </h6>
                         <dl class="space-y-3">
                             <div class="flex justify-between text-sm">
-                                <dt class="text-gray-500">Kode Diskon</dt>
-                                <dd class="font-medium text-gray-700">{{ $diskon->kode_diskon }}</dd>
-                            </div>
-                            <div class="flex justify-between text-sm">
                                 <dt class="text-gray-500">Nama Diskon</dt>
                                 <dd class="font-medium text-gray-700">{{ $diskon->nama_diskon }}</dd>
                             </div>
                             <div class="flex justify-between text-sm">
-                                <dt class="text-gray-500">Persen Diskon</dt>
-                                <dd class="font-medium text-yellow-600">{{ $diskon->persen_diskon_formatted }}</dd>
+                                <dt class="text-gray-500">Nilai Diskon</dt>
+                                <dd class="font-medium text-yellow-600">{{ $diskon->nilai_diskon_formatted }}</dd>
                             </div>
                             <div class="flex justify-between text-sm">
                                 <dt class="text-gray-500">Berlaku Untuk</dt>

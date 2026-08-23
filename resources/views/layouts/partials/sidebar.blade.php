@@ -14,6 +14,7 @@
     <!-- Menu -->
     <nav class="px-3 py-4">
         <ul class="space-y-1">
+            <!-- Dashboard -->
             <li>
                 <a href="{{ route('dashboard') }}"
                     class="flex items-center px-3 py-2.5 rounded-lg transition-all duration-200 {{ request()->routeIs('dashboard') ? 'bg-yellow-500/50 text-white' : 'text-yellow-100 hover:bg-yellow-500/30 hover:text-white' }}">
@@ -22,6 +23,7 @@
                 </a>
             </li>
 
+            <!-- Master Data -->
             <li x-data="{ open: {{ request()->routeIs('master.*') ? 'true' : 'false' }} }">
                 <a @click="open = !open"
                     class="flex items-center justify-between px-3 py-2.5 rounded-lg cursor-pointer transition-all duration-200 {{ request()->routeIs('master.*') ? 'bg-yellow-500/50 text-white' : 'text-yellow-100 hover:bg-yellow-500/30 hover:text-white' }}">
@@ -103,15 +105,6 @@
                             <span class="ml-3">Perlengkapan</span>
                         </a>
                     </li>
-                    {{-- 
-                    <li>
-                        <a href="{{ route('master.paket-hotel.index') }}"
-                            class="flex items-center px-3 py-2 rounded-lg text-sm transition-all duration-200 {{ request()->routeIs('master.paket-hotel.*') ? 'bg-yellow-500/50 text-white' : 'text-yellow-200 hover:bg-yellow-500/30 hover:text-white' }}">
-                            <i class="fas fa-bed w-5 text-center text-xs"></i>
-                            <span class="ml-3">Paket Hotel</span>
-                        </a>
-                    </li>
-                    --}}
                     <li>
                         <a href="{{ route('master.paket-tour.index') }}"
                             class="flex items-center px-3 py-2 rounded-lg text-sm transition-all duration-200 {{ request()->routeIs('master.paket-tour.*') ? 'bg-yellow-500/50 text-white' : 'text-yellow-200 hover:bg-yellow-500/30 hover:text-white' }}">
@@ -122,6 +115,7 @@
                 </ul>
             </li>
 
+            <!-- Keberangkatan -->
             <li>
                 <a href="#"
                     class="flex items-center px-3 py-2.5 rounded-lg transition-all duration-200 text-yellow-100 hover:bg-yellow-500/30 hover:text-white">
@@ -130,42 +124,35 @@
                 </a>
             </li>
 
-            <li>
-                <a href="#"
-                    class="flex items-center px-3 py-2.5 rounded-lg transition-all duration-200 text-yellow-100 hover:bg-yellow-500/30 hover:text-white">
-                    <i class="fas fa-users w-5 text-center text-sm"></i>
-                    <span class="ml-3 text-sm font-medium">Jamaah</span>
-                </a>
-            </li>
-
-            <li x-data="{ open: false }">
+            <li x-data="{ open: {{ request()->routeIs('transaksional.*') ? 'true' : 'false' }} }">
                 <a @click="open = !open"
-                    class="flex items-center justify-between px-3 py-2.5 rounded-lg cursor-pointer transition-all duration-200 text-yellow-100 hover:bg-yellow-500/30 hover:text-white">
+                    class="flex items-center justify-between px-3 py-2.5 rounded-lg cursor-pointer transition-all duration-200 {{ request()->routeIs('transaksional.*') ? 'bg-yellow-500/50 text-white' : 'text-yellow-100 hover:bg-yellow-500/30 hover:text-white' }}">
                     <div class="flex items-center">
-                        <i class="fas fa-money-bill-wave w-5 text-center text-sm"></i>
-                        <span class="ml-3 text-sm font-medium">Transaksi</span>
+                        <i class="fas fa-exchange-alt w-5 text-center text-sm"></i>
+                        <span class="ml-3 text-sm font-medium">Transaksional</span>
                     </div>
                     <i class="fas fa-chevron-down text-xs transition-transform duration-200"
                         :class="open ? 'rotate-180' : ''"></i>
                 </a>
                 <ul x-show="open" class="ml-4 mt-1 space-y-1">
                     <li>
-                        <a href="#"
-                            class="flex items-center px-3 py-2 rounded-lg text-sm transition-all duration-200 text-yellow-200 hover:bg-yellow-500/30 hover:text-white">
-                            <i class="fas fa-arrow-down w-5 text-center text-xs"></i>
-                            <span class="ml-3">Pemasukan</span>
+                        <a href="{{ route('transaksional.keluarga.index') }}"
+                            class="flex items-center px-3 py-2 rounded-lg text-sm transition-all duration-200 {{ request()->routeIs('transaksional.keluarga.*') ? 'bg-yellow-500/50 text-white' : 'text-yellow-200 hover:bg-yellow-500/30 hover:text-white' }}">
+                            <i class="fas fa-users w-5 text-center text-xs"></i>
+                            <span class="ml-3">Keluarga</span>
                         </a>
                     </li>
                     <li>
-                        <a href="#"
-                            class="flex items-center px-3 py-2 rounded-lg text-sm transition-all duration-200 text-yellow-200 hover:bg-yellow-500/30 hover:text-white">
-                            <i class="fas fa-arrow-up w-5 text-center text-xs"></i>
-                            <span class="ml-3">Pengeluaran</span>
+                        <a href="{{ route('transaksional.jamaah.index') }}"
+                            class="flex items-center px-3 py-2 rounded-lg text-sm transition-all duration-200 {{ request()->routeIs('transaksional.jamaah.*') ? 'bg-yellow-500/50 text-white' : 'text-yellow-200 hover:bg-yellow-500/30 hover:text-white' }}">
+                            <i class="fas fa-user w-5 text-center text-xs"></i>
+                            <span class="ml-3">Jamaah</span>
                         </a>
                     </li>
                 </ul>
             </li>
 
+            <!-- Invoice -->
             <li>
                 <a href="#"
                     class="flex items-center px-3 py-2.5 rounded-lg transition-all duration-200 text-yellow-100 hover:bg-yellow-500/30 hover:text-white">
@@ -174,6 +161,7 @@
                 </a>
             </li>
 
+            <!-- Audit Log -->
             <li>
                 <a href="#"
                     class="flex items-center px-3 py-2.5 rounded-lg transition-all duration-200 text-yellow-100 hover:bg-yellow-500/30 hover:text-white">
@@ -182,6 +170,7 @@
                 </a>
             </li>
 
+            <!-- Laporan -->
             <li x-data="{ open: false }">
                 <a @click="open = !open"
                     class="flex items-center justify-between px-3 py-2.5 rounded-lg cursor-pointer transition-all duration-200 text-yellow-100 hover:bg-yellow-500/30 hover:text-white">

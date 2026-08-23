@@ -37,46 +37,37 @@
                 @method('PUT')
 
                 <div class="p-6 space-y-6">
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1.5">
-                                Kode Diskon <span class="text-red-500">*</span>
-                            </label>
-                            <input type="text" name="kode_diskon" value="{{ old('kode_diskon', $diskon->kode_diskon) }}"
-                                class="w-full px-4 py-2 border border-gray-200 rounded-xl focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500 text-sm uppercase"
-                                placeholder="Contoh: DISC-001" required>
-                            @error('kode_diskon')
-                                <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
-                            @enderror
-                        </div>
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1.5">
-                                Nama Diskon <span class="text-red-500">*</span>
-                            </label>
-                            <input type="text" name="nama_diskon" value="{{ old('nama_diskon', $diskon->nama_diskon) }}"
-                                class="w-full px-4 py-2 border border-gray-200 rounded-xl focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500 text-sm"
-                                placeholder="Contoh: Promo Ramadhan" required>
-                            @error('nama_diskon')
-                                <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
-                            @enderror
-                        </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1.5">
+                            Nama Diskon <span class="text-red-500">*</span>
+                        </label>
+                        <input type="text" name="nama_diskon" value="{{ old('nama_diskon', $diskon->nama_diskon) }}"
+                            class="w-full px-4 py-2 border border-gray-200 rounded-xl focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500 text-sm"
+                            placeholder="Contoh: Promo Ramadhan" required>
+                        @error('nama_diskon')
+                            <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+                        @enderror
                     </div>
 
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-1.5">
-                                Persen Diskon <span class="text-red-500">*</span>
+                                Nilai Diskon <span class="text-red-500">*</span>
                             </label>
                             <div class="relative">
-                                <input type="number" name="persen_diskon"
-                                    value="{{ old('persen_diskon', $diskon->persen_diskon) }}"
-                                    class="w-full px-4 py-2 border border-gray-200 rounded-xl focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500 text-sm"
-                                    placeholder="10" min="0" max="100" step="0.01" required>
-                                <span class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm">%</span>
+                                <span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm">Rp</span>
+                                <input type="number" name="nilai_diskon"
+                                    value="{{ old('nilai_diskon', $diskon->nilai_diskon) }}"
+                                    class="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-xl focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500 text-sm"
+                                    placeholder="2000000" min="0" required>
                             </div>
-                            @error('persen_diskon')
+                            @error('nilai_diskon')
                                 <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
                             @enderror
+                            <p class="text-xs text-gray-400 mt-1">
+                                <i class="fas fa-info-circle mr-1"></i>
+                                Masukkan nilai diskon dalam Rupiah (contoh: 2000000 untuk Rp 2.000.000)
+                            </p>
                         </div>
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-1.5">Berlaku Untuk Produk</label>

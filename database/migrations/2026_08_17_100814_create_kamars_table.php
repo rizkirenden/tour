@@ -10,27 +10,13 @@ return new class extends Migration
     {
         Schema::create('kamars', function (Blueprint $table) {
             $table->id('id_kamar');
-            $table->unsignedBigInteger('id_departure');
-            $table->unsignedBigInteger('id_hotel');
-            $table->string('lokasi', 50)->nullable();
-            $table->string('nomor_kamar', 20)->nullable();
-            $table->string('tipe_kamar', 20)->nullable();
-            $table->integer('kapasitas')->default(4);
-            $table->bigInteger('harga_per_malam')->default(0);
-            $table->integer('total_malam')->default(0);
-            $table->bigInteger('total_biaya')->default(0);
-            $table->text('keterangan')->nullable();
+            $table->foreignId('id_hotel')->constrained('hotels', 'id_hotel')->onDelete('cascade');
+            $table->string('tipe_kamar', 50);
+            $table->integer('kapasitas');
+            $table->integer('jumlah_kamar')->default(1);
+            $table->decimal('harga_per_malam', 15, 2)->nullable();
+            $table->text('fasilitas_kamar')->nullable();
             $table->timestamps();
-
-            $table->foreign('id_departure')
-                  ->references('id_departure')
-                  ->on('departures')
-                  ->onDelete('cascade');
-
-            $table->foreign('id_hotel')
-                  ->references('id_hotel')
-                  ->on('hotels')
-                  ->onDelete('cascade');
         });
     }
 

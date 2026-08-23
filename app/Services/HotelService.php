@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Models\Hotel;
+use App\Models\Kamar;
 use Illuminate\Support\Facades\DB;
 
 class HotelService
@@ -21,18 +22,31 @@ class HotelService
             });
         }
 
-        return $query->orderBy('nama_hotel', 'asc')->paginate(10);
+        return $query->with('kamars')->orderBy('nama_hotel', 'asc')->paginate(10);
     }
 
     public function getById($id)
     {
-        return Hotel::findOrFail($id);
+        return Hotel::with('kamars')->findOrFail($id);
     }
 
     public function create(array $data)
     {
         return DB::transaction(function () use ($data) {
-            return Hotel::create($data);
+            // Pisahkan data kamar dari data hotel
+            $kamarData = $data['kamars'] ?? [];
+            unset($data['kamars']);
+
+            // Buat hotel
+            $hotel = Hotel::create($data);
+
+            // Buat kamar-kamar
+            foreach ($kamarData as $kamar) {
+                $kamar['id_hotel'] = $hotel->id_hotel;
+                Kamar::create($kamar);
+            }
+
+            return $hotel->load('kamars');
         });
     }
 
@@ -40,8 +54,41 @@ class HotelService
     {
         return DB::transaction(function () use ($id, $data) {
             $hotel = $this->getById($id);
+
+            // Pisahkan data kamar
+            $kamarData = $data['kamars'] ?? [];
+            unset($data['kamars']);
+
+            // Update hotel
             $hotel->update($data);
-            return $hotel->fresh();
+
+            // Handle update kamar
+            if (!empty($kamarData)) {
+                // Hapus kamar yang tidak ada dalam list
+                $existingIds = collect($kamarData)->pluck('id_kamar')->filter();
+
+                if ($existingIds->isNotEmpty()) {
+                    $hotel->kamars()->whereNotIn('id_kamar', $existingIds)->delete();
+                } else {
+                    $hotel->kamars()->delete();
+                }
+
+                // Update atau create kamar
+                foreach ($kamarData as $kamar) {
+                    if (!empty($kamar['id_kamar'])) {
+                        // Update existing
+                        Kamar::where('id_kamar', $kamar['id_kamar'])
+                            ->where('id_hotel', $hotel->id_hotel)
+                            ->update($kamar);
+                    } else {
+                        // Create new
+                        $kamar['id_hotel'] = $hotel->id_hotel;
+                        Kamar::create($kamar);
+                    }
+                }
+            }
+
+            return $hotel->load('kamars');
         });
     }
 
@@ -50,8 +97,17 @@ class HotelService
         return DB::transaction(function () use ($id) {
             $hotel = $this->getById($id);
             $nama = $hotel->nama_hotel;
+
+            // Hapus hotel (cascade akan menghapus kamar karena foreign key)
             $hotel->delete();
+
             return $nama;
         });
+    }
+
+    // Method tambahan untuk get kamar by hotel
+    public function getKamarsByHotel($hotelId)
+    {
+        return Kamar::where('id_hotel', $hotelId)->get();
     }
 }

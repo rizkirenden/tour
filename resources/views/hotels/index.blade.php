@@ -19,7 +19,7 @@
         <div class="px-6 py-4 border-b border-gray-200 flex flex-wrap items-center justify-between gap-3">
             <div>
                 <h5 class="text-sm font-semibold text-gray-700">Daftar Hotel</h5>
-                <p class="text-xs text-gray-400 mt-0.5">Kelola semua data hotel</p>
+                <p class="text-xs text-gray-400 mt-0.5">Kelola semua data hotel dan tipe kamar</p>
             </div>
             <a href="{{ route('master.hotel.create') }}"
                 class="inline-flex items-center px-4 py-2 bg-yellow-500 text-white rounded-lg hover:bg-yellow-600 transition text-sm font-medium shadow-sm hover:shadow">

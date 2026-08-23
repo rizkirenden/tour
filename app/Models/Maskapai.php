@@ -19,8 +19,4 @@ class Maskapai extends Model
         'tipe_penerbangan'
     ];
 
-    public function hargaTiketPerBulans()
-    {
-        return $this->hasMany(HargaTiketPerBulan::class, 'kode_maskapai', 'kode_maskapai');
-    }
 }

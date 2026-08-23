@@ -15,9 +15,6 @@ return new class extends Migration
             $table->string('lokasi')->nullable();
             $table->string('tipe_hotel')->nullable();
             $table->integer('bintang')->nullable();
-            $table->string('tipe_kamar', 50)->nullable();
-            $table->bigInteger('harga_per_malam')->nullable();
-            $table->integer('kapasitas')->nullable();
             $table->string('negara', 50)->nullable();
             $table->string('kota', 50)->nullable();
             $table->text('fasilitas')->nullable();

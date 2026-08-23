@@ -26,13 +26,11 @@
                 <p class="text-xs text-gray-400 mt-0.5">Lengkapi data produk paket dengan benar</p>
             </div>
 
-            <form action="{{ route('master.produk.store') }}" method="POST" id="produkForm">
+            <form action="{{ route('master.produk.store') }}" method="POST" enctype="multipart/form-data">
                 @csrf
 
                 <div class="p-6 space-y-6">
-                    <!-- ============================================ -->
-                    <!-- 1. INFORMASI DASAR PRODUK -->
-                    <!-- ============================================ -->
+                    <!-- Informasi Dasar -->
                     <div class="border-b border-gray-200 pb-4">
                         <h6 class="text-sm font-semibold text-gray-700 mb-4 flex items-center">
                             <i class="fas fa-info-circle text-yellow-500 mr-2"></i> Informasi Dasar
@@ -55,7 +53,7 @@
                                 </label>
                                 <input type="text" name="kategori" value="{{ old('kategori') }}"
                                     class="w-full px-4 py-2 border border-gray-200 rounded-xl focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500 text-sm"
-                                    placeholder="Contoh: Executive, Premium, dll">
+                                    placeholder="Contoh: Executive, Premium, Ekonomi">
                                 @error('kategori')
                                     <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
                                 @enderror
@@ -83,304 +81,108 @@
                         </div>
                     </div>
 
-                    <!-- ============================================ -->
-                    <!-- 2. HARGA PRODUK -->
-                    <!-- ============================================ -->
+                    <!-- Harga Dasar -->
                     <div class="border-b border-gray-200 pb-4">
                         <h6 class="text-sm font-semibold text-gray-700 mb-4 flex items-center">
-                            <i class="fas fa-money-bill-wave text-yellow-500 mr-2"></i> Detail Harga
+                            <i class="fas fa-money-bill-wave text-yellow-500 mr-2"></i> Harga
                         </h6>
-                        <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-1.5">
-                                    Harga Dasar <span class="text-red-500">*</span>
-                                </label>
-                                <div class="relative">
-                                    <span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm">Rp</span>
-                                    <input type="number" name="harga_dasar" value="{{ old('harga_dasar') }}"
-                                        class="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-xl focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500 text-sm"
-                                        placeholder="0" required>
-                                </div>
-                                @error('harga_dasar')
-                                    <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
-                                @enderror
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1.5">
+                                Harga Dasar <span class="text-red-500">*</span>
+                            </label>
+                            <div class="relative">
+                                <span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm">Rp</span>
+                                <input type="number" name="harga_dasar" value="{{ old('harga_dasar') }}"
+                                    class="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-xl focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500 text-sm"
+                                    placeholder="0" min="0" required>
                             </div>
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-1.5">Harga Visa</label>
-                                <div class="relative">
-                                    <span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm">Rp</span>
-                                    <input type="number" name="harga_visa" value="{{ old('harga_visa', 0) }}"
-                                        class="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-xl focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500 text-sm"
-                                        placeholder="0">
-                                </div>
-                                @error('harga_visa')
-                                    <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
-                                @enderror
-                            </div>
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-1.5">Harga Handling</label>
-                                <div class="relative">
-                                    <span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm">Rp</span>
-                                    <input type="number" name="harga_handling" value="{{ old('harga_handling', 0) }}"
-                                        class="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-xl focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500 text-sm"
-                                        placeholder="0">
-                                </div>
-                                @error('harga_handling')
-                                    <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
-                                @enderror
-                            </div>
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-1.5">Harga Muthowwif</label>
-                                <div class="relative">
-                                    <span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm">Rp</span>
-                                    <input type="number" name="harga_muthowwif" value="{{ old('harga_muthowwif', 0) }}"
-                                        class="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-xl focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500 text-sm"
-                                        placeholder="0">
-                                </div>
-                                @error('harga_muthowwif')
-                                    <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
-                                @enderror
-                            </div>
+                            @error('harga_dasar')
+                                <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+                            @enderror
+                            <p class="text-xs text-gray-400 mt-1">
+                                <i class="fas fa-info-circle mr-1"></i>
+                                Harga dasar produk per orang
+                            </p>
                         </div>
                     </div>
 
-                    <!-- ============================================ -->
-                    <!-- 3. DURASI -->
-                    <!-- ============================================ -->
+                    <!-- Durasi -->
                     <div class="border-b border-gray-200 pb-4">
                         <h6 class="text-sm font-semibold text-gray-700 mb-4 flex items-center">
                             <i class="fas fa-clock text-yellow-500 mr-2"></i> Detail Durasi
                         </h6>
-                        <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-1.5">
-                                    Durasi Hari <span class="text-red-500">*</span>
-                                </label>
-                                <input type="number" name="durasi_hari" value="{{ old('durasi_hari') }}"
+
+                        <div class="mb-4">
+                            <label class="block text-sm font-medium text-gray-700 mb-1.5">
+                                Durasi Perjalanan <span class="text-gray-400 text-xs">(total hari perjalanan)</span>
+                            </label>
+                            <div class="relative">
+                                <input type="number" name="durasi_perjalanan" id="durasi_perjalanan"
+                                    value="{{ old('durasi_perjalanan') }}" oninput="calculateTotalDurasi()"
                                     class="w-full px-4 py-2 border border-gray-200 rounded-xl focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500 text-sm"
-                                    placeholder="Total" required>
-                                @error('durasi_hari')
-                                    <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
-                                @enderror
+                                    placeholder="Contoh: 12" min="0">
+                                <span class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm">Hari</span>
                             </div>
+                            @error('durasi_perjalanan')
+                                <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+                            @enderror
+                        </div>
+
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div>
                                 <label class="block text-sm font-medium text-gray-700 mb-1.5">Durasi Mekkah</label>
-                                <input type="number" name="durasi_mekkah" value="{{ old('durasi_mekkah', 4) }}"
-                                    class="w-full px-4 py-2 border border-gray-200 rounded-xl focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500 text-sm"
-                                    min="0">
+                                <div class="relative">
+                                    <input type="number" name="durasi_mekkah" id="durasi_mekkah"
+                                        value="{{ old('durasi_mekkah', 4) }}" oninput="calculateTotalDurasi()"
+                                        class="w-full px-4 py-2 border border-gray-200 rounded-xl focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500 text-sm"
+                                        min="0">
+                                    <span
+                                        class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm">Hari</span>
+                                </div>
                                 @error('durasi_mekkah')
                                     <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
                                 @enderror
                             </div>
                             <div>
                                 <label class="block text-sm font-medium text-gray-700 mb-1.5">Durasi Madinah</label>
-                                <input type="number" name="durasi_madinah" value="{{ old('durasi_madinah', 4) }}"
-                                    class="w-full px-4 py-2 border border-gray-200 rounded-xl focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500 text-sm"
-                                    min="0">
+                                <div class="relative">
+                                    <input type="number" name="durasi_madinah" id="durasi_madinah"
+                                        value="{{ old('durasi_madinah', 4) }}" oninput="calculateTotalDurasi()"
+                                        class="w-full px-4 py-2 border border-gray-200 rounded-xl focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500 text-sm"
+                                        min="0">
+                                    <span
+                                        class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm">Hari</span>
+                                </div>
                                 @error('durasi_madinah')
                                     <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
                                 @enderror
                             </div>
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-1.5">Durasi Transit</label>
-                                <input type="number" name="durasi_transit" value="{{ old('durasi_transit', 1) }}"
-                                    class="w-full px-4 py-2 border border-gray-200 rounded-xl focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500 text-sm"
-                                    min="0">
-                                @error('durasi_transit')
-                                    <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
-                                @enderror
+                        </div>
+
+                        <div class="mt-4">
+                            <label class="block text-sm font-medium text-gray-700 mb-1.5">
+                                Total Durasi Hari <span class="text-red-500">*</span>
+                            </label>
+                            <div class="relative">
+                                <input type="number" name="durasi_hari" id="durasi_hari"
+                                    value="{{ old('durasi_hari') }}"
+                                    class="w-full px-4 py-2 border border-gray-200 rounded-xl bg-gray-100 cursor-not-allowed text-sm"
+                                    readonly disabled>
+                                <span class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm">Hari</span>
                             </div>
+                            <p class="text-xs text-gray-400 mt-1">
+                                <i class="fas fa-info-circle mr-1"></i>
+                                Total durasi akan dihitung otomatis
+                            </p>
                         </div>
                     </div>
 
-                    <!-- ============================================ -->
-                    <!-- 4. HOTEL DEFAULT -->
-                    <!-- ============================================ -->
-                    <div class="border-b border-gray-200 pb-4">
-                        <h6 class="text-sm font-semibold text-gray-700 mb-4 flex items-center">
-                            <i class="fas fa-hotel text-yellow-500 mr-2"></i> Hotel Default
-                        </h6>
-                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-1.5">Hotel Mekkah</label>
-                                <select name="hotel_mekkah_default"
-                                    class="w-full px-4 py-2 border border-gray-200 rounded-xl focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500 text-sm">
-                                    <option value="">-- Pilih Hotel --</option>
-                                    @foreach ($hotels->where('kota', 'Mekkah') as $hotel)
-                                        <option value="{{ $hotel->id_hotel }}"
-                                            {{ old('hotel_mekkah_default') == $hotel->id_hotel ? 'selected' : '' }}>
-                                            {{ $hotel->nama_hotel }} - {{ $hotel->bintang }}★
-                                        </option>
-                                    @endforeach
-                                </select>
-                                @error('hotel_mekkah_default')
-                                    <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
-                                @enderror
-                            </div>
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-1.5">Hotel Madinah</label>
-                                <select name="hotel_madinah_default"
-                                    class="w-full px-4 py-2 border border-gray-200 rounded-xl focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500 text-sm">
-                                    <option value="">-- Pilih Hotel --</option>
-                                    @foreach ($hotels->where('kota', 'Madinah') as $hotel)
-                                        <option value="{{ $hotel->id_hotel }}"
-                                            {{ old('hotel_madinah_default') == $hotel->id_hotel ? 'selected' : '' }}>
-                                            {{ $hotel->nama_hotel }} - {{ $hotel->bintang }}★
-                                        </option>
-                                    @endforeach
-                                </select>
-                                @error('hotel_madinah_default')
-                                    <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
-                                @enderror
-                            </div>
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-1.5">Hotel Transit</label>
-                                <select name="hotel_transit_default"
-                                    class="w-full px-4 py-2 border border-gray-200 rounded-xl focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500 text-sm">
-                                    <option value="">-- Pilih Hotel --</option>
-                                    @foreach ($hotels->where('kota', 'Transit') as $hotel)
-                                        <option value="{{ $hotel->id_hotel }}"
-                                            {{ old('hotel_transit_default') == $hotel->id_hotel ? 'selected' : '' }}>
-                                            {{ $hotel->nama_hotel }} - {{ $hotel->bintang }}★
-                                        </option>
-                                    @endforeach
-                                </select>
-                                @error('hotel_transit_default')
-                                    <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
-                                @enderror
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- ============================================ -->
-                    <!-- 5. PERLENGKAPAN INCLUDE -->
-                    <!-- ============================================ -->
-                    <div class="border-b border-gray-200 pb-4">
-                        <h6 class="text-sm font-semibold text-gray-700 mb-4 flex items-center">
-                            <i class="fas fa-box text-yellow-500 mr-2"></i> Perlengkapan Include
-                            <span class="ml-2 text-xs text-gray-400">(Pilih perlengkapan yang termasuk dalam paket)</span>
-                        </h6>
-
-                        <div class="space-y-3">
-                            <div id="perlengkapanContainer">
-                                @php
-                                    $oldPerlengkapans = old('perlengkapans', []);
-                                    $perlengkapanCount = count($oldPerlengkapans) > 0 ? count($oldPerlengkapans) : 1;
-                                @endphp
-
-                                @if (count($oldPerlengkapans) > 0)
-                                    @foreach ($oldPerlengkapans as $index => $item)
-                                        <div
-                                            class="perlengkapan-row bg-gray-50 rounded-lg p-3 border border-gray-200 mb-3">
-                                            <div class="grid grid-cols-1 md:grid-cols-4 gap-3">
-                                                <div>
-                                                    <label class="block text-xs font-medium text-gray-600 mb-1">Pilih
-                                                        Perlengkapan</label>
-                                                    <select name="perlengkapans[{{ $index }}][id_perlengkapan]"
-                                                        class="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-yellow-500 text-sm">
-                                                        <option value="">-- Pilih Perlengkapan --</option>
-                                                        @foreach ($perlengkapans as $p)
-                                                            <option value="{{ $p->id_perlengkapan }}"
-                                                                {{ ($item['id_perlengkapan'] ?? '') == $p->id_perlengkapan ? 'selected' : '' }}>
-                                                                {{ $p->nama_perlengkapan }} - {{ $p->kategori }} -
-                                                                {{ $p->harga_satuan_formatted }}
-                                                            </option>
-                                                        @endforeach
-                                                    </select>
-                                                    @error("perlengkapans.{$index}.id_perlengkapan")
-                                                        <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
-                                                    @enderror
-                                                </div>
-                                                <div>
-                                                    <label
-                                                        class="block text-xs font-medium text-gray-600 mb-1">Kuantitas</label>
-                                                    <input type="number"
-                                                        name="perlengkapans[{{ $index }}][kuantitas]"
-                                                        value="{{ $item['kuantitas'] ?? 1 }}"
-                                                        class="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-yellow-500 text-sm"
-                                                        min="1" placeholder="1">
-                                                    @error("perlengkapans.{$index}.kuantitas")
-                                                        <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
-                                                    @enderror
-                                                </div>
-                                                <div>
-                                                    <label
-                                                        class="block text-xs font-medium text-gray-600 mb-1">Catatan</label>
-                                                    <input type="text"
-                                                        name="perlengkapans[{{ $index }}][catatan]"
-                                                        value="{{ $item['catatan'] ?? '' }}"
-                                                        class="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-yellow-500 text-sm"
-                                                        placeholder="Catatan (opsional)">
-                                                    @error("perlengkapans.{$index}.catatan")
-                                                        <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
-                                                    @enderror
-                                                </div>
-                                                <div class="flex items-end">
-                                                    <button type="button" onclick="removePerlengkapanRow(this)"
-                                                        class="w-full px-3 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition text-sm font-medium">
-                                                        <i class="fas fa-trash mr-1"></i> Hapus
-                                                    </button>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    @endforeach
-                                @else
-                                    <!-- Default 1 row -->
-                                    <div class="perlengkapan-row bg-gray-50 rounded-lg p-3 border border-gray-200">
-                                        <div class="grid grid-cols-1 md:grid-cols-4 gap-3">
-                                            <div>
-                                                <label class="block text-xs font-medium text-gray-600 mb-1">Pilih
-                                                    Perlengkapan</label>
-                                                <select name="perlengkapans[0][id_perlengkapan]"
-                                                    class="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-yellow-500 text-sm">
-                                                    <option value="">-- Pilih Perlengkapan --</option>
-                                                    @foreach ($perlengkapans as $p)
-                                                        <option value="{{ $p->id_perlengkapan }}">
-                                                            {{ $p->nama_perlengkapan }} - {{ $p->kategori }} -
-                                                            {{ $p->harga_satuan_formatted }}
-                                                        </option>
-                                                    @endforeach
-                                                </select>
-                                            </div>
-                                            <div>
-                                                <label
-                                                    class="block text-xs font-medium text-gray-600 mb-1">Kuantitas</label>
-                                                <input type="number" name="perlengkapans[0][kuantitas]" value="1"
-                                                    class="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-yellow-500 text-sm"
-                                                    min="1" placeholder="1">
-                                            </div>
-                                            <div>
-                                                <label class="block text-xs font-medium text-gray-600 mb-1">Catatan</label>
-                                                <input type="text" name="perlengkapans[0][catatan]"
-                                                    class="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-yellow-500 text-sm"
-                                                    placeholder="Catatan (opsional)">
-                                            </div>
-                                            <div class="flex items-end">
-                                                <button type="button" onclick="removePerlengkapanRow(this)"
-                                                    class="w-full px-3 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition text-sm font-medium">
-                                                    <i class="fas fa-trash mr-1"></i> Hapus
-                                                </button>
-                                            </div>
-                                        </div>
-                                    </div>
-                                @endif
-                            </div>
-
-                            <button type="button" onclick="addPerlengkapanRow()"
-                                class="inline-flex items-center px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition text-sm font-medium">
-                                <i class="fas fa-plus mr-2"></i> Tambah Perlengkapan
-                            </button>
-                        </div>
-                    </div>
-
-                    <!-- ============================================ -->
-                    <!-- 6. OPSI LAINNYA -->
-                    <!-- ============================================ -->
+                    <!-- Opsi Lainnya -->
                     <div class="border-b border-gray-200 pb-4">
                         <h6 class="text-sm font-semibold text-gray-700 mb-4 flex items-center">
                             <i class="fas fa-cogs text-yellow-500 mr-2"></i> Opsi Lainnya
                         </h6>
-                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div>
                                 <label class="block text-sm font-medium text-gray-700 mb-1.5">Include Tur</label>
                                 <select name="include_tur" id="include_tur"
@@ -405,28 +207,10 @@
                                     <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
                                 @enderror
                             </div>
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-1.5">Status Keberangkatan</label>
-                                <select name="status_keberangkatan_id"
-                                    class="w-full px-4 py-2 border border-gray-200 rounded-xl focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500 text-sm">
-                                    <option value="">-- Pilih Status --</option>
-                                    @foreach ($statusKeberangkatans as $status)
-                                        <option value="{{ $status->id_status }}"
-                                            {{ old('status_keberangkatan_id') == $status->id_status ? 'selected' : '' }}>
-                                            {{ $status->nama_status }}
-                                        </option>
-                                    @endforeach
-                                </select>
-                                @error('status_keberangkatan_id')
-                                    <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
-                                @enderror
-                            </div>
                         </div>
                     </div>
 
-                    <!-- ============================================ -->
-                    <!-- 7. PILIH PAKET TOUR -->
-                    <!-- ============================================ -->
+                    <!-- Pilih Paket Tour -->
                     <div id="paketTourSection" class="border-b border-gray-200 pb-4" style="display: none;">
                         <h6 class="text-sm font-semibold text-gray-700 mb-4 flex items-center">
                             <i class="fas fa-route text-yellow-500 mr-2"></i> Pilih Paket Tour
@@ -443,7 +227,6 @@
                                         {{ old('paket_tour_id') == $tour->id_paket_tour ? 'selected' : '' }}>
                                         {{ $tour->kota_tujuan ?? 'Tour' }} - {{ $tour->negara ?? '' }}
                                         ({{ $tour->durasi_hari ?? 0 }} Hari)
-                                        - {{ $tour->harga_per_orang_formatted }}
                                     </option>
                                 @endforeach
                             </select>
@@ -457,10 +240,50 @@
                         </div>
                     </div>
 
-                    <!-- ============================================ -->
-                    <!-- BUTTONS -->
-                    <!-- ============================================ -->
-                    <div class="flex items-center justify-end gap-3 pt-4">
+                    <!-- Upload Flyer -->
+                    <div>
+                        <h6 class="text-sm font-semibold text-gray-700 mb-4 flex items-center">
+                            <i class="fas fa-image text-yellow-500 mr-2"></i> Upload Flyer
+                            <span class="ml-2 text-xs text-gray-400">(opsional)</span>
+                        </h6>
+
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1.5">
+                                File Flyer
+                            </label>
+                            <div class="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-gray-300 border-dashed rounded-xl hover:border-yellow-400 transition-colors cursor-pointer"
+                                id="dropzone">
+                                <div class="space-y-1 text-center">
+                                    <i class="fas fa-cloud-upload-alt text-4xl text-gray-400"></i>
+                                    <div class="flex text-sm text-gray-600">
+                                        <label for="flyer"
+                                            class="relative cursor-pointer rounded-md font-medium text-yellow-600 hover:text-yellow-500 focus-within:outline-none focus-within:ring-2 focus-within:ring-yellow-500">
+                                            <span>Upload file</span>
+                                            <input id="flyer" name="flyer" type="file" class="sr-only"
+                                                accept="image/*" onchange="previewImage(event)">
+                                        </label>
+                                        <p class="pl-1">atau drag and drop</p>
+                                    </div>
+                                    <p class="text-xs text-gray-500">PNG, JPG, JPEG, GIF, SVG up to 2MB</p>
+                                    <div id="filePreview" class="hidden mt-3">
+                                        <img id="imagePreview" src="#" alt="Preview Flyer"
+                                            class="max-h-48 rounded-lg mx-auto border border-gray-200">
+                                        <p id="fileName" class="text-sm text-gray-600 mt-2"></p>
+                                        <button type="button" onclick="removeFile()"
+                                            class="mt-2 text-sm text-red-500 hover:text-red-700">
+                                            <i class="fas fa-times mr-1"></i> Hapus file
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                            @error('flyer')
+                                <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+                            @enderror
+                        </div>
+                    </div>
+
+                    <!-- Buttons -->
+                    <div class="flex items-center justify-end gap-3 pt-4 border-t border-gray-100">
                         <a href="{{ route('master.produk.index') }}"
                             class="px-4 py-2 bg-gray-200 text-gray-700 rounded-xl hover:bg-gray-300 transition-colors text-sm font-medium">
                             Batal
@@ -478,6 +301,7 @@
 
 @push('scripts')
     <script>
+        // Toggle Paket Tour
         document.addEventListener('DOMContentLoaded', function() {
             const includeTurSelect = document.getElementById('include_tur');
             const paketTourSection = document.getElementById('paketTourSection');
@@ -500,59 +324,73 @@
             }
         });
 
-        let perlengkapanIndex = {{ count(old('perlengkapans', [0])) }};
+        // Calculate Total Durasi
+        function calculateTotalDurasi() {
+            const durasiPerjalanan = parseFloat(document.getElementById('durasi_perjalanan').value) || 0;
+            const durasiMekkah = parseFloat(document.getElementById('durasi_mekkah').value) || 0;
+            const durasiMadinah = parseFloat(document.getElementById('durasi_madinah').value) || 0;
 
-        function addPerlengkapanRow() {
-            const container = document.getElementById('perlengkapanContainer');
-            const row = document.createElement('div');
-            row.className = 'perlengkapan-row bg-gray-50 rounded-lg p-3 border border-gray-200 mb-3';
-            row.innerHTML = `
-            <div class="grid grid-cols-1 md:grid-cols-4 gap-3">
-                <div>
-                    <label class="block text-xs font-medium text-gray-600 mb-1">Pilih Perlengkapan</label>
-                    <select name="perlengkapans[${perlengkapanIndex}][id_perlengkapan]"
-                        class="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-yellow-500 text-sm">
-                        <option value="">-- Pilih Perlengkapan --</option>
-                        @foreach ($perlengkapans as $p)
-                            <option value="{{ $p->id_perlengkapan }}">
-                                {{ $p->nama_perlengkapan }} - {{ $p->kategori }} - {{ $p->harga_satuan_formatted }}
-                            </option>
-                        @endforeach
-                    </select>
-                </div>
-                <div>
-                    <label class="block text-xs font-medium text-gray-600 mb-1">Kuantitas</label>
-                    <input type="number" name="perlengkapans[${perlengkapanIndex}][kuantitas]"
-                        value="1"
-                        class="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-yellow-500 text-sm"
-                        min="1" placeholder="1">
-                </div>
-                <div>
-                    <label class="block text-xs font-medium text-gray-600 mb-1">Catatan</label>
-                    <input type="text" name="perlengkapans[${perlengkapanIndex}][catatan]"
-                        class="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-yellow-500 text-sm"
-                        placeholder="Catatan (opsional)">
-                </div>
-                <div class="flex items-end">
-                    <button type="button" onclick="removePerlengkapanRow(this)"
-                        class="w-full px-3 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition text-sm font-medium">
-                        <i class="fas fa-trash mr-1"></i> Hapus
-                    </button>
-                </div>
-            </div>
-        `;
-            container.appendChild(row);
-            perlengkapanIndex++;
+            const total = durasiPerjalanan + durasiMekkah + durasiMadinah;
+            document.getElementById('durasi_hari').value = Math.round(total);
         }
 
-        function removePerlengkapanRow(button) {
-            const row = button.closest('.perlengkapan-row');
-            const container = document.getElementById('perlengkapanContainer');
-            if (container.children.length > 1) {
-                row.remove();
-            } else {
-                alert('Minimal harus ada 1 perlengkapan!');
+        // Preview Image
+        function previewImage(event) {
+            const file = event.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const preview = document.getElementById('filePreview');
+                    const imagePreview = document.getElementById('imagePreview');
+                    const fileName = document.getElementById('fileName');
+
+                    preview.classList.remove('hidden');
+                    imagePreview.src = e.target.result;
+                    fileName.textContent = file.name;
+                };
+                reader.readAsDataURL(file);
             }
         }
+
+        function removeFile() {
+            const fileInput = document.getElementById('flyer');
+            const preview = document.getElementById('filePreview');
+
+            fileInput.value = '';
+            preview.classList.add('hidden');
+            document.getElementById('imagePreview').src = '#';
+            document.getElementById('fileName').textContent = '';
+        }
+
+        // Drag and Drop
+        document.addEventListener('DOMContentLoaded', function() {
+            const dropzone = document.getElementById('dropzone');
+            if (dropzone) {
+                dropzone.addEventListener('dragover', function(e) {
+                    e.preventDefault();
+                    this.classList.add('border-yellow-500', 'bg-yellow-50');
+                });
+
+                dropzone.addEventListener('dragleave', function(e) {
+                    e.preventDefault();
+                    this.classList.remove('border-yellow-500', 'bg-yellow-50');
+                });
+
+                dropzone.addEventListener('drop', function(e) {
+                    e.preventDefault();
+                    this.classList.remove('border-yellow-500', 'bg-yellow-50');
+
+                    const files = e.dataTransfer.files;
+                    if (files.length > 0) {
+                        const fileInput = document.getElementById('flyer');
+                        fileInput.files = files;
+                        const event = new Event('change');
+                        fileInput.dispatchEvent(event);
+                    }
+                });
+            }
+
+            calculateTotalDurasi();
+        });
     </script>
 @endpush

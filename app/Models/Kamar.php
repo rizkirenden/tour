@@ -13,30 +13,27 @@ class Kamar extends Model
     protected $primaryKey = 'id_kamar';
 
     protected $fillable = [
-        'id_departure',
         'id_hotel',
-        'lokasi',
-        'nomor_kamar',
         'tipe_kamar',
         'kapasitas',
+        'jumlah_kamar',
         'harga_per_malam',
-        'total_malam',
-        'total_biaya',
-        'keterangan'
+        'fasilitas_kamar',
     ];
 
-    public function departure()
-    {
-        return $this->belongsTo(Departure::class, 'id_departure');
-    }
+    protected $casts = [
+        'harga_per_malam' => 'decimal:2',
+    ];
 
+    // Relasi ke Hotel
     public function hotel()
     {
         return $this->belongsTo(Hotel::class, 'id_hotel');
     }
 
-    public function kamarJamaahs()
+    // Accessor untuk tipe kamar
+    public function getTipeKamarAttribute($value)
     {
-        return $this->hasMany(KamarJamaah::class, 'id_kamar');
+        return ucwords(strtolower($value));
     }
 }

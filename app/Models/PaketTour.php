@@ -31,13 +31,13 @@ class PaketTour extends Model
         return $this->hasMany(ProdukPaket::class, 'paket_tour_id', 'id_paket_tour');
     }
 
-   public function hotels()
-{
-    return $this->belongsToMany(Hotel::class, 'hotel_paket_tour', 'id_paket_tour', 'id_hotel')
-                ->withPivot('durasi_menginap', 'harga_hotel', 'urutan', 'catatan')
-                ->withTimestamps()
-                ->orderBy('hotel_paket_tour.urutan');
-}
+    public function hotels()
+    {
+        return $this->belongsToMany(Hotel::class, 'hotel_paket_tour', 'id_paket_tour', 'id_hotel')
+                    ->withPivot('durasi_menginap', 'urutan', 'catatan')
+                    ->withTimestamps()
+                    ->orderBy('hotel_paket_tour.urutan');
+    }
 
     // Accessor untuk format harga
     public function getHargaPerOrangFormattedAttribute()
@@ -48,10 +48,16 @@ class PaketTour extends Model
     // Accessor untuk total harga hotel
     public function getTotalHargaHotelAttribute()
     {
+        // Harga hotel diambil dari tabel hotels (harga_per_malam) * durasi_menginap
         $total = 0;
         foreach ($this->hotels as $hotel) {
-            $total += $hotel->pivot->harga_hotel ?? 0;
+            $total += ($hotel->harga_per_malam ?? 0) * ($hotel->pivot->durasi_menginap ?? 1);
         }
         return $total;
+    }
+
+    public function getTotalHargaHotelFormattedAttribute()
+    {
+        return 'Rp ' . number_format($this->total_harga_hotel, 0, ',', '.');
     }
 }

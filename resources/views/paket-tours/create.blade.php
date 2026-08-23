@@ -107,7 +107,7 @@
                             @if (count($oldHotels) > 0)
                                 @foreach ($oldHotels as $index => $hotel)
                                     <div class="hotel-row bg-gray-50 rounded-xl p-4 mb-3 border border-gray-200">
-                                        <div class="grid grid-cols-1 md:grid-cols-4 gap-3">
+                                        <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
                                             <div>
                                                 <label class="block text-xs font-medium text-gray-600 mb-1">Pilih
                                                     Hotel</label>
@@ -133,14 +133,6 @@
                                                     class="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-yellow-500 text-sm"
                                                     min="1" placeholder="1">
                                             </div>
-                                            <div>
-                                                <label class="block text-xs font-medium text-gray-600 mb-1">Harga
-                                                    Hotel</label>
-                                                <input type="number" name="hotels[{{ $index }}][harga_hotel]"
-                                                    value="{{ $hotel['harga_hotel'] ?? 0 }}"
-                                                    class="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-yellow-500 text-sm"
-                                                    placeholder="0">
-                                            </div>
                                             <div class="flex items-end">
                                                 <input type="hidden" name="hotels[{{ $index }}][urutan]"
                                                     value="{{ $index + 1 }}">
@@ -162,7 +154,7 @@
                             @else
                                 <!-- Default 1 row -->
                                 <div class="hotel-row bg-gray-50 rounded-xl p-4 mb-3 border border-gray-200">
-                                    <div class="grid grid-cols-1 md:grid-cols-4 gap-3">
+                                    <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
                                         <div>
                                             <label class="block text-xs font-medium text-gray-600 mb-1">Pilih Hotel</label>
                                             <select name="hotels[0][id_hotel]"
@@ -179,12 +171,6 @@
                                             <input type="number" name="hotels[0][durasi_menginap]" value="1"
                                                 class="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-yellow-500 text-sm"
                                                 min="1" placeholder="1">
-                                        </div>
-                                        <div>
-                                            <label class="block text-xs font-medium text-gray-600 mb-1">Harga Hotel</label>
-                                            <input type="number" name="hotels[0][harga_hotel]" value="0"
-                                                class="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-yellow-500 text-sm"
-                                                placeholder="0">
                                         </div>
                                         <div class="flex items-end">
                                             <input type="hidden" name="hotels[0][urutan]" value="1">
@@ -230,7 +216,7 @@
                 const row = document.createElement('div');
                 row.className = 'hotel-row bg-gray-50 rounded-xl p-4 mb-3 border border-gray-200';
                 row.innerHTML = `
-                <div class="grid grid-cols-1 md:grid-cols-4 gap-3">
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
                     <div>
                         <label class="block text-xs font-medium text-gray-600 mb-1">Pilih Hotel</label>
                         <select name="hotels[${hotelIndex}][id_hotel]"
@@ -247,13 +233,6 @@
                             value="1"
                             class="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-yellow-500 text-sm"
                             min="1" placeholder="1">
-                    </div>
-                    <div>
-                        <label class="block text-xs font-medium text-gray-600 mb-1">Harga Hotel</label>
-                        <input type="number" name="hotels[${hotelIndex}][harga_hotel]"
-                            value="0"
-                            class="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-yellow-500 text-sm"
-                            placeholder="0">
                     </div>
                     <div class="flex items-end">
                         <input type="hidden" name="hotels[${hotelIndex}][urutan]" value="${hotelIndex + 1}">

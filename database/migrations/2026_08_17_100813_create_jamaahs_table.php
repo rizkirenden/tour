@@ -13,7 +13,9 @@ return new class extends Migration
             $table->string('id_keberangkatan', 100);
             $table->unsignedBigInteger('id_keluarga')->nullable();
             $table->string('hubungan_keluarga', 30)->nullable();
+            $table->boolean('is_kepala_keluarga')->default(false);
             $table->string('produk_paket', 100);
+            $table->unsignedBigInteger('id_diskon')->nullable();
             $table->string('nama_lengkap', 100);
             $table->string('telepon', 20)->nullable();
             $table->text('alamat')->nullable();
@@ -26,25 +28,25 @@ return new class extends Migration
             $table->string('bandara_keberangkatan', 50)->nullable();
             $table->integer('bulan_keberangkatan')->nullable();
             $table->integer('tahun_keberangkatan')->nullable();
-            $table->longText('foto_ktp')->nullable();
-            $table->longText('foto_vaksin')->nullable();
-            $table->longText('foto_visa')->nullable();
+            $table->string('foto_ktp')->nullable();
+            $table->string('foto_vaksin')->nullable();
+            $table->string('foto_visa')->nullable();
             $table->string('encryption_key', 100)->nullable();
             $table->string('jenis_pendampingan', 30)->nullable();
             $table->string('agent', 100)->nullable();
             $table->bigInteger('fee_agent')->default(0);
-            $table->bigInteger('harga_tiket_pergi')->default(0);
-            $table->bigInteger('harga_tiket_pulang')->default(0);
+            $table->bigInteger('harga_tiket_pergi_domestik')->default(0);
+            $table->bigInteger('harga_tiket_pulang_domestik')->default(0);
             $table->bigInteger('total_tiket_domestik')->default(0);
+            $table->bigInteger('harga_tiket_pergi_international')->default(0);
+            $table->bigInteger('harga_tiket_pulang_international')->default(0);
+            $table->bigInteger('total_tiket_international')->default(0);
             $table->string('hotel_mekkah', 100)->nullable();
             $table->string('hotel_madinah', 100)->nullable();
             $table->string('hotel_transit', 100)->nullable();
-            $table->string('tipe_kamar', 50)->nullable();
-            $table->bigInteger('selisih_hotel_mekkah')->default(0);
-            $table->bigInteger('selisih_hotel_madinah')->default(0);
-            $table->bigInteger('total_selisih_hotel')->default(0);
             $table->bigInteger('total_tagihan_sebelum_diskon')->default(0);
-            $table->decimal('persen_diskon', 5, 2)->default(0);
+            // HAPUS persen_diskon, hanya gunakan nilai_diskon
+            $table->bigInteger('nilai_diskon')->default(0)->comment('Nilai diskon per orang dalam Rupiah');
             $table->bigInteger('total_diskon')->default(0);
             $table->bigInteger('total_tagihan_setelah_diskon')->default(0);
             $table->bigInteger('total_dibayar')->default(0);
@@ -57,6 +59,11 @@ return new class extends Migration
             $table->foreign('id_keluarga')
                   ->references('id_keluarga')
                   ->on('keluargas')
+                  ->onDelete('set null');
+
+            $table->foreign('id_diskon')
+                  ->references('id_diskon')
+                  ->on('diskons')
                   ->onDelete('set null');
         });
     }
