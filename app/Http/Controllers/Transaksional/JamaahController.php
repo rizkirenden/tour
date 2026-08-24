@@ -52,9 +52,16 @@ class JamaahController extends Controller
             'produk_paket' => 'required|string|max:100|exists:produk_pakets,nama_produk',
             'id_diskon' => 'nullable|exists:diskons,id_diskon',
             'nama_lengkap' => 'required|string|max:100',
+            'nik' => 'nullable|string|max:20|unique:jamaahs,nik',
+            'nama_ayah' => 'nullable|string|max:100',
+            'pekerjaan' => 'nullable|string|max:100',
             'telepon' => 'nullable|string|max:20',
+            'wa' => 'nullable|string|max:20',
             'alamat' => 'nullable|string',
             'nomor_paspor' => 'nullable|string|max:20',
+            'paspor_expired' => 'nullable|date',
+            'paspor_terbit' => 'nullable|date',
+            'paspor_diterbitkan_di' => 'nullable|string|max:100',
             'tanggal_lahir' => 'nullable|date',
             'tempat_lahir' => 'nullable|string|max:100',
             'jenis_kelamin' => 'nullable|in:L,P',
@@ -63,9 +70,10 @@ class JamaahController extends Controller
             'bandara_keberangkatan' => 'nullable|string|max:50',
             'bulan_keberangkatan' => 'nullable|integer|min:1|max:12',
             'tahun_keberangkatan' => 'nullable|integer|min:2000|max:' . (date('Y') + 10),
-            'foto_ktp' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
-            'foto_vaksin' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
-            'foto_visa' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
+            'file_ktp_kk' => 'nullable|file|mimes:jpeg,png,jpg,pdf|max:2048',
+            'file_vaksin' => 'nullable|file|mimes:jpeg,png,jpg,pdf|max:2048',
+            'file_visa' => 'nullable|file|mimes:jpeg,png,jpg,pdf|max:2048',
+            'file_paspor' => 'nullable|file|mimes:jpeg,png,jpg,pdf|max:2048',
             'jenis_pendampingan' => 'nullable|string|max:30',
             'agent' => 'nullable|string|max:100',
             'fee_agent' => 'nullable|integer|min:0',
@@ -73,26 +81,36 @@ class JamaahController extends Controller
             'catatan_tambahan' => 'nullable|string'
         ]);
 
-        // Upload foto
-        if ($request->hasFile('foto_ktp')) {
-            $file = $request->file('foto_ktp');
-            $filename = time() . '_ktp.' . $file->getClientOriginalExtension();
-            $path = $file->storeAs('jamaah-foto', $filename, 'public');
-            $validated['foto_ktp'] = $path;
+        // Upload File KTP/KK
+        if ($request->hasFile('file_ktp_kk')) {
+            $file = $request->file('file_ktp_kk');
+            $filename = time() . '_ktp_kk.' . $file->getClientOriginalExtension();
+            $path = $file->storeAs('jamaah/dokumen', $filename, 'public');
+            $validated['file_ktp_kk'] = $path;
         }
 
-        if ($request->hasFile('foto_vaksin')) {
-            $file = $request->file('foto_vaksin');
+        // Upload File Vaksin
+        if ($request->hasFile('file_vaksin')) {
+            $file = $request->file('file_vaksin');
             $filename = time() . '_vaksin.' . $file->getClientOriginalExtension();
-            $path = $file->storeAs('jamaah-foto', $filename, 'public');
-            $validated['foto_vaksin'] = $path;
+            $path = $file->storeAs('jamaah/dokumen', $filename, 'public');
+            $validated['file_vaksin'] = $path;
         }
 
-        if ($request->hasFile('foto_visa')) {
-            $file = $request->file('foto_visa');
+        // Upload File Visa
+        if ($request->hasFile('file_visa')) {
+            $file = $request->file('file_visa');
             $filename = time() . '_visa.' . $file->getClientOriginalExtension();
-            $path = $file->storeAs('jamaah-foto', $filename, 'public');
-            $validated['foto_visa'] = $path;
+            $path = $file->storeAs('jamaah/dokumen', $filename, 'public');
+            $validated['file_visa'] = $path;
+        }
+
+        // Upload File Paspor
+        if ($request->hasFile('file_paspor')) {
+            $file = $request->file('file_paspor');
+            $filename = time() . '_paspor.' . $file->getClientOriginalExtension();
+            $path = $file->storeAs('jamaah/dokumen', $filename, 'public');
+            $validated['file_paspor'] = $path;
         }
 
         $jamaah = $this->service->create($validated);
@@ -118,6 +136,8 @@ class JamaahController extends Controller
 
     public function update(Request $request, $id)
     {
+        $jamaah = $this->service->getById($id);
+
         $validated = $request->validate([
             'id_keberangkatan' => ['nullable', 'string', 'max:100', Rule::unique('jamaahs', 'id_keberangkatan')->ignore($id, 'id_jamaah')],
             'id_keluarga' => 'nullable|exists:keluargas,id_keluarga',
@@ -126,9 +146,16 @@ class JamaahController extends Controller
             'produk_paket' => 'required|string|max:100|exists:produk_pakets,nama_produk',
             'id_diskon' => 'nullable|exists:diskons,id_diskon',
             'nama_lengkap' => 'required|string|max:100',
+            'nik' => ['nullable', 'string', 'max:20', Rule::unique('jamaahs', 'nik')->ignore($id, 'id_jamaah')],
+            'nama_ayah' => 'nullable|string|max:100',
+            'pekerjaan' => 'nullable|string|max:100',
             'telepon' => 'nullable|string|max:20',
+            'wa' => 'nullable|string|max:20',
             'alamat' => 'nullable|string',
             'nomor_paspor' => 'nullable|string|max:20',
+            'paspor_expired' => 'nullable|date',
+            'paspor_terbit' => 'nullable|date',
+            'paspor_diterbitkan_di' => 'nullable|string|max:100',
             'tanggal_lahir' => 'nullable|date',
             'tempat_lahir' => 'nullable|string|max:100',
             'jenis_kelamin' => 'nullable|in:L,P',
@@ -137,9 +164,10 @@ class JamaahController extends Controller
             'bandara_keberangkatan' => 'nullable|string|max:50',
             'bulan_keberangkatan' => 'nullable|integer|min:1|max:12',
             'tahun_keberangkatan' => 'nullable|integer|min:2000|max:' . (date('Y') + 10),
-            'foto_ktp' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
-            'foto_vaksin' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
-            'foto_visa' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
+            'file_ktp_kk' => 'nullable|file|mimes:jpeg,png,jpg,pdf|max:2048',
+            'file_vaksin' => 'nullable|file|mimes:jpeg,png,jpg,pdf|max:2048',
+            'file_visa' => 'nullable|file|mimes:jpeg,png,jpg,pdf|max:2048',
+            'file_paspor' => 'nullable|file|mimes:jpeg,png,jpg,pdf|max:2048',
             'jenis_pendampingan' => 'nullable|string|max:30',
             'agent' => 'nullable|string|max:100',
             'fee_agent' => 'nullable|integer|min:0',
@@ -147,38 +175,8 @@ class JamaahController extends Controller
             'catatan_tambahan' => 'nullable|string'
         ]);
 
-        $jamaah = $this->service->getById($id);
-
-        // Upload foto
-        if ($request->hasFile('foto_ktp')) {
-            if ($jamaah->foto_ktp && Storage::disk('public')->exists($jamaah->foto_ktp)) {
-                Storage::disk('public')->delete($jamaah->foto_ktp);
-            }
-            $file = $request->file('foto_ktp');
-            $filename = time() . '_ktp.' . $file->getClientOriginalExtension();
-            $path = $file->storeAs('jamaah-foto', $filename, 'public');
-            $validated['foto_ktp'] = $path;
-        }
-
-        if ($request->hasFile('foto_vaksin')) {
-            if ($jamaah->foto_vaksin && Storage::disk('public')->exists($jamaah->foto_vaksin)) {
-                Storage::disk('public')->delete($jamaah->foto_vaksin);
-            }
-            $file = $request->file('foto_vaksin');
-            $filename = time() . '_vaksin.' . $file->getClientOriginalExtension();
-            $path = $file->storeAs('jamaah-foto', $filename, 'public');
-            $validated['foto_vaksin'] = $path;
-        }
-
-        if ($request->hasFile('foto_visa')) {
-            if ($jamaah->foto_visa && Storage::disk('public')->exists($jamaah->foto_visa)) {
-                Storage::disk('public')->delete($jamaah->foto_visa);
-            }
-            $file = $request->file('foto_visa');
-            $filename = time() . '_visa.' . $file->getClientOriginalExtension();
-            $path = $file->storeAs('jamaah-foto', $filename, 'public');
-            $validated['foto_visa'] = $path;
-        }
+        // Handle file uploads with delete old files
+        $this->handleFileUploads($request, $jamaah, $validated);
 
         $jamaah = $this->service->update($id, $validated);
 
@@ -186,18 +184,63 @@ class JamaahController extends Controller
             ->with('success', "Jamaah '{$jamaah->nama_lengkap}' berhasil diperbarui!");
     }
 
+    private function handleFileUploads(Request $request, $jamaah, array &$validated)
+    {
+        // File KTP/KK
+        if ($request->hasFile('file_ktp_kk')) {
+            if ($jamaah->file_ktp_kk && Storage::disk('public')->exists($jamaah->file_ktp_kk)) {
+                Storage::disk('public')->delete($jamaah->file_ktp_kk);
+            }
+            $file = $request->file('file_ktp_kk');
+            $filename = time() . '_ktp_kk.' . $file->getClientOriginalExtension();
+            $path = $file->storeAs('jamaah/dokumen', $filename, 'public');
+            $validated['file_ktp_kk'] = $path;
+        }
+
+        // File Vaksin
+        if ($request->hasFile('file_vaksin')) {
+            if ($jamaah->file_vaksin && Storage::disk('public')->exists($jamaah->file_vaksin)) {
+                Storage::disk('public')->delete($jamaah->file_vaksin);
+            }
+            $file = $request->file('file_vaksin');
+            $filename = time() . '_vaksin.' . $file->getClientOriginalExtension();
+            $path = $file->storeAs('jamaah/dokumen', $filename, 'public');
+            $validated['file_vaksin'] = $path;
+        }
+
+        // File Visa
+        if ($request->hasFile('file_visa')) {
+            if ($jamaah->file_visa && Storage::disk('public')->exists($jamaah->file_visa)) {
+                Storage::disk('public')->delete($jamaah->file_visa);
+            }
+            $file = $request->file('file_visa');
+            $filename = time() . '_visa.' . $file->getClientOriginalExtension();
+            $path = $file->storeAs('jamaah/dokumen', $filename, 'public');
+            $validated['file_visa'] = $path;
+        }
+
+        // File Paspor
+        if ($request->hasFile('file_paspor')) {
+            if ($jamaah->file_paspor && Storage::disk('public')->exists($jamaah->file_paspor)) {
+                Storage::disk('public')->delete($jamaah->file_paspor);
+            }
+            $file = $request->file('file_paspor');
+            $filename = time() . '_paspor.' . $file->getClientOriginalExtension();
+            $path = $file->storeAs('jamaah/dokumen', $filename, 'public');
+            $validated['file_paspor'] = $path;
+        }
+    }
+
     public function destroy($id)
     {
         $jamaah = $this->service->getById($id);
 
-        if ($jamaah->foto_ktp && Storage::disk('public')->exists($jamaah->foto_ktp)) {
-            Storage::disk('public')->delete($jamaah->foto_ktp);
-        }
-        if ($jamaah->foto_vaksin && Storage::disk('public')->exists($jamaah->foto_vaksin)) {
-            Storage::disk('public')->delete($jamaah->foto_vaksin);
-        }
-        if ($jamaah->foto_visa && Storage::disk('public')->exists($jamaah->foto_visa)) {
-            Storage::disk('public')->delete($jamaah->foto_visa);
+        // Delete all files
+        $files = ['file_ktp_kk', 'file_vaksin', 'file_visa', 'file_paspor'];
+        foreach ($files as $fileField) {
+            if ($jamaah->$fileField && Storage::disk('public')->exists($jamaah->$fileField)) {
+                Storage::disk('public')->delete($jamaah->$fileField);
+            }
         }
 
         $nama = $this->service->delete($id);
@@ -226,7 +269,7 @@ class JamaahController extends Controller
             'id_jenis_transaksi' => 'required|exists:jenis_transaksis,id_jenis',
             'tanggal_transaksi' => 'required|date',
             'jumlah_bayar' => 'required|integer|min:1',
-            'bukti_pembayaran' => 'nullable|image|mimes:jpeg,png,jpg,pdf|max:2048',
+            'bukti_pembayaran' => 'nullable|file|mimes:jpeg,png,jpg,pdf|max:2048',
             'keterangan' => 'nullable|string'
         ]);
 
@@ -236,27 +279,23 @@ class JamaahController extends Controller
         $jumlahBayar = $validated['jumlah_bayar'];
         $jenisTransaksi = JenisTransaksi::find($validated['id_jenis_transaksi']);
 
-        // Validasi: jika jenis transaksi LUNAS, harus bayar sisa tagihan
         if ($jenisTransaksi->kode == 'LUNAS' && $jumlahBayar < ($totalTagihan - $totalDibayarSaatIni)) {
             return redirect()->back()
                 ->with('error', 'Jumlah bayar untuk pelunasan harus sebesar sisa tagihan: ' . number_format($totalTagihan - $totalDibayarSaatIni, 0, ',', '.'));
         }
 
-        // Validasi: tidak boleh bayar melebihi sisa tagihan
         if ($jumlahBayar > ($totalTagihan - $totalDibayarSaatIni)) {
             return redirect()->back()
                 ->with('error', 'Jumlah bayar melebihi sisa tagihan!');
         }
 
-        // Upload bukti pembayaran
         $buktiPath = null;
         if ($request->hasFile('bukti_pembayaran')) {
             $file = $request->file('bukti_pembayaran');
             $filename = time() . '_bukti_' . $jamaah->id_jamaah . '.' . $file->getClientOriginalExtension();
-            $buktiPath = $file->storeAs('bukti-pembayaran', $filename, 'public');
+            $buktiPath = $file->storeAs('jamaah/bukti-pembayaran', $filename, 'public');
         }
 
-        // Simpan transaksi
         $transaksi = TransaksiPembayaran::create([
             'id_jamaah' => $id,
             'id_metode_pembayaran' => $validated['id_metode_pembayaran'],
@@ -268,7 +307,6 @@ class JamaahController extends Controller
             'created_by' => Auth::user()->name ?? 'System',
         ]);
 
-        // Update data jamaah
         $totalDibayarBaru = $totalDibayarSaatIni + $jumlahBayar;
         $sisaTagihanBaru = $totalTagihan - $totalDibayarBaru;
 
@@ -288,7 +326,6 @@ class JamaahController extends Controller
             'status_pembayaran' => $status
         ]);
 
-        // Jika jamaah memiliki keluarga, update total keluarga
         if ($jamaah->id_keluarga) {
             $keluargaService = new \App\Services\KeluargaService();
             $keluargaService->recalculateKeluarga($jamaah->id_keluarga);
@@ -320,14 +357,12 @@ class JamaahController extends Controller
         $jamaahId = $transaksi->id_jamaah;
         $jumlahBayar = $transaksi->jumlah_bayar;
 
-        // Hapus file bukti
         if ($transaksi->bukti_pembayaran && Storage::disk('public')->exists($transaksi->bukti_pembayaran)) {
             Storage::disk('public')->delete($transaksi->bukti_pembayaran);
         }
 
         $transaksi->delete();
 
-        // Recalculate jamaah
         $jamaah = $this->service->getById($jamaahId);
         $totalTagihan = $jamaah->total_tagihan_setelah_diskon;
         $totalDibayarBaru = $jamaah->transaksis()->sum('jumlah_bayar');
@@ -349,7 +384,6 @@ class JamaahController extends Controller
             'status_pembayaran' => $status
         ]);
 
-        // Jika jamaah memiliki keluarga, update total keluarga
         if ($jamaah->id_keluarga) {
             $keluargaService = new \App\Services\KeluargaService();
             $keluargaService->recalculateKeluarga($jamaah->id_keluarga);

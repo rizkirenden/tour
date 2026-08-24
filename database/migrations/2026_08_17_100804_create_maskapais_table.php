@@ -10,9 +10,7 @@ return new class extends Migration
     {
         Schema::create('maskapais', function (Blueprint $table) {
             $table->id('id_maskapai');
-            $table->string('kode_maskapai', 10)->unique();
-            $table->string('nama_maskapai', 50);
-            $table->enum('tipe_penerbangan', ['Domestik', 'Internasional']);
+            $table->string('nama_maskapai', 100);
             $table->timestamps();
         });
     }

@@ -37,50 +37,64 @@
                 @method('PUT')
 
                 <div class="p-6 space-y-6">
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1.5">
-                                Kode Maskapai <span class="text-red-500">*</span>
-                            </label>
-                            <input type="text" name="kode_maskapai"
-                                value="{{ old('kode_maskapai', $maskapai->kode_maskapai) }}"
-                                class="w-full px-4 py-2 border border-gray-200 rounded-xl focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500 text-sm uppercase"
-                                placeholder="Contoh: GA, SV, EK" required>
-                            @error('kode_maskapai')
-                                <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
-                            @enderror
-                        </div>
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1.5">
-                                Nama Maskapai <span class="text-red-500">*</span>
-                            </label>
-                            <input type="text" name="nama_maskapai"
-                                value="{{ old('nama_maskapai', $maskapai->nama_maskapai) }}"
-                                class="w-full px-4 py-2 border border-gray-200 rounded-xl focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500 text-sm"
-                                placeholder="Contoh: Garuda Indonesia" required>
-                            @error('nama_maskapai')
-                                <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
-                            @enderror
-                        </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1.5">
+                            Nama Maskapai <span class="text-red-500">*</span>
+                        </label>
+                        <input type="text" name="nama_maskapai"
+                            value="{{ old('nama_maskapai', $maskapai->nama_maskapai) }}"
+                            class="w-full px-4 py-2 border border-gray-200 rounded-xl focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500 text-sm"
+                            placeholder="Contoh: Garuda Indonesia" required>
+                        @error('nama_maskapai')
+                            <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+                        @enderror
                     </div>
 
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1.5">
+                        <label class="block text-sm font-medium text-gray-700 mb-3">
                             Tipe Penerbangan <span class="text-red-500">*</span>
+                            <span class="text-xs text-gray-400 font-normal">(pilih minimal 1)</span>
                         </label>
-                        <select name="tipe_penerbangan"
-                            class="w-full px-4 py-2 border border-gray-200 rounded-xl focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500 text-sm">
-                            <option value="">Pilih Tipe</option>
-                            <option value="Domestik"
-                                {{ old('tipe_penerbangan', $maskapai->tipe_penerbangan) == 'Domestik' ? 'selected' : '' }}>
-                                Domestik</option>
-                            <option value="Internasional"
-                                {{ old('tipe_penerbangan', $maskapai->tipe_penerbangan) == 'Internasional' ? 'selected' : '' }}>
-                                Internasional</option>
-                        </select>
+                        @php
+                            $selectedTipes = old(
+                                'tipe_penerbangan',
+                                $maskapai->tipePenerbangan->pluck('tipe_penerbangan')->toArray(),
+                            );
+                        @endphp
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                            <label
+                                class="flex items-center p-4 border border-gray-200 rounded-xl hover:bg-green-50 transition-colors cursor-pointer {{ in_array('Domestik', $selectedTipes) ? 'border-green-500 bg-green-50' : '' }}">
+                                <input type="checkbox" name="tipe_penerbangan[]" value="Domestik"
+                                    {{ in_array('Domestik', $selectedTipes) ? 'checked' : '' }}
+                                    class="w-4 h-4 text-green-500 border-gray-300 rounded focus:ring-green-500">
+                                <div class="ml-3">
+                                    <span class="text-sm font-medium text-gray-700">Domestik</span>
+                                    <p class="text-xs text-gray-400">Penerbangan dalam negeri</p>
+                                </div>
+                                <span
+                                    class="ml-auto inline-flex px-2.5 py-0.5 bg-green-100 text-green-700 rounded-full text-xs">Domestik</span>
+                            </label>
+
+                            <label
+                                class="flex items-center p-4 border border-gray-200 rounded-xl hover:bg-blue-50 transition-colors cursor-pointer {{ in_array('Internasional', $selectedTipes) ? 'border-blue-500 bg-blue-50' : '' }}">
+                                <input type="checkbox" name="tipe_penerbangan[]" value="Internasional"
+                                    {{ in_array('Internasional', $selectedTipes) ? 'checked' : '' }}
+                                    class="w-4 h-4 text-blue-500 border-gray-300 rounded focus:ring-blue-500">
+                                <div class="ml-3">
+                                    <span class="text-sm font-medium text-gray-700">Internasional</span>
+                                    <p class="text-xs text-gray-400">Penerbangan luar negeri</p>
+                                </div>
+                                <span
+                                    class="ml-auto inline-flex px-2.5 py-0.5 bg-blue-100 text-blue-700 rounded-full text-xs">Internasional</span>
+                            </label>
+                        </div>
                         @error('tipe_penerbangan')
-                            <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+                            <p class="text-red-500 text-xs mt-2">{{ $message }}</p>
                         @enderror
+                        <p class="text-xs text-gray-400 mt-3">
+                            <i class="fas fa-info-circle mr-1"></i>
+                            Satu maskapai bisa memiliki dua tipe penerbangan (Domestik dan Internasional)
+                        </p>
                     </div>
 
                     <div class="flex items-center justify-end gap-3 pt-4 border-t border-gray-100">

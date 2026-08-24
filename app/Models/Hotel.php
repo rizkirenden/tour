@@ -13,7 +13,6 @@ class Hotel extends Model
     protected $primaryKey = 'id_hotel';
 
     protected $fillable = [
-        'kode_hotel',
         'nama_hotel',
         'lokasi',
         'tipe_hotel',

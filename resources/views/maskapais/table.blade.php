@@ -3,7 +3,6 @@
         <thead>
             <tr class="border-b border-gray-200">
                 <th class="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">No</th>
-                <th class="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Kode</th>
                 <th class="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Nama
                     Maskapai</th>
                 <th class="px-4 py-3 text-center text-xs font-semibold text-gray-500 uppercase tracking-wider">Tipe
@@ -13,27 +12,27 @@
         </thead>
         <tbody class="divide-y divide-gray-100">
             @forelse($data as $index => $item)
-                @php
-                    $service = app(\App\Services\MaskapaiService::class);
-                    $badgeClass = $service->getBadgeTipe($item->tipe_penerbangan);
-                @endphp
                 <tr class="hover:bg-gray-50 transition-colors duration-150">
                     <td class="px-4 py-3">
                         <span class="text-sm text-gray-600">{{ $data->firstItem() + $index }}</span>
                     </td>
                     <td class="px-4 py-3">
-                        <span
-                            class="inline-flex px-2.5 py-1 bg-yellow-100 text-yellow-700 rounded-lg text-xs font-mono font-semibold">
-                            {{ $item->kode_maskapai }}
-                        </span>
-                    </td>
-                    <td class="px-4 py-3">
                         <p class="font-medium text-gray-800">{{ $item->nama_maskapai }}</p>
                     </td>
                     <td class="px-4 py-3 text-center">
-                        <span class="inline-flex px-3 py-1 rounded-full text-xs font-medium {{ $badgeClass }}">
-                            {{ $item->tipe_penerbangan }}
-                        </span>
+                        <div class="flex flex-wrap justify-center gap-1.5">
+                            @forelse($item->tipePenerbangan as $tipe)
+                                @if ($tipe->tipe_penerbangan == 'Internasional')
+                                    <span
+                                        class="inline-flex px-3 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-700">Internasional</span>
+                                @else
+                                    <span
+                                        class="inline-flex px-3 py-1 rounded-full text-xs font-medium bg-green-100 text-green-700">Domestik</span>
+                                @endif
+                            @empty
+                                <span class="text-xs text-gray-400">-</span>
+                            @endforelse
+                        </div>
                     </td>
                     <td class="px-4 py-3">
                         <div class="flex items-center justify-center gap-1.5">
@@ -59,7 +58,7 @@
                 </tr>
             @empty
                 <tr>
-                    <td colspan="5" class="px-4 py-12 text-center">
+                    <td colspan="4" class="px-4 py-12 text-center">
                         <div class="flex flex-col items-center">
                             <div class="w-16 h-16 bg-gray-100 rounded-2xl flex items-center justify-center mb-3">
                                 <i class="fas fa-plane text-gray-300 text-3xl"></i>

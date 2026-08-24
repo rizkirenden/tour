@@ -45,10 +45,6 @@
                         <div>
                             <div class="flex items-center gap-3 flex-wrap">
                                 <h2 class="text-2xl font-bold text-gray-800">{{ $perlengkapan->nama_perlengkapan }}</h2>
-                                <span
-                                    class="inline-flex px-3 py-1 bg-yellow-100 text-yellow-700 rounded-lg text-xs font-mono font-semibold">
-                                    {{ $perlengkapan->kode_perlengkapan }}
-                                </span>
                             </div>
                             <p class="text-gray-500 text-sm mt-1">
                                 <i class="fas {{ $perlengkapan->kategori_icon }} mr-1"></i>
@@ -68,10 +64,6 @@
                             <i class="fas fa-info-circle text-yellow-500 mr-2"></i> Informasi Perlengkapan
                         </h6>
                         <dl class="space-y-3">
-                            <div class="flex justify-between text-sm">
-                                <dt class="text-gray-500">Kode Perlengkapan</dt>
-                                <dd class="font-medium text-gray-700">{{ $perlengkapan->kode_perlengkapan }}</dd>
-                            </div>
                             <div class="flex justify-between text-sm">
                                 <dt class="text-gray-500">Nama Perlengkapan</dt>
                                 <dd class="font-medium text-gray-700">{{ $perlengkapan->nama_perlengkapan }}</dd>

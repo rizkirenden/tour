@@ -61,6 +61,11 @@
                             <p class="text-gray-500 text-sm">
                                 <i class="fas fa-map-marker-alt mr-1"></i> Kota Asal: {{ $jamaah->kota_asal ?? '-' }}
                             </p>
+                            @if ($jamaah->nik)
+                                <p class="text-gray-500 text-sm">
+                                    <i class="fas fa-id-card mr-1"></i> NIK: {{ $jamaah->nik }}
+                                </p>
+                            @endif
                         </div>
                         <div class="text-right">
                             <p class="text-2xl font-bold text-yellow-600">
@@ -84,6 +89,18 @@
                                 <dd class="font-medium text-gray-700">{{ $jamaah->nama_lengkap }}</dd>
                             </div>
                             <div class="flex justify-between text-sm">
+                                <dt class="text-gray-500">NIK</dt>
+                                <dd class="font-medium text-gray-700">{{ $jamaah->nik ?? '-' }}</dd>
+                            </div>
+                            <div class="flex justify-between text-sm">
+                                <dt class="text-gray-500">Nama Ayah</dt>
+                                <dd class="font-medium text-gray-700">{{ $jamaah->nama_ayah ?? '-' }}</dd>
+                            </div>
+                            <div class="flex justify-between text-sm">
+                                <dt class="text-gray-500">Pekerjaan</dt>
+                                <dd class="font-medium text-gray-700">{{ $jamaah->pekerjaan ?? '-' }}</dd>
+                            </div>
+                            <div class="flex justify-between text-sm">
                                 <dt class="text-gray-500">Jenis Kelamin</dt>
                                 <dd class="font-medium text-gray-700">{{ $jamaah->jenis_kelamin_label }}</dd>
                             </div>
@@ -93,16 +110,41 @@
                                     {{ $jamaah->tanggal_lahir_formatted }}</dd>
                             </div>
                             <div class="flex justify-between text-sm">
-                                <dt class="text-gray-500">Nomor Paspor</dt>
-                                <dd class="font-medium text-gray-700">{{ $jamaah->nomor_paspor ?? '-' }}</dd>
-                            </div>
-                            <div class="flex justify-between text-sm">
                                 <dt class="text-gray-500">Telepon</dt>
                                 <dd class="font-medium text-gray-700">{{ $jamaah->telepon ?? '-' }}</dd>
                             </div>
                             <div class="flex justify-between text-sm">
+                                <dt class="text-gray-500">WhatsApp</dt>
+                                <dd class="font-medium text-gray-700">{{ $jamaah->wa ?? '-' }}</dd>
+                            </div>
+                            <div class="flex justify-between text-sm">
                                 <dt class="text-gray-500">Alamat</dt>
                                 <dd class="font-medium text-gray-700">{{ $jamaah->alamat ?? '-' }}</dd>
+                            </div>
+                        </dl>
+                    </div>
+
+                    <!-- Informasi Passport -->
+                    <div class="bg-gray-50 rounded-xl p-5 border border-gray-100">
+                        <h6 class="text-sm font-semibold text-gray-700 mb-4 flex items-center">
+                            <i class="fas fa-passport text-yellow-500 mr-2"></i> Informasi Passport
+                        </h6>
+                        <dl class="space-y-3">
+                            <div class="flex justify-between text-sm">
+                                <dt class="text-gray-500">Nomor Passport</dt>
+                                <dd class="font-medium text-gray-700">{{ $jamaah->nomor_paspor ?? '-' }}</dd>
+                            </div>
+                            <div class="flex justify-between text-sm">
+                                <dt class="text-gray-500">Tanggal Terbit</dt>
+                                <dd class="font-medium text-gray-700">{{ $jamaah->paspor_terbit_formatted }}</dd>
+                            </div>
+                            <div class="flex justify-between text-sm">
+                                <dt class="text-gray-500">Tanggal Berakhir</dt>
+                                <dd class="font-medium text-gray-700">{{ $jamaah->paspor_expired_formatted }}</dd>
+                            </div>
+                            <div class="flex justify-between text-sm">
+                                <dt class="text-gray-500">Diterbitkan Di</dt>
+                                <dd class="font-medium text-gray-700">{{ $jamaah->paspor_diterbitkan_di ?? '-' }}</dd>
                             </div>
                         </dl>
                     </div>
@@ -169,11 +211,10 @@
                     </div>
 
                     <!-- Keuangan -->
-                    <div class="bg-gray-50 rounded-xl p-5 border border-gray-100">
+                    <div class="bg-gray-50 rounded-xl p-5 border border-gray-100 lg:col-span-2">
                         <h6 class="text-sm font-semibold text-gray-700 mb-4 flex items-center">
                             <i class="fas fa-money-bill-wave text-yellow-500 mr-2"></i> Keuangan
                         </h6>
-                        <!-- Di bagian Keuangan -->
                         <dl class="space-y-3">
                             <div class="flex justify-between text-sm">
                                 <dt class="text-gray-500">Status Pembayaran</dt>
@@ -232,7 +273,7 @@
                                 <p class="text-sm font-bold text-gray-800">{{ $jamaah->fee_agent_formatted }}</p>
                             </div>
                             <div class="bg-white rounded-lg p-3 border border-gray-200 text-center">
-                                <p class="text-xs text-gray-500">Diskon ({{ $jamaah->persen_diskon ?? 0 }}%)</p>
+                                <p class="text-xs text-gray-500">Diskon</p>
                                 <p class="text-sm font-bold text-red-600">{{ $jamaah->total_diskon_formatted }}</p>
                             </div>
                         </div>
@@ -250,35 +291,124 @@
                         </div>
                     </div>
 
-                    <!-- Foto Dokumen -->
+                    <!-- Dokumen -->
                     <div class="bg-gray-50 rounded-xl p-5 border border-gray-100 lg:col-span-2">
                         <h6 class="text-sm font-semibold text-gray-700 mb-4 flex items-center">
-                            <i class="fas fa-images text-yellow-500 mr-2"></i> Dokumen
+                            <i class="fas fa-folder-open text-yellow-500 mr-2"></i> Dokumen
                         </h6>
-                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                            @foreach (['ktp' => 'KTP', 'vaksin' => 'Vaksin', 'visa' => 'Visa'] as $field => $label)
-                                <div class="bg-white rounded-lg p-3 border border-gray-200 text-center">
-                                    <p class="text-xs text-gray-500 mb-2">Foto {{ $label }}</p>
-                                    @php $url = 'foto_' . $field . '_url'; @endphp
-                                    @if ($jamaah->$url)
-                                        <a href="{{ $jamaah->$url }}" target="_blank" class="inline-block">
-                                            <img src="{{ $jamaah->$url }}" alt="Foto {{ $label }}"
-                                                class="w-32 h-32 object-cover rounded-lg mx-auto border border-gray-200 hover:shadow-lg transition">
+
+                        <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                            <!-- KTP/KK -->
+                            <div class="bg-white rounded-lg p-3 border border-gray-200 text-center">
+                                <p class="text-xs text-gray-500 mb-2">KTP / KK</p>
+                                @if ($jamaah->file_ktp_kk_url)
+                                    <a href="{{ $jamaah->file_ktp_kk_url }}" target="_blank"
+                                        class="inline-flex items-center justify-center w-24 h-24 bg-gray-100 rounded-lg mx-auto border border-gray-200 hover:shadow-lg transition">
+                                        @if ($jamaah->file_ktp_kk_type == 'pdf')
+                                            <i class="fas fa-file-pdf text-5xl text-red-500"></i>
+                                        @else
+                                            <img src="{{ $jamaah->file_ktp_kk_url }}" alt="KTP/KK"
+                                                class="w-24 h-24 object-cover rounded-lg">
+                                        @endif
+                                    </a>
+                                    <p class="text-xs text-gray-400 mt-2">
+                                        <a href="{{ $jamaah->file_ktp_kk_url }}" target="_blank"
+                                            class="text-blue-500 hover:text-blue-700">
+                                            <i class="fas fa-eye mr-1"></i> Lihat
                                         </a>
-                                        <p class="text-xs text-gray-400 mt-2">
-                                            <a href="{{ $jamaah->$url }}" target="_blank"
-                                                class="text-blue-500 hover:text-blue-700">Lihat Full</a>
-                                        </p>
-                                    @else
-                                        <div
-                                            class="w-32 h-32 bg-gray-100 rounded-lg mx-auto flex items-center justify-center border border-gray-200">
-                                            <i
-                                                class="fas {{ $field == 'ktp' ? 'fa-user-circle' : ($field == 'vaksin' ? 'fa-syringe' : 'fa-passport') }} text-4xl text-gray-300"></i>
-                                        </div>
-                                        <p class="text-xs text-gray-400 mt-2">Tidak ada foto</p>
-                                    @endif
-                                </div>
-                            @endforeach
+                                    </p>
+                                @else
+                                    <div
+                                        class="w-24 h-24 bg-gray-100 rounded-lg mx-auto flex items-center justify-center border border-gray-200">
+                                        <i class="fas fa-file text-4xl text-gray-300"></i>
+                                    </div>
+                                    <p class="text-xs text-gray-400 mt-2">Tidak ada file</p>
+                                @endif
+                            </div>
+
+                            <!-- Vaksin -->
+                            <div class="bg-white rounded-lg p-3 border border-gray-200 text-center">
+                                <p class="text-xs text-gray-500 mb-2">Vaksin</p>
+                                @if ($jamaah->file_vaksin_url)
+                                    <a href="{{ $jamaah->file_vaksin_url }}" target="_blank"
+                                        class="inline-flex items-center justify-center w-24 h-24 bg-gray-100 rounded-lg mx-auto border border-gray-200 hover:shadow-lg transition">
+                                        @if ($jamaah->file_vaksin_type == 'pdf')
+                                            <i class="fas fa-file-pdf text-5xl text-red-500"></i>
+                                        @else
+                                            <img src="{{ $jamaah->file_vaksin_url }}" alt="Vaksin"
+                                                class="w-24 h-24 object-cover rounded-lg">
+                                        @endif
+                                    </a>
+                                    <p class="text-xs text-gray-400 mt-2">
+                                        <a href="{{ $jamaah->file_vaksin_url }}" target="_blank"
+                                            class="text-blue-500 hover:text-blue-700">
+                                            <i class="fas fa-eye mr-1"></i> Lihat
+                                        </a>
+                                    </p>
+                                @else
+                                    <div
+                                        class="w-24 h-24 bg-gray-100 rounded-lg mx-auto flex items-center justify-center border border-gray-200">
+                                        <i class="fas fa-file text-4xl text-gray-300"></i>
+                                    </div>
+                                    <p class="text-xs text-gray-400 mt-2">Tidak ada file</p>
+                                @endif
+                            </div>
+
+                            <!-- Visa -->
+                            <div class="bg-white rounded-lg p-3 border border-gray-200 text-center">
+                                <p class="text-xs text-gray-500 mb-2">Visa</p>
+                                @if ($jamaah->file_visa_url)
+                                    <a href="{{ $jamaah->file_visa_url }}" target="_blank"
+                                        class="inline-flex items-center justify-center w-24 h-24 bg-gray-100 rounded-lg mx-auto border border-gray-200 hover:shadow-lg transition">
+                                        @if ($jamaah->file_visa_type == 'pdf')
+                                            <i class="fas fa-file-pdf text-5xl text-red-500"></i>
+                                        @else
+                                            <img src="{{ $jamaah->file_visa_url }}" alt="Visa"
+                                                class="w-24 h-24 object-cover rounded-lg">
+                                        @endif
+                                    </a>
+                                    <p class="text-xs text-gray-400 mt-2">
+                                        <a href="{{ $jamaah->file_visa_url }}" target="_blank"
+                                            class="text-blue-500 hover:text-blue-700">
+                                            <i class="fas fa-eye mr-1"></i> Lihat
+                                        </a>
+                                    </p>
+                                @else
+                                    <div
+                                        class="w-24 h-24 bg-gray-100 rounded-lg mx-auto flex items-center justify-center border border-gray-200">
+                                        <i class="fas fa-file text-4xl text-gray-300"></i>
+                                    </div>
+                                    <p class="text-xs text-gray-400 mt-2">Tidak ada file</p>
+                                @endif
+                            </div>
+
+                            <!-- Passport -->
+                            <div class="bg-white rounded-lg p-3 border border-gray-200 text-center">
+                                <p class="text-xs text-gray-500 mb-2">Passport</p>
+                                @if ($jamaah->file_paspor_url)
+                                    <a href="{{ $jamaah->file_paspor_url }}" target="_blank"
+                                        class="inline-flex items-center justify-center w-24 h-24 bg-gray-100 rounded-lg mx-auto border border-gray-200 hover:shadow-lg transition">
+                                        @if ($jamaah->file_paspor_type == 'pdf')
+                                            <i class="fas fa-file-pdf text-5xl text-red-500"></i>
+                                        @else
+                                            <img src="{{ $jamaah->file_paspor_url }}" alt="Passport"
+                                                class="w-24 h-24 object-cover rounded-lg">
+                                        @endif
+                                    </a>
+                                    <p class="text-xs text-gray-400 mt-2">
+                                        <a href="{{ $jamaah->file_paspor_url }}" target="_blank"
+                                            class="text-blue-500 hover:text-blue-700">
+                                            <i class="fas fa-eye mr-1"></i> Lihat
+                                        </a>
+                                    </p>
+                                @else
+                                    <div
+                                        class="w-24 h-24 bg-gray-100 rounded-lg mx-auto flex items-center justify-center border border-gray-200">
+                                        <i class="fas fa-file text-4xl text-gray-300"></i>
+                                    </div>
+                                    <p class="text-xs text-gray-400 mt-2">Tidak ada file</p>
+                                @endif
+                            </div>
                         </div>
                     </div>
 

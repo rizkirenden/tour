@@ -7,6 +7,7 @@ use App\Models\ProdukPaket;
 use App\Models\KotaAsal;
 use App\Models\Diskon;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
 
 class JamaahService
 {
@@ -20,7 +21,8 @@ class JamaahService
                 $q->where('nama_lengkap', 'like', "%{$search}%")
                   ->orWhere('nomor_paspor', 'like', "%{$search}%")
                   ->orWhere('id_keberangkatan', 'like', "%{$search}%")
-                  ->orWhere('produk_paket', 'like', "%{$search}%");
+                  ->orWhere('produk_paket', 'like', "%{$search}%")
+                  ->orWhere('nik', 'like', "%{$search}%");
             });
         }
 
@@ -68,7 +70,7 @@ class JamaahService
             if (!empty($data['id_diskon'])) {
                 $diskonData = Diskon::find($data['id_diskon']);
                 if ($diskonData && $diskonData->is_available) {
-                    $nilaiDiskon = $diskonData->nilai_diskon; // Nilai diskon per orang
+                    $nilaiDiskon = $diskonData->nilai_diskon;
                 }
             }
 
@@ -82,21 +84,13 @@ class JamaahService
 
             // Hitung tagihan
             $data['total_tagihan_sebelum_diskon'] = $hargaProduk + $data['fee_agent'];
-            $data['nilai_diskon'] = $nilaiDiskon; // Simpan nilai diskon per orang
-            $data['total_diskon'] = $nilaiDiskon; // Total diskon = nilai diskon per orang
+            $data['nilai_diskon'] = $nilaiDiskon;
+            $data['total_diskon'] = $nilaiDiskon;
             $data['total_tagihan_setelah_diskon'] = $data['total_tagihan_sebelum_diskon'] - $nilaiDiskon;
             $data['sisa_tagihan'] = $data['total_tagihan_setelah_diskon'] - $data['total_dibayar'];
 
             // Tentukan status pembayaran
-            if ($data['total_dibayar'] == 0) {
-                $data['status_pembayaran'] = 'Belum Bayar';
-            } elseif ($data['total_dibayar'] >= $data['total_tagihan_setelah_diskon']) {
-                $data['status_pembayaran'] = 'Lunas';
-            } elseif ($data['total_dibayar'] >= $data['total_tagihan_setelah_diskon'] * 0.5) {
-                $data['status_pembayaran'] = 'Setoran';
-            } else {
-                $data['status_pembayaran'] = 'DP';
-            }
+            $data['status_pembayaran'] = $this->determinePaymentStatus($data['total_dibayar'], $data['total_tagihan_setelah_diskon']);
 
             // Create Jamaah
             $jamaah = Jamaah::create($data);

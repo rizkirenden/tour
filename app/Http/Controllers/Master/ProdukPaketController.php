@@ -6,7 +6,6 @@ use App\Http\Controllers\Controller;
 use App\Models\PaketTour;
 use App\Services\ProdukPaketService;
 use Illuminate\Http\Request;
-use Illuminate\Validation\Rule;
 use Illuminate\Support\Facades\Storage;
 
 class ProdukPaketController extends Controller
@@ -39,12 +38,11 @@ class ProdukPaketController extends Controller
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'kode_produk' => 'nullable|string|max:20|unique:produk_pakets,kode_produk',
             'nama_produk' => 'required|string|max:100',
             'deskripsi' => 'nullable|string',
             'include_tur' => 'nullable|boolean',
             'paket_tour_id' => 'nullable|exists:paket_tours,id_paket_tour',
-            'harga_dasar' => 'nullable|integer|min:0', // Validation integer
+            'harga_dasar' => 'nullable|integer|min:0',
             'durasi_perjalanan' => 'nullable|integer|min:0',
             'durasi_mekkah' => 'nullable|integer|min:0',
             'durasi_madinah' => 'nullable|integer|min:0',
@@ -92,12 +90,11 @@ class ProdukPaketController extends Controller
     public function update(Request $request, $id)
     {
         $validated = $request->validate([
-            'kode_produk' => ['nullable', 'string', 'max:20', Rule::unique('produk_pakets', 'kode_produk')->ignore($id, 'id_produk')],
             'nama_produk' => 'required|string|max:100',
             'deskripsi' => 'nullable|string',
             'include_tur' => 'nullable|boolean',
             'paket_tour_id' => 'nullable|exists:paket_tours,id_paket_tour',
-            'harga_dasar' => 'nullable|integer|min:0', // Validation integer
+            'harga_dasar' => 'nullable|integer|min:0',
             'durasi_perjalanan' => 'nullable|integer|min:0',
             'durasi_mekkah' => 'nullable|integer|min:0',
             'durasi_madinah' => 'nullable|integer|min:0',

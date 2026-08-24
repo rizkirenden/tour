@@ -14,13 +14,12 @@ class JenisTransaksiService
         if (!empty($filters['search'])) {
             $search = $filters['search'];
             $query->where(function($q) use ($search) {
-                $q->where('kode', 'like', "%{$search}%")
-                  ->orWhere('nama', 'like', "%{$search}%")
+                $q->where('nama', 'like', "%{$search}%")
                   ->orWhere('keterangan', 'like', "%{$search}%");
             });
         }
 
-        return $query->orderBy('kode', 'asc')->paginate(10);
+        return $query->orderBy('nama', 'asc')->paginate(10);
     }
 
     public function getById($id)

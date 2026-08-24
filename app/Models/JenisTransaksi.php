@@ -13,14 +13,8 @@ class JenisTransaksi extends Model
     protected $primaryKey = 'id_jenis';
 
     protected $fillable = [
-        'kode',
         'nama',
         'keterangan',
-        'is_active',
-    ];
-
-    protected $casts = [
-        'is_active' => 'boolean',
     ];
 
     public function transaksis()
@@ -33,18 +27,9 @@ class JenisTransaksi extends Model
         return $this->hasMany(DetailHargaProduk::class, 'id_jenis_transaksi', 'id_jenis');
     }
 
-    public function getKodeNamaAttribute()
+    // Accessor untuk menampilkan nama dengan keterangan
+    public function getNamaKeteranganAttribute()
     {
-        return $this->kode . ' - ' . $this->nama;
-    }
-
-    public function scopeActive($query)
-    {
-        return $query->where('is_active', true);
-    }
-
-    public function getKodeNamaKeteranganAttribute()
-    {
-        return $this->kode . ' - ' . $this->nama . ' (' . $this->keterangan . ')';
+        return $this->nama . ($this->keterangan ? ' (' . $this->keterangan . ')' : '');
     }
 }

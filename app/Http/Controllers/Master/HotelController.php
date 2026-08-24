@@ -6,7 +6,6 @@ use App\Http\Controllers\Controller;
 use App\Services\HotelService;
 use App\Models\Kamar;
 use Illuminate\Http\Request;
-use Illuminate\Validation\Rule;
 
 class HotelController extends Controller
 {
@@ -37,7 +36,6 @@ class HotelController extends Controller
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'kode_hotel' => 'required|string|max:20|unique:hotels,kode_hotel',
             'nama_hotel' => 'required|string|max:100',
             'lokasi' => 'nullable|string',
             'tipe_hotel' => 'nullable|string',
@@ -74,7 +72,6 @@ class HotelController extends Controller
     public function update(Request $request, $id)
     {
         $validated = $request->validate([
-            'kode_hotel' => ['required', 'string', 'max:20', Rule::unique('hotels', 'kode_hotel')->ignore($id, 'id_hotel')],
             'nama_hotel' => 'required|string|max:100',
             'lokasi' => 'nullable|string',
             'tipe_hotel' => 'nullable|string',

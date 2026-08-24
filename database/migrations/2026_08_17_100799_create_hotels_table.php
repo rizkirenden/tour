@@ -10,7 +10,6 @@ return new class extends Migration
     {
         Schema::create('hotels', function (Blueprint $table) {
             $table->id('id_hotel');
-            $table->string('kode_hotel', 20)->unique();
             $table->string('nama_hotel', 100);
             $table->string('lokasi')->nullable();
             $table->string('tipe_hotel')->nullable();

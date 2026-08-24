@@ -14,8 +14,7 @@ class PerlengkapanService
         if (!empty($filters['search'])) {
             $search = $filters['search'];
             $query->where(function($q) use ($search) {
-                $q->where('kode_perlengkapan', 'like', "%{$search}%")
-                  ->orWhere('nama_perlengkapan', 'like', "%{$search}%")
+                $q->where('nama_perlengkapan', 'like', "%{$search}%")
                   ->orWhere('kategori', 'like', "%{$search}%")
                   ->orWhere('deskripsi', 'like', "%{$search}%");
             });

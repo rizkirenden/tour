@@ -10,7 +10,6 @@ return new class extends Migration
     {
         Schema::create('produk_pakets', function (Blueprint $table) {
             $table->id('id_produk');
-            $table->string('kode_produk', 20)->unique();
             $table->string('nama_produk', 100);
             $table->text('deskripsi')->nullable();
             $table->boolean('include_tur')->default(0);

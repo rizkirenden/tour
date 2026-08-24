@@ -43,17 +43,6 @@
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-1.5">
-                                Kode Hotel <span class="text-red-500">*</span>
-                            </label>
-                            <input type="text" name="kode_hotel" value="{{ old('kode_hotel', $hotel->kode_hotel) }}"
-                                class="w-full px-4 py-2 border border-gray-200 rounded-xl focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500 text-sm uppercase"
-                                placeholder="Contoh: HOT-001" required>
-                            @error('kode_hotel')
-                                <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
-                            @enderror
-                        </div>
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1.5">
                                 Nama Hotel <span class="text-red-500">*</span>
                             </label>
                             <input type="text" name="nama_hotel" value="{{ old('nama_hotel', $hotel->nama_hotel) }}"
@@ -63,24 +52,21 @@
                                 <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
                             @enderror
                         </div>
-                    </div>
-
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-1.5">Lokasi</label>
                             <input type="text" name="lokasi" value="{{ old('lokasi', $hotel->lokasi) }}"
                                 class="w-full px-4 py-2 border border-gray-200 rounded-xl focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500 text-sm"
                                 placeholder="Contoh: Jarak 500m dari Masjidil Haram">
                         </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-1.5">Tipe Hotel</label>
                             <input type="text" name="tipe_hotel" value="{{ old('tipe_hotel', $hotel->tipe_hotel) }}"
                                 class="w-full px-4 py-2 border border-gray-200 rounded-xl focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500 text-sm"
                                 placeholder="Contoh: Luxury, Premium, Business">
                         </div>
-                    </div>
-
-                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-1.5">Bintang</label>
                             <select name="bintang"
@@ -94,6 +80,9 @@
                                 @endfor
                             </select>
                         </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-1.5">Negara</label>
                             <input type="text" name="negara" value="{{ old('negara', $hotel->negara) }}"
@@ -161,8 +150,7 @@
                                             </label>
                                             <input type="text" name="kamars[{{ $index }}][tipe_kamar]"
                                                 class="w-full px-3 py-1.5 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500"
-                                                value="{{ old("kamars.$index.tipe_kamar", $kamar->tipe_kamar) }}"
-                                                required>
+                                                value="{{ old("kamars.$index.tipe_kamar", $kamar->tipe_kamar) }}" required>
                                         </div>
                                         <div>
                                             <label class="block text-xs font-medium text-gray-600 mb-1">
@@ -276,47 +264,47 @@
             newItem.className = 'kamar-item bg-gray-50 rounded-xl p-4 mb-3 border border-gray-200';
             newItem.style.animation = 'fadeIn 0.3s ease';
             newItem.innerHTML = `
-            <div class="grid grid-cols-1 md:grid-cols-4 gap-3">
-                <div>
-                    <label class="block text-xs font-medium text-gray-600 mb-1">
-                        Tipe Kamar <span class="text-red-500">*</span>
-                    </label>
-                    <input type="text" name="kamars[${kamarIndex}][tipe_kamar]"
-                        class="w-full px-3 py-1.5 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500"
-                        placeholder="Deluxe Suite" required>
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-3">
+                    <div>
+                        <label class="block text-xs font-medium text-gray-600 mb-1">
+                            Tipe Kamar <span class="text-red-500">*</span>
+                        </label>
+                        <input type="text" name="kamars[${kamarIndex}][tipe_kamar]"
+                            class="w-full px-3 py-1.5 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500"
+                            placeholder="Deluxe Suite" required>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-medium text-gray-600 mb-1">
+                            Kapasitas <span class="text-red-500">*</span>
+                        </label>
+                        <input type="number" name="kamars[${kamarIndex}][kapasitas]"
+                            class="w-full px-3 py-1.5 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500"
+                            placeholder="2" min="1" required>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-medium text-gray-600 mb-1">Jumlah Kamar</label>
+                        <input type="number" name="kamars[${kamarIndex}][jumlah_kamar]" value="1"
+                            class="w-full px-3 py-1.5 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500"
+                            min="1">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-medium text-gray-600 mb-1">Harga/Malam</label>
+                        <input type="number" name="kamars[${kamarIndex}][harga_per_malam]" step="0.01"
+                            class="w-full px-3 py-1.5 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500"
+                            placeholder="0" min="0">
+                    </div>
                 </div>
-                <div>
-                    <label class="block text-xs font-medium text-gray-600 mb-1">
-                        Kapasitas <span class="text-red-500">*</span>
-                    </label>
-                    <input type="number" name="kamars[${kamarIndex}][kapasitas]"
+                <div class="mt-2">
+                    <label class="block text-xs font-medium text-gray-600 mb-1">Fasilitas Kamar</label>
+                    <input type="text" name="kamars[${kamarIndex}][fasilitas_kamar]"
                         class="w-full px-3 py-1.5 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500"
-                        placeholder="2" min="1" required>
+                        placeholder="AC, TV, WiFi, Bathub">
                 </div>
-                <div>
-                    <label class="block text-xs font-medium text-gray-600 mb-1">Jumlah Kamar</label>
-                    <input type="number" name="kamars[${kamarIndex}][jumlah_kamar]" value="1"
-                        class="w-full px-3 py-1.5 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500"
-                        min="1">
-                </div>
-                <div>
-                    <label class="block text-xs font-medium text-gray-600 mb-1">Harga/Malam</label>
-                    <input type="number" name="kamars[${kamarIndex}][harga_per_malam]" step="0.01"
-                        class="w-full px-3 py-1.5 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500"
-                        placeholder="0" min="0">
-                </div>
-            </div>
-            <div class="mt-2">
-                <label class="block text-xs font-medium text-gray-600 mb-1">Fasilitas Kamar</label>
-                <input type="text" name="kamars[${kamarIndex}][fasilitas_kamar]"
-                    class="w-full px-3 py-1.5 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500"
-                    placeholder="AC, TV, WiFi, Bathub">
-            </div>
-            <button type="button" onclick="removeKamar(this)"
-                class="mt-2 text-red-500 hover:text-red-700 text-sm font-medium">
-                <i class="fas fa-trash mr-1"></i> Hapus
-            </button>
-        `;
+                <button type="button" onclick="removeKamar(this)"
+                    class="mt-2 text-red-500 hover:text-red-700 text-sm font-medium">
+                    <i class="fas fa-trash mr-1"></i> Hapus
+                </button>
+            `;
             container.appendChild(newItem);
             kamarIndex++;
         }
@@ -334,21 +322,19 @@
             }
         }
 
-        // Add CSS animation
         const style = document.createElement('style');
         style.textContent = `
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(-10px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-        @keyframes fadeOut {
-            from { opacity: 1; transform: translateY(0); }
-            to { opacity: 0; transform: translateY(-10px); }
-        }
-    `;
+            @keyframes fadeIn {
+                from { opacity: 0; transform: translateY(-10px); }
+                to { opacity: 1; transform: translateY(0); }
+            }
+            @keyframes fadeOut {
+                from { opacity: 1; transform: translateY(0); }
+                to { opacity: 0; transform: translateY(-10px); }
+            }
+        `;
         document.head.appendChild(style);
 
-        // Validasi form sebelum submit
         document.getElementById('hotelForm').addEventListener('submit', function(e) {
             const kamarItems = document.querySelectorAll('.kamar-item');
             if (kamarItems.length === 0) {

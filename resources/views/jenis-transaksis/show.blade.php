@@ -45,11 +45,12 @@
                         <div>
                             <div class="flex items-center gap-3 flex-wrap">
                                 <h2 class="text-2xl font-bold text-gray-800">{{ $jenis->nama }}</h2>
-                                <span
-                                    class="inline-flex px-3 py-1 bg-yellow-100 text-yellow-700 rounded-lg text-xs font-mono font-semibold">
-                                    {{ $jenis->kode }}
-                                </span>
                             </div>
+                            @if ($jenis->keterangan)
+                                <p class="text-gray-500 text-sm mt-1">
+                                    <i class="fas fa-info-circle mr-1"></i> {{ $jenis->keterangan }}
+                                </p>
+                            @endif
                         </div>
                         <div class="text-right">
                             <p class="text-sm text-gray-500">ID: #{{ $jenis->id_jenis }}</p>
@@ -63,15 +64,6 @@
                             <i class="fas fa-info-circle text-yellow-500 mr-2"></i> Informasi Jenis Transaksi
                         </h6>
                         <dl class="space-y-3">
-                            <div class="flex justify-between text-sm">
-                                <dt class="text-gray-500">Kode</dt>
-                                <dd>
-                                    <span
-                                        class="inline-flex px-2.5 py-1 bg-yellow-100 text-yellow-700 rounded-lg text-xs font-mono font-semibold">
-                                        {{ $jenis->kode }}
-                                    </span>
-                                </dd>
-                            </div>
                             <div class="flex justify-between text-sm">
                                 <dt class="text-gray-500">Nama</dt>
                                 <dd class="font-medium text-gray-700">{{ $jenis->nama }}</dd>

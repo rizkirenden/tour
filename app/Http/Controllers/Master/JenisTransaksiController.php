@@ -5,7 +5,6 @@ namespace App\Http\Controllers\Master;
 use App\Http\Controllers\Controller;
 use App\Services\JenisTransaksiService;
 use Illuminate\Http\Request;
-use Illuminate\Validation\Rule;
 
 class JenisTransaksiController extends Controller
 {
@@ -36,8 +35,7 @@ class JenisTransaksiController extends Controller
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'kode' => 'required|string|max:20|unique:jenis_transaksis,kode',
-            'nama' => 'required|string|max:50',
+            'nama' => 'required|string|max:50|unique:jenis_transaksis,nama',
             'keterangan' => 'nullable|string',
         ]);
 
@@ -62,8 +60,7 @@ class JenisTransaksiController extends Controller
     public function update(Request $request, $id)
     {
         $validated = $request->validate([
-            'kode' => ['required', 'string', 'max:20', Rule::unique('jenis_transaksis', 'kode')->ignore($id, 'id_jenis')],
-            'nama' => 'required|string|max:50',
+            'nama' => 'required|string|max:50|unique:jenis_transaksis,nama,' . $id . ',id_jenis',
             'keterangan' => 'nullable|string',
         ]);
 

@@ -21,10 +21,15 @@
                 <h5 class="text-sm font-semibold text-gray-700">Daftar Maskapai</h5>
                 <p class="text-xs text-gray-400 mt-0.5">Kelola semua maskapai penerbangan</p>
             </div>
-            <a href="{{ route('master.maskapai.create') }}"
-                class="inline-flex items-center px-4 py-2 bg-yellow-500 text-white rounded-lg hover:bg-yellow-600 transition text-sm font-medium shadow-sm hover:shadow">
-                <i class="fas fa-plus mr-2"></i> Tambah Maskapai
-            </a>
+            <div class="flex items-center gap-3">
+                <span class="text-xs text-gray-500">
+                    Total: <span class="font-medium text-gray-700">{{ $data->total() }}</span> maskapai
+                </span>
+                <a href="{{ route('master.maskapai.create') }}"
+                    class="inline-flex items-center px-4 py-2 bg-yellow-500 text-white rounded-lg hover:bg-yellow-600 transition text-sm font-medium shadow-sm hover:shadow">
+                    <i class="fas fa-plus mr-2"></i> Tambah Maskapai
+                </a>
+            </div>
         </div>
 
         <div class="p-6">
@@ -37,6 +42,10 @@
                 <button onclick="applyFilter()"
                     class="px-4 py-2 bg-yellow-500 text-white rounded-lg hover:bg-yellow-600 transition text-sm font-medium">
                     <i class="fas fa-search mr-2"></i> Cari
+                </button>
+                <button onclick="resetFilter()"
+                    class="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition text-sm font-medium">
+                    <i class="fas fa-undo mr-2"></i> Reset
                 </button>
             </div>
 
@@ -54,6 +63,11 @@
             fetch(`{{ route('master.maskapai.index') }}?search=${search}&ajax=true`)
                 .then(response => response.text())
                 .then(html => document.getElementById('table-container').innerHTML = html);
+        }
+
+        function resetFilter() {
+            document.getElementById('search').value = '';
+            applyFilter();
         }
 
         let timeout = null;

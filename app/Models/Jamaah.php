@@ -20,9 +20,16 @@ class Jamaah extends Model
         'produk_paket',
         'id_diskon',
         'nama_lengkap',
+        'nik',
+        'nama_ayah',
+        'pekerjaan',
         'telepon',
+        'wa',
         'alamat',
         'nomor_paspor',
+        'paspor_expired',
+        'paspor_terbit',
+        'paspor_diterbitkan_di',
         'tanggal_lahir',
         'tempat_lahir',
         'jenis_kelamin',
@@ -31,9 +38,10 @@ class Jamaah extends Model
         'bandara_keberangkatan',
         'bulan_keberangkatan',
         'tahun_keberangkatan',
-        'foto_ktp',
-        'foto_vaksin',
-        'foto_visa',
+        'file_ktp_kk',
+        'file_vaksin',
+        'file_visa',
+        'file_paspor',
         'encryption_key',
         'jenis_pendampingan',
         'agent',
@@ -48,7 +56,7 @@ class Jamaah extends Model
         'hotel_madinah',
         'hotel_transit',
         'total_tagihan_sebelum_diskon',
-        'nilai_diskon', // Ganti persen_diskon
+        'nilai_diskon',
         'total_diskon',
         'total_tagihan_setelah_diskon',
         'total_dibayar',
@@ -60,6 +68,8 @@ class Jamaah extends Model
 
     protected $casts = [
         'tanggal_lahir' => 'date',
+        'paspor_expired' => 'date',
+        'paspor_terbit' => 'date',
         'fee_agent' => 'integer',
         'harga_tiket_pergi_domestik' => 'integer',
         'harga_tiket_pulang_domestik' => 'integer',
@@ -78,6 +88,7 @@ class Jamaah extends Model
         'is_kepala_keluarga' => 'boolean',
     ];
 
+    // === RELATIONSHIPS ===
     public function keluarga()
     {
         return $this->belongsTo(Keluarga::class, 'id_keluarga', 'id_keluarga');
@@ -98,6 +109,7 @@ class Jamaah extends Model
         return $this->belongsTo(Diskon::class, 'id_diskon', 'id_diskon');
     }
 
+    // === ACCESSORS ===
     public function getKepalaKeluargaLabelAttribute()
     {
         return $this->is_kepala_keluarga ? 'Ya' : 'Tidak';
@@ -125,6 +137,17 @@ class Jamaah extends Model
         return $this->tanggal_lahir ? $this->tanggal_lahir->format('d/m/Y') : '-';
     }
 
+    public function getPasporExpiredFormattedAttribute()
+    {
+        return $this->paspor_expired ? $this->paspor_expired->format('d/m/Y') : '-';
+    }
+
+    public function getPasporTerbitFormattedAttribute()
+    {
+        return $this->paspor_terbit ? $this->paspor_terbit->format('d/m/Y') : '-';
+    }
+
+    // === FORMATTED ATTRIBUTES ===
     public function getFeeAgentFormattedAttribute()
     {
         return 'Rp ' . number_format($this->fee_agent, 0, ',', '.');
@@ -170,19 +193,86 @@ class Jamaah extends Model
         return 'Rp ' . number_format($this->sisa_tagihan, 0, ',', '.');
     }
 
-    public function getFotoKtpUrlAttribute()
+    // === FILE URL ACCESSORS ===
+    public function getFileKtpKkUrlAttribute()
     {
-        return $this->foto_ktp ? asset('storage/' . $this->foto_ktp) : null;
+        return $this->file_ktp_kk ? asset('storage/' . $this->file_ktp_kk) : null;
     }
 
-    public function getFotoVaksinUrlAttribute()
+    public function getFileVaksinUrlAttribute()
     {
-        return $this->foto_vaksin ? asset('storage/' . $this->foto_vaksin) : null;
+        return $this->file_vaksin ? asset('storage/' . $this->file_vaksin) : null;
     }
 
-    public function getFotoVisaUrlAttribute()
+    public function getFileVisaUrlAttribute()
     {
-        return $this->foto_visa ? asset('storage/' . $this->foto_visa) : null;
+        return $this->file_visa ? asset('storage/' . $this->file_visa) : null;
+    }
+
+    public function getFilePasporUrlAttribute()
+    {
+        return $this->file_paspor ? asset('storage/' . $this->file_paspor) : null;
+    }
+
+    // === FILE EXTENSION & TYPE ===
+    public function getFileKtpKkTypeAttribute()
+    {
+        if (!$this->file_ktp_kk) return null;
+        $ext = pathinfo($this->file_ktp_kk, PATHINFO_EXTENSION);
+        return in_array(strtolower($ext), ['pdf']) ? 'pdf' : 'image';
+    }
+
+    public function getFileVaksinTypeAttribute()
+    {
+        if (!$this->file_vaksin) return null;
+        $ext = pathinfo($this->file_vaksin, PATHINFO_EXTENSION);
+        return in_array(strtolower($ext), ['pdf']) ? 'pdf' : 'image';
+    }
+
+    public function getFileVisaTypeAttribute()
+    {
+        if (!$this->file_visa) return null;
+        $ext = pathinfo($this->file_visa, PATHINFO_EXTENSION);
+        return in_array(strtolower($ext), ['pdf']) ? 'pdf' : 'image';
+    }
+
+    public function getFilePasporTypeAttribute()
+    {
+        if (!$this->file_paspor) return null;
+        $ext = pathinfo($this->file_paspor, PATHINFO_EXTENSION);
+        return in_array(strtolower($ext), ['pdf']) ? 'pdf' : 'image';
+    }
+
+    public function getFileKtpKkIconAttribute()
+    {
+        $type = $this->file_ktp_kk_type;
+        if ($type === 'pdf') return 'fa-file-pdf text-red-500';
+        if ($type === 'image') return 'fa-file-image text-green-500';
+        return 'fa-file text-gray-500';
+    }
+
+    public function getFileVaksinIconAttribute()
+    {
+        $type = $this->file_vaksin_type;
+        if ($type === 'pdf') return 'fa-file-pdf text-red-500';
+        if ($type === 'image') return 'fa-file-image text-green-500';
+        return 'fa-file text-gray-500';
+    }
+
+    public function getFileVisaIconAttribute()
+    {
+        $type = $this->file_visa_type;
+        if ($type === 'pdf') return 'fa-file-pdf text-red-500';
+        if ($type === 'image') return 'fa-file-image text-green-500';
+        return 'fa-file text-gray-500';
+    }
+
+    public function getFilePasporIconAttribute()
+    {
+        $type = $this->file_paspor_type;
+        if ($type === 'pdf') return 'fa-file-pdf text-red-500';
+        if ($type === 'image') return 'fa-file-image text-green-500';
+        return 'fa-file text-gray-500';
     }
 
     public function getDiskonNamaAttribute()
@@ -195,13 +285,15 @@ class Jamaah extends Model
         return $this->diskon ? $this->diskon->nilai_diskon : 0;
     }
 
+    // === SCOPE ===
     public function scopeFilter($query, array $filters)
     {
         $query->when($filters['search'] ?? null, function ($query, $search) {
             $query->where('nama_lengkap', 'like', '%' . $search . '%')
                 ->orWhere('nomor_paspor', 'like', '%' . $search . '%')
                 ->orWhere('id_keberangkatan', 'like', '%' . $search . '%')
-                ->orWhere('produk_paket', 'like', '%' . $search . '%');
+                ->orWhere('produk_paket', 'like', '%' . $search . '%')
+                ->orWhere('nik', 'like', '%' . $search . '%');
         });
 
         $query->when($filters['status_pembayaran'] ?? null, function ($query, $status) {

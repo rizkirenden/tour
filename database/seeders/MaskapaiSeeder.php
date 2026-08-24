@@ -10,22 +10,12 @@ class MaskapaiSeeder extends Seeder
     public function run(): void
     {
         DB::table('maskapais')->insert([
-            [
-                'id_maskapai' => 1,
-                'kode_maskapai' => 'GA',
-                'nama_maskapai' => 'Garuda Indonesia',
-                'tipe_penerbangan' => 'Internasional',
-                'created_at' => now(),
-                'updated_at' => now(),
-            ],
-            [
-                'id_maskapai' => 2,
-                'kode_maskapai' => 'SV',
-                'nama_maskapai' => 'Saudi Arabian Airlines',
-                'tipe_penerbangan' => 'Internasional',
-                'created_at' => now(),
-                'updated_at' => now(),
-            ],
+            ['nama_maskapai' => 'Garuda Indonesia', 'created_at' => now(), 'updated_at' => now()],
+            ['nama_maskapai' => 'Saudi Arabian Airlines', 'created_at' => now(), 'updated_at' => now()],
+            ['nama_maskapai' => 'Emirates', 'created_at' => now(), 'updated_at' => now()],
+            ['nama_maskapai' => 'Lion Air', 'created_at' => now(), 'updated_at' => now()],
+            ['nama_maskapai' => 'Citilink', 'created_at' => now(), 'updated_at' => now()],
+            ['nama_maskapai' => 'Batik Air', 'created_at' => now(), 'updated_at' => now()],
         ]);
     }
 }

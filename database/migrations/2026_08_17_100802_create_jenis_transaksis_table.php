@@ -10,7 +10,6 @@ return new class extends Migration
     {
         Schema::create('jenis_transaksis', function (Blueprint $table) {
             $table->id('id_jenis');
-            $table->string('kode', 20);
             $table->string('nama', 50);
             $table->text('keterangan')->nullable();
             $table->timestamps();

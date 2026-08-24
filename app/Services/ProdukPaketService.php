@@ -15,7 +15,6 @@ class ProdukPaketService
             $search = $filters['search'];
             $query->where(function($q) use ($search) {
                 $q->where('nama_produk', 'like', "%{$search}%")
-                  ->orWhere('kode_produk', 'like', "%{$search}%")
                   ->orWhere('kategori', 'like', "%{$search}%");
             });
         }
@@ -39,10 +38,6 @@ class ProdukPaketService
     public function create(array $data)
     {
         return DB::transaction(function () use ($data) {
-            if (empty($data['kode_produk'])) {
-                $data['kode_produk'] = $this->generateKodeProduk();
-            }
-
             // Set default values
             $data['include_tur'] = $data['include_tur'] ?? false;
             $data['is_active'] = $data['is_active'] ?? true;
@@ -125,14 +120,5 @@ class ProdukPaketService
                 'is_active' => $produk->is_active
             ];
         });
-    }
-
-    private function generateKodeProduk()
-    {
-        $prefix = 'PKT';
-        $year = date('Y');
-        $last = ProdukPaket::where('kode_produk', 'like', "{$prefix}-%")->count();
-        $number = str_pad($last + 1, 3, '0', STR_PAD_LEFT);
-        return "{$prefix}-{$number}-{$year}";
     }
 }

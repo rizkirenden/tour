@@ -57,6 +57,27 @@
                                 @enderror
                             </div>
                             <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1.5">NIK</label>
+                                <input type="text" name="nik" value="{{ old('nik', $jamaah->nik) }}"
+                                    class="w-full px-4 py-2 border border-gray-200 rounded-xl focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500 text-sm"
+                                    placeholder="16 digit NIK">
+                                @error('nik')
+                                    <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+                                @enderror
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1.5">Nama Ayah</label>
+                                <input type="text" name="nama_ayah" value="{{ old('nama_ayah', $jamaah->nama_ayah) }}"
+                                    class="w-full px-4 py-2 border border-gray-200 rounded-xl focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500 text-sm">
+                            </div>
+                        </div>
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1.5">Pekerjaan</label>
+                                <input type="text" name="pekerjaan" value="{{ old('pekerjaan', $jamaah->pekerjaan) }}"
+                                    class="w-full px-4 py-2 border border-gray-200 rounded-xl focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500 text-sm">
+                            </div>
+                            <div>
                                 <label class="block text-sm font-medium text-gray-700 mb-1.5">Jenis Kelamin</label>
                                 <select name="jenis_kelamin"
                                     class="w-full px-4 py-2 border border-gray-200 rounded-xl focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500 text-sm">
@@ -78,6 +99,12 @@
                         </div>
                         <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4">
                             <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1.5">WhatsApp</label>
+                                <input type="text" name="wa" value="{{ old('wa', $jamaah->wa) }}"
+                                    class="w-full px-4 py-2 border border-gray-200 rounded-xl focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500 text-sm"
+                                    placeholder="08xxxxxxxxxx">
+                            </div>
+                            <div>
                                 <label class="block text-sm font-medium text-gray-700 mb-1.5">Tempat Lahir</label>
                                 <input type="text" name="tempat_lahir"
                                     value="{{ old('tempat_lahir', $jamaah->tempat_lahir) }}"
@@ -89,17 +116,49 @@
                                     value="{{ old('tanggal_lahir', $jamaah->tanggal_lahir ? $jamaah->tanggal_lahir->format('Y-m-d') : '') }}"
                                     class="w-full px-4 py-2 border border-gray-200 rounded-xl focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500 text-sm">
                             </div>
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-1.5">Nomor Paspor</label>
-                                <input type="text" name="nomor_paspor"
-                                    value="{{ old('nomor_paspor', $jamaah->nomor_paspor) }}"
-                                    class="w-full px-4 py-2 border border-gray-200 rounded-xl focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500 text-sm">
-                            </div>
                         </div>
                         <div class="mt-4">
                             <label class="block text-sm font-medium text-gray-700 mb-1.5">Alamat</label>
                             <textarea name="alamat" rows="2"
                                 class="w-full px-4 py-2 border border-gray-200 rounded-xl focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500 text-sm">{{ old('alamat', $jamaah->alamat) }}</textarea>
+                        </div>
+                    </div>
+
+                    <!-- Informasi Passport -->
+                    <div class="border-b border-gray-200 pb-4">
+                        <h6 class="text-sm font-semibold text-gray-700 mb-4 flex items-center">
+                            <i class="fas fa-passport text-yellow-500 mr-2"></i> Informasi Passport
+                        </h6>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1.5">Nomor Passport</label>
+                                <input type="text" name="nomor_paspor"
+                                    value="{{ old('nomor_paspor', $jamaah->nomor_paspor) }}"
+                                    class="w-full px-4 py-2 border border-gray-200 rounded-xl focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500 text-sm">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1.5">Tanggal Terbit
+                                    Passport</label>
+                                <input type="date" name="paspor_terbit"
+                                    value="{{ old('paspor_terbit', $jamaah->paspor_terbit ? $jamaah->paspor_terbit->format('Y-m-d') : '') }}"
+                                    class="w-full px-4 py-2 border border-gray-200 rounded-xl focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500 text-sm">
+                            </div>
+                        </div>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1.5">Tanggal Berakhir
+                                    Passport</label>
+                                <input type="date" name="paspor_expired"
+                                    value="{{ old('paspor_expired', $jamaah->paspor_expired ? $jamaah->paspor_expired->format('Y-m-d') : '') }}"
+                                    class="w-full px-4 py-2 border border-gray-200 rounded-xl focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500 text-sm">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1.5">Diterbitkan Di</label>
+                                <input type="text" name="paspor_diterbitkan_di"
+                                    value="{{ old('paspor_diterbitkan_di', $jamaah->paspor_diterbitkan_di) }}"
+                                    class="w-full px-4 py-2 border border-gray-200 rounded-xl focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500 text-sm"
+                                    placeholder="Kota/Negara">
+                            </div>
                         </div>
                     </div>
 
@@ -118,7 +177,8 @@
                                     required>
                                     <option value="">-- Pilih Produk Paket --</option>
                                     @foreach ($produkPakets as $produk)
-                                        <option value="{{ $produk->nama_produk }}" data-kode="{{ $produk->kode_produk }}"
+                                        <option value="{{ $produk->nama_produk }}"
+                                            data-kode="{{ $produk->kode_produk }}"
                                             {{ old('produk_paket', $jamaah->produk_paket) == $produk->nama_produk ? 'selected' : '' }}>
                                             {{ $produk->kode_produk }} - {{ $produk->nama_produk }}
                                             ({{ $produk->durasi_hari }} Hari)
@@ -279,76 +339,170 @@
                         </div>
                     </div>
 
-                    <!-- Upload Foto -->
+                    <!-- Upload Dokumen -->
                     <div class="border-b border-gray-200 pb-4">
                         <h6 class="text-sm font-semibold text-gray-700 mb-4 flex items-center">
-                            <i class="fas fa-images text-yellow-500 mr-2"></i> Upload Dokumen
-                            <span class="ml-2 text-xs text-gray-400">(opsional)</span>
+                            <i class="fas fa-upload text-yellow-500 mr-2"></i> Upload Dokumen
+                            <span class="ml-2 text-xs text-gray-400">(opsional, support gambar/PDF)</span>
                         </h6>
-                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-1.5">Foto KTP</label>
-                                @if ($jamaah->foto_ktp_url)
-                                    <div class="mb-2">
-                                        <img src="{{ $jamaah->foto_ktp_url }}" alt="Foto KTP"
-                                            class="w-20 h-20 object-cover rounded-lg border border-gray-200">
-                                        <p class="text-xs text-gray-400 mt-1">Foto saat ini</p>
+
+                        <!-- File KTP/KK -->
+                        <div class="mb-4">
+                            <label class="block text-sm font-medium text-gray-700 mb-1.5">File KTP/KK</label>
+                            @if ($jamaah->file_ktp_kk_url)
+                                <div class="mb-2 flex items-center gap-3">
+                                    @if ($jamaah->file_ktp_kk_type == 'pdf')
+                                        <i class="fas fa-file-pdf text-2xl text-red-500"></i>
+                                    @else
+                                        <img src="{{ $jamaah->file_ktp_kk_url }}" alt="KTP/KK"
+                                            class="w-16 h-16 object-cover rounded-lg border border-gray-200">
+                                    @endif
+                                    <div>
+                                        <p class="text-sm text-gray-600">File saat ini</p>
+                                        <a href="{{ $jamaah->file_ktp_kk_url }}" target="_blank"
+                                            class="text-xs text-blue-500 hover:text-blue-700">
+                                            <i class="fas fa-eye mr-1"></i> Lihat File
+                                        </a>
                                     </div>
-                                @endif
-                                <input type="file" name="foto_ktp" id="foto_ktp" accept="image/*"
-                                    class="w-full px-3 py-2 border border-gray-200 rounded-xl focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500 text-sm file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-sm file:font-medium file:bg-yellow-50 file:text-yellow-700 hover:file:bg-yellow-100"
-                                    onchange="previewImage(this, 'preview_ktp')">
-                                <p class="text-xs text-gray-400 mt-1">Format: JPG, PNG (Max 2MB)</p>
-                                <div id="preview_ktp" class="mt-2 hidden">
-                                    <img src="#" alt="Preview KTP"
-                                        class="w-20 h-20 object-cover rounded-lg border border-gray-200">
                                 </div>
-                                @error('foto_ktp')
-                                    <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
-                                @enderror
+                            @endif
+                            <div class="flex items-center gap-4">
+                                <div class="flex-1">
+                                    <input type="file" name="file_ktp_kk" id="file_ktp_kk"
+                                        accept=".pdf,.jpg,.jpeg,.png"
+                                        class="w-full px-3 py-2 border border-gray-200 rounded-xl focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500 text-sm file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-sm file:font-medium file:bg-yellow-50 file:text-yellow-700 hover:file:bg-yellow-100"
+                                        onchange="previewFile(this, 'preview_ktp_kk')">
+                                    <p class="text-xs text-gray-400 mt-1">Format: PDF, JPG, PNG (Max 2MB) - Kosongkan jika
+                                        tidak ingin mengganti</p>
+                                </div>
+                                <div id="preview_ktp_kk"
+                                    class="hidden flex items-center gap-2 px-3 py-2 bg-green-50 rounded-lg border border-green-200">
+                                    <i class="fas fa-check-circle text-green-500"></i>
+                                    <span class="text-sm text-green-700" id="preview_ktp_kk_name"></span>
+                                </div>
                             </div>
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-1.5">Foto Vaksin</label>
-                                @if ($jamaah->foto_vaksin_url)
-                                    <div class="mb-2">
-                                        <img src="{{ $jamaah->foto_vaksin_url }}" alt="Foto Vaksin"
-                                            class="w-20 h-20 object-cover rounded-lg border border-gray-200">
-                                        <p class="text-xs text-gray-400 mt-1">Foto saat ini</p>
+                            @error('file_ktp_kk')
+                                <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+                            @enderror
+                        </div>
+
+                        <!-- File Vaksin -->
+                        <div class="mb-4">
+                            <label class="block text-sm font-medium text-gray-700 mb-1.5">File Vaksin</label>
+                            @if ($jamaah->file_vaksin_url)
+                                <div class="mb-2 flex items-center gap-3">
+                                    @if ($jamaah->file_vaksin_type == 'pdf')
+                                        <i class="fas fa-file-pdf text-2xl text-red-500"></i>
+                                    @else
+                                        <img src="{{ $jamaah->file_vaksin_url }}" alt="Vaksin"
+                                            class="w-16 h-16 object-cover rounded-lg border border-gray-200">
+                                    @endif
+                                    <div>
+                                        <p class="text-sm text-gray-600">File saat ini</p>
+                                        <a href="{{ $jamaah->file_vaksin_url }}" target="_blank"
+                                            class="text-xs text-blue-500 hover:text-blue-700">
+                                            <i class="fas fa-eye mr-1"></i> Lihat File
+                                        </a>
                                     </div>
-                                @endif
-                                <input type="file" name="foto_vaksin" id="foto_vaksin" accept="image/*"
-                                    class="w-full px-3 py-2 border border-gray-200 rounded-xl focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500 text-sm file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-sm file:font-medium file:bg-yellow-50 file:text-yellow-700 hover:file:bg-yellow-100"
-                                    onchange="previewImage(this, 'preview_vaksin')">
-                                <p class="text-xs text-gray-400 mt-1">Format: JPG, PNG (Max 2MB)</p>
-                                <div id="preview_vaksin" class="mt-2 hidden">
-                                    <img src="#" alt="Preview Vaksin"
-                                        class="w-20 h-20 object-cover rounded-lg border border-gray-200">
                                 </div>
-                                @error('foto_vaksin')
-                                    <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
-                                @enderror
+                            @endif
+                            <div class="flex items-center gap-4">
+                                <div class="flex-1">
+                                    <input type="file" name="file_vaksin" id="file_vaksin"
+                                        accept=".pdf,.jpg,.jpeg,.png"
+                                        class="w-full px-3 py-2 border border-gray-200 rounded-xl focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500 text-sm file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-sm file:font-medium file:bg-yellow-50 file:text-yellow-700 hover:file:bg-yellow-100"
+                                        onchange="previewFile(this, 'preview_vaksin')">
+                                    <p class="text-xs text-gray-400 mt-1">Format: PDF, JPG, PNG (Max 2MB) - Kosongkan jika
+                                        tidak ingin mengganti</p>
+                                </div>
+                                <div id="preview_vaksin"
+                                    class="hidden flex items-center gap-2 px-3 py-2 bg-green-50 rounded-lg border border-green-200">
+                                    <i class="fas fa-check-circle text-green-500"></i>
+                                    <span class="text-sm text-green-700" id="preview_vaksin_name"></span>
+                                </div>
                             </div>
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-1.5">Foto Visa</label>
-                                @if ($jamaah->foto_visa_url)
-                                    <div class="mb-2">
-                                        <img src="{{ $jamaah->foto_visa_url }}" alt="Foto Visa"
-                                            class="w-20 h-20 object-cover rounded-lg border border-gray-200">
-                                        <p class="text-xs text-gray-400 mt-1">Foto saat ini</p>
+                            @error('file_vaksin')
+                                <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+                            @enderror
+                        </div>
+
+                        <!-- File Visa -->
+                        <div class="mb-4">
+                            <label class="block text-sm font-medium text-gray-700 mb-1.5">File Visa</label>
+                            @if ($jamaah->file_visa_url)
+                                <div class="mb-2 flex items-center gap-3">
+                                    @if ($jamaah->file_visa_type == 'pdf')
+                                        <i class="fas fa-file-pdf text-2xl text-red-500"></i>
+                                    @else
+                                        <img src="{{ $jamaah->file_visa_url }}" alt="Visa"
+                                            class="w-16 h-16 object-cover rounded-lg border border-gray-200">
+                                    @endif
+                                    <div>
+                                        <p class="text-sm text-gray-600">File saat ini</p>
+                                        <a href="{{ $jamaah->file_visa_url }}" target="_blank"
+                                            class="text-xs text-blue-500 hover:text-blue-700">
+                                            <i class="fas fa-eye mr-1"></i> Lihat File
+                                        </a>
                                     </div>
-                                @endif
-                                <input type="file" name="foto_visa" id="foto_visa" accept="image/*"
-                                    class="w-full px-3 py-2 border border-gray-200 rounded-xl focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500 text-sm file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-sm file:font-medium file:bg-yellow-50 file:text-yellow-700 hover:file:bg-yellow-100"
-                                    onchange="previewImage(this, 'preview_visa')">
-                                <p class="text-xs text-gray-400 mt-1">Format: JPG, PNG (Max 2MB)</p>
-                                <div id="preview_visa" class="mt-2 hidden">
-                                    <img src="#" alt="Preview Visa"
-                                        class="w-20 h-20 object-cover rounded-lg border border-gray-200">
                                 </div>
-                                @error('foto_visa')
-                                    <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
-                                @enderror
+                            @endif
+                            <div class="flex items-center gap-4">
+                                <div class="flex-1">
+                                    <input type="file" name="file_visa" id="file_visa" accept=".pdf,.jpg,.jpeg,.png"
+                                        class="w-full px-3 py-2 border border-gray-200 rounded-xl focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500 text-sm file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-sm file:font-medium file:bg-yellow-50 file:text-yellow-700 hover:file:bg-yellow-100"
+                                        onchange="previewFile(this, 'preview_visa')">
+                                    <p class="text-xs text-gray-400 mt-1">Format: PDF, JPG, PNG (Max 2MB) - Kosongkan jika
+                                        tidak ingin mengganti</p>
+                                </div>
+                                <div id="preview_visa"
+                                    class="hidden flex items-center gap-2 px-3 py-2 bg-green-50 rounded-lg border border-green-200">
+                                    <i class="fas fa-check-circle text-green-500"></i>
+                                    <span class="text-sm text-green-700" id="preview_visa_name"></span>
+                                </div>
                             </div>
+                            @error('file_visa')
+                                <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+                            @enderror
+                        </div>
+
+                        <!-- File Paspor -->
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1.5">File Passport</label>
+                            @if ($jamaah->file_paspor_url)
+                                <div class="mb-2 flex items-center gap-3">
+                                    @if ($jamaah->file_paspor_type == 'pdf')
+                                        <i class="fas fa-file-pdf text-2xl text-red-500"></i>
+                                    @else
+                                        <img src="{{ $jamaah->file_paspor_url }}" alt="Passport"
+                                            class="w-16 h-16 object-cover rounded-lg border border-gray-200">
+                                    @endif
+                                    <div>
+                                        <p class="text-sm text-gray-600">File saat ini</p>
+                                        <a href="{{ $jamaah->file_paspor_url }}" target="_blank"
+                                            class="text-xs text-blue-500 hover:text-blue-700">
+                                            <i class="fas fa-eye mr-1"></i> Lihat File
+                                        </a>
+                                    </div>
+                                </div>
+                            @endif
+                            <div class="flex items-center gap-4">
+                                <div class="flex-1">
+                                    <input type="file" name="file_paspor" id="file_paspor"
+                                        accept=".pdf,.jpg,.jpeg,.png"
+                                        class="w-full px-3 py-2 border border-gray-200 rounded-xl focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500 text-sm file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-sm file:font-medium file:bg-yellow-50 file:text-yellow-700 hover:file:bg-yellow-100"
+                                        onchange="previewFile(this, 'preview_paspor')">
+                                    <p class="text-xs text-gray-400 mt-1">Format: PDF, JPG, PNG (Max 2MB) - Kosongkan jika
+                                        tidak ingin mengganti</p>
+                                </div>
+                                <div id="preview_paspor"
+                                    class="hidden flex items-center gap-2 px-3 py-2 bg-green-50 rounded-lg border border-green-200">
+                                    <i class="fas fa-check-circle text-green-500"></i>
+                                    <span class="text-sm text-green-700" id="preview_paspor_name"></span>
+                                </div>
+                            </div>
+                            @error('file_paspor')
+                                <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+                            @enderror
                         </div>
                     </div>
 
@@ -371,18 +525,48 @@
 
 @push('scripts')
     <script>
-        // Preview image function
-        function previewImage(input, previewId) {
+        // Preview file function for PDF and Images
+        function previewFile(input, previewId) {
             const preview = document.getElementById(previewId);
+            const nameSpan = document.getElementById(previewId + '_name');
+
             if (input.files && input.files[0]) {
-                const reader = new FileReader();
-                reader.onload = function(e) {
+                const file = input.files[0];
+                const ext = file.name.split('.').pop().toLowerCase();
+                const isPDF = ext === 'pdf';
+                const isImage = ['jpg', 'jpeg', 'png'].includes(ext);
+
+                if (isPDF || isImage) {
                     preview.classList.remove('hidden');
-                    preview.querySelector('img').src = e.target.result;
-                };
-                reader.readAsDataURL(input.files[0]);
+                    if (nameSpan) {
+                        nameSpan.textContent = file.name + ' (' + (file.size / 1024).toFixed(1) + ' KB)';
+                    }
+
+                    if (isImage) {
+                        const reader = new FileReader();
+                        reader.onload = function(e) {
+                            preview.innerHTML = `
+                                <img src="${e.target.result}" class="w-16 h-16 object-cover rounded-lg border border-gray-200">
+                                <span class="text-sm text-green-700 ml-2">${file.name}</span>
+                            `;
+                        };
+                        reader.readAsDataURL(file);
+                    } else {
+                        preview.innerHTML = `
+                            <i class="fas fa-file-pdf text-3xl text-red-500"></i>
+                            <span class="text-sm text-green-700 ml-2">${file.name}</span>
+                        `;
+                    }
+                } else {
+                    preview.classList.add('hidden');
+                    alert('Format file tidak didukung. Gunakan PDF, JPG, atau PNG.');
+                    input.value = '';
+                }
             } else {
                 preview.classList.add('hidden');
+                if (nameSpan) {
+                    nameSpan.textContent = '';
+                }
             }
         }
 

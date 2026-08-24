@@ -45,22 +45,23 @@
                         <div>
                             <div class="flex items-center gap-3 flex-wrap">
                                 <h2 class="text-2xl font-bold text-gray-800">{{ $maskapai->nama_maskapai }}</h2>
-                                <span
-                                    class="inline-flex px-3 py-1 bg-yellow-100 text-yellow-700 rounded-lg text-xs font-mono font-semibold">
-                                    {{ $maskapai->kode_maskapai }}
-                                </span>
+                                <div class="flex flex-wrap gap-1.5">
+                                    @forelse($maskapai->tipePenerbangan as $tipe)
+                                        @if ($tipe->tipe_penerbangan == 'Internasional')
+                                            <span
+                                                class="inline-flex px-3 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-700">Internasional</span>
+                                        @else
+                                            <span
+                                                class="inline-flex px-3 py-1 rounded-full text-xs font-medium bg-green-100 text-green-700">Domestik</span>
+                                        @endif
+                                    @empty
+                                        <span class="text-xs text-gray-400">Tidak ada tipe</span>
+                                    @endforelse
+                                </div>
                             </div>
                         </div>
                         <div class="text-right">
-                            @php
-                                $service = app(\App\Services\MaskapaiService::class);
-                                $badgeClass = $service->getBadgeTipe($maskapai->tipe_penerbangan);
-                            @endphp
-                            <span class="inline-flex px-4 py-2 rounded-full text-sm font-medium {{ $badgeClass }}">
-                                <i class="fas fa-plane mr-2"></i>
-                                {{ $maskapai->tipe_penerbangan }}
-                            </span>
-                            <p class="text-sm text-gray-500 mt-1">ID: #{{ $maskapai->id_maskapai }}</p>
+                            <p class="text-sm text-gray-500">ID: #{{ $maskapai->id_maskapai }}</p>
                         </div>
                     </div>
                 </div>
@@ -72,20 +73,25 @@
                         </h6>
                         <dl class="space-y-3">
                             <div class="flex justify-between text-sm">
-                                <dt class="text-gray-500">Kode Maskapai</dt>
-                                <dd class="font-medium text-gray-700">{{ $maskapai->kode_maskapai }}</dd>
-                            </div>
-                            <div class="flex justify-between text-sm">
                                 <dt class="text-gray-500">Nama Maskapai</dt>
                                 <dd class="font-medium text-gray-700">{{ $maskapai->nama_maskapai }}</dd>
                             </div>
                             <div class="flex justify-between text-sm">
                                 <dt class="text-gray-500">Tipe Penerbangan</dt>
                                 <dd>
-                                    <span
-                                        class="inline-flex px-3 py-1 rounded-full text-xs font-medium {{ $badgeClass }}">
-                                        {{ $maskapai->tipe_penerbangan }}
-                                    </span>
+                                    <div class="flex flex-wrap gap-1.5 justify-end">
+                                        @forelse($maskapai->tipePenerbangan as $tipe)
+                                            @if ($tipe->tipe_penerbangan == 'Internasional')
+                                                <span
+                                                    class="inline-flex px-3 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-700">Internasional</span>
+                                            @else
+                                                <span
+                                                    class="inline-flex px-3 py-1 rounded-full text-xs font-medium bg-green-100 text-green-700">Domestik</span>
+                                            @endif
+                                        @empty
+                                            <span class="text-gray-400">-</span>
+                                        @endforelse
+                                    </div>
                                 </dd>
                             </div>
                         </dl>

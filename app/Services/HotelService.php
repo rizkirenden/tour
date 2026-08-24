@@ -15,10 +15,10 @@ class HotelService
         if (!empty($filters['search'])) {
             $search = $filters['search'];
             $query->where(function($q) use ($search) {
-                $q->where('kode_hotel', 'like', "%{$search}%")
-                  ->orWhere('nama_hotel', 'like', "%{$search}%")
+                $q->where('nama_hotel', 'like', "%{$search}%")
                   ->orWhere('kota', 'like', "%{$search}%")
-                  ->orWhere('negara', 'like', "%{$search}%");
+                  ->orWhere('negara', 'like', "%{$search}%")
+                  ->orWhere('tipe_hotel', 'like', "%{$search}%");
             });
         }
 

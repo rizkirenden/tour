@@ -51,9 +51,6 @@
                                 </span>
                                 {!! $produk->status_badge !!}
                             </div>
-                            <p class="text-gray-500 text-sm mt-1">
-                                <i class="fas fa-tag mr-1"></i> Kode: {{ $produk->kode_produk ?? 'Tidak ada' }}
-                            </p>
                         </div>
                         <div class="text-right">
                             <p class="text-3xl font-bold text-yellow-600">{{ $produk->harga_dasar_formatted }}</p>
@@ -69,10 +66,6 @@
                             <i class="fas fa-info-circle text-yellow-500 mr-2"></i> Informasi Dasar
                         </h6>
                         <dl class="space-y-3">
-                            <div class="flex justify-between text-sm">
-                                <dt class="text-gray-500">Kode Produk</dt>
-                                <dd class="font-medium text-gray-700">{{ $produk->kode_produk ?? '-' }}</dd>
-                            </div>
                             <div class="flex justify-between text-sm">
                                 <dt class="text-gray-500">Kategori</dt>
                                 <dd class="font-medium text-gray-700">{{ $produk->kategori ?? '-' }}</dd>
@@ -117,37 +110,73 @@
                         </dl>
                     </div>
 
-                    <!-- Paket Tour -->
+                    <!-- Paket Tour dengan Harga -->
                     @if ($produk->include_tur && $produk->paketTour)
                         <div class="bg-gray-50 rounded-xl p-5 border border-gray-100 lg:col-span-2">
                             <h6 class="text-sm font-semibold text-gray-700 mb-4 flex items-center">
                                 <i class="fas fa-route text-yellow-500 mr-2"></i> Paket Tour
                             </h6>
                             <div class="bg-white rounded-lg p-4 border border-gray-200">
-                                <div class="grid grid-cols-1 md:grid-cols-3 gap-3 text-sm">
+                                <div class="grid grid-cols-1 md:grid-cols-4 gap-3 text-sm">
                                     <div>
                                         <span class="text-gray-500">Kota Tujuan:</span>
                                         <span
-                                            class="font-medium text-gray-700">{{ $produk->paketTour->kota_tujuan ?? '-' }}</span>
+                                            class="font-medium text-gray-700 block">{{ $produk->paketTour->kota_tujuan ?? '-' }}</span>
                                     </div>
                                     <div>
                                         <span class="text-gray-500">Negara:</span>
                                         <span
-                                            class="font-medium text-gray-700">{{ $produk->paketTour->negara ?? '-' }}</span>
+                                            class="font-medium text-gray-700 block">{{ $produk->paketTour->negara ?? '-' }}</span>
                                     </div>
                                     <div>
                                         <span class="text-gray-500">Durasi:</span>
                                         <span
-                                            class="font-medium text-gray-700">{{ $produk->paketTour->durasi_hari ?? '-' }}
+                                            class="font-medium text-gray-700 block">{{ $produk->paketTour->durasi_hari ?? '-' }}
                                             Hari</span>
+                                    </div>
+                                    <div>
+                                        <span class="text-gray-500">Harga Tour:</span>
+                                        <span
+                                            class="font-medium text-blue-600 block">{{ $produk->harga_tour_formatted }}</span>
                                     </div>
                                 </div>
                                 @if ($produk->paketTour->deskripsi)
-                                    <div class="mt-2 text-sm text-gray-600">
+                                    <div class="mt-2 text-sm text-gray-600 border-t border-gray-100 pt-2">
                                         <span class="text-gray-500">Deskripsi:</span>
                                         {{ $produk->paketTour->deskripsi }}
                                     </div>
                                 @endif
+                            </div>
+                        </div>
+                    @endif
+
+                    <!-- Ringkasan Harga Total -->
+                    @if ($produk->include_tur && $produk->paketTour)
+                        <div class="bg-gray-50 rounded-xl p-5 border border-gray-100 lg:col-span-2">
+                            <h6 class="text-sm font-semibold text-gray-700 mb-4 flex items-center">
+                                <i class="fas fa-calculator text-yellow-500 mr-2"></i> Ringkasan Harga
+                            </h6>
+                            <div class="bg-white rounded-lg p-4 border border-gray-200">
+                                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                    <div class="text-center p-3 bg-gray-50 rounded-lg">
+                                        <p class="text-xs text-gray-500">Harga Produk</p>
+                                        <p class="text-lg font-bold text-yellow-600">{{ $produk->harga_dasar_formatted }}
+                                        </p>
+                                    </div>
+                                    <div class="text-center p-3 bg-blue-50 rounded-lg">
+                                        <p class="text-xs text-gray-500">Harga Tour</p>
+                                        <p class="text-lg font-bold text-blue-600">{{ $produk->harga_tour_formatted }}</p>
+                                    </div>
+                                    <div class="text-center p-3 bg-green-50 rounded-lg border-2 border-green-200">
+                                        <p class="text-xs text-gray-500">Total Harga</p>
+                                        <p class="text-lg font-bold text-green-600">{{ $produk->total_harga_formatted }}
+                                        </p>
+                                    </div>
+                                </div>
+                                <p class="text-xs text-gray-400 text-center mt-3">
+                                    <i class="fas fa-info-circle mr-1"></i>
+                                    Total harga = Harga Produk + Harga Tour
+                                </p>
                             </div>
                         </div>
                     @endif
@@ -172,8 +201,9 @@
                                             <th class="px-3 py-2 text-center text-xs font-semibold text-gray-500">Bintang
                                             </th>
                                             <th class="px-3 py-2 text-center text-xs font-semibold text-gray-500">Durasi
+                                                Menginap</th>
+                                            <th class="px-3 py-2 text-left text-xs font-semibold text-gray-500">Catatan
                                             </th>
-                                            <th class="px-3 py-2 text-left text-xs font-semibold text-gray-500">Catatan</th>
                                         </tr>
                                     </thead>
                                     <tbody class="divide-y divide-gray-100">

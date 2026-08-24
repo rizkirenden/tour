@@ -13,7 +13,6 @@ class ProdukPaket extends Model
     protected $primaryKey = 'id_produk';
 
     protected $fillable = [
-        'kode_produk',
         'nama_produk',
         'deskripsi',
         'include_tur',
@@ -31,7 +30,7 @@ class ProdukPaket extends Model
     protected $casts = [
         'include_tur' => 'boolean',
         'is_active' => 'boolean',
-        'harga_dasar' => 'integer', // Cast ke integer
+        'harga_dasar' => 'integer',
     ];
 
     // Relasi ke Paket Tour
@@ -53,6 +52,27 @@ class ProdukPaket extends Model
     public function getHargaDasarFormattedAttribute()
     {
         return 'Rp ' . number_format($this->harga_dasar, 0, ',', '.');
+    }
+
+    // === ACCESSOR UNTUK HARGA PAKET TOUR ===
+    public function getHargaTourFormattedAttribute()
+    {
+        if ($this->paketTour && $this->paketTour->harga_per_orang) {
+            return 'Rp ' . number_format($this->paketTour->harga_per_orang, 0, ',', '.');
+        }
+        return '-';
+    }
+
+    public function getHargaTourValueAttribute()
+    {
+        return $this->paketTour ? $this->paketTour->harga_per_orang : 0;
+    }
+
+    // Total harga (harga produk + harga tour)
+    public function getTotalHargaFormattedAttribute()
+    {
+        $total = $this->harga_dasar + $this->getHargaTourValueAttribute();
+        return 'Rp ' . number_format($total, 0, ',', '.');
     }
 
     // Method untuk menghitung total durasi

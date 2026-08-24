@@ -13,7 +13,6 @@ class Perlengkapan extends Model
     protected $primaryKey = 'id_perlengkapan';
 
     protected $fillable = [
-        'kode_perlengkapan',
         'nama_perlengkapan',
         'deskripsi',
         'harga_satuan',
@@ -81,7 +80,6 @@ class Perlengkapan extends Model
 
     public function scopeSearch($query, $search)
     {
-        return $query->where('nama_perlengkapan', 'like', "%{$search}%")
-                     ->orWhere('kode_perlengkapan', 'like', "%{$search}%");
+        return $query->where('nama_perlengkapan', 'like', "%{$search}%");
     }
 }

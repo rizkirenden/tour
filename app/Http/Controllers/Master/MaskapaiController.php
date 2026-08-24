@@ -30,15 +30,16 @@ class MaskapaiController extends Controller
 
     public function create()
     {
-        return view('maskapais.create');
+        $tipeOptions = $this->service->getTipeOptions();
+        return view('maskapais.create', compact('tipeOptions'));
     }
 
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'kode_maskapai' => 'required|string|max:10|unique:maskapais,kode_maskapai',
-            'nama_maskapai' => 'required|string|max:50',
-            'tipe_penerbangan' => 'required|in:Domestik,Internasional',
+            'nama_maskapai' => 'required|string|max:100|unique:maskapais,nama_maskapai',
+            'tipe_penerbangan' => 'required|array|min:1',
+            'tipe_penerbangan.*' => 'in:Domestik,Internasional',
         ]);
 
         $maskapai = $this->service->create($validated);
@@ -56,15 +57,16 @@ class MaskapaiController extends Controller
     public function edit($id)
     {
         $maskapai = $this->service->getById($id);
-        return view('maskapais.edit', compact('maskapai'));
+        $tipeOptions = $this->service->getTipeOptions();
+        return view('maskapais.edit', compact('maskapai', 'tipeOptions'));
     }
 
     public function update(Request $request, $id)
     {
         $validated = $request->validate([
-            'kode_maskapai' => ['required', 'string', 'max:10', Rule::unique('maskapais', 'kode_maskapai')->ignore($id, 'id_maskapai')],
-            'nama_maskapai' => 'required|string|max:50',
-            'tipe_penerbangan' => 'required|in:Domestik,Internasional',
+            'nama_maskapai' => ['required', 'string', 'max:100', Rule::unique('maskapais', 'nama_maskapai')->ignore($id, 'id_maskapai')],
+            'tipe_penerbangan' => 'required|array|min:1',
+            'tipe_penerbangan.*' => 'in:Domestik,Internasional',
         ]);
 
         $maskapai = $this->service->update($id, $validated);

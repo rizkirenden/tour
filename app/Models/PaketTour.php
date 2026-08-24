@@ -18,46 +18,49 @@ class PaketTour extends Model
         'durasi_hari',
         'deskripsi',
         'harga_per_orang',
+        'is_active',
     ];
 
     protected $casts = [
         'harga_per_orang' => 'integer',
         'durasi_hari' => 'integer',
+        'is_active' => 'boolean',
     ];
 
-    // Relasi ke ProdukPaket (inverse)
+    // Relasi ke Produk Paket
     public function produkPakets()
     {
         return $this->hasMany(ProdukPaket::class, 'paket_tour_id', 'id_paket_tour');
     }
 
+    // Relasi ke Hotel melalui pivot 'hotel_paket_tour'
     public function hotels()
     {
         return $this->belongsToMany(Hotel::class, 'hotel_paket_tour', 'id_paket_tour', 'id_hotel')
                     ->withPivot('durasi_menginap', 'urutan', 'catatan')
                     ->withTimestamps()
-                    ->orderBy('hotel_paket_tour.urutan');
+                    ->orderBy('urutan', 'asc');
     }
 
-    // Accessor untuk format harga
+    // Accessor untuk harga tour formatted
     public function getHargaPerOrangFormattedAttribute()
     {
-        return $this->harga_per_orang ? 'Rp ' . number_format($this->harga_per_orang, 0, ',', '.') : '-';
-    }
-
-    // Accessor untuk total harga hotel
-    public function getTotalHargaHotelAttribute()
-    {
-        // Harga hotel diambil dari tabel hotels (harga_per_malam) * durasi_menginap
-        $total = 0;
-        foreach ($this->hotels as $hotel) {
-            $total += ($hotel->harga_per_malam ?? 0) * ($hotel->pivot->durasi_menginap ?? 1);
+        if ($this->harga_per_orang) {
+            return 'Rp ' . number_format($this->harga_per_orang, 0, ',', '.');
         }
-        return $total;
+        return '-';
     }
 
-    public function getTotalHargaHotelFormattedAttribute()
+    // Accessor status
+    public function getStatusLabelAttribute()
     {
-        return 'Rp ' . number_format($this->total_harga_hotel, 0, ',', '.');
+        return $this->is_active ? 'Aktif' : 'Tidak Aktif';
+    }
+
+    public function getStatusBadgeAttribute()
+    {
+        return $this->is_active
+            ? '<span class="px-2 py-1 text-xs font-medium rounded-full bg-green-100 text-green-700">Aktif</span>'
+            : '<span class="px-2 py-1 text-xs font-medium rounded-full bg-red-100 text-red-700">Tidak Aktif</span>';
     }
 }

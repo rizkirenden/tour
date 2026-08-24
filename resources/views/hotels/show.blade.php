@@ -46,10 +46,6 @@
                         <div>
                             <div class="flex items-center gap-3 flex-wrap">
                                 <h2 class="text-2xl font-bold text-gray-800">{{ $hotel->nama_hotel }}</h2>
-                                <span
-                                    class="inline-flex px-3 py-1 bg-yellow-100 text-yellow-700 rounded-lg text-xs font-mono font-semibold">
-                                    {{ $hotel->kode_hotel }}
-                                </span>
                             </div>
                             <p class="text-gray-500 text-sm mt-1">
                                 <i class="fas fa-map-marker-alt mr-1"></i> {{ $hotel->kota }}, {{ $hotel->negara }}
@@ -81,10 +77,6 @@
                             <i class="fas fa-info-circle text-yellow-500 mr-2"></i> Informasi Hotel
                         </h6>
                         <dl class="space-y-3">
-                            <div class="flex justify-between text-sm">
-                                <dt class="text-gray-500">Kode Hotel</dt>
-                                <dd class="font-medium text-gray-700">{{ $hotel->kode_hotel }}</dd>
-                            </div>
                             <div class="flex justify-between text-sm">
                                 <dt class="text-gray-500">Nama Hotel</dt>
                                 <dd class="font-medium text-gray-700">{{ $hotel->nama_hotel }}</dd>

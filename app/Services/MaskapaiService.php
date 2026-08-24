@@ -3,20 +3,19 @@
 namespace App\Services;
 
 use App\Models\Maskapai;
+use App\Models\MaskapaiTipePenerbangan;
 use Illuminate\Support\Facades\DB;
 
 class MaskapaiService
 {
     public function getAll(array $filters = [])
     {
-        $query = Maskapai::query();
+        $query = Maskapai::with('tipePenerbangan');
 
         if (!empty($filters['search'])) {
             $search = $filters['search'];
             $query->where(function($q) use ($search) {
-                $q->where('kode_maskapai', 'like', "%{$search}%")
-                  ->orWhere('nama_maskapai', 'like', "%{$search}%")
-                  ->orWhere('tipe_penerbangan', 'like', "%{$search}%");
+                $q->where('nama_maskapai', 'like', "%{$search}%");
             });
         }
 
@@ -25,13 +24,30 @@ class MaskapaiService
 
     public function getById($id)
     {
-        return Maskapai::findOrFail($id);
+        return Maskapai::with('tipePenerbangan')->findOrFail($id);
     }
 
     public function create(array $data)
     {
         return DB::transaction(function () use ($data) {
-            return Maskapai::create($data);
+            // Ambil tipe penerbangan
+            $tipeList = $data['tipe_penerbangan'] ?? [];
+            unset($data['tipe_penerbangan']);
+
+            // Buat maskapai
+            $maskapai = Maskapai::create($data);
+
+            // Tambah tipe penerbangan
+            if (!empty($tipeList)) {
+                foreach ($tipeList as $tipe) {
+                    MaskapaiTipePenerbangan::create([
+                        'id_maskapai' => $maskapai->id_maskapai,
+                        'tipe_penerbangan' => $tipe
+                    ]);
+                }
+            }
+
+            return $maskapai->load('tipePenerbangan');
         });
     }
 
@@ -39,8 +55,28 @@ class MaskapaiService
     {
         return DB::transaction(function () use ($id, $data) {
             $maskapai = $this->getById($id);
+
+            // Ambil tipe penerbangan
+            $tipeList = $data['tipe_penerbangan'] ?? [];
+            unset($data['tipe_penerbangan']);
+
+            // Update maskapai
             $maskapai->update($data);
-            return $maskapai->fresh();
+
+            // Hapus tipe lama
+            MaskapaiTipePenerbangan::where('id_maskapai', $id)->delete();
+
+            // Tambah tipe baru
+            if (!empty($tipeList)) {
+                foreach ($tipeList as $tipe) {
+                    MaskapaiTipePenerbangan::create([
+                        'id_maskapai' => $id,
+                        'tipe_penerbangan' => $tipe
+                    ]);
+                }
+            }
+
+            return $maskapai->load('tipePenerbangan');
         });
     }
 
@@ -49,24 +85,22 @@ class MaskapaiService
         return DB::transaction(function () use ($id) {
             $maskapai = $this->getById($id);
             $nama = $maskapai->nama_maskapai;
+
+            // Hapus tipe penerbangan
+            MaskapaiTipePenerbangan::where('id_maskapai', $id)->delete();
+
+            // Hapus maskapai
             $maskapai->delete();
+
             return $nama;
         });
     }
 
-    public function getTipePenerbanganOptions()
+    public function getTipeOptions()
     {
         return [
             'Domestik' => 'Domestik',
             'Internasional' => 'Internasional',
         ];
-    }
-
-    public function getBadgeTipe($tipe)
-    {
-        if ($tipe == 'Internasional') {
-            return 'bg-blue-100 text-blue-700';
-        }
-        return 'bg-green-100 text-green-700';
     }
 }

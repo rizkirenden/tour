@@ -10,10 +10,9 @@ return new class extends Migration
     {
         Schema::create('perlengkapans', function (Blueprint $table) {
             $table->id('id_perlengkapan');
-            $table->string('kode_perlengkapan', 20)->unique();
             $table->string('nama_perlengkapan', 100);
             $table->text('deskripsi')->nullable();
-            $table->bigInteger('harga_satuan');
+            $table->bigInteger('harga_satuan')->default(0);
             $table->string('satuan', 20)->nullable();
             $table->enum('kategori', ['Koper', 'Pakaian', 'Aksesoris', 'Dokumen', 'Lainnya'])->nullable();
             $table->timestamps();

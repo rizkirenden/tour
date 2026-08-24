@@ -25,7 +25,6 @@ class HotelSeeder extends Seeder
 
         // Hotel 1 dengan multiple kamar
         $hotel1 = Hotel::create([
-            'kode_hotel' => 'HOT-001',
             'nama_hotel' => 'Hotel Al-Haram Mekkah',
             'lokasi' => 'Dekat Masjidil Haram',
             'tipe_hotel' => 'Luxury',
@@ -65,7 +64,6 @@ class HotelSeeder extends Seeder
 
         // Hotel 2 dengan multiple kamar
         $hotel2 = Hotel::create([
-            'kode_hotel' => 'HOT-002',
             'nama_hotel' => 'Hotel Nabawi Madinah',
             'lokasi' => 'Dekat Masjid Nabawi',
             'tipe_hotel' => 'Premium',
@@ -95,7 +93,6 @@ class HotelSeeder extends Seeder
 
         // Hotel 3
         $hotel3 = Hotel::create([
-            'kode_hotel' => 'HOT-003',
             'nama_hotel' => 'Grand Transit Hotel',
             'lokasi' => 'Dekat Bandara',
             'tipe_hotel' => 'Business',
