@@ -2,16 +2,17 @@
     <table class="w-full text-sm">
         <thead>
             <tr class="border-b border-gray-200">
-                <th class="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">#</th>
+                <th class="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">No</th>
                 <th class="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Nama Produk
                 </th>
                 <th class="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Kategori
                 </th>
                 <th class="px-4 py-3 text-right text-xs font-semibold text-gray-500 uppercase tracking-wider">Harga Dasar
                 </th>
+                <th class="px-4 py-3 text-right text-xs font-semibold text-gray-500 uppercase tracking-wider">Total Harga
+                </th>
                 <th class="px-4 py-3 text-center text-xs font-semibold text-gray-500 uppercase tracking-wider">Durasi
                 </th>
-                <th class="px-4 py-3 text-center text-xs font-semibold text-gray-500 uppercase tracking-wider">Flyer</th>
                 <th class="px-4 py-3 text-center text-xs font-semibold text-gray-500 uppercase tracking-wider">Include
                     Tur</th>
                 <th class="px-4 py-3 text-center text-xs font-semibold text-gray-500 uppercase tracking-wider">Status
@@ -22,8 +23,8 @@
         <tbody class="divide-y divide-gray-100">
             @forelse($data as $index => $item)
                 <tr class="hover:bg-gray-50 transition-colors duration-150">
-                    <td class="px-4 py-3 text-center text-gray-500">
-                        {{ $data->firstItem() + $index }}
+                    <td class="px-4 py-3">
+                        <span class="text-sm text-gray-600">{{ $data->firstItem() + $index }}</span>
                     </td>
                     <td class="px-4 py-3">
                         <p class="font-medium text-gray-800">{{ $item->nama_produk }}</p>
@@ -34,23 +35,16 @@
                     <td class="px-4 py-3">
                         <span class="text-sm text-gray-600">{{ $item->kategori ?? '-' }}</span>
                     </td>
-                    <td class="px-4 py-3 text-right font-bold text-yellow-600">
+                    <td class="px-4 py-3 text-right font-bold text-gray-700">
                         {{ $item->harga_dasar_formatted }}
+                    </td>
+                    <td class="px-4 py-3 text-right font-bold text-yellow-600">
+                        {{ $item->total_harga_formatted }}
                     </td>
                     <td class="px-4 py-3 text-center">
                         <span class="text-sm text-gray-600">{{ $item->durasi_hari }} Hari</span>
                         @if ($item->durasi_perjalanan)
                             <p class="text-xs text-blue-500">Perjalanan: {{ $item->durasi_perjalanan }} Hari</p>
-                        @endif
-                    </td>
-                    <td class="px-4 py-3 text-center">
-                        @if ($item->flyer_url)
-                            <a href="{{ $item->flyer_url }}" target="_blank"
-                                class="inline-flex items-center px-2 py-1 bg-green-100 text-green-700 rounded-lg text-xs font-medium hover:bg-green-200 transition">
-                                <i class="fas fa-image mr-1"></i> Lihat
-                            </a>
-                        @else
-                            <span class="text-xs text-gray-400">-</span>
                         @endif
                     </td>
                     <td class="px-4 py-3 text-center">

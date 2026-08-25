@@ -16,19 +16,16 @@ class Maskapai extends Model
         'nama_maskapai',
     ];
 
-    // Relasi ke tipe penerbangan (One-to-Many)
     public function tipePenerbangan()
     {
         return $this->hasMany(MaskapaiTipePenerbangan::class, 'id_maskapai', 'id_maskapai');
     }
 
-    // Accessor untuk tipe penerbangan sebagai string
     public function getTipePenerbanganStringAttribute()
     {
         return $this->tipePenerbangan->pluck('tipe_penerbangan')->implode(', ');
     }
 
-    // Accessor untuk badge tipe penerbangan
     public function getTipePenerbanganBadgesAttribute()
     {
         $badges = [];
@@ -42,13 +39,11 @@ class Maskapai extends Model
         return implode(' ', $badges);
     }
 
-    // Cek apakah maskapai domestik
     public function getIsDomestikAttribute()
     {
         return $this->tipePenerbangan->contains('tipe_penerbangan', 'Domestik');
     }
 
-    // Cek apakah maskapai internasional
     public function getIsInternasionalAttribute()
     {
         return $this->tipePenerbangan->contains('tipe_penerbangan', 'Internasional');

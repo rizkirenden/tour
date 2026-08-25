@@ -46,8 +46,6 @@ class HotelController extends Controller
             'kamars' => 'required|array|min:1',
             'kamars.*.tipe_kamar' => 'required|string|max:50',
             'kamars.*.kapasitas' => 'required|integer|min:1',
-            'kamars.*.jumlah_kamar' => 'nullable|integer|min:1',
-            'kamars.*.harga_per_malam' => 'nullable|numeric|min:0',
             'kamars.*.fasilitas_kamar' => 'nullable|string',
         ]);
 
@@ -83,8 +81,6 @@ class HotelController extends Controller
             'kamars.*.id_kamar' => 'nullable|exists:kamars,id_kamar',
             'kamars.*.tipe_kamar' => 'required|string|max:50',
             'kamars.*.kapasitas' => 'required|integer|min:1',
-            'kamars.*.jumlah_kamar' => 'nullable|integer|min:1',
-            'kamars.*.harga_per_malam' => 'nullable|numeric|min:0',
             'kamars.*.fasilitas_kamar' => 'nullable|string',
         ]);
 
@@ -102,7 +98,6 @@ class HotelController extends Controller
             ->with('success', "Hotel '{$nama}' berhasil dihapus!");
     }
 
-    // Method untuk manage kamar
     public function kamarIndex($hotelId)
     {
         $hotel = $this->service->getById($hotelId);
@@ -114,8 +109,6 @@ class HotelController extends Controller
         $validated = $request->validate([
             'tipe_kamar' => 'required|string|max:50',
             'kapasitas' => 'required|integer|min:1',
-            'jumlah_kamar' => 'required|integer|min:1',
-            'harga_per_malam' => 'nullable|numeric|min:0',
             'fasilitas_kamar' => 'nullable|string',
         ]);
 
@@ -131,8 +124,6 @@ class HotelController extends Controller
         $validated = $request->validate([
             'tipe_kamar' => 'required|string|max:50',
             'kapasitas' => 'required|integer|min:1',
-            'jumlah_kamar' => 'required|integer|min:1',
-            'harga_per_malam' => 'nullable|numeric|min:0',
             'fasilitas_kamar' => 'nullable|string',
         ]);
 

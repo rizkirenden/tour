@@ -17,6 +17,9 @@ return new class extends Migration
 
             // HARGA DASAR (INTEGER - tanpa desimal)
             $table->integer('harga_dasar')->default(0)->comment('Harga dasar produk dalam Rupiah');
+            
+            // TOTAL HARGA (otomatis = harga_dasar + harga_tour)
+            $table->integer('total_harga')->default(0)->comment('Total harga = harga_dasar + harga_tour');
 
             // Durasi
             $table->integer('durasi_perjalanan')->nullable()->comment('Durasi total perjalanan dalam hari');

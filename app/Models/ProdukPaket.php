@@ -18,6 +18,7 @@ class ProdukPaket extends Model
         'include_tur',
         'paket_tour_id',
         'harga_dasar',
+        'total_harga',
         'durasi_perjalanan',
         'durasi_mekkah',
         'durasi_madinah',
@@ -31,6 +32,7 @@ class ProdukPaket extends Model
         'include_tur' => 'boolean',
         'is_active' => 'boolean',
         'harga_dasar' => 'integer',
+        'total_harga' => 'integer',
     ];
 
     // Relasi ke Paket Tour
@@ -54,6 +56,15 @@ class ProdukPaket extends Model
         return 'Rp ' . number_format($this->harga_dasar, 0, ',', '.');
     }
 
+    // ==========================================
+    // ACCESSOR UNTUK TOTAL HARGA
+    // ==========================================
+    
+    public function getTotalHargaFormattedAttribute()
+    {
+        return 'Rp ' . number_format($this->total_harga, 0, ',', '.');
+    }
+
     // === ACCESSOR UNTUK HARGA PAKET TOUR ===
     public function getHargaTourFormattedAttribute()
     {
@@ -66,13 +77,6 @@ class ProdukPaket extends Model
     public function getHargaTourValueAttribute()
     {
         return $this->paketTour ? $this->paketTour->harga_per_orang : 0;
-    }
-
-    // Total harga (harga produk + harga tour)
-    public function getTotalHargaFormattedAttribute()
-    {
-        $total = $this->harga_dasar + $this->getHargaTourValueAttribute();
-        return 'Rp ' . number_format($total, 0, ',', '.');
     }
 
     // Method untuk menghitung total durasi
@@ -121,5 +125,10 @@ class ProdukPaket extends Model
         return $this->include_tur
             ? '<span class="px-2 py-1 text-xs font-medium rounded-full bg-blue-100 text-blue-700">Include Tur</span>'
             : '<span class="px-2 py-1 text-xs font-medium rounded-full bg-gray-100 text-gray-700">Tanpa Tur</span>';
+    }
+
+    public function scopeActive($query)
+    {
+        return $query->where('is_active', true);
     }
 }

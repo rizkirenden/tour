@@ -70,7 +70,7 @@ class ProdukPaketController extends Controller
         $produk = $this->service->create($validated);
 
         return redirect()->route('master.produk.index')
-            ->with('success', "Produk paket '{$produk->nama_produk}' berhasil ditambahkan!");
+            ->with('success', "Produk paket '{$produk->nama_produk}' berhasil ditambahkan! (Total Harga: {$produk->total_harga_formatted})");
     }
 
     public function show($id)
@@ -127,7 +127,7 @@ class ProdukPaketController extends Controller
         $produk = $this->service->update($id, $validated);
 
         return redirect()->route('master.produk.index')
-            ->with('success', "Produk paket '{$produk->nama_produk}' berhasil diperbarui!");
+            ->with('success', "Produk paket '{$produk->nama_produk}' berhasil diperbarui! (Total Harga: {$produk->total_harga_formatted})");
     }
 
     public function destroy($id)

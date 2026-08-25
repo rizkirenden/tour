@@ -107,7 +107,7 @@
                             @if (count($oldHotels) > 0)
                                 @foreach ($oldHotels as $index => $hotel)
                                     <div class="hotel-row bg-gray-50 rounded-xl p-4 mb-3 border border-gray-200">
-                                        <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+                                        <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
                                             <div>
                                                 <label class="block text-xs font-medium text-gray-600 mb-1">Pilih
                                                     Hotel</label>
@@ -126,14 +126,6 @@
                                                 @enderror
                                             </div>
                                             <div>
-                                                <label class="block text-xs font-medium text-gray-600 mb-1">Durasi Menginap
-                                                    (Malam)</label>
-                                                <input type="number" name="hotels[{{ $index }}][durasi_menginap]"
-                                                    value="{{ $hotel['durasi_menginap'] ?? 1 }}"
-                                                    class="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-yellow-500 text-sm"
-                                                    min="1" placeholder="1">
-                                            </div>
-                                            <div class="flex items-end">
                                                 <input type="hidden" name="hotels[{{ $index }}][urutan]"
                                                     value="{{ $index + 1 }}">
                                                 <button type="button" onclick="removeHotelRow(this)"
@@ -142,19 +134,12 @@
                                                 </button>
                                             </div>
                                         </div>
-                                        <div class="mt-2">
-                                            <label class="block text-xs font-medium text-gray-600 mb-1">Catatan</label>
-                                            <input type="text" name="hotels[{{ $index }}][catatan]"
-                                                value="{{ $hotel['catatan'] ?? '' }}"
-                                                class="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-yellow-500 text-sm"
-                                                placeholder="Catatan khusus untuk hotel ini (opsional)">
-                                        </div>
                                     </div>
                                 @endforeach
                             @else
                                 <!-- Default 1 row -->
                                 <div class="hotel-row bg-gray-50 rounded-xl p-4 mb-3 border border-gray-200">
-                                    <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+                                    <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
                                         <div>
                                             <label class="block text-xs font-medium text-gray-600 mb-1">Pilih Hotel</label>
                                             <select name="hotels[0][id_hotel]"
@@ -166,25 +151,12 @@
                                             </select>
                                         </div>
                                         <div>
-                                            <label class="block text-xs font-medium text-gray-600 mb-1">Durasi Menginap
-                                                (Malam)</label>
-                                            <input type="number" name="hotels[0][durasi_menginap]" value="1"
-                                                class="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-yellow-500 text-sm"
-                                                min="1" placeholder="1">
-                                        </div>
-                                        <div class="flex items-end">
                                             <input type="hidden" name="hotels[0][urutan]" value="1">
                                             <button type="button" onclick="removeHotelRow(this)"
                                                 class="w-full px-3 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition text-sm font-medium">
                                                 <i class="fas fa-trash mr-1"></i> Hapus
                                             </button>
                                         </div>
-                                    </div>
-                                    <div class="mt-2">
-                                        <label class="block text-xs font-medium text-gray-600 mb-1">Catatan</label>
-                                        <input type="text" name="hotels[0][catatan]"
-                                            class="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-yellow-500 text-sm"
-                                            placeholder="Catatan khusus untuk hotel ini (opsional)">
                                     </div>
                                 </div>
                             @endif
@@ -216,7 +188,7 @@
                 const row = document.createElement('div');
                 row.className = 'hotel-row bg-gray-50 rounded-xl p-4 mb-3 border border-gray-200';
                 row.innerHTML = `
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
                     <div>
                         <label class="block text-xs font-medium text-gray-600 mb-1">Pilih Hotel</label>
                         <select name="hotels[${hotelIndex}][id_hotel]"
@@ -228,25 +200,12 @@
                         </select>
                     </div>
                     <div>
-                        <label class="block text-xs font-medium text-gray-600 mb-1">Durasi Menginap (Malam)</label>
-                        <input type="number" name="hotels[${hotelIndex}][durasi_menginap]"
-                            value="1"
-                            class="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-yellow-500 text-sm"
-                            min="1" placeholder="1">
-                    </div>
-                    <div class="flex items-end">
                         <input type="hidden" name="hotels[${hotelIndex}][urutan]" value="${hotelIndex + 1}">
                         <button type="button" onclick="removeHotelRow(this)"
                             class="w-full px-3 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition text-sm font-medium">
                             <i class="fas fa-trash mr-1"></i> Hapus
                         </button>
                     </div>
-                </div>
-                <div class="mt-2">
-                    <label class="block text-xs font-medium text-gray-600 mb-1">Catatan</label>
-                    <input type="text" name="hotels[${hotelIndex}][catatan]"
-                        class="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-yellow-500 text-sm"
-                        placeholder="Catatan khusus untuk hotel ini (opsional)">
                 </div>
             `;
                 container.appendChild(row);

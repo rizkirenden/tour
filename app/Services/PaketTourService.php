@@ -74,9 +74,7 @@ class PaketTourService
                     HotelPaketTour::create([
                         'id_paket_tour' => $paketTourId,
                         'id_hotel' => $hotel['id_hotel'],
-                        'durasi_menginap' => $hotel['durasi_menginap'] ?? 1,
                         'urutan' => $hotel['urutan'] ?? 0,
-                        'catatan' => $hotel['catatan'] ?? null,
                     ]);
                 }
             }

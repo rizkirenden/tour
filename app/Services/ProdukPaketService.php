@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Models\ProdukPaket;
+use App\Models\PaketTour;
 use Illuminate\Support\Facades\DB;
 
 class ProdukPaketService
@@ -60,6 +61,16 @@ class ProdukPaketService
             $totalDurasi += $data['durasi_madinah'] ?? 0;
             $data['durasi_hari'] = (int) $totalDurasi;
 
+            // === AUTO CALCULATE TOTAL HARGA ===
+            $hargaTour = 0;
+            if ($data['include_tur'] && $data['paket_tour_id']) {
+                $paketTour = PaketTour::find($data['paket_tour_id']);
+                if ($paketTour) {
+                    $hargaTour = $paketTour->harga_per_orang ?? 0;
+                }
+            }
+            $data['total_harga'] = $data['harga_dasar'] + $hargaTour;
+
             // Create produk
             $produk = ProdukPaket::create($data);
 
@@ -89,6 +100,16 @@ class ProdukPaketService
             $totalDurasi += $data['durasi_mekkah'] ?? 0;
             $totalDurasi += $data['durasi_madinah'] ?? 0;
             $data['durasi_hari'] = (int) $totalDurasi;
+
+            // === AUTO CALCULATE TOTAL HARGA ===
+            $hargaTour = 0;
+            if ($data['include_tur'] && $data['paket_tour_id']) {
+                $paketTour = PaketTour::find($data['paket_tour_id']);
+                if ($paketTour) {
+                    $hargaTour = $paketTour->harga_per_orang ?? 0;
+                }
+            }
+            $data['total_harga'] = $data['harga_dasar'] + $hargaTour;
 
             // Update produk
             $produk->update($data);

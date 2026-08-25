@@ -124,17 +124,8 @@
                                             class="px-3 py-2 text-center text-xs font-semibold text-gray-500 uppercase tracking-wider">
                                             Bintang</th>
                                         <th
-                                            class="px-3 py-2 text-center text-xs font-semibold text-gray-500 uppercase tracking-wider">
-                                            Durasi Menginap</th>
-                                        <th
                                             class="px-3 py-2 text-right text-xs font-semibold text-gray-500 uppercase tracking-wider">
                                             Harga/Malam</th>
-                                        <th
-                                            class="px-3 py-2 text-right text-xs font-semibold text-gray-500 uppercase tracking-wider">
-                                            Subtotal</th>
-                                        <th
-                                            class="px-3 py-2 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
-                                            Catatan</th>
                                     </tr>
                                 </thead>
                                 <tbody class="divide-y divide-gray-100">
@@ -154,30 +145,19 @@
                                                     <span class="text-gray-400 text-xs">-</span>
                                                 @endif
                                             </td>
-                                            <td class="px-3 py-2 text-center text-gray-600">
-                                                {{ $hotel->pivot->durasi_menginap ?? 1 }} Malam
-                                            </td>
                                             <td class="px-3 py-2 text-right font-medium text-gray-700">
                                                 {{ $hotel->harga_per_malam_formatted }}
-                                            </td>
-                                            <td class="px-3 py-2 text-right font-medium text-yellow-600">
-                                                Rp
-                                                {{ number_format(($hotel->harga_per_malam ?? 0) * ($hotel->pivot->durasi_menginap ?? 1), 0, ',', '.') }}
-                                            </td>
-                                            <td class="px-3 py-2 text-gray-500 text-sm max-w-xs truncate">
-                                                {{ $hotel->pivot->catatan ?? '-' }}
                                             </td>
                                         </tr>
                                     @endforeach
                                 </tbody>
                                 <tfoot class="bg-gray-100">
                                     <tr>
-                                        <td colspan="6" class="px-3 py-2 text-right font-semibold text-gray-700">Total
+                                        <td colspan="4" class="px-3 py-2 text-right font-semibold text-gray-700">Total
                                         </td>
                                         <td class="px-3 py-2 text-right font-bold text-yellow-600">
                                             {{ $paketTour->total_harga_hotel_formatted }}
                                         </td>
-                                        <td></td>
                                     </tr>
                                 </tfoot>
                             </table>

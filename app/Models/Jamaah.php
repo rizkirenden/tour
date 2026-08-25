@@ -88,7 +88,6 @@ class Jamaah extends Model
         'is_kepala_keluarga' => 'boolean',
     ];
 
-    // === RELATIONSHIPS ===
     public function keluarga()
     {
         return $this->belongsTo(Keluarga::class, 'id_keluarga', 'id_keluarga');
@@ -109,7 +108,118 @@ class Jamaah extends Model
         return $this->belongsTo(Diskon::class, 'id_diskon', 'id_diskon');
     }
 
-    // === ACCESSORS ===
+    // ==========================================
+    // RELASI KE DEPARTURE
+    // ==========================================
+    
+    public function departures()
+    {
+        return $this->belongsToMany(Departure::class, 'departure_jamaahs', 'id_jamaah', 'id_departure')
+                    ->withPivot('status_keberangkatan', 'catatan')
+                    ->withTimestamps();
+    }
+
+    public function departureJamaahs()
+    {
+        return $this->hasMany(DepartureJamaah::class, 'id_jamaah', 'id_jamaah');
+    }
+
+    // ==========================================
+    // ACCESSORS - FILE URL
+    // ==========================================
+
+    public function getFileKtpKkUrlAttribute()
+    {
+        return $this->file_ktp_kk ? asset('storage/' . $this->file_ktp_kk) : null;
+    }
+
+    public function getFileVaksinUrlAttribute()
+    {
+        return $this->file_vaksin ? asset('storage/' . $this->file_vaksin) : null;
+    }
+
+    public function getFileVisaUrlAttribute()
+    {
+        return $this->file_visa ? asset('storage/' . $this->file_visa) : null;
+    }
+
+    public function getFilePasporUrlAttribute()
+    {
+        return $this->file_paspor ? asset('storage/' . $this->file_paspor) : null;
+    }
+
+    // ==========================================
+    // ACCESSORS - FILE TYPE (PDF atau IMAGE)
+    // ==========================================
+
+    public function getFileKtpKkTypeAttribute()
+    {
+        if (!$this->file_ktp_kk) return null;
+        $ext = strtolower(pathinfo($this->file_ktp_kk, PATHINFO_EXTENSION));
+        return $ext === 'pdf' ? 'pdf' : 'image';
+    }
+
+    public function getFileVaksinTypeAttribute()
+    {
+        if (!$this->file_vaksin) return null;
+        $ext = strtolower(pathinfo($this->file_vaksin, PATHINFO_EXTENSION));
+        return $ext === 'pdf' ? 'pdf' : 'image';
+    }
+
+    public function getFileVisaTypeAttribute()
+    {
+        if (!$this->file_visa) return null;
+        $ext = strtolower(pathinfo($this->file_visa, PATHINFO_EXTENSION));
+        return $ext === 'pdf' ? 'pdf' : 'image';
+    }
+
+    public function getFilePasporTypeAttribute()
+    {
+        if (!$this->file_paspor) return null;
+        $ext = strtolower(pathinfo($this->file_paspor, PATHINFO_EXTENSION));
+        return $ext === 'pdf' ? 'pdf' : 'image';
+    }
+
+    // ==========================================
+    // ACCESSORS - FILE ICON (untuk tampilan)
+    // ==========================================
+
+    public function getFileKtpKkIconAttribute()
+    {
+        $type = $this->file_ktp_kk_type;
+        if ($type === 'pdf') return 'fa-file-pdf text-red-500';
+        if ($type === 'image') return 'fa-file-image text-green-500';
+        return 'fa-file text-gray-500';
+    }
+
+    public function getFileVaksinIconAttribute()
+    {
+        $type = $this->file_vaksin_type;
+        if ($type === 'pdf') return 'fa-file-pdf text-red-500';
+        if ($type === 'image') return 'fa-file-image text-green-500';
+        return 'fa-file text-gray-500';
+    }
+
+    public function getFileVisaIconAttribute()
+    {
+        $type = $this->file_visa_type;
+        if ($type === 'pdf') return 'fa-file-pdf text-red-500';
+        if ($type === 'image') return 'fa-file-image text-green-500';
+        return 'fa-file text-gray-500';
+    }
+
+    public function getFilePasporIconAttribute()
+    {
+        $type = $this->file_paspor_type;
+        if ($type === 'pdf') return 'fa-file-pdf text-red-500';
+        if ($type === 'image') return 'fa-file-image text-green-500';
+        return 'fa-file text-gray-500';
+    }
+
+    // ==========================================
+    // ACCESSORS - LAINNYA
+    // ==========================================
+
     public function getKepalaKeluargaLabelAttribute()
     {
         return $this->is_kepala_keluarga ? 'Ya' : 'Tidak';
@@ -147,7 +257,6 @@ class Jamaah extends Model
         return $this->paspor_terbit ? $this->paspor_terbit->format('d/m/Y') : '-';
     }
 
-    // === FORMATTED ATTRIBUTES ===
     public function getFeeAgentFormattedAttribute()
     {
         return 'Rp ' . number_format($this->fee_agent, 0, ',', '.');
@@ -193,88 +302,6 @@ class Jamaah extends Model
         return 'Rp ' . number_format($this->sisa_tagihan, 0, ',', '.');
     }
 
-    // === FILE URL ACCESSORS ===
-    public function getFileKtpKkUrlAttribute()
-    {
-        return $this->file_ktp_kk ? asset('storage/' . $this->file_ktp_kk) : null;
-    }
-
-    public function getFileVaksinUrlAttribute()
-    {
-        return $this->file_vaksin ? asset('storage/' . $this->file_vaksin) : null;
-    }
-
-    public function getFileVisaUrlAttribute()
-    {
-        return $this->file_visa ? asset('storage/' . $this->file_visa) : null;
-    }
-
-    public function getFilePasporUrlAttribute()
-    {
-        return $this->file_paspor ? asset('storage/' . $this->file_paspor) : null;
-    }
-
-    // === FILE EXTENSION & TYPE ===
-    public function getFileKtpKkTypeAttribute()
-    {
-        if (!$this->file_ktp_kk) return null;
-        $ext = pathinfo($this->file_ktp_kk, PATHINFO_EXTENSION);
-        return in_array(strtolower($ext), ['pdf']) ? 'pdf' : 'image';
-    }
-
-    public function getFileVaksinTypeAttribute()
-    {
-        if (!$this->file_vaksin) return null;
-        $ext = pathinfo($this->file_vaksin, PATHINFO_EXTENSION);
-        return in_array(strtolower($ext), ['pdf']) ? 'pdf' : 'image';
-    }
-
-    public function getFileVisaTypeAttribute()
-    {
-        if (!$this->file_visa) return null;
-        $ext = pathinfo($this->file_visa, PATHINFO_EXTENSION);
-        return in_array(strtolower($ext), ['pdf']) ? 'pdf' : 'image';
-    }
-
-    public function getFilePasporTypeAttribute()
-    {
-        if (!$this->file_paspor) return null;
-        $ext = pathinfo($this->file_paspor, PATHINFO_EXTENSION);
-        return in_array(strtolower($ext), ['pdf']) ? 'pdf' : 'image';
-    }
-
-    public function getFileKtpKkIconAttribute()
-    {
-        $type = $this->file_ktp_kk_type;
-        if ($type === 'pdf') return 'fa-file-pdf text-red-500';
-        if ($type === 'image') return 'fa-file-image text-green-500';
-        return 'fa-file text-gray-500';
-    }
-
-    public function getFileVaksinIconAttribute()
-    {
-        $type = $this->file_vaksin_type;
-        if ($type === 'pdf') return 'fa-file-pdf text-red-500';
-        if ($type === 'image') return 'fa-file-image text-green-500';
-        return 'fa-file text-gray-500';
-    }
-
-    public function getFileVisaIconAttribute()
-    {
-        $type = $this->file_visa_type;
-        if ($type === 'pdf') return 'fa-file-pdf text-red-500';
-        if ($type === 'image') return 'fa-file-image text-green-500';
-        return 'fa-file text-gray-500';
-    }
-
-    public function getFilePasporIconAttribute()
-    {
-        $type = $this->file_paspor_type;
-        if ($type === 'pdf') return 'fa-file-pdf text-red-500';
-        if ($type === 'image') return 'fa-file-image text-green-500';
-        return 'fa-file text-gray-500';
-    }
-
     public function getDiskonNamaAttribute()
     {
         return $this->diskon ? $this->diskon->nama_diskon : '-';
@@ -285,7 +312,10 @@ class Jamaah extends Model
         return $this->diskon ? $this->diskon->nilai_diskon : 0;
     }
 
-    // === SCOPE ===
+    // ==========================================
+    // SCOPES
+    // ==========================================
+
     public function scopeFilter($query, array $filters)
     {
         $query->when($filters['search'] ?? null, function ($query, $search) {

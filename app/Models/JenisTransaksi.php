@@ -1,4 +1,5 @@
 <?php
+// app/Models/JenisTransaksi.php
 
 namespace App\Models;
 
@@ -27,7 +28,11 @@ class JenisTransaksi extends Model
         return $this->hasMany(DetailHargaProduk::class, 'id_jenis_transaksi', 'id_jenis');
     }
 
-    // Accessor untuk menampilkan nama dengan keterangan
+    public function departureJenisTransaksis()
+    {
+        return $this->hasMany(DepartureJenisTransaksi::class, 'id_jenis_transaksi', 'id_jenis');
+    }
+
     public function getNamaKeteranganAttribute()
     {
         return $this->nama . ($this->keterangan ? ' (' . $this->keterangan . ')' : '');

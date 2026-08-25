@@ -53,7 +53,7 @@ class JamaahService
             // Generate ID Keberangkatan
             if (empty($data['id_keberangkatan'])) {
                 $produk = ProdukPaket::where('nama_produk', $data['produk_paket'])->first();
-                $kodeProduk = $produk ? $produk->kode_produk : 'PKT';
+                $kodeProduk = $produk ? 'PKT' : 'PKT';
                 $data['id_keberangkatan'] = $this->generateIdKeberangkatan($kodeProduk);
             }
 
@@ -78,9 +78,11 @@ class JamaahService
             $data['fee_agent'] = $data['fee_agent'] ?? 0;
             $data['total_dibayar'] = $data['total_dibayar'] ?? 0;
 
-            // Ambil harga produk
+            // ==========================================
+            // PERBAIKAN: Ambil TOTAL HARGA dari produk
+            // ==========================================
             $produk = ProdukPaket::where('nama_produk', $data['produk_paket'])->first();
-            $hargaProduk = $produk ? $produk->harga_dasar : 0;
+            $hargaProduk = $produk ? $produk->total_harga : 0; // ← Gunakan total_harga
 
             // Hitung tagihan
             $data['total_tagihan_sebelum_diskon'] = $hargaProduk + $data['fee_agent'];
@@ -130,9 +132,11 @@ class JamaahService
             $data['fee_agent'] = $data['fee_agent'] ?? 0;
             $data['total_dibayar'] = $data['total_dibayar'] ?? 0;
 
-            // Ambil harga produk
+            // ==========================================
+            // PERBAIKAN: Ambil TOTAL HARGA dari produk
+            // ==========================================
             $produk = ProdukPaket::where('nama_produk', $data['produk_paket'])->first();
-            $hargaProduk = $produk ? $produk->harga_dasar : 0;
+            $hargaProduk = $produk ? $produk->total_harga : 0; // ← Gunakan total_harga
 
             // Update kuota diskon
             if ($jamaah->id_diskon && $jamaah->id_diskon != ($data['id_diskon'] ?? null)) {

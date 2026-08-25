@@ -45,9 +45,7 @@ class PaketTourController extends Controller
             'harga_per_orang' => 'nullable|integer|min:0',
             'hotels' => 'nullable|array',
             'hotels.*.id_hotel' => 'nullable|exists:hotels,id_hotel',
-            'hotels.*.durasi_menginap' => 'nullable|integer|min:1',
             'hotels.*.urutan' => 'nullable|integer|min:0',
-            'hotels.*.catatan' => 'nullable|string',
         ]);
 
         $paketTour = $this->service->create($validated);
@@ -93,9 +91,7 @@ class PaketTourController extends Controller
             'harga_per_orang' => 'nullable|integer|min:0',
             'hotels' => 'nullable|array',
             'hotels.*.id_hotel' => 'nullable|exists:hotels,id_hotel',
-            'hotels.*.durasi_menginap' => 'nullable|integer|min:1',
             'hotels.*.urutan' => 'nullable|integer|min:0',
-            'hotels.*.catatan' => 'nullable|string',
         ]);
 
         $paketTour = $this->service->update($id, $validated);

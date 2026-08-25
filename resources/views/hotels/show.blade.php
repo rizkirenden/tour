@@ -165,10 +165,6 @@
                                                 Tipe Kamar</th>
                                             <th class="px-4 py-2 text-center text-xs font-semibold text-gray-500 uppercase">
                                                 Kapasitas</th>
-                                            <th class="px-4 py-2 text-center text-xs font-semibold text-gray-500 uppercase">
-                                                Jumlah</th>
-                                            <th class="px-4 py-2 text-right text-xs font-semibold text-gray-500 uppercase">
-                                                Harga/Malam</th>
                                             <th class="px-4 py-2 text-left text-xs font-semibold text-gray-500 uppercase">
                                                 Fasilitas</th>
                                         </tr>
@@ -184,19 +180,6 @@
                                                         class="inline-flex items-center px-2 py-0.5 bg-blue-100 text-blue-700 rounded-full text-xs">
                                                         {{ $kamar->kapasitas }} orang
                                                     </span>
-                                                </td>
-                                                <td class="px-4 py-2 text-center">
-                                                    <span
-                                                        class="inline-flex items-center px-2 py-0.5 bg-green-100 text-green-700 rounded-full text-xs">
-                                                        {{ $kamar->jumlah_kamar }} kamar
-                                                    </span>
-                                                </td>
-                                                <td class="px-4 py-2 text-right font-medium text-gray-700">
-                                                    @if ($kamar->harga_per_malam)
-                                                        Rp {{ number_format($kamar->harga_per_malam, 0, ',', '.') }}
-                                                    @else
-                                                        <span class="text-gray-400">-</span>
-                                                    @endif
                                                 </td>
                                                 <td class="px-4 py-2 text-sm text-gray-600">
                                                     @if ($kamar->fasilitas_kamar)

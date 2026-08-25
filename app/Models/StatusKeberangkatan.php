@@ -20,6 +20,12 @@ class StatusKeberangkatan extends Model
 
     public function departures()
     {
-        return $this->hasMany(Departure::class, 'status', 'nama_status');
+        return $this->hasMany(Departure::class, 'id_status', 'id_status');
+    }
+
+    public function getBadgeAttribute()
+    {
+        $warna = $this->warna ?? 'bg-gray-100 text-gray-700';
+        return '<span class="px-2 py-1 rounded-full text-xs font-medium ' . $warna . '">' . $this->nama_status . '</span>';
     }
 }

@@ -13,8 +13,6 @@ return new class extends Migration
             $table->foreignId('id_hotel')->constrained('hotels', 'id_hotel')->onDelete('cascade');
             $table->string('tipe_kamar', 50);
             $table->integer('kapasitas');
-            $table->integer('jumlah_kamar')->default(1);
-            $table->decimal('harga_per_malam', 15, 2)->nullable();
             $table->text('fasilitas_kamar')->nullable();
             $table->timestamps();
         });

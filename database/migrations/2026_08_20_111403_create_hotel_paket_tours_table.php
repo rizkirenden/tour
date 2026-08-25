@@ -12,9 +12,7 @@ return new class extends Migration
             $table->id();
             $table->foreignId('id_paket_tour')->constrained('paket_tours', 'id_paket_tour')->onDelete('cascade');
             $table->foreignId('id_hotel')->constrained('hotels', 'id_hotel')->onDelete('cascade');
-            $table->integer('durasi_menginap')->default(1);
             $table->integer('urutan')->default(0);
-            $table->text('catatan')->nullable();
             $table->timestamps();
 
             $table->unique(['id_paket_tour', 'id_hotel']);

@@ -16,24 +16,17 @@ class Kamar extends Model
         'id_hotel',
         'tipe_kamar',
         'kapasitas',
-        'jumlah_kamar',
-        'harga_per_malam',
         'fasilitas_kamar',
     ];
 
-    protected $casts = [
-        'harga_per_malam' => 'decimal:2',
-    ];
-
-    // Relasi ke Hotel
     public function hotel()
     {
-        return $this->belongsTo(Hotel::class, 'id_hotel');
+        return $this->belongsTo(Hotel::class, 'id_hotel', 'id_hotel');
     }
 
-    // Accessor untuk tipe kamar
-    public function getTipeKamarAttribute($value)
+    // Accessor untuk badge kapasitas
+    public function getKapasitasBadgeAttribute()
     {
-        return ucwords(strtolower($value));
+        return '<span class="inline-flex px-2 py-0.5 bg-blue-100 text-blue-700 rounded-full text-xs">' . $this->kapasitas . ' orang</span>';
     }
 }

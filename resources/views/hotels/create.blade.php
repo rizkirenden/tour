@@ -135,7 +135,7 @@
                         <div id="kamar-container">
                             <!-- Kamar pertama (default) -->
                             <div class="kamar-item bg-gray-50 rounded-xl p-4 mb-3 border border-gray-200">
-                                <div class="grid grid-cols-1 md:grid-cols-4 gap-3">
+                                <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
                                     <div>
                                         <label class="block text-xs font-medium text-gray-600 mb-1">
                                             Tipe Kamar <span class="text-red-500">*</span>
@@ -153,23 +153,11 @@
                                             placeholder="2" min="1" required>
                                     </div>
                                     <div>
-                                        <label class="block text-xs font-medium text-gray-600 mb-1">Jumlah Kamar</label>
-                                        <input type="number" name="kamars[0][jumlah_kamar]" value="1"
+                                        <label class="block text-xs font-medium text-gray-600 mb-1">Fasilitas Kamar</label>
+                                        <input type="text" name="kamars[0][fasilitas_kamar]"
                                             class="w-full px-3 py-1.5 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500"
-                                            min="1">
+                                            placeholder="AC, TV, WiFi, Bathub">
                                     </div>
-                                    <div>
-                                        <label class="block text-xs font-medium text-gray-600 mb-1">Harga/Malam</label>
-                                        <input type="number" name="kamars[0][harga_per_malam]" step="0.01"
-                                            class="w-full px-3 py-1.5 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500"
-                                            placeholder="0" min="0">
-                                    </div>
-                                </div>
-                                <div class="mt-2">
-                                    <label class="block text-xs font-medium text-gray-600 mb-1">Fasilitas Kamar</label>
-                                    <input type="text" name="kamars[0][fasilitas_kamar]"
-                                        class="w-full px-3 py-1.5 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500"
-                                        placeholder="AC, TV, WiFi, Bathub">
                                 </div>
                                 <button type="button" onclick="removeKamar(this)"
                                     class="mt-2 text-red-500 hover:text-red-700 text-sm font-medium">
@@ -205,7 +193,7 @@
             newItem.className = 'kamar-item bg-gray-50 rounded-xl p-4 mb-3 border border-gray-200';
             newItem.style.animation = 'fadeIn 0.3s ease';
             newItem.innerHTML = `
-                <div class="grid grid-cols-1 md:grid-cols-4 gap-3">
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
                     <div>
                         <label class="block text-xs font-medium text-gray-600 mb-1">
                             Tipe Kamar <span class="text-red-500">*</span>
@@ -223,23 +211,11 @@
                             placeholder="2" min="1" required>
                     </div>
                     <div>
-                        <label class="block text-xs font-medium text-gray-600 mb-1">Jumlah Kamar</label>
-                        <input type="number" name="kamars[${kamarIndex}][jumlah_kamar]" value="1"
+                        <label class="block text-xs font-medium text-gray-600 mb-1">Fasilitas Kamar</label>
+                        <input type="text" name="kamars[${kamarIndex}][fasilitas_kamar]"
                             class="w-full px-3 py-1.5 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500"
-                            min="1">
+                            placeholder="AC, TV, WiFi, Bathub">
                     </div>
-                    <div>
-                        <label class="block text-xs font-medium text-gray-600 mb-1">Harga/Malam</label>
-                        <input type="number" name="kamars[${kamarIndex}][harga_per_malam]" step="0.01"
-                            class="w-full px-3 py-1.5 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500"
-                            placeholder="0" min="0">
-                    </div>
-                </div>
-                <div class="mt-2">
-                    <label class="block text-xs font-medium text-gray-600 mb-1">Fasilitas Kamar</label>
-                    <input type="text" name="kamars[${kamarIndex}][fasilitas_kamar]"
-                        class="w-full px-3 py-1.5 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500"
-                        placeholder="AC, TV, WiFi, Bathub">
                 </div>
                 <button type="button" onclick="removeKamar(this)"
                     class="mt-2 text-red-500 hover:text-red-700 text-sm font-medium">

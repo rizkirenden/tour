@@ -12,7 +12,7 @@
     </div>
 
     <!-- Menu -->
-    <nav class="px-3 py-4">
+    <nav class="px-3 py-4 pb-32">
         <ul class="space-y-1">
             <!-- Dashboard -->
             <li>
@@ -94,14 +94,14 @@
                     <li>
                         <a href="{{ route('master.diskon.index') }}"
                             class="flex items-center px-3 py-2 rounded-lg text-sm transition-all duration-200 {{ request()->routeIs('master.diskon.*') ? 'bg-yellow-500/50 text-white' : 'text-yellow-200 hover:bg-yellow-500/30 hover:text-white' }}">
-                            <i class="fas fa-tags w-5 text-center text-xs"></i>
+                            <i class="fas fa-percent w-5 text-center text-xs"></i>
                             <span class="ml-3">Diskon</span>
                         </a>
                     </li>
                     <li>
                         <a href="{{ route('master.perlengkapan.index') }}"
                             class="flex items-center px-3 py-2 rounded-lg text-sm transition-all duration-200 {{ request()->routeIs('master.perlengkapan.*') ? 'bg-yellow-500/50 text-white' : 'text-yellow-200 hover:bg-yellow-500/30 hover:text-white' }}">
-                            <i class="fas fa-box w-5 text-center text-xs"></i>
+                            <i class="fas fa-suitcase w-5 text-center text-xs"></i>
                             <span class="ml-3">Perlengkapan</span>
                         </a>
                     </li>
@@ -115,15 +115,7 @@
                 </ul>
             </li>
 
-            <!-- Keberangkatan -->
-            <li>
-                <a href="#"
-                    class="flex items-center px-3 py-2.5 rounded-lg transition-all duration-200 text-yellow-100 hover:bg-yellow-500/30 hover:text-white">
-                    <i class="fas fa-calendar-check w-5 text-center text-sm"></i>
-                    <span class="ml-3 text-sm font-medium">Keberangkatan</span>
-                </a>
-            </li>
-
+            <!-- Transaksional -->
             <li x-data="{ open: {{ request()->routeIs('transaksional.*') ? 'true' : 'false' }} }">
                 <a @click="open = !open"
                     class="flex items-center justify-between px-3 py-2.5 rounded-lg cursor-pointer transition-all duration-200 {{ request()->routeIs('transaksional.*') ? 'bg-yellow-500/50 text-white' : 'text-yellow-100 hover:bg-yellow-500/30 hover:text-white' }}">
@@ -135,6 +127,15 @@
                         :class="open ? 'rotate-180' : ''"></i>
                 </a>
                 <ul x-show="open" class="ml-4 mt-1 space-y-1">
+                    <!-- Departure -->
+                    <li>
+                        <a href="{{ route('transaksional.departure.index') }}"
+                            class="flex items-center px-3 py-2 rounded-lg text-sm transition-all duration-200 {{ request()->routeIs('transaksional.departure.*') ? 'bg-yellow-500/50 text-white' : 'text-yellow-200 hover:bg-yellow-500/30 hover:text-white' }}">
+                            <i class="fas fa-calendar-plus w-5 text-center text-xs"></i>
+                            <span class="ml-3">Keberangkatan</span>
+                        </a>
+                    </li>
+                    <!-- Keluarga -->
                     <li>
                         <a href="{{ route('transaksional.keluarga.index') }}"
                             class="flex items-center px-3 py-2 rounded-lg text-sm transition-all duration-200 {{ request()->routeIs('transaksional.keluarga.*') ? 'bg-yellow-500/50 text-white' : 'text-yellow-200 hover:bg-yellow-500/30 hover:text-white' }}">
@@ -142,6 +143,7 @@
                             <span class="ml-3">Keluarga</span>
                         </a>
                     </li>
+                    <!-- Jamaah -->
                     <li>
                         <a href="{{ route('transaksional.jamaah.index') }}"
                             class="flex items-center px-3 py-2 rounded-lg text-sm transition-all duration-200 {{ request()->routeIs('transaksional.jamaah.*') ? 'bg-yellow-500/50 text-white' : 'text-yellow-200 hover:bg-yellow-500/30 hover:text-white' }}">
@@ -187,13 +189,6 @@
                             class="flex items-center px-3 py-2 rounded-lg text-sm transition-all duration-200 text-yellow-200 hover:bg-yellow-500/30 hover:text-white">
                             <i class="fas fa-chart-pie w-5 text-center text-xs"></i>
                             <span class="ml-3">Keuangan</span>
-                        </a>
-                    </li>
-                    <li>
-                        <a href="#"
-                            class="flex items-center px-3 py-2 rounded-lg text-sm transition-all duration-200 text-yellow-200 hover:bg-yellow-500/30 hover:text-white">
-                            <i class="fas fa-user-chart w-5 text-center text-xs"></i>
-                            <span class="ml-3">Jamaah</span>
                         </a>
                     </li>
                 </ul>
