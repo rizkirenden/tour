@@ -1,7 +1,7 @@
 @extends('layouts.app')
 
-@section('title', 'Tambah Paket Tour - Arrum Tour')
-@section('page-title', 'Tambah Paket Tour')
+@section('title', 'Tambah Paket Umroh Plus - Arrum Tour')
+@section('page-title', 'Tambah Paket Umroh Plus')
 
 @section('breadcrumb')
     <li class="inline-flex items-center">
@@ -10,7 +10,7 @@
     </li>
     <li class="inline-flex items-center">
         <i class="fas fa-chevron-right text-gray-400 mx-2 text-xs"></i>
-        <a href="{{ route('master.paket-tour.index') }}" class="text-gray-500 hover:text-yellow-600">Paket Tour</a>
+        <a href="{{ route('master.paket-tour.index') }}" class="text-gray-500 hover:text-yellow-600">Paket Umroh Plus</a>
     </li>
     <li class="inline-flex items-center">
         <i class="fas fa-chevron-right text-gray-400 mx-2 text-xs"></i>
@@ -22,8 +22,8 @@
     <div class="mx-auto">
         <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
             <div class="px-6 py-4 border-b border-gray-100">
-                <h5 class="text-sm font-semibold text-gray-700">Form Tambah Paket Tour</h5>
-                <p class="text-xs text-gray-400 mt-0.5">Lengkapi data paket tour dengan benar</p>
+                <h5 class="text-sm font-semibold text-gray-700">Form Tambah Paket Umroh Plus</h5>
+                <p class="text-xs text-gray-400 mt-0.5">Lengkapi data paket umroh plus dengan benar</p>
             </div>
 
             <form action="{{ route('master.paket-tour.store') }}" method="POST" id="paketTourForm">
@@ -66,22 +66,8 @@
                         <label class="block text-sm font-medium text-gray-700 mb-1.5">Deskripsi</label>
                         <textarea name="deskripsi" rows="3"
                             class="w-full px-4 py-2 border border-gray-200 rounded-xl focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500 text-sm"
-                            placeholder="Deskripsikan paket tour ini...">{{ old('deskripsi') }}</textarea>
+                            placeholder="Deskripsikan paket umroh plus ini...">{{ old('deskripsi') }}</textarea>
                         @error('deskripsi')
-                            <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
-                        @enderror
-                    </div>
-
-                    <!-- Harga Per Orang -->
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1.5">Harga Per Orang</label>
-                        <div class="relative">
-                            <span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm">Rp</span>
-                            <input type="number" name="harga_per_orang" value="{{ old('harga_per_orang', 0) }}"
-                                class="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-xl focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500 text-sm"
-                                placeholder="0">
-                        </div>
-                        @error('harga_per_orang')
                             <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
                         @enderror
                     </div>
@@ -91,7 +77,8 @@
                         <div class="flex items-center justify-between mb-4">
                             <div>
                                 <h6 class="text-sm font-semibold text-gray-700">Daftar Hotel</h6>
-                                <p class="text-xs text-gray-400">Tambahkan hotel yang digunakan dalam tour ini</p>
+                                <p class="text-xs text-gray-400">Tambahkan hotel yang digunakan dalam paket umroh plus ini
+                                </p>
                             </div>
                             <button type="button" onclick="addHotelRow()"
                                 class="inline-flex items-center px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition text-sm font-medium">

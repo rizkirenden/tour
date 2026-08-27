@@ -33,7 +33,7 @@
             </div>
 
             <form action="{{ route('master.produk.update', $produk->id_produk) }}" method="POST"
-                enctype="multipart/form-data">
+                enctype="multipart/form-data" id="produkForm">
                 @csrf
                 @method('PUT')
 
@@ -90,10 +90,10 @@
                             </label>
                             <div class="relative">
                                 <span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm">Rp</span>
-                                <input type="number" name="harga_dasar"
-                                    value="{{ old('harga_dasar', $produk->harga_dasar) }}"
+                                <input type="text" name="harga_dasar" id="harga_dasar"
+                                    value="{{ old('harga_dasar', number_format($produk->harga_dasar, 0, ',', '.')) }}"
                                     class="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-xl focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500 text-sm"
-                                    placeholder="0" min="0" required>
+                                    placeholder="0" oninput="formatRupiah(this)" required>
                             </div>
                             @error('harga_dasar')
                                 <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
@@ -161,6 +161,24 @@
                             </div>
                         </div>
 
+                        <!-- Durasi Tour (Auto dari Paket Tour) -->
+                        <div class="mt-4">
+                            <label class="block text-sm font-medium text-gray-700 mb-1.5">
+                                Durasi Tour <span class="text-gray-400 text-xs">(otomatis dari paket tour)</span>
+                            </label>
+                            <div class="relative">
+                                <input type="number" name="durasi_tour" id="durasi_tour"
+                                    value="{{ old('durasi_tour', $produk->durasi_tour ?? 0) }}"
+                                    class="w-full px-4 py-2 border border-gray-200 rounded-xl bg-gray-100 cursor-not-allowed text-sm"
+                                    readonly disabled>
+                                <span class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm">Hari</span>
+                            </div>
+                            <p class="text-xs text-blue-500 mt-1">
+                                <i class="fas fa-info-circle mr-1"></i>
+                                Durasi tour akan otomatis terisi saat memilih paket tour
+                            </p>
+                        </div>
+
                         <div class="mt-4">
                             <label class="block text-sm font-medium text-gray-700 mb-1.5">
                                 Total Durasi Hari <span class="text-red-500">*</span>
@@ -174,7 +192,7 @@
                             </div>
                             <p class="text-xs text-gray-400 mt-1">
                                 <i class="fas fa-info-circle mr-1"></i>
-                                Total durasi akan dihitung otomatis
+                                Total durasi = Perjalanan + Mekkah + Madinah + Tour
                             </p>
                         </div>
                     </div>
@@ -188,7 +206,8 @@
                             <div>
                                 <label class="block text-sm font-medium text-gray-700 mb-1.5">Include Tur</label>
                                 <select name="include_tur" id="include_tur"
-                                    class="w-full px-4 py-2 border border-gray-200 rounded-xl focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500 text-sm">
+                                    class="w-full px-4 py-2 border border-gray-200 rounded-xl focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500 text-sm"
+                                    onchange="togglePaketTour()">
                                     <option value="0"
                                         {{ old('include_tur', $produk->include_tur) == 0 ? 'selected' : '' }}>Tidak
                                     </option>
@@ -227,7 +246,8 @@
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-1.5">Paket Tour</label>
                             <select name="paket_tour_id" id="paket_tour_id"
-                                class="w-full px-4 py-2 border border-gray-200 rounded-xl focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500 text-sm">
+                                class="w-full px-4 py-2 border border-gray-200 rounded-xl focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500 text-sm"
+                                onchange="loadPaketTourInfo(this.value)">
                                 <option value="">-- Pilih Paket Tour --</option>
                                 @foreach ($paketTours as $tour)
                                     <option value="{{ $tour->id_paket_tour }}"
@@ -240,10 +260,38 @@
                             @error('paket_tour_id')
                                 <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
                             @enderror
-                            <p class="text-xs text-gray-400 mt-1">
-                                <i class="fas fa-info-circle mr-1"></i>
-                                Pilih paket tour yang sudah tersedia di menu Paket Tour
-                            </p>
+                        </div>
+
+                        <!-- Informasi Paket Tour yang dipilih -->
+                        <div id="paketTourInfo"
+                            class="mt-3 bg-blue-50 rounded-lg p-3 border border-blue-200
+                            {{ $produk->paket_tour_id ? '' : 'hidden' }}">
+                            <div class="grid grid-cols-2 md:grid-cols-3 gap-2 text-sm">
+                                <div>
+                                    <span class="text-gray-500">Kota:</span>
+                                    <span id="info_kota" class="font-medium text-gray-700">
+                                        {{ $produk->paketTour->kota_tujuan ?? '-' }}
+                                    </span>
+                                </div>
+                                <div>
+                                    <span class="text-gray-500">Negara:</span>
+                                    <span id="info_negara" class="font-medium text-gray-700">
+                                        {{ $produk->paketTour->negara ?? '-' }}
+                                    </span>
+                                </div>
+                                <div>
+                                    <span class="text-gray-500">Durasi Tour:</span>
+                                    <span id="info_durasi" class="font-medium text-blue-600">
+                                        {{ ($produk->paketTour->durasi_hari ?? 0) . ' Hari' }}
+                                    </span>
+                                </div>
+                            </div>
+                            <div class="mt-2 text-xs text-gray-500">
+                                <span class="text-gray-500">Total Harga Hotel:</span>
+                                <span id="info_total_hotel" class="font-medium text-yellow-600">
+                                    {{ $produk->paketTour->total_harga_hotel_formatted ?? 'Rp 0' }}
+                                </span>
+                            </div>
                         </div>
                     </div>
 
@@ -322,35 +370,81 @@
 
 @push('scripts')
     <script>
-        // Toggle Paket Tour
-        document.addEventListener('DOMContentLoaded', function() {
+        // Format Rupiah
+        function formatRupiah(element) {
+            let value = element.value.replace(/[^,\d]/g, '');
+            value = value.replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+            element.value = value;
+        }
+
+        // Toggle Paket Tour Section
+        function togglePaketTour() {
             const includeTurSelect = document.getElementById('include_tur');
             const paketTourSection = document.getElementById('paketTourSection');
             const paketTourSelect = document.getElementById('paket_tour_id');
 
-            function togglePaketTour() {
-                if (includeTurSelect.value === '1') {
-                    paketTourSection.style.display = 'block';
-                } else {
-                    paketTourSection.style.display = 'none';
-                    if (paketTourSelect) {
-                        paketTourSelect.value = '';
-                    }
+            if (includeTurSelect.value === '1') {
+                paketTourSection.style.display = 'block';
+                if (paketTourSelect.value) {
+                    loadPaketTourInfo(paketTourSelect.value);
                 }
+            } else {
+                paketTourSection.style.display = 'none';
+                if (paketTourSelect) {
+                    paketTourSelect.value = '';
+                }
+                document.getElementById('paketTourInfo').classList.add('hidden');
+                document.getElementById('durasi_tour').value = 0;
+                calculateTotalDurasi();
+            }
+        }
+
+        // Load Paket Tour Info via AJAX
+        function loadPaketTourInfo(tourId) {
+            const infoDiv = document.getElementById('paketTourInfo');
+            const durasiTourInput = document.getElementById('durasi_tour');
+
+            if (!tourId) {
+                infoDiv.classList.add('hidden');
+                durasiTourInput.value = 0;
+                calculateTotalDurasi();
+                return;
             }
 
-            if (includeTurSelect) {
-                includeTurSelect.addEventListener('change', togglePaketTour);
-            }
-        });
+            infoDiv.classList.remove('hidden');
+            document.getElementById('info_kota').textContent = 'Memuat...';
+            document.getElementById('info_negara').textContent = 'Memuat...';
+            document.getElementById('info_durasi').textContent = 'Memuat...';
+            document.getElementById('info_total_hotel').textContent = 'Memuat...';
+
+            fetch(`/master/get-paket-tour-info/${tourId}`)
+                .then(response => response.json())
+                .then(data => {
+                    document.getElementById('info_kota').textContent = data.kota_tujuan || '-';
+                    document.getElementById('info_negara').textContent = data.negara || '-';
+                    document.getElementById('info_durasi').textContent = data.durasi_hari + ' Hari';
+                    document.getElementById('info_total_hotel').textContent = data.total_harga_hotel || 'Rp 0';
+
+                    durasiTourInput.value = data.durasi_hari || 0;
+                    calculateTotalDurasi();
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    document.getElementById('info_kota').textContent = 'Error';
+                    document.getElementById('info_negara').textContent = 'Error';
+                    document.getElementById('info_durasi').textContent = 'Error';
+                    document.getElementById('info_total_hotel').textContent = 'Error';
+                });
+        }
 
         // Calculate Total Durasi
         function calculateTotalDurasi() {
             const durasiPerjalanan = parseFloat(document.getElementById('durasi_perjalanan').value) || 0;
             const durasiMekkah = parseFloat(document.getElementById('durasi_mekkah').value) || 0;
             const durasiMadinah = parseFloat(document.getElementById('durasi_madinah').value) || 0;
+            const durasiTour = parseFloat(document.getElementById('durasi_tour').value) || 0;
 
-            const total = durasiPerjalanan + durasiMekkah + durasiMadinah;
+            const total = durasiPerjalanan + durasiMekkah + durasiMadinah + durasiTour;
             document.getElementById('durasi_hari').value = Math.round(total);
         }
 
@@ -382,8 +476,19 @@
             document.getElementById('fileName').textContent = '';
         }
 
-        // Drag and Drop
+        // Form submit - clean harga_dasar
         document.addEventListener('DOMContentLoaded', function() {
+            const form = document.getElementById('produkForm');
+            if (form) {
+                form.addEventListener('submit', function(e) {
+                    const input = document.getElementById('harga_dasar');
+                    if (input) {
+                        input.value = input.value.replace(/\./g, '');
+                    }
+                });
+            }
+
+            // Drag and Drop
             const dropzone = document.getElementById('dropzone');
             if (dropzone) {
                 dropzone.addEventListener('dragover', function(e) {
@@ -410,6 +515,7 @@
                 });
             }
 
+            togglePaketTour();
             calculateTotalDurasi();
         });
     </script>

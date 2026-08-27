@@ -25,7 +25,7 @@
                 <h5 class="text-sm font-semibold text-gray-700">Form Tambah Perlengkapan</h5>
             </div>
 
-            <form action="{{ route('master.perlengkapan.store') }}" method="POST">
+            <form action="{{ route('master.perlengkapan.store') }}" method="POST" id="perlengkapanForm">
                 @csrf
 
                 <div class="p-6 space-y-6">
@@ -58,9 +58,10 @@
                             </label>
                             <div class="relative">
                                 <span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm">Rp</span>
-                                <input type="number" name="harga_satuan" value="{{ old('harga_satuan') }}"
+                                <input type="text" name="harga_satuan" id="harga_satuan"
+                                    value="{{ old('harga_satuan') }}"
                                     class="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-xl focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500 text-sm"
-                                    placeholder="0" min="0" required>
+                                    placeholder="0" oninput="formatRupiah(this)" required>
                             </div>
                             @error('harga_satuan')
                                 <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
@@ -107,4 +108,28 @@
             </form>
         </div>
     </div>
+
+    @push('scripts')
+        <script>
+            // Format Rupiah
+            function formatRupiah(element) {
+                let value = element.value.replace(/[^,\d]/g, '');
+                value = value.replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+                element.value = value;
+            }
+
+            // Form submit - clean harga_satuan
+            document.addEventListener('DOMContentLoaded', function() {
+                const form = document.getElementById('perlengkapanForm');
+                if (form) {
+                    form.addEventListener('submit', function(e) {
+                        const input = document.getElementById('harga_satuan');
+                        if (input) {
+                            input.value = input.value.replace(/\./g, '');
+                        }
+                    });
+                }
+            });
+        </script>
+    @endpush
 @endsection

@@ -32,7 +32,7 @@
                 </a>
             </div>
 
-            <form action="{{ route('master.diskon.update', $diskon->id_diskon) }}" method="POST">
+            <form action="{{ route('master.diskon.update', $diskon->id_diskon) }}" method="POST" id="diskonForm">
                 @csrf
                 @method('PUT')
 
@@ -56,17 +56,17 @@
                             </label>
                             <div class="relative">
                                 <span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm">Rp</span>
-                                <input type="number" name="nilai_diskon"
-                                    value="{{ old('nilai_diskon', $diskon->nilai_diskon) }}"
+                                <input type="text" name="nilai_diskon" id="nilai_diskon"
+                                    value="{{ old('nilai_diskon', number_format($diskon->nilai_diskon, 0, ',', '.')) }}"
                                     class="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-xl focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500 text-sm"
-                                    placeholder="2000000" min="0" required>
+                                    placeholder="0" oninput="formatRupiah(this)" required>
                             </div>
                             @error('nilai_diskon')
                                 <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
                             @enderror
                             <p class="text-xs text-gray-400 mt-1">
                                 <i class="fas fa-info-circle mr-1"></i>
-                                Masukkan nilai diskon dalam Rupiah (contoh: 2000000 untuk Rp 2.000.000)
+                                Masukkan nilai diskon dalam Rupiah (contoh: 2.000.000)
                             </p>
                         </div>
                         <div>
@@ -114,4 +114,28 @@
             </form>
         </div>
     </div>
+
+    @push('scripts')
+        <script>
+            // Format Rupiah
+            function formatRupiah(element) {
+                let value = element.value.replace(/[^,\d]/g, '');
+                value = value.replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+                element.value = value;
+            }
+
+            // Form submit - clean nilai_diskon
+            document.addEventListener('DOMContentLoaded', function() {
+                const form = document.getElementById('diskonForm');
+                if (form) {
+                    form.addEventListener('submit', function(e) {
+                        const input = document.getElementById('nilai_diskon');
+                        if (input) {
+                            input.value = input.value.replace(/\./g, '');
+                        }
+                    });
+                }
+            });
+        </script>
+    @endpush
 @endsection

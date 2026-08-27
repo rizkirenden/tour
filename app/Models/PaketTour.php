@@ -17,14 +17,10 @@ class PaketTour extends Model
         'negara',
         'durasi_hari',
         'deskripsi',
-        'harga_per_orang',
-        'is_active',
     ];
 
     protected $casts = [
-        'harga_per_orang' => 'integer',
         'durasi_hari' => 'integer',
-        'is_active' => 'boolean',
     ];
 
     // Relasi ke Produk Paket
@@ -42,15 +38,6 @@ class PaketTour extends Model
                     ->orderBy('urutan', 'asc');
     }
 
-    // Accessor untuk harga tour formatted
-    public function getHargaPerOrangFormattedAttribute()
-    {
-        if ($this->harga_per_orang) {
-            return 'Rp ' . number_format($this->harga_per_orang, 0, ',', '.');
-        }
-        return '-';
-    }
-
     // Accessor untuk total harga hotel
     public function getTotalHargaHotelAttribute()
     {
@@ -66,16 +53,8 @@ class PaketTour extends Model
         return 'Rp ' . number_format($this->total_harga_hotel, 0, ',', '.');
     }
 
-    // Accessor status
-    public function getStatusLabelAttribute()
+    public function getNamaPaketAttribute()
     {
-        return $this->is_active ? 'Aktif' : 'Tidak Aktif';
-    }
-
-    public function getStatusBadgeAttribute()
-    {
-        return $this->is_active
-            ? '<span class="px-2 py-1 text-xs font-medium rounded-full bg-green-100 text-green-700">Aktif</span>'
-            : '<span class="px-2 py-1 text-xs font-medium rounded-full bg-red-100 text-red-700">Tidak Aktif</span>';
+        return $this->kota_tujuan . ' (' . $this->durasi_hari . ' Hari)';
     }
 }

@@ -26,6 +26,7 @@ Route::get('/', [DashboardController::class, 'index'])->name('dashboard');
 Route::prefix('master')->name('master.')->group(function () {
     Route::resource('produk', ProdukPaketController::class);
     Route::patch('produk/{id}/toggle-status', [ProdukPaketController::class, 'toggleStatus'])->name('produk.toggle-status');
+    Route::get('get-paket-tour-info/{id}', [ProdukPaketController::class, 'getPaketTourInfo'])->name('get-paket-tour-info');
     Route::patch('produk/{id}/update-status-keberangkatan', [ProdukPaketController::class, 'updateStatusKeberangkatan'])->name('produk.update-status-keberangkatan');
 
     Route::resource('metode-pembayaran', MetodePembayaranController::class);
@@ -139,5 +140,4 @@ Route::patch('departure/{departureId}/jenis-transaksi/{jenisTransaksiId}/harga',
         ->name('departure.update-paket-tour-hotel');
     Route::get('departure/{id}/paket-tour-hotels', [DepartureController::class, 'getPaketTourHotels'])
         ->name('departure.get-paket-tour-hotels');
-         Route::get('/{id}/edit', [PaketTourController::class, 'edit'])->name('edit');
 });

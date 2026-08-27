@@ -9,8 +9,6 @@
                 </th>
                 <th class="px-4 py-3 text-right text-xs font-semibold text-gray-500 uppercase tracking-wider">Harga Dasar
                 </th>
-                <th class="px-4 py-3 text-right text-xs font-semibold text-gray-500 uppercase tracking-wider">Total Harga
-                </th>
                 <th class="px-4 py-3 text-center text-xs font-semibold text-gray-500 uppercase tracking-wider">Durasi
                 </th>
                 <th class="px-4 py-3 text-center text-xs font-semibold text-gray-500 uppercase tracking-wider">Include
@@ -35,17 +33,11 @@
                     <td class="px-4 py-3">
                         <span class="text-sm text-gray-600">{{ $item->kategori ?? '-' }}</span>
                     </td>
-                    <td class="px-4 py-3 text-right font-bold text-gray-700">
+                    <td class="px-4 py-3 text-right font-bold text-yellow-600">
                         {{ $item->harga_dasar_formatted }}
                     </td>
-                    <td class="px-4 py-3 text-right font-bold text-yellow-600">
-                        {{ $item->total_harga_formatted }}
-                    </td>
                     <td class="px-4 py-3 text-center">
-                        <span class="text-sm text-gray-600">{{ $item->durasi_hari }} Hari</span>
-                        @if ($item->durasi_perjalanan)
-                            <p class="text-xs text-blue-500">Perjalanan: {{ $item->durasi_perjalanan }} Hari</p>
-                        @endif
+                        <span class="text-sm font-medium text-gray-700">{{ $item->durasi_hari }} Hari</span>
                     </td>
                     <td class="px-4 py-3 text-center">
                         <span
@@ -89,7 +81,7 @@
                 </tr>
             @empty
                 <tr>
-                    <td colspan="9" class="px-4 py-12 text-center">
+                    <td colspan="8" class="px-4 py-12 text-center">
                         <div class="flex flex-col items-center">
                             <div class="w-16 h-16 bg-gray-100 rounded-2xl flex items-center justify-center mb-3">
                                 <i class="fas fa-inbox text-gray-300 text-3xl"></i>

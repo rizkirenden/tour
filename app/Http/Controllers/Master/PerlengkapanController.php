@@ -47,7 +47,7 @@ class PerlengkapanController extends Controller
         $perlengkapan = $this->service->create($validated);
 
         return redirect()->route('master.perlengkapan.index')
-            ->with('success', "Perlengkapan '{$perlengkapan->nama_perlengkapan}' berhasil ditambahkan!");
+            ->with('success', "Perlengkapan '{$perlengkapan->nama_perlengkapan}' berhasil ditambahkan! (Harga: {$perlengkapan->harga_satuan_formatted})");
     }
 
     public function show($id)
@@ -76,7 +76,7 @@ class PerlengkapanController extends Controller
         $perlengkapan = $this->service->update($id, $validated);
 
         return redirect()->route('master.perlengkapan.index')
-            ->with('success', "Perlengkapan '{$perlengkapan->nama_perlengkapan}' berhasil diperbarui!");
+            ->with('success', "Perlengkapan '{$perlengkapan->nama_perlengkapan}' berhasil diperbarui! (Harga: {$perlengkapan->harga_satuan_formatted})");
     }
 
     public function destroy($id)

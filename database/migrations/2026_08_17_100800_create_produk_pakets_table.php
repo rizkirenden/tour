@@ -15,16 +15,15 @@ return new class extends Migration
             $table->boolean('include_tur')->default(0);
             $table->foreignId('paket_tour_id')->nullable()->constrained('paket_tours', 'id_paket_tour')->onDelete('set null');
 
-            // HARGA DASAR (INTEGER - tanpa desimal)
+            // HARGA DASAR
             $table->integer('harga_dasar')->default(0)->comment('Harga dasar produk dalam Rupiah');
-            
-            // TOTAL HARGA (otomatis = harga_dasar + harga_tour)
-            $table->integer('total_harga')->default(0)->comment('Total harga = harga_dasar + harga_tour');
+            $table->integer('total_harga')->default(0)->comment('Total harga = harga_dasar');
 
             // Durasi
-            $table->integer('durasi_perjalanan')->nullable()->comment('Durasi total perjalanan dalam hari');
+            $table->integer('durasi_perjalanan')->nullable()->comment('Durasi perjalanan dalam hari');
             $table->integer('durasi_mekkah')->default(4)->comment('Durasi di Mekkah dalam hari');
             $table->integer('durasi_madinah')->default(4)->comment('Durasi di Madinah dalam hari');
+            $table->integer('durasi_tour')->default(0)->comment('Durasi dari paket tour (auto dari paket_tour.durasi_hari)');
             $table->integer('durasi_hari')->nullable()->comment('Total durasi dalam hari (auto calculate)');
 
             // Flyer

@@ -48,7 +48,7 @@ class DiskonController extends Controller
         $diskon = $this->service->create($validated);
 
         return redirect()->route('master.diskon.index')
-            ->with('success', "Diskon '{$diskon->nama_diskon}' berhasil ditambahkan!");
+            ->with('success', "Diskon '{$diskon->nama_diskon}' berhasil ditambahkan! (Nilai: {$diskon->nilai_diskon_formatted})");
     }
 
     public function show($id)
@@ -79,7 +79,7 @@ class DiskonController extends Controller
         $diskon = $this->service->update($id, $validated);
 
         return redirect()->route('master.diskon.index')
-            ->with('success', "Diskon '{$diskon->nama_diskon}' berhasil diperbarui!");
+            ->with('success', "Diskon '{$diskon->nama_diskon}' berhasil diperbarui! (Nilai: {$diskon->nilai_diskon_formatted})");
     }
 
     public function destroy($id)

@@ -14,8 +14,6 @@ return new class extends Migration
             $table->string('negara', 50)->nullable();
             $table->integer('durasi_hari')->nullable();
             $table->text('deskripsi')->nullable();
-            $table->bigInteger('harga_per_orang')->nullable();
-
             $table->timestamps();
         });
     }

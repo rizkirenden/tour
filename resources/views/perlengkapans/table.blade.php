@@ -5,7 +5,7 @@
                 <th class="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">No</th>
                 <th class="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Nama
                     Perlengkapan</th>
-                <th class="px-4 py-3 text-center text-xs font-semibold text-gray-500 uppercase tracking-wider">Kategori
+                <th class="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Kategori
                 </th>
                 <th class="px-4 py-3 text-right text-xs font-semibold text-gray-500 uppercase tracking-wider">Harga
                     Satuan</th>
@@ -23,17 +23,13 @@
                     <td class="px-4 py-3">
                         <p class="font-medium text-gray-800">{{ $item->nama_perlengkapan }}</p>
                         @if ($item->deskripsi)
-                            <p class="text-xs text-gray-400">{{ Str::limit($item->deskripsi, 40) }}</p>
+                            <p class="text-xs text-gray-400 mt-0.5">{{ Str::limit($item->deskripsi, 50) }}</p>
                         @endif
                     </td>
-                    <td class="px-4 py-3 text-center">
-                        <span
-                            class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium {{ $item->kategori_badge }}">
-                            <i class="fas {{ $item->kategori_icon }} text-xs"></i>
-                            {{ $item->kategori ?? '-' }}
-                        </span>
+                    <td class="px-4 py-3">
+                        <span class="text-sm text-gray-600">{{ $item->kategori ?? '-' }}</span>
                     </td>
-                    <td class="px-4 py-3 text-right font-medium text-gray-800">
+                    <td class="px-4 py-3 text-right font-bold text-yellow-600">
                         {{ $item->harga_satuan_formatted }}
                     </td>
                     <td class="px-4 py-3 text-center">
@@ -66,7 +62,7 @@
                     <td colspan="6" class="px-4 py-12 text-center">
                         <div class="flex flex-col items-center">
                             <div class="w-16 h-16 bg-gray-100 rounded-2xl flex items-center justify-center mb-3">
-                                <i class="fas fa-box text-gray-300 text-3xl"></i>
+                                <i class="fas fa-box-open text-gray-300 text-3xl"></i>
                             </div>
                             <p class="text-gray-500 font-medium">Belum ada data perlengkapan</p>
                             <p class="text-gray-400 text-sm mt-1">Klik tombol "Tambah Perlengkapan" untuk menambahkan

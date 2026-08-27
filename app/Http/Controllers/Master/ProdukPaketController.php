@@ -70,7 +70,7 @@ class ProdukPaketController extends Controller
         $produk = $this->service->create($validated);
 
         return redirect()->route('master.produk.index')
-            ->with('success', "Produk paket '{$produk->nama_produk}' berhasil ditambahkan! (Total Harga: {$produk->total_harga_formatted})");
+            ->with('success', "Produk paket '{$produk->nama_produk}' berhasil ditambahkan! (Harga Dasar: {$produk->harga_dasar_formatted})");
     }
 
     public function show($id)
@@ -127,7 +127,7 @@ class ProdukPaketController extends Controller
         $produk = $this->service->update($id, $validated);
 
         return redirect()->route('master.produk.index')
-            ->with('success', "Produk paket '{$produk->nama_produk}' berhasil diperbarui! (Total Harga: {$produk->total_harga_formatted})");
+            ->with('success', "Produk paket '{$produk->nama_produk}' berhasil diperbarui! (Harga Dasar: {$produk->harga_dasar_formatted})");
     }
 
     public function destroy($id)
@@ -155,5 +155,21 @@ class ProdukPaketController extends Controller
             return redirect()->back()
                 ->with('error', 'Gagal mengubah status produk: ' . $e->getMessage());
         }
+    }
+
+    public function getPaketTourInfo($id)
+    {
+        $paketTour = PaketTour::with('hotels')->find($id);
+        if (!$paketTour) {
+            return response()->json(['error' => 'Paket tour tidak ditemukan'], 404);
+        }
+
+        return response()->json([
+            'durasi_hari' => $paketTour->durasi_hari ?? 0,
+            'kota_tujuan' => $paketTour->kota_tujuan,
+            'negara' => $paketTour->negara,
+            'deskripsi' => $paketTour->deskripsi,
+            'total_harga_hotel' => $paketTour->total_harga_hotel_formatted ?? 'Rp 0',
+        ]);
     }
 }

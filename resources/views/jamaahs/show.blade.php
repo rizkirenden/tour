@@ -193,21 +193,55 @@
                         </dl>
                     </div>
 
-                    <!-- Agent & Fee -->
+                    <!-- Agent & Pendampingan -->
                     <div class="bg-gray-50 rounded-xl p-5 border border-gray-100">
                         <h6 class="text-sm font-semibold text-gray-700 mb-4 flex items-center">
-                            <i class="fas fa-handshake text-yellow-500 mr-2"></i> Agent & Fee
+                            <i class="fas fa-handshake text-yellow-500 mr-2"></i> Agent & Pendampingan
                         </h6>
-                        <dl class="space-y-3">
-                            <div class="flex justify-between text-sm">
-                                <dt class="text-gray-500">Agent</dt>
-                                <dd class="font-medium text-gray-700">{{ $jamaah->agent ?? '-' }}</dd>
-                            </div>
-                            <div class="flex justify-between text-sm">
-                                <dt class="text-gray-500">Fee Agent</dt>
-                                <dd class="font-medium text-gray-700">{{ $jamaah->fee_agent_formatted }}</dd>
-                            </div>
-                        </dl>
+
+                        <!-- Agent -->
+                        <div class="mb-3 pb-3 border-b border-gray-200">
+                            <h6 class="text-xs font-semibold text-blue-600 mb-2 flex items-center">
+                                <i class="fas fa-user-tie mr-1"></i> Agent
+                            </h6>
+                            <dl class="space-y-2">
+                                <div class="flex justify-between text-sm">
+                                    <dt class="text-gray-500">Nama Agent</dt>
+                                    <dd class="font-medium text-gray-700">{{ $jamaah->agent_name_formatted }}</dd>
+                                </div>
+                                <div class="flex justify-between text-sm">
+                                    <dt class="text-gray-500">Fee Agent</dt>
+                                    <dd class="font-medium text-gray-700">{{ $jamaah->fee_agent_formatted }}</dd>
+                                </div>
+                            </dl>
+                        </div>
+
+                        <!-- Pendampingan -->
+                        <div>
+                            <h6 class="text-xs font-semibold text-green-600 mb-2 flex items-center">
+                                <i class="fas fa-users mr-1"></i> Pendampingan
+                            </h6>
+                            <dl class="space-y-2">
+                                <div class="flex justify-between text-sm">
+                                    <dt class="text-gray-500">Nama Pendamping</dt>
+                                    <dd class="font-medium text-gray-700">{{ $jamaah->pendampingan_nama_formatted }}</dd>
+                                </div>
+                                <div class="flex justify-between text-sm">
+                                    <dt class="text-gray-500">Fee Pendamping</dt>
+                                    <dd class="font-medium text-gray-700">{{ $jamaah->pendampingan_fee_formatted }}</dd>
+                                </div>
+                                <div class="flex justify-between text-sm">
+                                    <dt class="text-gray-500">Fee Petugas</dt>
+                                    <dd class="font-medium text-gray-700">
+                                        {{ $jamaah->pendampingan_fee_petugas_formatted }}</dd>
+                                </div>
+                                <div class="flex justify-between text-sm font-medium border-t border-gray-200 pt-2 mt-2">
+                                    <dt class="text-gray-700">Total Fee Agent & Pendampingan</dt>
+                                    <dd class="font-bold text-yellow-600">
+                                        {{ $jamaah->total_fee_agent_pendampingan_formatted }}</dd>
+                                </div>
+                            </dl>
+                        </div>
                     </div>
 
                     <!-- Keuangan -->

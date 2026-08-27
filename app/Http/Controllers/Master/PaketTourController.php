@@ -6,7 +6,6 @@ use App\Http\Controllers\Controller;
 use App\Services\PaketTourService;
 use App\Models\Hotel;
 use Illuminate\Http\Request;
-use Illuminate\Validation\Rule;
 
 class PaketTourController extends Controller
 {
@@ -42,7 +41,6 @@ class PaketTourController extends Controller
             'negara' => 'nullable|string|max:50',
             'durasi_hari' => 'nullable|integer|min:1',
             'deskripsi' => 'nullable|string',
-            'harga_per_orang' => 'nullable|integer|min:0',
             'hotels' => 'nullable|array',
             'hotels.*.id_hotel' => 'nullable|exists:hotels,id_hotel',
             'hotels.*.urutan' => 'nullable|integer|min:0',
@@ -65,7 +63,7 @@ class PaketTourController extends Controller
         }
 
         return redirect()->route('master.paket-tour.index')
-            ->with('success', "Paket tour '{$paketTour->kota_tujuan}' berhasil ditambahkan!");
+            ->with('success', "Paket umroh plus '{$paketTour->kota_tujuan}' berhasil ditambahkan!");
     }
 
     public function show($id)
@@ -88,7 +86,6 @@ class PaketTourController extends Controller
             'negara' => 'nullable|string|max:50',
             'durasi_hari' => 'nullable|integer|min:1',
             'deskripsi' => 'nullable|string',
-            'harga_per_orang' => 'nullable|integer|min:0',
             'hotels' => 'nullable|array',
             'hotels.*.id_hotel' => 'nullable|exists:hotels,id_hotel',
             'hotels.*.urutan' => 'nullable|integer|min:0',
@@ -114,14 +111,18 @@ class PaketTourController extends Controller
         }
 
         return redirect()->route('master.paket-tour.index')
-            ->with('success', "Paket tour berhasil diperbarui!");
+            ->with('success', "Paket umroh plus '{$paketTour->kota_tujuan}' berhasil diperbarui!");
     }
 
     public function destroy($id)
     {
-        $nama = $this->service->delete($id);
-
-        return redirect()->route('master.paket-tour.index')
-            ->with('success', "Paket tour '{$nama}' berhasil dihapus!");
+        try {
+            $nama = $this->service->delete($id);
+            return redirect()->route('master.paket-tour.index')
+                ->with('success', "Paket umroh plus '{$nama}' berhasil dihapus!");
+        } catch (\Exception $e) {
+            return redirect()->back()
+                ->with('error', 'Gagal menghapus paket umroh plus: ' . $e->getMessage());
+        }
     }
 }

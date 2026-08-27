@@ -22,6 +22,7 @@ class ProdukPaket extends Model
         'durasi_perjalanan',
         'durasi_mekkah',
         'durasi_madinah',
+        'durasi_tour',
         'durasi_hari',
         'flyer',
         'kategori',
@@ -33,6 +34,11 @@ class ProdukPaket extends Model
         'is_active' => 'boolean',
         'harga_dasar' => 'integer',
         'total_harga' => 'integer',
+        'durasi_perjalanan' => 'integer',
+        'durasi_mekkah' => 'integer',
+        'durasi_madinah' => 'integer',
+        'durasi_tour' => 'integer',
+        'durasi_hari' => 'integer',
     ];
 
     // Relasi ke Paket Tour
@@ -56,50 +62,85 @@ class ProdukPaket extends Model
         return 'Rp ' . number_format($this->harga_dasar, 0, ',', '.');
     }
 
-    // ==========================================
-    // ACCESSOR UNTUK TOTAL HARGA
-    // ==========================================
-    
+    // Accessor untuk total harga formatted
     public function getTotalHargaFormattedAttribute()
     {
         return 'Rp ' . number_format($this->total_harga, 0, ',', '.');
     }
 
-    // === ACCESSOR UNTUK HARGA PAKET TOUR ===
-    public function getHargaTourFormattedAttribute()
-    {
-        if ($this->paketTour && $this->paketTour->harga_per_orang) {
-            return 'Rp ' . number_format($this->paketTour->harga_per_orang, 0, ',', '.');
-        }
-        return '-';
-    }
-
-    public function getHargaTourValueAttribute()
-    {
-        return $this->paketTour ? $this->paketTour->harga_per_orang : 0;
-    }
-
-    // Method untuk menghitung total durasi
-    public function calculateTotalDurasi()
-    {
-        $total = 0;
-
-        if ($this->durasi_perjalanan) {
-            $total += $this->durasi_perjalanan;
-        }
-        $total += $this->durasi_mekkah ?? 0;
-        $total += $this->durasi_madinah ?? 0;
-
-        return (int) $total;
-    }
-
-    // Accessor untuk durasi perjalanan
+    // Accessor untuk durasi perjalanan formatted
     public function getDurasiPerjalananFormattedAttribute()
     {
         if ($this->durasi_perjalanan) {
             return $this->durasi_perjalanan . ' Hari';
         }
         return '-';
+    }
+
+    // Accessor untuk durasi mekkah formatted
+    public function getDurasiMekkahFormattedAttribute()
+    {
+        if ($this->durasi_mekkah) {
+            return $this->durasi_mekkah . ' Hari';
+        }
+        return '-';
+    }
+
+    // Accessor untuk durasi madinah formatted
+    public function getDurasiMadinahFormattedAttribute()
+    {
+        if ($this->durasi_madinah) {
+            return $this->durasi_madinah . ' Hari';
+        }
+        return '-';
+    }
+
+    // Accessor untuk durasi tour formatted
+    public function getDurasiTourFormattedAttribute()
+    {
+        if ($this->durasi_tour) {
+            return $this->durasi_tour . ' Hari';
+        }
+        return '-';
+    }
+
+    // Accessor untuk total durasi formatted
+    public function getDurasiHariFormattedAttribute()
+    {
+        if ($this->durasi_hari) {
+            return $this->durasi_hari . ' Hari';
+        }
+        return '-';
+    }
+
+    // Method untuk menghitung total durasi dari semua komponen
+    public function calculateTotalDurasi()
+    {
+        $total = 0;
+        $total += (int) ($this->durasi_perjalanan ?? 0);
+        $total += (int) ($this->durasi_mekkah ?? 0);
+        $total += (int) ($this->durasi_madinah ?? 0);
+        $total += (int) ($this->durasi_tour ?? 0);
+        return $total;
+    }
+
+    // Accessor untuk detail durasi lengkap
+    public function getDetailDurasiAttribute()
+    {
+        $parts = [];
+        if ($this->durasi_perjalanan) {
+            $parts[] = $this->durasi_perjalanan . ' hari perjalanan';
+        }
+        if ($this->durasi_mekkah) {
+            $parts[] = $this->durasi_mekkah . ' hari Mekkah';
+        }
+        if ($this->durasi_madinah) {
+            $parts[] = $this->durasi_madinah . ' hari Madinah';
+        }
+        if ($this->durasi_tour) {
+            $parts[] = $this->durasi_tour . ' hari tour';
+        }
+        return !empty($parts) ? implode(' + ', $parts) : '-';
     }
 
     // Accessor status
@@ -130,5 +171,27 @@ class ProdukPaket extends Model
     public function scopeActive($query)
     {
         return $query->where('is_active', true);
+    }
+
+    // Boot method untuk auto update durasi_tour dan durasi_hari
+    protected static function booted()
+    {
+        static::saving(function ($model) {
+            // Auto update durasi_tour dari paket_tour yang dipilih
+            if ($model->include_tur && $model->paket_tour_id) {
+                $paketTour = PaketTour::find($model->paket_tour_id);
+                if ($paketTour) {
+                    $model->durasi_tour = (int) ($paketTour->durasi_hari ?? 0);
+                }
+            } else {
+                $model->durasi_tour = 0;
+            }
+
+            // Auto calculate total durasi
+            $model->durasi_hari = $model->calculateTotalDurasi();
+
+            // Total harga hanya dari harga_dasar
+            $model->total_harga = (int) ($model->harga_dasar ?? 0);
+        });
     }
 }

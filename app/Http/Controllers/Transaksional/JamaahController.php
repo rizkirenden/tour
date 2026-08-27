@@ -75,11 +75,19 @@ class JamaahController extends Controller
             'file_visa' => 'nullable|file|mimes:jpeg,png,jpg,pdf|max:2048',
             'file_paspor' => 'nullable|file|mimes:jpeg,png,jpg,pdf|max:2048',
             'jenis_pendampingan' => 'nullable|string|max:30',
-            'agent' => 'nullable|string|max:100',
+            'agent_name' => 'nullable|string|max:100',
             'fee_agent' => 'nullable|integer|min:0',
+            'pendampingan_nama' => 'nullable|string|max:100',
+            'pendampingan_fee' => 'nullable|integer|min:0',
+            'pendampingan_fee_petugas' => 'nullable|integer|min:0',
             'keterangan_diskon' => 'nullable|string',
             'catatan_tambahan' => 'nullable|string'
         ]);
+
+        // Convert fee fields to integer
+        $validated['fee_agent'] = (int) ($validated['fee_agent'] ?? 0);
+        $validated['pendampingan_fee'] = (int) ($validated['pendampingan_fee'] ?? 0);
+        $validated['pendampingan_fee_petugas'] = (int) ($validated['pendampingan_fee_petugas'] ?? 0);
 
         // Upload File KTP/KK
         if ($request->hasFile('file_ktp_kk')) {
@@ -169,11 +177,19 @@ class JamaahController extends Controller
             'file_visa' => 'nullable|file|mimes:jpeg,png,jpg,pdf|max:2048',
             'file_paspor' => 'nullable|file|mimes:jpeg,png,jpg,pdf|max:2048',
             'jenis_pendampingan' => 'nullable|string|max:30',
-            'agent' => 'nullable|string|max:100',
+            'agent_name' => 'nullable|string|max:100',
             'fee_agent' => 'nullable|integer|min:0',
+            'pendampingan_nama' => 'nullable|string|max:100',
+            'pendampingan_fee' => 'nullable|integer|min:0',
+            'pendampingan_fee_petugas' => 'nullable|integer|min:0',
             'keterangan_diskon' => 'nullable|string',
             'catatan_tambahan' => 'nullable|string'
         ]);
+
+        // Convert fee fields to integer
+        $validated['fee_agent'] = (int) ($validated['fee_agent'] ?? 0);
+        $validated['pendampingan_fee'] = (int) ($validated['pendampingan_fee'] ?? 0);
+        $validated['pendampingan_fee_petugas'] = (int) ($validated['pendampingan_fee_petugas'] ?? 0);
 
         // Handle file uploads with delete old files
         $this->handleFileUploads($request, $jamaah, $validated);
@@ -255,9 +271,9 @@ class JamaahController extends Controller
         $metodePembayarans = MetodePembayaran::active()->get();
         $jenisTransaksis = JenisTransaksi::all();
         $transaksis = TransaksiPembayaran::with(['metodePembayaran', 'jenisTransaksi'])
-                        ->where('id_jamaah', $id)
-                        ->orderBy('created_at', 'desc')
-                        ->get();
+                ->where('id_jamaah', $id)
+                ->orderBy('created_at', 'asc') // ascending agar data baru di bawah
+                ->get();
 
         return view('jamaahs.pembayaran', compact('jamaah', 'metodePembayarans', 'jenisTransaksis', 'transaksis'));
     }

@@ -39,12 +39,8 @@ class ProdukPaketService
     public function create(array $data)
     {
         return DB::transaction(function () use ($data) {
-            // Set default values
             $data['include_tur'] = $data['include_tur'] ?? false;
             $data['is_active'] = $data['is_active'] ?? true;
-            $data['paket_tour_id'] = $data['paket_tour_id'] ?? null;
-            $data['durasi_mekkah'] = $data['durasi_mekkah'] ?? 4;
-            $data['durasi_madinah'] = $data['durasi_madinah'] ?? 4;
             $data['harga_dasar'] = (int) ($data['harga_dasar'] ?? 0);
 
             // Jika include_tur = false, set paket_tour_id menjadi null
@@ -52,24 +48,25 @@ class ProdukPaketService
                 $data['paket_tour_id'] = null;
             }
 
-            // Hitung total durasi
-            $totalDurasi = 0;
-            if ($data['durasi_perjalanan']) {
-                $totalDurasi += $data['durasi_perjalanan'];
-            }
-            $totalDurasi += $data['durasi_mekkah'] ?? 0;
-            $totalDurasi += $data['durasi_madinah'] ?? 0;
-            $data['durasi_hari'] = (int) $totalDurasi;
-
-            // === AUTO CALCULATE TOTAL HARGA ===
-            $hargaTour = 0;
-            if ($data['include_tur'] && $data['paket_tour_id']) {
+            // Ambil durasi_tour dari paket_tour yang dipilih
+            $data['durasi_tour'] = 0;
+            if ($data['include_tur'] && !empty($data['paket_tour_id'])) {
                 $paketTour = PaketTour::find($data['paket_tour_id']);
                 if ($paketTour) {
-                    $hargaTour = $paketTour->harga_per_orang ?? 0;
+                    $data['durasi_tour'] = (int) ($paketTour->durasi_hari ?? 0);
                 }
             }
-            $data['total_harga'] = $data['harga_dasar'] + $hargaTour;
+
+            // Hitung total durasi dari semua komponen
+            $totalDurasi = 0;
+            $totalDurasi += (int) ($data['durasi_perjalanan'] ?? 0);
+            $totalDurasi += (int) ($data['durasi_mekkah'] ?? 0);
+            $totalDurasi += (int) ($data['durasi_madinah'] ?? 0);
+            $totalDurasi += (int) ($data['durasi_tour'] ?? 0);
+            $data['durasi_hari'] = $totalDurasi;
+
+            // Total harga hanya dari harga_dasar
+            $data['total_harga'] = $data['harga_dasar'];
 
             // Create produk
             $produk = ProdukPaket::create($data);
@@ -92,24 +89,25 @@ class ProdukPaketService
                 $data['paket_tour_id'] = null;
             }
 
-            // Hitung total durasi
-            $totalDurasi = 0;
-            if ($data['durasi_perjalanan']) {
-                $totalDurasi += $data['durasi_perjalanan'];
-            }
-            $totalDurasi += $data['durasi_mekkah'] ?? 0;
-            $totalDurasi += $data['durasi_madinah'] ?? 0;
-            $data['durasi_hari'] = (int) $totalDurasi;
-
-            // === AUTO CALCULATE TOTAL HARGA ===
-            $hargaTour = 0;
-            if ($data['include_tur'] && $data['paket_tour_id']) {
+            // Ambil durasi_tour dari paket_tour yang dipilih
+            $data['durasi_tour'] = 0;
+            if ($data['include_tur'] && !empty($data['paket_tour_id'])) {
                 $paketTour = PaketTour::find($data['paket_tour_id']);
                 if ($paketTour) {
-                    $hargaTour = $paketTour->harga_per_orang ?? 0;
+                    $data['durasi_tour'] = (int) ($paketTour->durasi_hari ?? 0);
                 }
             }
-            $data['total_harga'] = $data['harga_dasar'] + $hargaTour;
+
+            // Hitung total durasi dari semua komponen
+            $totalDurasi = 0;
+            $totalDurasi += (int) ($data['durasi_perjalanan'] ?? 0);
+            $totalDurasi += (int) ($data['durasi_mekkah'] ?? 0);
+            $totalDurasi += (int) ($data['durasi_madinah'] ?? 0);
+            $totalDurasi += (int) ($data['durasi_tour'] ?? 0);
+            $data['durasi_hari'] = $totalDurasi;
+
+            // Total harga hanya dari harga_dasar
+            $data['total_harga'] = $data['harga_dasar'];
 
             // Update produk
             $produk->update($data);
@@ -141,5 +139,21 @@ class ProdukPaketService
                 'is_active' => $produk->is_active
             ];
         });
+    }
+
+    public function getPaketTourInfo($id)
+    {
+        $paketTour = PaketTour::with('hotels')->find($id);
+        if (!$paketTour) {
+            return null;
+        }
+
+        return [
+            'durasi_hari' => $paketTour->durasi_hari ?? 0,
+            'kota_tujuan' => $paketTour->kota_tujuan,
+            'negara' => $paketTour->negara,
+            'deskripsi' => $paketTour->deskripsi,
+            'total_harga_hotel' => $paketTour->total_harga_hotel_formatted ?? 'Rp 0',
+        ];
     }
 }

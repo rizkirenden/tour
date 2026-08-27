@@ -127,12 +127,12 @@
                         :class="open ? 'rotate-180' : ''"></i>
                 </a>
                 <ul x-show="open" class="ml-4 mt-1 space-y-1">
-                    <!-- Departure -->
+                    <!-- Jamaah -->
                     <li>
-                        <a href="{{ route('transaksional.departure.index') }}"
-                            class="flex items-center px-3 py-2 rounded-lg text-sm transition-all duration-200 {{ request()->routeIs('transaksional.departure.*') ? 'bg-yellow-500/50 text-white' : 'text-yellow-200 hover:bg-yellow-500/30 hover:text-white' }}">
-                            <i class="fas fa-calendar-plus w-5 text-center text-xs"></i>
-                            <span class="ml-3">Keberangkatan</span>
+                        <a href="{{ route('transaksional.jamaah.index') }}"
+                            class="flex items-center px-3 py-2 rounded-lg text-sm transition-all duration-200 {{ request()->routeIs('transaksional.jamaah.*') ? 'bg-yellow-500/50 text-white' : 'text-yellow-200 hover:bg-yellow-500/30 hover:text-white' }}">
+                            <i class="fas fa-user w-5 text-center text-xs"></i>
+                            <span class="ml-3">Jamaah</span>
                         </a>
                     </li>
                     <!-- Keluarga -->
@@ -143,52 +143,12 @@
                             <span class="ml-3">Keluarga</span>
                         </a>
                     </li>
-                    <!-- Jamaah -->
+                    <!-- Departure -->
                     <li>
-                        <a href="{{ route('transaksional.jamaah.index') }}"
-                            class="flex items-center px-3 py-2 rounded-lg text-sm transition-all duration-200 {{ request()->routeIs('transaksional.jamaah.*') ? 'bg-yellow-500/50 text-white' : 'text-yellow-200 hover:bg-yellow-500/30 hover:text-white' }}">
-                            <i class="fas fa-user w-5 text-center text-xs"></i>
-                            <span class="ml-3">Jamaah</span>
-                        </a>
-                    </li>
-                </ul>
-            </li>
-
-            <!-- Invoice -->
-            <li>
-                <a href="#"
-                    class="flex items-center px-3 py-2.5 rounded-lg transition-all duration-200 text-yellow-100 hover:bg-yellow-500/30 hover:text-white">
-                    <i class="fas fa-file-invoice w-5 text-center text-sm"></i>
-                    <span class="ml-3 text-sm font-medium">Invoice</span>
-                </a>
-            </li>
-
-            <!-- Audit Log -->
-            <li>
-                <a href="#"
-                    class="flex items-center px-3 py-2.5 rounded-lg transition-all duration-200 text-yellow-100 hover:bg-yellow-500/30 hover:text-white">
-                    <i class="fas fa-history w-5 text-center text-sm"></i>
-                    <span class="ml-3 text-sm font-medium">Audit Log</span>
-                </a>
-            </li>
-
-            <!-- Laporan -->
-            <li x-data="{ open: false }">
-                <a @click="open = !open"
-                    class="flex items-center justify-between px-3 py-2.5 rounded-lg cursor-pointer transition-all duration-200 text-yellow-100 hover:bg-yellow-500/30 hover:text-white">
-                    <div class="flex items-center">
-                        <i class="fas fa-chart-bar w-5 text-center text-sm"></i>
-                        <span class="ml-3 text-sm font-medium">Laporan</span>
-                    </div>
-                    <i class="fas fa-chevron-down text-xs transition-transform duration-200"
-                        :class="open ? 'rotate-180' : ''"></i>
-                </a>
-                <ul x-show="open" class="ml-4 mt-1 space-y-1">
-                    <li>
-                        <a href="#"
-                            class="flex items-center px-3 py-2 rounded-lg text-sm transition-all duration-200 text-yellow-200 hover:bg-yellow-500/30 hover:text-white">
-                            <i class="fas fa-chart-pie w-5 text-center text-xs"></i>
-                            <span class="ml-3">Keuangan</span>
+                        <a href="{{ route('transaksional.departure.index') }}"
+                            class="flex items-center px-3 py-2 rounded-lg text-sm transition-all duration-200 {{ request()->routeIs('transaksional.departure.*') ? 'bg-yellow-500/50 text-white' : 'text-yellow-200 hover:bg-yellow-500/30 hover:text-white' }}">
+                            <i class="fas fa-calendar-plus w-5 text-center text-xs"></i>
+                            <span class="ml-3">Keberangkatan</span>
                         </a>
                     </li>
                 </ul>

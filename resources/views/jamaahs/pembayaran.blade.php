@@ -189,11 +189,15 @@
                                     </tr>
                                 </thead>
                                 <tbody class="divide-y divide-gray-100">
-                                    @foreach ($transaksis as $index => $transaksi)
+                                    @php
+                                        $sortedTransaksis = $transaksis->sortBy('created_at');
+                                    @endphp
+                                    @foreach ($sortedTransaksis as $index => $transaksi)
                                         <tr class="hover:bg-gray-50 transition-colors">
                                             <td class="px-3 py-2 text-gray-400 text-xs">{{ $loop->iteration }}</td>
                                             <td class="px-3 py-2 text-gray-600">
-                                                {{ $transaksi->tanggal_transaksi_formatted }}</td>
+                                                {{ $transaksi->tanggal_transaksi_formatted }}
+                                            </td>
                                             <td class="px-3 py-2">
                                                 <span class="text-xs font-medium text-gray-700">
                                                     {{ $transaksi->metodePembayaran->kode_bank ?? '-' }}
@@ -204,11 +208,11 @@
                                             <td class="px-3 py-2">
                                                 <span
                                                     class="px-2 py-1 rounded-full text-xs font-medium
-                            {{ $transaksi->jenisTransaksi->kode == 'DP'
-                                ? 'bg-yellow-100 text-yellow-700'
-                                : ($transaksi->jenisTransaksi->kode == 'LUNAS'
-                                    ? 'bg-green-100 text-green-700'
-                                    : 'bg-blue-100 text-blue-700') }}">
+                                    {{ $transaksi->jenisTransaksi->kode == 'DP'
+                                        ? 'bg-yellow-100 text-yellow-700'
+                                        : ($transaksi->jenisTransaksi->kode == 'LUNAS'
+                                            ? 'bg-green-100 text-green-700'
+                                            : 'bg-blue-100 text-blue-700') }}">
                                                     {{ $transaksi->jenisTransaksi->nama ?? '-' }}
                                                 </span>
                                             </td>
@@ -431,7 +435,7 @@
         function confirmDeleteTransaksi(id) {
             if (confirm(
                     'Yakin ingin menghapus transaksi pembayaran ini?\n\nData yang dihapus:\n- Jumlah pembayaran akan dikembalikan\n- Status pembayaran akan diperbarui otomatis\n- Bukti pembayaran akan dihapus'
-                    )) {
+                )) {
                 document.getElementById('delete-transaksi-form-' + id).submit();
             }
         }

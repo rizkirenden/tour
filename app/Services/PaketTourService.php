@@ -38,7 +38,6 @@ class PaketTourService
     public function create(array $data)
     {
         return DB::transaction(function () use ($data) {
-            $data['harga_per_orang'] = $data['harga_per_orang'] ?? 0;
             unset($data['hotels']);
             return PaketTour::create($data);
         });
@@ -58,7 +57,7 @@ class PaketTourService
     {
         return DB::transaction(function () use ($id) {
             $paketTour = $this->getById($id);
-            $nama = $paketTour->kota_tujuan ?? 'Tour';
+            $nama = $paketTour->kota_tujuan ?? 'Paket';
             $paketTour->delete();
             return $nama;
         });
@@ -85,6 +84,7 @@ class PaketTourService
 
     public function getPaketTourOptions()
     {
-        return PaketTour::orderBy('kota_tujuan')->get(['id_paket_tour', 'kota_tujuan', 'negara', 'durasi_hari', 'harga_per_orang']);
+        return PaketTour::orderBy('kota_tujuan')
+            ->get(['id_paket_tour', 'kota_tujuan', 'negara', 'durasi_hari']);
     }
 }

@@ -1,7 +1,7 @@
 @extends('layouts.app')
 
-@section('title', 'Detail Paket Tour - Arrum Tour')
-@section('page-title', 'Detail Paket Tour')
+@section('title', 'Detail Paket Umroh Plus - Arrum Tour')
+@section('page-title', 'Detail Paket Umroh Plus')
 
 @section('breadcrumb')
     <li class="inline-flex items-center">
@@ -10,7 +10,7 @@
     </li>
     <li class="inline-flex items-center">
         <i class="fas fa-chevron-right text-gray-400 mx-2 text-xs"></i>
-        <a href="{{ route('master.paket-tour.index') }}" class="text-gray-500 hover:text-yellow-600">Paket Tour</a>
+        <a href="{{ route('master.paket-tour.index') }}" class="text-gray-500 hover:text-yellow-600">Paket Umroh Plus</a>
     </li>
     <li class="inline-flex items-center">
         <i class="fas fa-chevron-right text-gray-400 mx-2 text-xs"></i>
@@ -23,8 +23,8 @@
         <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
             <div class="px-6 py-4 border-b border-gray-100 flex flex-wrap items-center justify-between gap-3">
                 <div>
-                    <h5 class="text-sm font-semibold text-gray-700">Detail Paket Tour</h5>
-                    <p class="text-xs text-gray-400 mt-0.5">Informasi lengkap paket tour</p>
+                    <h5 class="text-sm font-semibold text-gray-700">Detail Paket Umroh Plus</h5>
+                    <p class="text-xs text-gray-400 mt-0.5">Informasi lengkap paket umroh plus</p>
                 </div>
                 <div class="flex items-center gap-2">
                     <a href="{{ route('master.paket-tour.edit', $paketTour->id_paket_tour) }}"
@@ -45,15 +45,22 @@
                     <div class="flex flex-wrap items-start justify-between gap-4">
                         <div>
                             <div class="flex items-center gap-3 flex-wrap">
-                                <h2 class="text-2xl font-bold text-gray-800">{{ $paketTour->kota_tujuan ?? 'Tour' }}</h2>
+                                <h2 class="text-2xl font-bold text-gray-800">{{ $paketTour->kota_tujuan ?? 'Umroh Plus' }}
+                                </h2>
+                                <span class="px-3 py-1 bg-green-500 text-white text-xs font-medium rounded-full">
+                                    Paket Umroh Plus
+                                </span>
                             </div>
                             <p class="text-gray-500 text-sm mt-1">
                                 <i class="fas fa-map-marker-alt mr-1"></i> {{ $paketTour->negara ?? '-' }}
                             </p>
+                            <p class="text-gray-500 text-sm">
+                                <i class="fas fa-clock mr-1"></i> {{ $paketTour->durasi_hari ?? '-' }} Hari
+                            </p>
                         </div>
                         <div class="text-right">
-                            <p class="text-2xl font-bold text-yellow-600">{{ $paketTour->harga_per_orang_formatted }}</p>
-                            <p class="text-sm text-gray-500">per orang</p>
+                            <p class="text-lg font-bold text-yellow-600">{{ $paketTour->total_harga_hotel_formatted }}</p>
+                            <p class="text-sm text-gray-500">Total Harga Hotel</p>
                         </div>
                     </div>
                 </div>
@@ -62,7 +69,7 @@
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div class="bg-gray-50 rounded-xl p-5 border border-gray-100">
                         <h6 class="text-sm font-semibold text-gray-700 mb-4 flex items-center">
-                            <i class="fas fa-info-circle text-yellow-500 mr-2"></i> Informasi Tour
+                            <i class="fas fa-info-circle text-yellow-500 mr-2"></i> Informasi Umroh Plus
                         </h6>
                         <dl class="space-y-3">
                             <div class="flex justify-between text-sm">
@@ -82,16 +89,16 @@
 
                     <div class="bg-gray-50 rounded-xl p-5 border border-gray-100">
                         <h6 class="text-sm font-semibold text-gray-700 mb-4 flex items-center">
-                            <i class="fas fa-dollar-sign text-yellow-500 mr-2"></i> Detail Harga
+                            <i class="fas fa-dollar-sign text-yellow-500 mr-2"></i> Total Harga Hotel
                         </h6>
                         <dl class="space-y-3">
                             <div class="flex justify-between text-sm">
-                                <dt class="text-gray-500">Harga Per Orang</dt>
-                                <dd class="font-medium text-gray-700">{{ $paketTour->harga_per_orang_formatted }}</dd>
+                                <dt class="text-gray-500">Total Harga Hotel</dt>
+                                <dd class="font-medium text-gray-700">{{ $paketTour->total_harga_hotel_formatted }}</dd>
                             </div>
                             <div class="flex justify-between text-sm border-t border-gray-200 pt-2 mt-2">
-                                <dt class="text-gray-600 font-medium">Total Harga Hotel</dt>
-                                <dd class="font-bold text-yellow-600">{{ $paketTour->total_harga_hotel_formatted }}</dd>
+                                <dt class="text-gray-600 font-medium">Jumlah Hotel</dt>
+                                <dd class="font-bold text-yellow-600">{{ $paketTour->hotels->count() }} Hotel</dd>
                             </div>
                         </dl>
                     </div>
@@ -167,7 +174,7 @@
                             <div class="w-12 h-12 bg-gray-200 rounded-full flex items-center justify-center mx-auto mb-3">
                                 <i class="fas fa-hotel text-gray-400 text-xl"></i>
                             </div>
-                            <p class="text-gray-500 text-sm">Tidak ada hotel yang terdaftar untuk tour ini</p>
+                            <p class="text-gray-500 text-sm">Tidak ada hotel yang terdaftar untuk paket umroh plus ini</p>
                         </div>
                     @endif
                 </div>
@@ -211,7 +218,7 @@
                     </a>
                     <a href="{{ route('master.paket-tour.edit', $paketTour->id_paket_tour) }}"
                         class="inline-flex items-center px-4 py-2 bg-yellow-500 text-white rounded-lg hover:bg-yellow-600 transition text-sm font-medium shadow-sm hover:shadow">
-                        <i class="fas fa-edit mr-2"></i> Edit Paket Tour
+                        <i class="fas fa-edit mr-2"></i> Edit Paket Umroh Plus
                     </a>
                 </div>
             </div>

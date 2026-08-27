@@ -178,9 +178,9 @@
                                     <option value="">-- Pilih Produk Paket --</option>
                                     @foreach ($produkPakets as $produk)
                                         <option value="{{ $produk->nama_produk }}"
-                                            data-kode="{{ $produk->kode_produk }}"
+                                            data-kode="{{ $produk->kode_produk ?? 'PKT' }}"
                                             {{ old('produk_paket', $jamaah->produk_paket) == $produk->nama_produk ? 'selected' : '' }}>
-                                            {{ $produk->kode_produk }} - {{ $produk->nama_produk }}
+                                            {{ $produk->nama_produk }}
                                             ({{ $produk->durasi_hari }} Hari)
                                         </option>
                                     @endforeach
@@ -191,7 +191,7 @@
                             </div>
                             <div>
                                 <label class="block text-sm font-medium text-gray-700 mb-1.5">
-                                    ID Keberangkatan <span class="text-gray-400 text-xs">(otomatis)</span>
+                                    ID Keberangkatan
                                 </label>
                                 <input type="text" name="id_keberangkatan" id="id_keberangkatan"
                                     value="{{ old('id_keberangkatan', $jamaah->id_keberangkatan) }}"
@@ -259,45 +259,89 @@
                         </div>
                     </div>
 
-                    <!-- Pendampingan & Agent -->
+                    <!-- Agent & Pendampingan -->
                     <div class="border-b border-gray-200 pb-4">
                         <h6 class="text-sm font-semibold text-gray-700 mb-4 flex items-center">
-                            <i class="fas fa-handshake text-yellow-500 mr-2"></i> Pendampingan & Agent
+                            <i class="fas fa-handshake text-yellow-500 mr-2"></i> Agent & Pendampingan
                         </h6>
-                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-1.5">Jenis Pendampingan</label>
-                                <select name="jenis_pendampingan"
-                                    class="w-full px-4 py-2 border border-gray-200 rounded-xl focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500 text-sm">
-                                    <option value="">Pilih</option>
-                                    <option value="VIP"
-                                        {{ old('jenis_pendampingan', $jamaah->jenis_pendampingan) == 'VIP' ? 'selected' : '' }}>
-                                        VIP</option>
-                                    <option value="Premium"
-                                        {{ old('jenis_pendampingan', $jamaah->jenis_pendampingan) == 'Premium' ? 'selected' : '' }}>
-                                        Premium</option>
-                                    <option value="Reguler"
-                                        {{ old('jenis_pendampingan', $jamaah->jenis_pendampingan) == 'Reguler' ? 'selected' : '' }}>
-                                        Reguler</option>
-                                    <option value="Ekonomi"
-                                        {{ old('jenis_pendampingan', $jamaah->jenis_pendampingan) == 'Ekonomi' ? 'selected' : '' }}>
-                                        Ekonomi</option>
-                                </select>
+
+                        <!-- Agent Section -->
+                        <div class="mb-4 bg-blue-50 rounded-xl p-4 border border-blue-100">
+                            <h6 class="text-xs font-semibold text-blue-700 mb-3 flex items-center">
+                                <i class="fas fa-user-tie text-blue-500 mr-1"></i> Agent
+                            </h6>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-1.5">Nama Agent</label>
+                                    <input type="text" name="agent_name"
+                                        value="{{ old('agent_name', $jamaah->agent_name) }}"
+                                        class="w-full px-4 py-2 border border-gray-200 rounded-xl focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500 text-sm"
+                                        placeholder="Nama Agent">
+                                    @error('agent_name')
+                                        <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+                                    @enderror
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-1.5">Fee Agent</label>
+                                    <div class="relative">
+                                        <span
+                                            class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm">Rp</span>
+                                        <input type="text" name="fee_agent" id="fee_agent"
+                                            value="{{ old('fee_agent', number_format($jamaah->fee_agent, 0, ',', '.')) }}"
+                                            class="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-xl focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500 text-sm"
+                                            placeholder="0" oninput="formatRupiah(this)">
+                                    </div>
+                                    @error('fee_agent')
+                                        <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+                                    @enderror
+                                </div>
                             </div>
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-1.5">Agent</label>
-                                <input type="text" name="agent" value="{{ old('agent', $jamaah->agent) }}"
-                                    class="w-full px-4 py-2 border border-gray-200 rounded-xl focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500 text-sm"
-                                    placeholder="Nama Agent">
-                            </div>
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-1.5">Fee Agent</label>
-                                <div class="relative">
-                                    <span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm">Rp</span>
-                                    <input type="number" name="fee_agent"
-                                        value="{{ old('fee_agent', $jamaah->fee_agent) }}"
-                                        class="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-xl focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500 text-sm"
-                                        placeholder="0">
+                        </div>
+
+                        <!-- Pendampingan Section -->
+                        <div class="bg-green-50 rounded-xl p-4 border border-green-100">
+                            <h6 class="text-xs font-semibold text-green-700 mb-3 flex items-center">
+                                <i class="fas fa-users text-green-500 mr-1"></i> Pendampingan
+                            </h6>
+                            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-1.5">Nama Pendamping</label>
+                                    <input type="text" name="pendampingan_nama"
+                                        value="{{ old('pendampingan_nama', $jamaah->pendampingan_nama) }}"
+                                        class="w-full px-4 py-2 border border-gray-200 rounded-xl focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500 text-sm"
+                                        placeholder="Nama Pendamping">
+                                    @error('pendampingan_nama')
+                                        <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+                                    @enderror
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-1.5">Fee Pendamping</label>
+                                    <div class="relative">
+                                        <span
+                                            class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm">Rp</span>
+                                        <input type="text" name="pendampingan_fee" id="pendampingan_fee"
+                                            value="{{ old('pendampingan_fee', number_format($jamaah->pendampingan_fee, 0, ',', '.')) }}"
+                                            class="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-xl focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500 text-sm"
+                                            placeholder="0" oninput="formatRupiah(this)">
+                                    </div>
+                                    @error('pendampingan_fee')
+                                        <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+                                    @enderror
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-1.5">Fee Petugas</label>
+                                    <div class="relative">
+                                        <span
+                                            class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm">Rp</span>
+                                        <input type="text" name="pendampingan_fee_petugas"
+                                            id="pendampingan_fee_petugas"
+                                            value="{{ old('pendampingan_fee_petugas', number_format($jamaah->pendampingan_fee_petugas, 0, ',', '.')) }}"
+                                            class="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-xl focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500 text-sm"
+                                            placeholder="0" oninput="formatRupiah(this)">
+                                    </div>
+                                    @error('pendampingan_fee_petugas')
+                                        <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+                                    @enderror
                                 </div>
                             </div>
                         </div>
@@ -506,6 +550,21 @@
                         </div>
                     </div>
 
+                    <!-- Catatan Tambahan -->
+                    <div class="border-b border-gray-200 pb-4">
+                        <h6 class="text-sm font-semibold text-gray-700 mb-4 flex items-center">
+                            <i class="fas fa-sticky-note text-yellow-500 mr-2"></i> Catatan Tambahan
+                        </h6>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1.5">Catatan</label>
+                            <textarea name="catatan_tambahan" rows="2"
+                                class="w-full px-4 py-2 border border-gray-200 rounded-xl focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500 text-sm">{{ old('catatan_tambahan', $jamaah->catatan_tambahan) }}</textarea>
+                            @error('catatan_tambahan')
+                                <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+                            @enderror
+                        </div>
+                    </div>
+
                     <!-- Buttons -->
                     <div class="flex items-center justify-end gap-3 pt-4">
                         <a href="{{ route('transaksional.jamaah.index') }}"
@@ -521,73 +580,94 @@
             </form>
         </div>
     </div>
-@endsection
 
-@push('scripts')
-    <script>
-        // Preview file function for PDF and Images
-        function previewFile(input, previewId) {
-            const preview = document.getElementById(previewId);
-            const nameSpan = document.getElementById(previewId + '_name');
+    @push('scripts')
+        <script>
+            // Format Rupiah
+            function formatRupiah(element) {
+                let value = element.value.replace(/[^,\d]/g, '');
+                value = value.replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+                element.value = value;
+            }
 
-            if (input.files && input.files[0]) {
-                const file = input.files[0];
-                const ext = file.name.split('.').pop().toLowerCase();
-                const isPDF = ext === 'pdf';
-                const isImage = ['jpg', 'jpeg', 'png'].includes(ext);
+            // Preview file function
+            function previewFile(input, previewId) {
+                const preview = document.getElementById(previewId);
+                const nameSpan = document.getElementById(previewId + '_name');
 
-                if (isPDF || isImage) {
-                    preview.classList.remove('hidden');
-                    if (nameSpan) {
-                        nameSpan.textContent = file.name + ' (' + (file.size / 1024).toFixed(1) + ' KB)';
-                    }
+                if (input.files && input.files[0]) {
+                    const file = input.files[0];
+                    const ext = file.name.split('.').pop().toLowerCase();
+                    const isPDF = ext === 'pdf';
+                    const isImage = ['jpg', 'jpeg', 'png'].includes(ext);
 
-                    if (isImage) {
-                        const reader = new FileReader();
-                        reader.onload = function(e) {
+                    if (isPDF || isImage) {
+                        preview.classList.remove('hidden');
+                        if (nameSpan) {
+                            nameSpan.textContent = file.name + ' (' + (file.size / 1024).toFixed(1) + ' KB)';
+                        }
+
+                        if (isImage) {
+                            const reader = new FileReader();
+                            reader.onload = function(e) {
+                                preview.innerHTML = `
+                                    <img src="${e.target.result}" class="w-16 h-16 object-cover rounded-lg border border-gray-200">
+                                    <span class="text-sm text-green-700 ml-2">${file.name}</span>
+                                `;
+                            };
+                            reader.readAsDataURL(file);
+                        } else {
                             preview.innerHTML = `
-                                <img src="${e.target.result}" class="w-16 h-16 object-cover rounded-lg border border-gray-200">
+                                <i class="fas fa-file-pdf text-3xl text-red-500"></i>
                                 <span class="text-sm text-green-700 ml-2">${file.name}</span>
                             `;
-                        };
-                        reader.readAsDataURL(file);
+                        }
                     } else {
-                        preview.innerHTML = `
-                            <i class="fas fa-file-pdf text-3xl text-red-500"></i>
-                            <span class="text-sm text-green-700 ml-2">${file.name}</span>
-                        `;
+                        preview.classList.add('hidden');
+                        alert('Format file tidak didukung. Gunakan PDF, JPG, atau PNG.');
+                        input.value = '';
                     }
                 } else {
                     preview.classList.add('hidden');
-                    alert('Format file tidak didukung. Gunakan PDF, JPG, atau PNG.');
-                    input.value = '';
-                }
-            } else {
-                preview.classList.add('hidden');
-                if (nameSpan) {
-                    nameSpan.textContent = '';
+                    if (nameSpan) {
+                        nameSpan.textContent = '';
+                    }
                 }
             }
-        }
 
-        // Auto fill pulau dan bandara berdasarkan kota asal
-        document.getElementById('kota_asal').addEventListener('change', function() {
-            const selectedOption = this.options[this.selectedIndex];
-            const pulau = selectedOption.dataset.pulau || '';
-            const bandara = selectedOption.dataset.bandara || '';
+            // Auto fill pulau dan bandara
+            document.getElementById('kota_asal').addEventListener('change', function() {
+                const selectedOption = this.options[this.selectedIndex];
+                const pulau = selectedOption.dataset.pulau || '';
+                const bandara = selectedOption.dataset.bandara || '';
 
-            document.getElementById('pulau').value = pulau;
-            document.getElementById('bandara_keberangkatan').value = bandara;
-        });
+                document.getElementById('pulau').value = pulau;
+                document.getElementById('bandara_keberangkatan').value = bandara;
+            });
 
-        // Trigger event on page load
-        document.addEventListener('DOMContentLoaded', function() {
-            const kotaAsal = document.getElementById('kota_asal');
-            if (kotaAsal.value) {
-                const selectedOption = kotaAsal.options[kotaAsal.selectedIndex];
-                document.getElementById('pulau').value = selectedOption.dataset.pulau || '';
-                document.getElementById('bandara_keberangkatan').value = selectedOption.dataset.bandara || '';
-            }
-        });
-    </script>
-@endpush
+            // Trigger on page load
+            document.addEventListener('DOMContentLoaded', function() {
+                const kotaAsal = document.getElementById('kota_asal');
+                if (kotaAsal.value) {
+                    const selectedOption = kotaAsal.options[kotaAsal.selectedIndex];
+                    document.getElementById('pulau').value = selectedOption.dataset.pulau || '';
+                    document.getElementById('bandara_keberangkatan').value = selectedOption.dataset.bandara || '';
+                }
+
+                // Form submit - clean semua input rupiah
+                const form = document.getElementById('jamaahForm');
+                if (form) {
+                    form.addEventListener('submit', function(e) {
+                        const rupiahInputs = ['fee_agent', 'pendampingan_fee', 'pendampingan_fee_petugas'];
+                        rupiahInputs.forEach(function(id) {
+                            const input = document.getElementById(id);
+                            if (input) {
+                                input.value = input.value.replace(/\./g, '');
+                            }
+                        });
+                    });
+                }
+            });
+        </script>
+    @endpush
+@endsection

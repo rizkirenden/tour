@@ -22,7 +22,9 @@ class JamaahService
                   ->orWhere('nomor_paspor', 'like', "%{$search}%")
                   ->orWhere('id_keberangkatan', 'like', "%{$search}%")
                   ->orWhere('produk_paket', 'like', "%{$search}%")
-                  ->orWhere('nik', 'like', "%{$search}%");
+                  ->orWhere('nik', 'like', "%{$search}%")
+                  ->orWhere('agent_name', 'like', "%{$search}%")
+                  ->orWhere('pendampingan_nama', 'like', "%{$search}%");
             });
         }
 
@@ -64,7 +66,14 @@ class JamaahService
                 $data['bandara_keberangkatan'] = $kota->bandara_terdekat;
             }
 
-            // Ambil data diskon (nilai nominal per orang)
+            // Set default values untuk agent & pendampingan
+            $data['agent_name'] = $data['agent_name'] ?? null;
+            $data['fee_agent'] = (int) ($data['fee_agent'] ?? 0);
+            $data['pendampingan_nama'] = $data['pendampingan_nama'] ?? null;
+            $data['pendampingan_fee'] = (int) ($data['pendampingan_fee'] ?? 0);
+            $data['pendampingan_fee_petugas'] = (int) ($data['pendampingan_fee_petugas'] ?? 0);
+
+            // Ambil data diskon
             $diskonData = null;
             $nilaiDiskon = 0;
             if (!empty($data['id_diskon'])) {
@@ -75,17 +84,15 @@ class JamaahService
             }
 
             // Set default values
-            $data['fee_agent'] = $data['fee_agent'] ?? 0;
-            $data['total_dibayar'] = $data['total_dibayar'] ?? 0;
+            $data['total_dibayar'] = (int) ($data['total_dibayar'] ?? 0);
 
-            // ==========================================
-            // PERBAIKAN: Ambil TOTAL HARGA dari produk
-            // ==========================================
+            // Ambil TOTAL HARGA dari produk
             $produk = ProdukPaket::where('nama_produk', $data['produk_paket'])->first();
-            $hargaProduk = $produk ? $produk->total_harga : 0; // ← Gunakan total_harga
+            $hargaProduk = $produk ? $produk->total_harga : 0;
 
-            // Hitung tagihan
-            $data['total_tagihan_sebelum_diskon'] = $hargaProduk + $data['fee_agent'];
+            // Hitung tagihan (total fee = fee_agent + pendampingan_fee + pendampingan_fee_petugas)
+            $totalFee = ($data['fee_agent'] ?? 0) + ($data['pendampingan_fee'] ?? 0) + ($data['pendampingan_fee_petugas'] ?? 0);
+            $data['total_tagihan_sebelum_diskon'] = $hargaProduk + $totalFee;
             $data['nilai_diskon'] = $nilaiDiskon;
             $data['total_diskon'] = $nilaiDiskon;
             $data['total_tagihan_setelah_diskon'] = $data['total_tagihan_sebelum_diskon'] - $nilaiDiskon;
@@ -118,7 +125,14 @@ class JamaahService
                 $data['bandara_keberangkatan'] = $kota->bandara_terdekat;
             }
 
-            // Ambil data diskon baru (nilai nominal)
+            // Set default values untuk agent & pendampingan
+            $data['agent_name'] = $data['agent_name'] ?? null;
+            $data['fee_agent'] = (int) ($data['fee_agent'] ?? 0);
+            $data['pendampingan_nama'] = $data['pendampingan_nama'] ?? null;
+            $data['pendampingan_fee'] = (int) ($data['pendampingan_fee'] ?? 0);
+            $data['pendampingan_fee_petugas'] = (int) ($data['pendampingan_fee_petugas'] ?? 0);
+
+            // Ambil data diskon baru
             $diskonData = null;
             $nilaiDiskon = 0;
             if (!empty($data['id_diskon'])) {
@@ -129,14 +143,7 @@ class JamaahService
             }
 
             // Set default values
-            $data['fee_agent'] = $data['fee_agent'] ?? 0;
-            $data['total_dibayar'] = $data['total_dibayar'] ?? 0;
-
-            // ==========================================
-            // PERBAIKAN: Ambil TOTAL HARGA dari produk
-            // ==========================================
-            $produk = ProdukPaket::where('nama_produk', $data['produk_paket'])->first();
-            $hargaProduk = $produk ? $produk->total_harga : 0; // ← Gunakan total_harga
+            $data['total_dibayar'] = (int) ($data['total_dibayar'] ?? 0);
 
             // Update kuota diskon
             if ($jamaah->id_diskon && $jamaah->id_diskon != ($data['id_diskon'] ?? null)) {
@@ -149,9 +156,12 @@ class JamaahService
                 $diskonData->increment('sudah_digunakan');
             }
 
-            // Hitung tagihan (jangan update jika sudah ada pembayaran)
+            // Hitung tagihan jika belum ada pembayaran
             if ($jamaah->total_dibayar == 0) {
-                $data['total_tagihan_sebelum_diskon'] = $hargaProduk + $data['fee_agent'];
+                $produk = ProdukPaket::where('nama_produk', $data['produk_paket'])->first();
+                $hargaProduk = $produk ? $produk->total_harga : 0;
+                $totalFee = ($data['fee_agent'] ?? 0) + ($data['pendampingan_fee'] ?? 0) + ($data['pendampingan_fee_petugas'] ?? 0);
+                $data['total_tagihan_sebelum_diskon'] = $hargaProduk + $totalFee;
                 $data['nilai_diskon'] = $nilaiDiskon;
                 $data['total_diskon'] = $nilaiDiskon;
                 $data['total_tagihan_setelah_diskon'] = $data['total_tagihan_sebelum_diskon'] - $nilaiDiskon;

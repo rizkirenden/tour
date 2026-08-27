@@ -61,15 +61,15 @@
                             <i class="fas fa-info-circle text-yellow-500 mr-2"></i> Informasi Diskon
                         </h6>
                         <dl class="space-y-3">
-                            <div class="flex justify-between text-sm">
+                            <div class="flex justify-between text-sm border-b border-gray-100 pb-2">
                                 <dt class="text-gray-500">Nama Diskon</dt>
                                 <dd class="font-medium text-gray-700">{{ $diskon->nama_diskon }}</dd>
                             </div>
-                            <div class="flex justify-between text-sm">
+                            <div class="flex justify-between text-sm border-b border-gray-100 pb-2">
                                 <dt class="text-gray-500">Nilai Diskon</dt>
                                 <dd class="font-medium text-yellow-600">{{ $diskon->nilai_diskon_formatted }}</dd>
                             </div>
-                            <div class="flex justify-between text-sm">
+                            <div class="flex justify-between text-sm border-b border-gray-100 pb-2">
                                 <dt class="text-gray-500">Berlaku Untuk</dt>
                                 <dd class="font-medium text-gray-700">{{ $diskon->berlaku_untuk_produk ?? 'Semua Produk' }}
                                 </dd>
@@ -82,15 +82,15 @@
                             <i class="fas fa-layer-group text-yellow-500 mr-2"></i> Kuota
                         </h6>
                         <dl class="space-y-3">
-                            <div class="flex justify-between text-sm">
+                            <div class="flex justify-between text-sm border-b border-gray-100 pb-2">
                                 <dt class="text-gray-500">Kuota</dt>
                                 <dd class="font-medium text-gray-700">{{ $diskon->kuota ?? 'Unlimited' }}</dd>
                             </div>
-                            <div class="flex justify-between text-sm">
+                            <div class="flex justify-between text-sm border-b border-gray-100 pb-2">
                                 <dt class="text-gray-500">Sudah Digunakan</dt>
                                 <dd class="font-medium text-gray-700">{{ $diskon->sudah_digunakan }}</dd>
                             </div>
-                            <div class="flex justify-between text-sm">
+                            <div class="flex justify-between text-sm border-b border-gray-100 pb-2">
                                 <dt class="text-gray-500">Sisa Kuota</dt>
                                 <dd>
                                     <span
@@ -116,7 +116,7 @@
                             <i class="fas fa-clock text-yellow-500 mr-2"></i> Informasi Sistem
                         </h6>
                         <dl class="space-y-3">
-                            <div class="flex justify-between text-sm">
+                            <div class="flex justify-between text-sm border-b border-gray-100 pb-2">
                                 <dt class="text-gray-500">Dibuat pada</dt>
                                 <dd class="font-medium text-gray-700">{{ $diskon->created_at->format('d/m/Y H:i') }}</dd>
                             </div>

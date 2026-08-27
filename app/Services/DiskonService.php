@@ -32,7 +32,6 @@ class DiskonService
     {
         return DB::transaction(function () use ($data) {
             $data['sudah_digunakan'] = $data['sudah_digunakan'] ?? 0;
-            $data['nilai_diskon'] = (int) ($data['nilai_diskon'] ?? 0);
             return Diskon::create($data);
         });
     }
@@ -42,7 +41,6 @@ class DiskonService
         return DB::transaction(function () use ($id, $data) {
             $diskon = $this->getById($id);
             $data['sudah_digunakan'] = $data['sudah_digunakan'] ?? 0;
-            $data['nilai_diskon'] = (int) ($data['nilai_diskon'] ?? 0);
             $diskon->update($data);
             return $diskon->fresh();
         });
@@ -60,16 +58,33 @@ class DiskonService
 
     public function getProdukOptions()
     {
-        $produk = ProdukPaket::where('is_active', true)
-            ->orderBy('nama_produk', 'asc')
-            ->pluck('nama_produk', 'nama_produk')
-            ->toArray();
+        $produk = ProdukPaket::all();
+        $options = [
+            '' => 'Semua Produk',
+        ];
 
-        $options = ['Semua Produk' => 'Semua Produk'];
-        foreach ($produk as $key => $value) {
-            $options[$value] = $value;
+        foreach ($produk as $p) {
+            $options[$p->id_produk] = $p->nama_produk;
         }
 
         return $options;
+    }
+
+    public function getAvailableDiskon($produkId = null)
+    {
+        $query = Diskon::where(function($q) {
+            $q->whereNull('kuota')
+              ->orWhereRaw('kuota > sudah_digunakan');
+        });
+
+        if ($produkId) {
+            $query->where(function($q) use ($produkId) {
+                $q->where('berlaku_untuk_produk', $produkId)
+                  ->orWhereNull('berlaku_untuk_produk')
+                  ->orWhere('berlaku_untuk_produk', '');
+            });
+        }
+
+        return $query->orderBy('nilai_diskon', 'desc')->get();
     }
 }

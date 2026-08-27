@@ -44,8 +44,11 @@ class Jamaah extends Model
         'file_paspor',
         'encryption_key',
         'jenis_pendampingan',
-        'agent',
+        'agent_name',
         'fee_agent',
+        'pendampingan_nama',
+        'pendampingan_fee',
+        'pendampingan_fee_petugas',
         'harga_tiket_pergi_domestik',
         'harga_tiket_pulang_domestik',
         'total_tiket_domestik',
@@ -71,6 +74,8 @@ class Jamaah extends Model
         'paspor_expired' => 'date',
         'paspor_terbit' => 'date',
         'fee_agent' => 'integer',
+        'pendampingan_fee' => 'integer',
+        'pendampingan_fee_petugas' => 'integer',
         'harga_tiket_pergi_domestik' => 'integer',
         'harga_tiket_pulang_domestik' => 'integer',
         'total_tiket_domestik' => 'integer',
@@ -108,10 +113,6 @@ class Jamaah extends Model
         return $this->belongsTo(Diskon::class, 'id_diskon', 'id_diskon');
     }
 
-    // ==========================================
-    // RELASI KE DEPARTURE
-    // ==========================================
-    
     public function departures()
     {
         return $this->belongsToMany(Departure::class, 'departure_jamaahs', 'id_jamaah', 'id_departure')
@@ -149,7 +150,7 @@ class Jamaah extends Model
     }
 
     // ==========================================
-    // ACCESSORS - FILE TYPE (PDF atau IMAGE)
+    // ACCESSORS - FILE TYPE
     // ==========================================
 
     public function getFileKtpKkTypeAttribute()
@@ -181,39 +182,52 @@ class Jamaah extends Model
     }
 
     // ==========================================
-    // ACCESSORS - FILE ICON (untuk tampilan)
+    // ACCESSORS - AGENT & PENDAMPINGAN
     // ==========================================
 
-    public function getFileKtpKkIconAttribute()
+    public function getAgentNameFormattedAttribute()
     {
-        $type = $this->file_ktp_kk_type;
-        if ($type === 'pdf') return 'fa-file-pdf text-red-500';
-        if ($type === 'image') return 'fa-file-image text-green-500';
-        return 'fa-file text-gray-500';
+        return $this->agent_name ?? '-';
     }
 
-    public function getFileVaksinIconAttribute()
+    public function getFeeAgentFormattedAttribute()
     {
-        $type = $this->file_vaksin_type;
-        if ($type === 'pdf') return 'fa-file-pdf text-red-500';
-        if ($type === 'image') return 'fa-file-image text-green-500';
-        return 'fa-file text-gray-500';
+        return 'Rp ' . number_format($this->fee_agent, 0, ',', '.');
     }
 
-    public function getFileVisaIconAttribute()
+    public function getPendampinganNamaFormattedAttribute()
     {
-        $type = $this->file_visa_type;
-        if ($type === 'pdf') return 'fa-file-pdf text-red-500';
-        if ($type === 'image') return 'fa-file-image text-green-500';
-        return 'fa-file text-gray-500';
+        return $this->pendampingan_nama ?? '-';
     }
 
-    public function getFilePasporIconAttribute()
+    public function getPendampinganFeeFormattedAttribute()
     {
-        $type = $this->file_paspor_type;
-        if ($type === 'pdf') return 'fa-file-pdf text-red-500';
-        if ($type === 'image') return 'fa-file-image text-green-500';
-        return 'fa-file text-gray-500';
+        return 'Rp ' . number_format($this->pendampingan_fee, 0, ',', '.');
+    }
+
+    public function getPendampinganFeePetugasFormattedAttribute()
+    {
+        return 'Rp ' . number_format($this->pendampingan_fee_petugas, 0, ',', '.');
+    }
+
+    public function getTotalPendampinganFeeAttribute()
+    {
+        return ($this->pendampingan_fee ?? 0) + ($this->pendampingan_fee_petugas ?? 0);
+    }
+
+    public function getTotalPendampinganFeeFormattedAttribute()
+    {
+        return 'Rp ' . number_format($this->total_pendampingan_fee, 0, ',', '.');
+    }
+
+    public function getTotalFeeAgentPendampinganAttribute()
+    {
+        return ($this->fee_agent ?? 0) + ($this->pendampingan_fee ?? 0) + ($this->pendampingan_fee_petugas ?? 0);
+    }
+
+    public function getTotalFeeAgentPendampinganFormattedAttribute()
+    {
+        return 'Rp ' . number_format($this->total_fee_agent_pendampingan, 0, ',', '.');
     }
 
     // ==========================================
@@ -255,11 +269,6 @@ class Jamaah extends Model
     public function getPasporTerbitFormattedAttribute()
     {
         return $this->paspor_terbit ? $this->paspor_terbit->format('d/m/Y') : '-';
-    }
-
-    public function getFeeAgentFormattedAttribute()
-    {
-        return 'Rp ' . number_format($this->fee_agent, 0, ',', '.');
     }
 
     public function getTotalTiketDomestikFormattedAttribute()
@@ -323,7 +332,9 @@ class Jamaah extends Model
                 ->orWhere('nomor_paspor', 'like', '%' . $search . '%')
                 ->orWhere('id_keberangkatan', 'like', '%' . $search . '%')
                 ->orWhere('produk_paket', 'like', '%' . $search . '%')
-                ->orWhere('nik', 'like', '%' . $search . '%');
+                ->orWhere('nik', 'like', '%' . $search . '%')
+                ->orWhere('agent_name', 'like', '%' . $search . '%')
+                ->orWhere('pendampingan_nama', 'like', '%' . $search . '%');
         });
 
         $query->when($filters['status_pembayaran'] ?? null, function ($query, $status) {

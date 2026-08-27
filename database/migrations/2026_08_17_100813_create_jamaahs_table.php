@@ -53,10 +53,15 @@ return new class extends Migration
             // === KEAMANAN ===
             $table->string('encryption_key', 100)->nullable();
 
-            // === PENDAMPINGAN & AGENT ===
-            $table->string('jenis_pendampingan', 30)->nullable();
-            $table->string('agent', 100)->nullable();
-            $table->bigInteger('fee_agent')->default(0);
+            // === AGENT ===
+            $table->string('agent_name', 100)->nullable()->comment('Nama Agent');
+            $table->bigInteger('fee_agent')->default(0)->comment('Fee Agent');
+
+            // === PENDAMPINGAN ===
+            $table->string('jenis_pendampingan', 30)->nullable()->comment('VIP, Premium, Reguler, Ekonomi');
+            $table->string('pendampingan_nama', 100)->nullable()->comment('Nama Pendamping');
+            $table->bigInteger('pendampingan_fee')->default(0)->comment('Fee Pendamping');
+            $table->bigInteger('pendampingan_fee_petugas')->default(0)->comment('Fee Petugas Pendamping');
 
             // === TIKET ===
             $table->bigInteger('harga_tiket_pergi_domestik')->default(0);

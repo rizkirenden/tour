@@ -45,11 +45,10 @@
                         <div>
                             <div class="flex items-center gap-3 flex-wrap">
                                 <h2 class="text-2xl font-bold text-gray-800">{{ $perlengkapan->nama_perlengkapan }}</h2>
+                                <span class="px-3 py-1 bg-yellow-500 text-white text-xs font-medium rounded-full">
+                                    {{ $perlengkapan->kategori ?? 'Umum' }}
+                                </span>
                             </div>
-                            <p class="text-gray-500 text-sm mt-1">
-                                <i class="fas {{ $perlengkapan->kategori_icon }} mr-1"></i>
-                                {{ $perlengkapan->kategori ?? 'Tanpa Kategori' }}
-                            </p>
                         </div>
                         <div class="text-right">
                             <p class="text-2xl font-bold text-yellow-600">{{ $perlengkapan->harga_satuan_formatted }}</p>
@@ -64,49 +63,31 @@
                             <i class="fas fa-info-circle text-yellow-500 mr-2"></i> Informasi Perlengkapan
                         </h6>
                         <dl class="space-y-3">
-                            <div class="flex justify-between text-sm">
+                            <div class="flex justify-between text-sm border-b border-gray-100 pb-2">
                                 <dt class="text-gray-500">Nama Perlengkapan</dt>
                                 <dd class="font-medium text-gray-700">{{ $perlengkapan->nama_perlengkapan }}</dd>
                             </div>
+                            <div class="flex justify-between text-sm border-b border-gray-100 pb-2">
+                                <dt class="text-gray-500">Kategori</dt>
+                                <dd class="font-medium text-gray-700">{{ $perlengkapan->kategori ?? '-' }}</dd>
+                            </div>
+                            <div class="flex justify-between text-sm border-b border-gray-100 pb-2">
+                                <dt class="text-gray-500">Harga Satuan</dt>
+                                <dd class="font-medium text-yellow-600">{{ $perlengkapan->harga_satuan_formatted }}</dd>
+                            </div>
                             <div class="flex justify-between text-sm">
-                                <dt class="text-gray-500">Deskripsi</dt>
-                                <dd class="font-medium text-gray-700">{{ $perlengkapan->deskripsi ?? '-' }}</dd>
+                                <dt class="text-gray-500">Satuan</dt>
+                                <dd class="font-medium text-gray-700">{{ $perlengkapan->satuan ?? '-' }}</dd>
                             </div>
                         </dl>
                     </div>
 
                     <div class="bg-gray-50 rounded-xl p-5 border border-gray-100">
                         <h6 class="text-sm font-semibold text-gray-700 mb-4 flex items-center">
-                            <i class="fas fa-tag text-yellow-500 mr-2"></i> Detail Harga & Kategori
-                        </h6>
-                        <dl class="space-y-3">
-                            <div class="flex justify-between text-sm">
-                                <dt class="text-gray-500">Harga Satuan</dt>
-                                <dd class="font-medium text-gray-700">{{ $perlengkapan->harga_satuan_formatted }}</dd>
-                            </div>
-                            <div class="flex justify-between text-sm">
-                                <dt class="text-gray-500">Satuan</dt>
-                                <dd class="font-medium text-gray-700">{{ $perlengkapan->satuan ?? '-' }}</dd>
-                            </div>
-                            <div class="flex justify-between text-sm">
-                                <dt class="text-gray-500">Kategori</dt>
-                                <dd>
-                                    <span
-                                        class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium {{ $perlengkapan->kategori_badge }}">
-                                        <i class="fas {{ $perlengkapan->kategori_icon }} text-xs"></i>
-                                        {{ $perlengkapan->kategori ?? '-' }}
-                                    </span>
-                                </dd>
-                            </div>
-                        </dl>
-                    </div>
-
-                    <div class="bg-gray-50 rounded-xl p-5 border border-gray-100 md:col-span-2">
-                        <h6 class="text-sm font-semibold text-gray-700 mb-4 flex items-center">
                             <i class="fas fa-clock text-yellow-500 mr-2"></i> Informasi Sistem
                         </h6>
                         <dl class="space-y-3">
-                            <div class="flex justify-between text-sm">
+                            <div class="flex justify-between text-sm border-b border-gray-100 pb-2">
                                 <dt class="text-gray-500">Dibuat pada</dt>
                                 <dd class="font-medium text-gray-700">{{ $perlengkapan->created_at->format('d/m/Y H:i') }}
                                 </dd>
@@ -118,6 +99,15 @@
                             </div>
                         </dl>
                     </div>
+
+                    @if ($perlengkapan->deskripsi)
+                        <div class="bg-gray-50 rounded-xl p-5 border border-gray-100 lg:col-span-2">
+                            <h6 class="text-sm font-semibold text-gray-700 mb-3 flex items-center">
+                                <i class="fas fa-align-left text-yellow-500 mr-2"></i> Deskripsi
+                            </h6>
+                            <p class="text-sm text-gray-600 leading-relaxed">{{ $perlengkapan->deskripsi }}</p>
+                        </div>
+                    @endif
                 </div>
 
                 <div class="mt-6 pt-6 border-t border-gray-100 flex flex-wrap items-center justify-end gap-3">

@@ -28,10 +28,12 @@
                     <p class="text-xs text-gray-400 mt-0.5">Informasi lengkap metode pembayaran</p>
                 </div>
                 <div class="flex items-center gap-2">
-                    <a href="{{ route('master.metode-pembayaran.edit', $metode->id_metode) }}"
-                        class="inline-flex items-center px-4 py-2 bg-yellow-500 text-white rounded-lg hover:bg-yellow-600 transition text-sm font-medium shadow-sm hover:shadow">
-                        <i class="fas fa-edit mr-2"></i> Edit
-                    </a>
+                    @if ($metode->jenis_pembayaran !== 'cash')
+                        <a href="{{ route('master.metode-pembayaran.edit', $metode->id_metode) }}"
+                            class="inline-flex items-center px-4 py-2 bg-yellow-500 text-white rounded-lg hover:bg-yellow-600 transition text-sm font-medium shadow-sm hover:shadow">
+                            <i class="fas fa-edit mr-2"></i> Edit
+                        </a>
+                    @endif
                     <a href="{{ route('master.metode-pembayaran.index') }}"
                         class="inline-flex items-center px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition text-sm font-medium">
                         <i class="fas fa-arrow-left mr-2"></i> Kembali
@@ -41,23 +43,40 @@
 
             <div class="p-6">
                 <div
-                    class="bg-gradient-to-r from-yellow-50 to-yellow-100/50 rounded-xl p-6 mb-6 border border-yellow-200/50">
+                    class="bg-gradient-to-r from-{{ $metode->color }}-50 to-{{ $metode->color }}-100/50 rounded-xl p-6 mb-6 border border-{{ $metode->color }}-200/50">
                     <div class="flex flex-wrap items-start justify-between gap-4">
                         <div>
                             <div class="flex items-center gap-3 flex-wrap">
-                                <h2 class="text-2xl font-bold text-gray-800">{{ $metode->nama_bank }}</h2>
-                                <span class="px-3 py-1 bg-yellow-500 text-white text-xs font-medium rounded-full">
-                                    {{ $metode->kode_bank }}
-                                </span>
+                                <div
+                                    class="w-12 h-12 rounded-xl bg-{{ $metode->color }}-100 flex items-center justify-center">
+                                    <i class="{{ $metode->icon }} text-{{ $metode->color }}-500 text-xl"></i>
+                                </div>
+                                <div>
+                                    <h2 class="text-2xl font-bold text-gray-800">{{ $metode->nama_bank }}</h2>
+                                    <p class="text-gray-500 text-sm">
+                                        <span
+                                            class="px-2 py-1 bg-{{ $metode->color }}-100 text-{{ $metode->color }}-700 rounded text-xs font-medium">
+                                            {{ ucfirst(str_replace('_', ' ', $metode->jenis_pembayaran)) }}
+                                        </span>
+                                    </p>
+                                </div>
                             </div>
-                            <p class="text-gray-500 text-sm mt-1">
-                                <i class="fas fa-user mr-1"></i> {{ $metode->atas_nama }}
-                            </p>
                         </div>
                         <div class="text-right">
-                            <p class="text-xl font-bold text-yellow-600">{{ $metode->nomor_rekening }}</p>
+                            @if ($metode->jenis_pembayaran === 'bank_transfer')
+                                <p class="text-xl font-bold text-{{ $metode->color }}-600">{{ $metode->nomor_rekening }}
+                                </p>
+                                <p class="text-sm text-gray-500">a.n. {{ $metode->atas_nama }}</p>
+                            @elseif($metode->jenis_pembayaran === 'e_wallet')
+                                <p class="text-xl font-bold text-{{ $metode->color }}-600">{{ $metode->nomor_telepon }}
+                                </p>
+                                <p class="text-sm text-gray-500">{{ $metode->e_wallet_type }}</p>
+                            @else
+                                <p class="text-xl font-bold text-{{ $metode->color }}-600">Cash</p>
+                                <p class="text-sm text-gray-500">Pembayaran tunai</p>
+                            @endif
                             <span
-                                class="px-3 py-1 rounded-full text-xs font-medium {{ $metode->is_active ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700' }}">
+                                class="inline-block mt-2 px-3 py-1 rounded-full text-xs font-medium {{ $metode->is_active ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700' }}">
                                 {{ $metode->is_active ? 'Aktif' : 'Tidak Aktif' }}
                             </span>
                         </div>
@@ -67,28 +86,48 @@
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div class="bg-gray-50 rounded-xl p-5 border border-gray-100">
                         <h6 class="text-sm font-semibold text-gray-700 mb-4 flex items-center">
-                            <i class="fas fa-university text-yellow-500 mr-2"></i> Informasi Bank
+                            <i class="{{ $metode->icon }} text-{{ $metode->color }}-500 mr-2"></i>
+                            Informasi {{ ucfirst(str_replace('_', ' ', $metode->jenis_pembayaran)) }}
                         </h6>
                         <dl class="space-y-3">
                             <div class="flex justify-between text-sm">
-                                <dt class="text-gray-500">Kode Bank</dt>
+                                <dt class="text-gray-500">Jenis Pembayaran</dt>
                                 <dd class="font-medium text-gray-700">
-                                    <span
-                                        class="px-2 py-1 bg-yellow-100 text-yellow-700 rounded text-xs font-mono">{{ $metode->kode_bank }}</span>
+                                    {{ ucfirst(str_replace('_', ' ', $metode->jenis_pembayaran)) }}
                                 </dd>
                             </div>
                             <div class="flex justify-between text-sm">
-                                <dt class="text-gray-500">Nama Bank</dt>
-                                <dd class="font-medium text-gray-700">{{ $metode->nama_bank }}</dd>
+                                <dt class="text-gray-500">Kode</dt>
+                                <dd class="font-medium text-gray-700">
+                                    <span
+                                        class="px-2 py-1 bg-{{ $metode->color }}-100 text-{{ $metode->color }}-700 rounded text-xs font-mono">
+                                        {{ $metode->kode_bank }}
+                                    </span>
+                                </dd>
                             </div>
-                            <div class="flex justify-between text-sm">
-                                <dt class="text-gray-500">Nomor Rekening</dt>
-                                <dd class="font-medium text-gray-700 font-mono">{{ $metode->nomor_rekening }}</dd>
-                            </div>
-                            <div class="flex justify-between text-sm">
-                                <dt class="text-gray-500">Atas Nama</dt>
-                                <dd class="font-medium text-gray-700">{{ $metode->atas_nama }}</dd>
-                            </div>
+                            @if ($metode->jenis_pembayaran === 'bank_transfer')
+                                <div class="flex justify-between text-sm">
+                                    <dt class="text-gray-500">Nama Bank</dt>
+                                    <dd class="font-medium text-gray-700">{{ $metode->nama_bank }}</dd>
+                                </div>
+                                <div class="flex justify-between text-sm">
+                                    <dt class="text-gray-500">Nomor Rekening</dt>
+                                    <dd class="font-medium text-gray-700 font-mono">{{ $metode->nomor_rekening }}</dd>
+                                </div>
+                                <div class="flex justify-between text-sm">
+                                    <dt class="text-gray-500">Atas Nama</dt>
+                                    <dd class="font-medium text-gray-700">{{ $metode->atas_nama }}</dd>
+                                </div>
+                            @elseif($metode->jenis_pembayaran === 'e_wallet')
+                                <div class="flex justify-between text-sm">
+                                    <dt class="text-gray-500">E-Wallet</dt>
+                                    <dd class="font-medium text-gray-700">{{ $metode->e_wallet_type }}</dd>
+                                </div>
+                                <div class="flex justify-between text-sm">
+                                    <dt class="text-gray-500">Nomor Telepon</dt>
+                                    <dd class="font-medium text-gray-700">{{ $metode->nomor_telepon }}</dd>
+                                </div>
+                            @endif
                         </dl>
                     </div>
 
@@ -127,10 +166,12 @@
                         class="inline-flex items-center px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition text-sm font-medium">
                         <i class="fas fa-arrow-left mr-2"></i> Kembali
                     </a>
-                    <a href="{{ route('master.metode-pembayaran.edit', $metode->id_metode) }}"
-                        class="inline-flex items-center px-4 py-2 bg-yellow-500 text-white rounded-lg hover:bg-yellow-600 transition text-sm font-medium shadow-sm hover:shadow">
-                        <i class="fas fa-edit mr-2"></i> Edit Metode
-                    </a>
+                    @if ($metode->jenis_pembayaran !== 'cash')
+                        <a href="{{ route('master.metode-pembayaran.edit', $metode->id_metode) }}"
+                            class="inline-flex items-center px-4 py-2 bg-yellow-500 text-white rounded-lg hover:bg-yellow-600 transition text-sm font-medium shadow-sm hover:shadow">
+                            <i class="fas fa-edit mr-2"></i> Edit Metode
+                        </a>
+                    @endif
                 </div>
             </div>
         </div>
