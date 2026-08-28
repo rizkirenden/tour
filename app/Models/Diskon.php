@@ -18,12 +18,14 @@ class Diskon extends Model
         'berlaku_untuk_produk',
         'kuota',
         'sudah_digunakan',
+        'reset_count',
     ];
 
     protected $casts = [
         'nilai_diskon' => 'integer',
         'kuota' => 'integer',
         'sudah_digunakan' => 'integer',
+        'reset_count' => 'integer',
     ];
 
     // Accessor untuk nilai diskon formatted
@@ -38,7 +40,7 @@ class Diskon extends Model
         if ($this->kuota === null) {
             return '∞';
         }
-        return $this->kuota - $this->sudah_digunakan;
+        return max(0, $this->kuota - $this->sudah_digunakan);
     }
 
     // Accessor untuk status ketersediaan
@@ -86,6 +88,12 @@ class Diskon extends Model
         return 'bg-green-100 text-green-700';
     }
 
+    // Accessor untuk total reset
+    public function getTotalResetAttribute()
+    {
+        return $this->reset_count ?? 0;
+    }
+
     // Scope untuk diskon yang tersedia
     public function scopeAvailable($query)
     {
@@ -105,5 +113,11 @@ class Diskon extends Model
     public function jamaahs()
     {
         return $this->hasMany(Jamaah::class, 'id_diskon', 'id_diskon');
+    }
+
+    // Relasi ke Riwayat
+    public function riwayats()
+    {
+        return $this->hasMany(DiskonRiwayat::class, 'id_diskon', 'id_diskon')->orderBy('created_at', 'desc');
     }
 }

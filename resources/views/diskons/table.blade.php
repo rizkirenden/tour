@@ -10,6 +10,7 @@
                 <th class="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Berlaku
                     Untuk</th>
                 <th class="px-4 py-3 text-center text-xs font-semibold text-gray-500 uppercase tracking-wider">Kuota</th>
+                <th class="px-4 py-3 text-center text-xs font-semibold text-gray-500 uppercase tracking-wider">Reset</th>
                 <th class="px-4 py-3 text-center text-xs font-semibold text-gray-500 uppercase tracking-wider">Aksi</th>
             </tr>
         </thead>
@@ -42,18 +43,32 @@
                             <span class="text-sm text-gray-400">Unlimited</span>
                         @endif
                     </td>
+                    <td class="px-4 py-3 text-center">
+                        <span
+                            class="inline-flex px-2.5 py-1 bg-purple-100 text-purple-700 rounded-lg text-xs font-semibold">
+                            {{ $item->reset_count }} kali
+                        </span>
+                    </td>
                     <td class="px-4 py-3">
                         <div class="flex items-center justify-center gap-1.5">
                             <a href="{{ route('master.diskon.show', $item->id_diskon) }}"
-                                class="p-2 text-blue-500 hover:bg-blue-50 rounded-lg transition-all duration-200">
+                                class="p-2 text-blue-500 hover:bg-blue-50 rounded-lg transition-all duration-200"
+                                title="Detail">
                                 <i class="fas fa-eye text-sm"></i>
                             </a>
                             <a href="{{ route('master.diskon.edit', $item->id_diskon) }}"
-                                class="p-2 text-amber-500 hover:bg-amber-50 rounded-lg transition-all duration-200">
+                                class="p-2 text-amber-500 hover:bg-amber-50 rounded-lg transition-all duration-200"
+                                title="Edit">
                                 <i class="fas fa-edit text-sm"></i>
                             </a>
+                            <a href="{{ route('master.diskon.riwayat', $item->id_diskon) }}"
+                                class="p-2 text-purple-500 hover:bg-purple-50 rounded-lg transition-all duration-200"
+                                title="Riwayat Reset">
+                                <i class="fas fa-history text-sm"></i>
+                            </a>
                             <button onclick="confirmDelete({{ $item->id_diskon }})"
-                                class="p-2 text-red-500 hover:bg-red-50 rounded-lg transition-all duration-200">
+                                class="p-2 text-red-500 hover:bg-red-50 rounded-lg transition-all duration-200"
+                                title="Hapus">
                                 <i class="fas fa-trash text-sm"></i>
                             </button>
                             <form id="delete-form-{{ $item->id_diskon }}"
@@ -66,7 +81,7 @@
                 </tr>
             @empty
                 <tr>
-                    <td colspan="6" class="px-4 py-12 text-center">
+                    <td colspan="7" class="px-4 py-12 text-center">
                         <div class="flex flex-col items-center">
                             <div class="w-16 h-16 bg-gray-100 rounded-2xl flex items-center justify-center mb-3">
                                 <i class="fas fa-tags text-gray-300 text-3xl"></i>
@@ -88,7 +103,7 @@
 @push('scripts')
     <script>
         function confirmDelete(id) {
-            if (confirm('Yakin ingin menghapus diskon ini?')) {
+            if (confirm('Yakin ingin menghapus diskon ini?\nSemua riwayat reset juga akan dihapus!')) {
                 document.getElementById('delete-form-' + id).submit();
             }
         }

@@ -13,7 +13,7 @@ class JamaahService
 {
     public function getAll(array $filters = [])
     {
-        $query = Jamaah::with(['diskon']);
+        $query = Jamaah::with(['diskon', 'keluarga']);
 
         if (!empty($filters['search'])) {
             $search = $filters['search'];
@@ -36,12 +36,20 @@ class JamaahService
             $query->where('jenis_kelamin', $filters['jenis_kelamin']);
         }
 
+        if (!empty($filters['sumber_data'])) {
+            if ($filters['sumber_data'] == 'keluarga') {
+                $query->whereNotNull('id_keluarga');
+            } elseif ($filters['sumber_data'] == 'jamaah') {
+                $query->whereNull('id_keluarga');
+            }
+        }
+
         return $query->orderBy('created_at', 'desc')->paginate(10);
     }
 
     public function getById($id)
     {
-        return Jamaah::with(['diskon'])->findOrFail($id);
+        return Jamaah::with(['diskon', 'keluarga'])->findOrFail($id);
     }
 
     public function getByIdWithRelations($id)

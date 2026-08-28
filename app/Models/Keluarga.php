@@ -14,20 +14,15 @@ class Keluarga extends Model
 
     protected $fillable = [
         'kode_keluarga',
-        'nama_kepala_keluarga',
-        'telepon',
-        'alamat',
-        'kota_asal',
-        'pulau',
-        'bandara_keberangkatan',
-        'bulan_keberangkatan',
-        'tahun_keberangkatan',
+        'nama_keluarga',
         'produk_paket',
         'id_diskon',
         'agent',
         'fee_agent',
+        'bulan_keberangkatan',
+        'tahun_keberangkatan',
         'total_tagihan_sebelum_diskon',
-        'nilai_diskon', // Ganti persen_diskon
+        'nilai_diskon',
         'total_diskon',
         'total_tagihan_setelah_diskon',
         'total_dibayar',
@@ -42,7 +37,7 @@ class Keluarga extends Model
         'tahun_keberangkatan' => 'integer',
         'fee_agent' => 'integer',
         'total_tagihan_sebelum_diskon' => 'integer',
-        'nilai_diskon' => 'integer', // Ganti decimal
+        'nilai_diskon' => 'integer',
         'total_diskon' => 'integer',
         'total_tagihan_setelah_diskon' => 'integer',
         'total_dibayar' => 'integer',
@@ -52,12 +47,6 @@ class Keluarga extends Model
     public function jamaahs()
     {
         return $this->hasMany(Jamaah::class, 'id_keluarga', 'id_keluarga');
-    }
-
-    public function kepalaKeluarga()
-    {
-        return $this->hasOne(Jamaah::class, 'id_keluarga', 'id_keluarga')
-                    ->where('is_kepala_keluarga', true);
     }
 
     public function produkPaketData()

@@ -89,4 +89,31 @@ class DiskonController extends Controller
         return redirect()->route('master.diskon.index')
             ->with('success', "Diskon '{$nama}' berhasil dihapus!");
     }
+
+    /**
+     * Reset kuota diskon
+     */
+    public function resetDiskon(Request $request, $id)
+    {
+        $validated = $request->validate([
+            'kuota_baru' => 'nullable|integer|min:1',
+            'catatan' => 'nullable|string|max:255',
+        ]);
+
+        $diskon = $this->service->resetDiskon($id, $validated);
+
+        return redirect()->route('master.diskon.show', $id)
+            ->with('success', "Diskon '{$diskon->nama_diskon}' berhasil direset! Kuota baru: " . ($diskon->kuota ?? 'Unlimited'));
+    }
+
+    /**
+     * Tampilkan riwayat reset diskon
+     */
+    public function riwayat($id)
+    {
+        $diskon = $this->service->getById($id);
+        $riwayats = $this->service->getRiwayatByDiskonId($id);
+
+        return view('diskons.riwayat', compact('diskon', 'riwayats'));
+    }
 }

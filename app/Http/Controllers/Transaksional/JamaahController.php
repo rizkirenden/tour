@@ -24,7 +24,7 @@ class JamaahController extends Controller
 
     public function index(Request $request)
     {
-        $filters = $request->only(['search', 'status_pembayaran', 'jenis_kelamin']);
+        $filters = $request->only(['search', 'status_pembayaran', 'jenis_kelamin', 'sumber_data']);
         $data = $this->service->getAll($filters);
 
         if ($request->ajax()) {
@@ -271,9 +271,9 @@ class JamaahController extends Controller
         $metodePembayarans = MetodePembayaran::active()->get();
         $jenisTransaksis = JenisTransaksi::all();
         $transaksis = TransaksiPembayaran::with(['metodePembayaran', 'jenisTransaksi'])
-                ->where('id_jamaah', $id)
-                ->orderBy('created_at', 'asc') // ascending agar data baru di bawah
-                ->get();
+                        ->where('id_jamaah', $id)
+                        ->orderBy('created_at', 'asc')
+                        ->get();
 
         return view('jamaahs.pembayaran', compact('jamaah', 'metodePembayarans', 'jenisTransaksis', 'transaksis'));
     }

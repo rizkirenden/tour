@@ -55,17 +55,20 @@
                                 </span>
                                 {!! $jamaah->status_pembayaran_badge !!}
                             </div>
-                            <p class="text-gray-500 text-sm mt-1">
-                                <i class="fas fa-box mr-1"></i> Produk: {{ $jamaah->produk_paket }}
-                            </p>
-                            <p class="text-gray-500 text-sm">
-                                <i class="fas fa-map-marker-alt mr-1"></i> Kota Asal: {{ $jamaah->kota_asal ?? '-' }}
-                            </p>
-                            @if ($jamaah->nik)
+                            <div class="flex flex-wrap items-center gap-3 mt-2">
                                 <p class="text-gray-500 text-sm">
-                                    <i class="fas fa-id-card mr-1"></i> NIK: {{ $jamaah->nik }}
+                                    <i class="fas fa-box mr-1"></i> Produk: {{ $jamaah->produk_paket }}
                                 </p>
-                            @endif
+                                <p class="text-gray-500 text-sm">
+                                    <i class="fas fa-map-marker-alt mr-1"></i> Kota Asal: {{ $jamaah->kota_asal ?? '-' }}
+                                </p>
+                            </div>
+                            <div class="flex flex-wrap items-center gap-3 mt-1">
+                                <span class="text-xs text-gray-500">Passport:</span>
+                                {!! $jamaah->status_passport['badge'] !!}
+                                <span class="text-xs text-gray-500">Dokumen:</span>
+                                {!! $jamaah->status_dokumen['badge'] !!}
+                            </div>
                         </div>
                         <div class="text-right">
                             <p class="text-2xl font-bold text-yellow-600">
@@ -83,37 +86,57 @@
                         <h6 class="text-sm font-semibold text-gray-700 mb-4 flex items-center">
                             <i class="fas fa-user text-yellow-500 mr-2"></i> Informasi Pribadi
                         </h6>
+                        @php
+                            $sumber = $jamaah->sumber_data;
+                        @endphp
                         <dl class="space-y-3">
-                            <div class="flex justify-between text-sm">
+                            <div class="flex justify-between text-sm border-b border-gray-100 pb-2">
+                                <dt class="text-gray-500">Sumber Data</dt>
+                                <dd class="font-medium text-gray-700">
+                                    <div class="flex items-center gap-2">
+                                        {!! $sumber['badge'] !!}
+                                        @if ($sumber['source'] == 'keluarga')
+                                            <span class="text-xs text-purple-600">
+                                                ({{ $sumber['nama_keluarga'] }})
+                                            </span>
+                                            <a href="{{ $sumber['link'] }}"
+                                                class="text-purple-500 hover:text-purple-700 text-xs">
+                                                <i class="fas fa-external-link-alt"></i>
+                                            </a>
+                                        @endif
+                                    </div>
+                                </dd>
+                            </div>
+                            <div class="flex justify-between text-sm border-b border-gray-100 pb-2">
                                 <dt class="text-gray-500">Nama Lengkap</dt>
                                 <dd class="font-medium text-gray-700">{{ $jamaah->nama_lengkap }}</dd>
                             </div>
-                            <div class="flex justify-between text-sm">
+                            <div class="flex justify-between text-sm border-b border-gray-100 pb-2">
                                 <dt class="text-gray-500">NIK</dt>
                                 <dd class="font-medium text-gray-700">{{ $jamaah->nik ?? '-' }}</dd>
                             </div>
-                            <div class="flex justify-between text-sm">
+                            <div class="flex justify-between text-sm border-b border-gray-100 pb-2">
                                 <dt class="text-gray-500">Nama Ayah</dt>
                                 <dd class="font-medium text-gray-700">{{ $jamaah->nama_ayah ?? '-' }}</dd>
                             </div>
-                            <div class="flex justify-between text-sm">
+                            <div class="flex justify-between text-sm border-b border-gray-100 pb-2">
                                 <dt class="text-gray-500">Pekerjaan</dt>
                                 <dd class="font-medium text-gray-700">{{ $jamaah->pekerjaan ?? '-' }}</dd>
                             </div>
-                            <div class="flex justify-between text-sm">
+                            <div class="flex justify-between text-sm border-b border-gray-100 pb-2">
                                 <dt class="text-gray-500">Jenis Kelamin</dt>
                                 <dd class="font-medium text-gray-700">{{ $jamaah->jenis_kelamin_label }}</dd>
                             </div>
-                            <div class="flex justify-between text-sm">
+                            <div class="flex justify-between text-sm border-b border-gray-100 pb-2">
                                 <dt class="text-gray-500">Tempat, Tanggal Lahir</dt>
                                 <dd class="font-medium text-gray-700">{{ $jamaah->tempat_lahir ?? '-' }},
                                     {{ $jamaah->tanggal_lahir_formatted }}</dd>
                             </div>
-                            <div class="flex justify-between text-sm">
+                            <div class="flex justify-between text-sm border-b border-gray-100 pb-2">
                                 <dt class="text-gray-500">Telepon</dt>
                                 <dd class="font-medium text-gray-700">{{ $jamaah->telepon ?? '-' }}</dd>
                             </div>
-                            <div class="flex justify-between text-sm">
+                            <div class="flex justify-between text-sm border-b border-gray-100 pb-2">
                                 <dt class="text-gray-500">WhatsApp</dt>
                                 <dd class="font-medium text-gray-700">{{ $jamaah->wa ?? '-' }}</dd>
                             </div>
@@ -130,15 +153,15 @@
                             <i class="fas fa-passport text-yellow-500 mr-2"></i> Informasi Passport
                         </h6>
                         <dl class="space-y-3">
-                            <div class="flex justify-between text-sm">
+                            <div class="flex justify-between text-sm border-b border-gray-100 pb-2">
                                 <dt class="text-gray-500">Nomor Passport</dt>
                                 <dd class="font-medium text-gray-700">{{ $jamaah->nomor_paspor ?? '-' }}</dd>
                             </div>
-                            <div class="flex justify-between text-sm">
+                            <div class="flex justify-between text-sm border-b border-gray-100 pb-2">
                                 <dt class="text-gray-500">Tanggal Terbit</dt>
                                 <dd class="font-medium text-gray-700">{{ $jamaah->paspor_terbit_formatted }}</dd>
                             </div>
-                            <div class="flex justify-between text-sm">
+                            <div class="flex justify-between text-sm border-b border-gray-100 pb-2">
                                 <dt class="text-gray-500">Tanggal Berakhir</dt>
                                 <dd class="font-medium text-gray-700">{{ $jamaah->paspor_expired_formatted }}</dd>
                             </div>
@@ -155,27 +178,27 @@
                             <i class="fas fa-plane text-yellow-500 mr-2"></i> Informasi Keberangkatan
                         </h6>
                         <dl class="space-y-3">
-                            <div class="flex justify-between text-sm">
+                            <div class="flex justify-between text-sm border-b border-gray-100 pb-2">
                                 <dt class="text-gray-500">ID Keberangkatan</dt>
                                 <dd class="font-medium text-gray-700">{{ $jamaah->id_keberangkatan }}</dd>
                             </div>
-                            <div class="flex justify-between text-sm">
+                            <div class="flex justify-between text-sm border-b border-gray-100 pb-2">
                                 <dt class="text-gray-500">Produk Paket</dt>
                                 <dd class="font-medium text-gray-700">{{ $jamaah->produk_paket }}</dd>
                             </div>
-                            <div class="flex justify-between text-sm">
+                            <div class="flex justify-between text-sm border-b border-gray-100 pb-2">
                                 <dt class="text-gray-500">Jenis Pendampingan</dt>
                                 <dd class="font-medium text-gray-700">{{ $jamaah->jenis_pendampingan ?? '-' }}</dd>
                             </div>
-                            <div class="flex justify-between text-sm">
+                            <div class="flex justify-between text-sm border-b border-gray-100 pb-2">
                                 <dt class="text-gray-500">Kota Asal</dt>
                                 <dd class="font-medium text-gray-700">{{ $jamaah->kota_asal ?? '-' }}</dd>
                             </div>
-                            <div class="flex justify-between text-sm">
+                            <div class="flex justify-between text-sm border-b border-gray-100 pb-2">
                                 <dt class="text-gray-500">Pulau</dt>
                                 <dd class="font-medium text-gray-700">{{ $jamaah->pulau ?? '-' }}</dd>
                             </div>
-                            <div class="flex justify-between text-sm">
+                            <div class="flex justify-between text-sm border-b border-gray-100 pb-2">
                                 <dt class="text-gray-500">Bandara Keberangkatan</dt>
                                 <dd class="font-medium text-gray-700">{{ $jamaah->bandara_keberangkatan ?? '-' }}</dd>
                             </div>
@@ -250,24 +273,24 @@
                             <i class="fas fa-money-bill-wave text-yellow-500 mr-2"></i> Keuangan
                         </h6>
                         <dl class="space-y-3">
-                            <div class="flex justify-between text-sm">
+                            <div class="flex justify-between text-sm border-b border-gray-100 pb-2">
                                 <dt class="text-gray-500">Status Pembayaran</dt>
                                 <dd class="font-medium text-gray-700">{!! $jamaah->status_pembayaran_badge !!}</dd>
                             </div>
-                            <div class="flex justify-between text-sm">
+                            <div class="flex justify-between text-sm border-b border-gray-100 pb-2">
                                 <dt class="text-gray-500">Total Tagihan</dt>
                                 <dd class="font-medium text-gray-700">
                                     {{ $jamaah->total_tagihan_setelah_diskon_formatted }}</dd>
                             </div>
-                            <div class="flex justify-between text-sm">
+                            <div class="flex justify-between text-sm border-b border-gray-100 pb-2">
                                 <dt class="text-gray-500">Total Dibayar</dt>
                                 <dd class="font-medium text-green-600">{{ $jamaah->total_dibayar_formatted }}</dd>
                             </div>
-                            <div class="flex justify-between text-sm">
+                            <div class="flex justify-between text-sm border-b border-gray-100 pb-2">
                                 <dt class="text-gray-500">Sisa Tagihan</dt>
                                 <dd class="font-medium text-red-600">{{ $jamaah->sisa_tagihan_formatted }}</dd>
                             </div>
-                            <div class="flex justify-between text-sm">
+                            <div class="flex justify-between text-sm border-b border-gray-100 pb-2">
                                 <dt class="text-gray-500">Diskon</dt>
                                 <dd class="font-medium text-gray-700">
                                     @if ($jamaah->diskon)

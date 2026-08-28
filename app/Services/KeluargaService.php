@@ -14,12 +14,12 @@ class KeluargaService
 {
     public function getAll(array $filters = [])
     {
-        $query = Keluarga::with(['jamaahs', 'kepalaKeluarga']);
+        $query = Keluarga::with(['jamaahs']);
 
         if (!empty($filters['search'])) {
             $search = $filters['search'];
             $query->where(function($q) use ($search) {
-                $q->where('nama_kepala_keluarga', 'like', "%{$search}%")
+                $q->where('nama_keluarga', 'like', "%{$search}%")
                   ->orWhere('kode_keluarga', 'like', "%{$search}%");
             });
         }
@@ -33,7 +33,7 @@ class KeluargaService
 
     public function getById($id)
     {
-        return Keluarga::with(['jamaahs', 'kepalaKeluarga'])->findOrFail($id);
+        return Keluarga::with(['jamaahs'])->findOrFail($id);
     }
 
     public function create(array $data)
@@ -52,13 +52,13 @@ class KeluargaService
             if (!empty($data['id_diskon'])) {
                 $diskonData = Diskon::find($data['id_diskon']);
                 if ($diskonData && $diskonData->is_available) {
-                    $nilaiDiskonPerOrang = $diskonData->nilai_diskon; // Nilai diskon per orang
+                    $nilaiDiskonPerOrang = $diskonData->nilai_diskon;
                 }
             }
 
             // Ambil produk paket dari keluarga
             $produkKeluarga = ProdukPaket::where('nama_produk', $data['produk_paket'])->first();
-            $hargaProduk = $produkKeluarga ? $produkKeluarga->harga_dasar : 0;
+            $hargaProduk = $produkKeluarga ? $produkKeluarga->total_harga : 0;
 
             // Hitung total tagihan
             $totalTagihan = 0;
@@ -77,7 +77,7 @@ class KeluargaService
             $totalDiskon = $nilaiDiskonPerOrang * $jumlahAnggota;
 
             $data['total_tagihan_sebelum_diskon'] = $totalTagihan;
-            $data['nilai_diskon'] = $totalDiskon; // Simpan total diskon
+            $data['nilai_diskon'] = $totalDiskon;
             $data['total_diskon'] = $totalDiskon;
             $data['total_tagihan_setelah_diskon'] = $totalTagihan - $totalDiskon;
             $data['sisa_tagihan'] = $data['total_tagihan_setelah_diskon'] - $data['total_dibayar'];
@@ -104,7 +104,6 @@ class KeluargaService
             // Create Jamaah anggota keluarga
             if (!empty($data['jamaahs'])) {
                 $feeAgentPerOrang = $data['fee_agent'] / $jumlahAnggota;
-                // Setiap orang mendapat diskon yang SAMA (nilaiDiskonPerOrang)
                 $diskonPerOrang = $nilaiDiskonPerOrang;
 
                 foreach ($data['jamaahs'] as $index => $jamaahData) {
@@ -112,19 +111,15 @@ class KeluargaService
                     $jamaahData['is_kepala_keluarga'] = $jamaahData['is_kepala_keluarga'] ?? false;
                     $jamaahData['produk_paket'] = $data['produk_paket'];
 
-                    $jamaahData = $this->handleFotoUpload($jamaahData, $index);
+                    $jamaahData = $this->handleFileUploads($jamaahData, $index);
 
-                    $kodeProduk = $produkKeluarga ? $produkKeluarga->kode_produk : 'PKT';
+                    $kodeProduk = $produkKeluarga ? 'PKT' : 'PKT';
                     $jamaahData['id_keberangkatan'] = $this->generateIdKeberangkatan($kodeProduk, $index);
 
-                    $jamaahData['kota_asal'] = $jamaahData['kota_asal'] ?? $keluarga->kota_asal;
-                    $jamaahData['pulau'] = $jamaahData['pulau'] ?? $keluarga->pulau;
-                    $jamaahData['bandara_keberangkatan'] = $jamaahData['bandara_keberangkatan'] ?? $keluarga->bandara_keberangkatan;
                     $jamaahData['bulan_keberangkatan'] = $jamaahData['bulan_keberangkatan'] ?? $keluarga->bulan_keberangkatan;
                     $jamaahData['tahun_keberangkatan'] = $jamaahData['tahun_keberangkatan'] ?? $keluarga->tahun_keberangkatan;
 
                     $totalTagihanJamaah = $hargaProduk + $feeAgentPerOrang;
-                    // Setiap orang dapat diskon yang SAMA (diskonPerOrang)
                     $diskonJamaah = $diskonPerOrang;
 
                     $jamaahData['total_tagihan_sebelum_diskon'] = $totalTagihanJamaah;
@@ -159,7 +154,7 @@ class KeluargaService
             }
 
             // Update data keluarga
-            $data['nilai_diskon'] = $nilaiDiskonPerOrang; // Simpan per orang
+            $data['nilai_diskon'] = $nilaiDiskonPerOrang;
             $keluarga->update($data);
 
             // Update kuota diskon
@@ -180,10 +175,9 @@ class KeluargaService
                 $keluarga->jamaahs()->whereNotIn('id_jamaah', $existingIds)->delete();
 
                 $produkKeluarga = ProdukPaket::where('nama_produk', $data['produk_paket'])->first();
-                $hargaProduk = $produkKeluarga ? $produkKeluarga->harga_dasar : 0;
+                $hargaProduk = $produkKeluarga ? $produkKeluarga->total_harga : 0;
                 $jumlahAnggota = count($data['jamaahs']);
                 $feeAgentPerOrang = $data['fee_agent'] / max($jumlahAnggota, 1);
-                // Setiap orang dapat diskon yang SAMA (nilaiDiskonPerOrang)
                 $diskonPerOrang = $nilaiDiskonPerOrang;
 
                 foreach ($data['jamaahs'] as $index => $jamaahData) {
@@ -191,11 +185,14 @@ class KeluargaService
                     $jamaahData['produk_paket'] = $data['produk_paket'];
                     $jamaahData['nilai_diskon'] = $diskonPerOrang;
 
-                    $jamaahData = $this->handleFotoUpload($jamaahData, $index, $jamaahData['id_jamaah'] ?? null);
+                    $jamaahData = $this->handleFileUploads($jamaahData, $index, $jamaahData['id_jamaah'] ?? null);
 
                     if (empty($jamaahData['id_jamaah'])) {
-                        $kodeProduk = $produkKeluarga ? $produkKeluarga->kode_produk : 'PKT';
+                        $kodeProduk = $produkKeluarga ? 'PKT' : 'PKT';
                         $jamaahData['id_keberangkatan'] = $this->generateIdKeberangkatan($kodeProduk, $index);
+
+                        $jamaahData['bulan_keberangkatan'] = $jamaahData['bulan_keberangkatan'] ?? $keluarga->bulan_keberangkatan;
+                        $jamaahData['tahun_keberangkatan'] = $jamaahData['tahun_keberangkatan'] ?? $keluarga->tahun_keberangkatan;
 
                         $totalTagihanJamaah = $hargaProduk + $feeAgentPerOrang;
                         $diskonJamaah = $diskonPerOrang;
@@ -223,40 +220,31 @@ class KeluargaService
                 }
             }
 
-            // Recalculate total tagihan keluarga (rekap dari semua jamaah)
+            // Recalculate total tagihan keluarga
             $this->recalculateKeluarga($keluarga->id_keluarga);
 
             return $keluarga->fresh();
         });
     }
 
-    private function handleFotoUpload(array $jamaahData, $index, $idJamaah = null)
+    private function handleFileUploads(array $jamaahData, $index, $idJamaah = null)
     {
-        if (isset($jamaahData['foto_ktp']) && $jamaahData['foto_ktp'] instanceof \Illuminate\Http\UploadedFile) {
-            $file = $jamaahData['foto_ktp'];
-            $filename = time() . '_' . $index . '_ktp.' . $file->getClientOriginalExtension();
-            $path = $file->storeAs('jamaah-foto', $filename, 'public');
-            $jamaahData['foto_ktp'] = $path;
-        } else {
-            unset($jamaahData['foto_ktp']);
-        }
+        $fileFields = [
+            'file_ktp_kk' => 'ktp',
+            'file_vaksin' => 'vaksin',
+            'file_visa' => 'visa',
+            'file_paspor' => 'paspor'
+        ];
 
-        if (isset($jamaahData['foto_vaksin']) && $jamaahData['foto_vaksin'] instanceof \Illuminate\Http\UploadedFile) {
-            $file = $jamaahData['foto_vaksin'];
-            $filename = time() . '_' . $index . '_vaksin.' . $file->getClientOriginalExtension();
-            $path = $file->storeAs('jamaah-foto', $filename, 'public');
-            $jamaahData['foto_vaksin'] = $path;
-        } else {
-            unset($jamaahData['foto_vaksin']);
-        }
-
-        if (isset($jamaahData['foto_visa']) && $jamaahData['foto_visa'] instanceof \Illuminate\Http\UploadedFile) {
-            $file = $jamaahData['foto_visa'];
-            $filename = time() . '_' . $index . '_visa.' . $file->getClientOriginalExtension();
-            $path = $file->storeAs('jamaah-foto', $filename, 'public');
-            $jamaahData['foto_visa'] = $path;
-        } else {
-            unset($jamaahData['foto_visa']);
+        foreach ($fileFields as $field => $label) {
+            if (isset($jamaahData[$field]) && $jamaahData[$field] instanceof \Illuminate\Http\UploadedFile) {
+                $file = $jamaahData[$field];
+                $filename = time() . '_' . $index . '_' . $label . '.' . $file->getClientOriginalExtension();
+                $path = $file->storeAs('jamaah/dokumen', $filename, 'public');
+                $jamaahData[$field] = $path;
+            } else {
+                unset($jamaahData[$field]);
+            }
         }
 
         return $jamaahData;
@@ -275,7 +263,7 @@ class KeluargaService
             }
 
             $keluarga->jamaahs()->delete();
-            $nama = $keluarga->nama_kepala_keluarga;
+            $nama = $keluarga->nama_keluarga;
             $keluarga->delete();
 
             return $nama;

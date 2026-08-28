@@ -7,10 +7,13 @@
                     Keberangkatan</th>
                 <th class="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Nama Lengkap
                 </th>
+                <th class="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Sumber</th>
                 <th class="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Produk Paket
                 </th>
                 <th class="px-4 py-3 text-center text-xs font-semibold text-gray-500 uppercase tracking-wider">JK</th>
-                <th class="px-4 py-3 text-center text-xs font-semibold text-gray-500 uppercase tracking-wider">Diskon
+                <th class="px-4 py-3 text-center text-xs font-semibold text-gray-500 uppercase tracking-wider">Passport
+                </th>
+                <th class="px-4 py-3 text-center text-xs font-semibold text-gray-500 uppercase tracking-wider">Dokumen
                 </th>
                 <th class="px-4 py-3 text-center text-xs font-semibold text-gray-500 uppercase tracking-wider">Status
                 </th>
@@ -21,6 +24,11 @@
         </thead>
         <tbody>
             @forelse($data as $index => $item)
+                @php
+                    $sumber = $item->sumber_data;
+                    $passport = $item->status_passport;
+                    $dokumen = $item->status_dokumen;
+                @endphp
                 <tr class="hover:bg-gray-50 transition-colors duration-150">
                     <td class="px-4 py-3 text-gray-500">{{ $data->firstItem() + $index }}</td>
                     <td class="px-4 py-3">
@@ -29,8 +37,32 @@
                         </span>
                     </td>
                     <td class="px-4 py-3">
-                        <p class="font-medium text-gray-800">{{ $item->nama_lengkap }}</p>
+                        <div class="flex items-center gap-2">
+                            <p class="font-medium text-gray-800">{{ $item->nama_lengkap }}</p>
+                            @if ($sumber['source'] == 'keluarga')
+                                <a href="{{ $sumber['link'] }}" class="text-purple-500 hover:text-purple-700"
+                                    title="Lihat Keluarga">
+                                    <i class="fas fa-external-link-alt text-xs"></i>
+                                </a>
+                            @endif
+                        </div>
                         <p class="text-xs text-gray-400">{{ $item->nomor_paspor ?? '-' }}</p>
+                    </td>
+                    <td class="px-4 py-3">
+                        <div class="relative inline-block group">
+                            {!! $sumber['badge'] !!}
+                            @if ($sumber['source'] == 'keluarga')
+                                <div
+                                    class="absolute z-10 hidden group-hover:block bg-gray-800 text-white text-xs rounded-lg p-2 w-48 bottom-full left-1/2 -translate-x-1/2 mb-1">
+                                    <p class="font-medium mb-1">Dari Keluarga:</p>
+                                    <p class="font-semibold">{{ $sumber['nama_keluarga'] }}</p>
+                                    <p class="text-gray-300">{{ $sumber['kode_keluarga'] }}</p>
+                                    <div
+                                        class="absolute -bottom-1 left-1/2 -translate-x-1/2 w-2 h-2 bg-gray-800 rotate-45">
+                                    </div>
+                                </div>
+                            @endif
+                        </div>
                     </td>
                     <td class="px-4 py-3">
                         <span class="text-sm text-gray-600">{{ $item->produk_paket }}</span>
@@ -39,19 +71,42 @@
                         <span class="text-sm text-gray-600">{{ $item->jenis_kelamin_label }}</span>
                     </td>
                     <td class="px-4 py-3 text-center">
-                        @if ($item->diskon)
-                            <span class="text-xs font-medium text-green-600">
-                                {{ $item->diskon->nama_diskon }}<br>
-                                <span
-                                    class="text-yellow-600 text-xs">-{{ $item->diskon->nilai_diskon_formatted }}</span>
-                            </span>
-                        @elseif ($item->nilai_diskon > 0)
-                            <span class="text-xs font-medium text-yellow-600">
-                                -{{ $item->nilai_diskon_formatted }}
-                            </span>
-                        @else
-                            <span class="text-xs text-gray-400">-</span>
-                        @endif
+                        <div class="relative inline-block group">
+                            {!! $passport['badge'] !!}
+                            @if ($passport['status'] == 'incomplete')
+                                <div
+                                    class="absolute z-10 hidden group-hover:block bg-gray-800 text-white text-xs rounded-lg p-2 w-48 bottom-full left-1/2 -translate-x-1/2 mb-1">
+                                    <p class="font-medium mb-1">Data Passport belum lengkap:</p>
+                                    <ul class="list-disc list-inside">
+                                        @foreach ($passport['missing'] as $field)
+                                            <li>{{ $field }}</li>
+                                        @endforeach
+                                    </ul>
+                                    <div
+                                        class="absolute -bottom-1 left-1/2 -translate-x-1/2 w-2 h-2 bg-gray-800 rotate-45">
+                                    </div>
+                                </div>
+                            @endif
+                        </div>
+                    </td>
+                    <td class="px-4 py-3 text-center">
+                        <div class="relative inline-block group">
+                            {!! $dokumen['badge'] !!}
+                            @if ($dokumen['status'] == 'incomplete')
+                                <div
+                                    class="absolute z-10 hidden group-hover:block bg-gray-800 text-white text-xs rounded-lg p-2 w-48 bottom-full left-1/2 -translate-x-1/2 mb-1">
+                                    <p class="font-medium mb-1">Dokumen belum diupload:</p>
+                                    <ul class="list-disc list-inside">
+                                        @foreach ($dokumen['missing'] as $field)
+                                            <li>{{ $field }}</li>
+                                        @endforeach
+                                    </ul>
+                                    <div
+                                        class="absolute -bottom-1 left-1/2 -translate-x-1/2 w-2 h-2 bg-gray-800 rotate-45">
+                                    </div>
+                                </div>
+                            @endif
+                        </div>
                     </td>
                     <td class="px-4 py-3 text-center">
                         {!! $item->status_pembayaran_badge !!}
@@ -87,7 +142,7 @@
                 </tr>
             @empty
                 <tr>
-                    <td colspan="9" class="px-4 py-12 text-center">
+                    <td colspan="11" class="px-4 py-12 text-center">
                         <div class="flex flex-col items-center">
                             <div class="w-16 h-16 bg-gray-100 rounded-2xl flex items-center justify-center mb-3">
                                 <i class="fas fa-users text-gray-300 text-3xl"></i>

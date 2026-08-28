@@ -231,6 +231,139 @@ class Jamaah extends Model
     }
 
     // ==========================================
+    // ACCESSORS - STATUS KELENGKAPAN
+    // ==========================================
+
+    public function getStatusPassportAttribute()
+    {
+        $fields = [
+            'nomor_paspor' => 'Nomor Paspor',
+            'paspor_expired' => 'Tanggal Berakhir',
+            'paspor_terbit' => 'Tanggal Terbit',
+            'paspor_diterbitkan_di' => 'Diterbitkan Di'
+        ];
+
+        $missing = [];
+        foreach ($fields as $field => $label) {
+            if (empty($this->$field)) {
+                $missing[] = $label;
+            }
+        }
+
+        if (count($missing) == 0) {
+            return [
+                'status' => 'complete',
+                'label' => 'Lengkap',
+                'badge' => '<span class="px-2 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-700">Lengkap</span>',
+                'missing' => []
+            ];
+        } else {
+            return [
+                'status' => 'incomplete',
+                'label' => 'Belum Lengkap',
+                'badge' => '<span class="px-2 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-700">Belum Lengkap</span>',
+                'missing' => $missing
+            ];
+        }
+    }
+
+    public function getStatusDokumenAttribute()
+    {
+        $fields = [
+            'file_ktp_kk' => 'KTP/KK',
+            'file_vaksin' => 'Vaksin',
+            'file_visa' => 'Visa',
+            'file_paspor' => 'Paspor'
+        ];
+
+        $uploaded = [];
+        $missing = [];
+        foreach ($fields as $field => $label) {
+            if (!empty($this->$field)) {
+                $uploaded[] = $label;
+            } else {
+                $missing[] = $label;
+            }
+        }
+
+        if (count($missing) == 0) {
+            return [
+                'status' => 'complete',
+                'label' => 'Lengkap',
+                'badge' => '<span class="px-2 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-700">Lengkap</span>',
+                'count' => count($uploaded),
+                'total' => count($fields),
+                'missing' => []
+            ];
+        } else {
+            return [
+                'status' => 'incomplete',
+                'label' => count($uploaded) . '/' . count($fields) . ' Upload',
+                'badge' => '<span class="px-2 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-700">' . count($uploaded) . '/' . count($fields) . '</span>',
+                'count' => count($uploaded),
+                'total' => count($fields),
+                'missing' => $missing
+            ];
+        }
+    }
+
+    public function getStatusKelengkapanAttribute()
+    {
+        $passport = $this->status_passport;
+        $dokumen = $this->status_dokumen;
+
+        if ($passport['status'] == 'complete' && $dokumen['status'] == 'complete') {
+            return [
+                'status' => 'complete',
+                'badge' => '<span class="px-2 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-700">✓ Lengkap</span>',
+                'icon' => 'fas fa-check-circle text-green-500'
+            ];
+        } else {
+            return [
+                'status' => 'incomplete',
+                'badge' => '<span class="px-2 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-700">⚠ Belum Lengkap</span>',
+                'icon' => 'fas fa-exclamation-triangle text-yellow-500'
+            ];
+        }
+    }
+
+    // ==========================================
+    // ACCESSORS - SUMBER DATA
+    // ==========================================
+
+    public function getSumberDataAttribute()
+    {
+        if ($this->id_keluarga) {
+            $keluarga = $this->keluarga;
+            if ($keluarga) {
+                return [
+                    'source' => 'keluarga',
+                    'label' => 'Dari Keluarga',
+                    'badge' => '<span class="px-2 py-0.5 rounded-full text-xs font-medium bg-purple-100 text-purple-700">
+                                    <i class="fas fa-users mr-1"></i> Keluarga
+                                </span>',
+                    'detail' => $keluarga->nama_keluarga . ' (' . $keluarga->kode_keluarga . ')',
+                    'kode_keluarga' => $keluarga->kode_keluarga,
+                    'nama_keluarga' => $keluarga->nama_keluarga,
+                    'link' => route('transaksional.keluarga.show', $keluarga->id_keluarga)
+                ];
+            }
+        }
+
+        return [
+            'source' => 'jamaah',
+            'label' => 'Input Mandiri',
+            'badge' => '<span class="px-2 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-700">
+                            <i class="fas fa-user mr-1"></i> Mandiri
+                        </span>',
+            'detail' => 'Diinput langsung sebagai jamaah',
+            'kode_keluarga' => null,
+            'nama_keluarga' => null,
+            'link' => null
+        ];
+    }
+
+    // ==========================================
     // ACCESSORS - LAINNYA
     // ==========================================
 
@@ -343,6 +476,14 @@ class Jamaah extends Model
 
         $query->when($filters['jenis_kelamin'] ?? null, function ($query, $gender) {
             $query->where('jenis_kelamin', $gender);
+        });
+
+        $query->when($filters['sumber_data'] ?? null, function ($query, $source) {
+            if ($source == 'keluarga') {
+                $query->whereNotNull('id_keluarga');
+            } elseif ($source == 'jamaah') {
+                $query->whereNull('id_keluarga');
+            }
         });
     }
 }

@@ -48,6 +48,8 @@ Route::prefix('master')->name('master.')->group(function () {
     Route::resource('kota-asal', KotaAsalController::class);
     Route::resource('maskapai', MaskapaiController::class);
     Route::resource('diskon', DiskonController::class);
+    Route::post('diskon/{id}/reset', [DiskonController::class, 'resetDiskon'])->name('diskon.reset');
+    Route::get('diskon/{id}/riwayat', [DiskonController::class, 'riwayat'])->name('diskon.riwayat');
     Route::resource('perlengkapan', PerlengkapanController::class);
     Route::resource('paket-hotel', PaketHotelController::class);
     Route::resource('paket-tour', PaketTourController::class);

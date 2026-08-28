@@ -1,7 +1,7 @@
 @extends('layouts.app')
 
 @section('title', 'Jamaah - Arrum Tour')
-@section('page-title', 'Data Jamaah')
+@section('page-title', 'Jamaah')
 
 @section('breadcrumb')
     <li class="inline-flex items-center">
@@ -34,7 +34,7 @@
 
         <div class="p-6">
             <form method="GET" action="{{ route('transaksional.jamaah.index') }}" id="filterForm" class="mb-4">
-                <div class="grid grid-cols-1 md:grid-cols-4 gap-3">
+                <div class="grid grid-cols-1 md:grid-cols-5 gap-3">
                     <div class="relative">
                         <i class="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm"></i>
                         <input type="text" name="search" id="search" placeholder="Cari jamaah..."
@@ -61,6 +61,16 @@
                             <option value="L" {{ request('jenis_kelamin') == 'L' ? 'selected' : '' }}>Laki-laki
                             </option>
                             <option value="P" {{ request('jenis_kelamin') == 'P' ? 'selected' : '' }}>Perempuan
+                            </option>
+                        </select>
+                    </div>
+                    <div>
+                        <select name="sumber_data" id="filterSumber"
+                            class="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500 text-sm">
+                            <option value="">Semua Sumber</option>
+                            <option value="keluarga" {{ request('sumber_data') == 'keluarga' ? 'selected' : '' }}>Dari
+                                Keluarga</option>
+                            <option value="jamaah" {{ request('sumber_data') == 'jamaah' ? 'selected' : '' }}>Input Mandiri
                             </option>
                         </select>
                     </div>
@@ -94,11 +104,15 @@
 
             fetch(`{{ route('transaksional.jamaah.index') }}?${params.toString()}`)
                 .then(response => response.text())
-                .then(html => document.getElementById('table-container').innerHTML = html);
+                .then(html => {
+                    document.getElementById('table-container').innerHTML = html;
+                })
+                .catch(error => console.error('Error:', error));
         }
 
         document.getElementById('filterStatus').addEventListener('change', applyFilter);
         document.getElementById('filterGender').addEventListener('change', applyFilter);
+        document.getElementById('filterSumber').addEventListener('change', applyFilter);
 
         let timeout = null;
         document.getElementById('search').addEventListener('keyup', function() {

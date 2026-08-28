@@ -36,7 +36,7 @@
             <div class="flex gap-3 mb-4">
                 <div class="relative flex-1 max-w-xs">
                     <i class="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm"></i>
-                    <input type="text" id="search" placeholder="Cari diskon..."
+                    <input type="text" id="search" placeholder="Cari diskon..." value="{{ request('search') }}"
                         class="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500 text-sm">
                 </div>
                 <button onclick="applyFilter()"

@@ -68,6 +68,25 @@
                     </div>
                 </div>
 
+                <!-- Tambahkan setelah detail keuangan -->
+                <div class="bg-blue-50 rounded-xl p-4 border border-blue-200 mb-6">
+                    <div class="flex items-start">
+                        <i class="fas fa-info-circle text-blue-500 mt-0.5 mr-3"></i>
+                        <div>
+                            <p class="text-sm text-blue-700 font-medium">Informasi Pembayaran Keluarga</p>
+                            <p class="text-xs text-blue-600 mt-1">
+                                Pembayaran akan dibagi secara proporsional ke seluruh anggota keluarga berdasarkan tagihan
+                                masing-masing.
+                                Setiap anggota akan menerima catatan pembayaran dari keluarga.
+                            </p>
+                            <p class="text-xs text-blue-600 mt-1">
+                                <i class="fas fa-check-circle mr-1"></i>
+                                Riwayat pembayaran akan muncul di halaman detail setiap jamaah.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
                 <!-- Daftar Anggota -->
                 <div class="bg-gray-50 rounded-xl p-5 border border-gray-100 mb-6">
                     <h6 class="text-sm font-semibold text-gray-700 mb-4">Rincian Tagihan per Anggota</h6>

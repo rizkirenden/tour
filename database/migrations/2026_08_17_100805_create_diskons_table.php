@@ -15,6 +15,7 @@ return new class extends Migration
             $table->string('berlaku_untuk_produk', 100)->nullable();
             $table->integer('kuota')->nullable();
             $table->integer('sudah_digunakan')->default(0);
+            $table->integer('reset_count')->default(0)->comment('Jumlah kali reset');
             $table->timestamps();
         });
     }

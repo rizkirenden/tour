@@ -4,9 +4,11 @@ namespace App\Http\Controllers\Transaksional;
 
 use App\Http\Controllers\Controller;
 use App\Services\KeluargaService;
+use App\Models\TransaksiPembayaran;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Auth;
 
 class KeluargaController extends Controller
 {
@@ -41,38 +43,38 @@ class KeluargaController extends Controller
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'nama_kepala_keluarga' => 'required|string|max:100',
-            'telepon' => 'nullable|string|max:20',
-            'alamat' => 'nullable|string',
-            'kota_asal' => 'nullable|string|max:50',
-            'pulau' => 'nullable|string|max:20',
-            'bandara_keberangkatan' => 'nullable|string|max:50',
-            'bulan_keberangkatan' => 'nullable|integer|min:1|max:12',
-            'tahun_keberangkatan' => 'nullable|integer|min:2000|max:' . (date('Y') + 10),
+            'nama_keluarga' => 'required|string|max:100',
             'produk_paket' => 'required|string|max:100|exists:produk_pakets,nama_produk',
             'id_diskon' => 'nullable|exists:diskons,id_diskon',
             'agent' => 'nullable|string|max:100',
             'fee_agent' => 'nullable|integer|min:0',
+            'bulan_keberangkatan' => 'nullable|integer|min:1|max:12',
+            'tahun_keberangkatan' => 'nullable|integer|min:2000|max:' . (date('Y') + 10),
             'keterangan_diskon' => 'nullable|string',
             'catatan_tambahan' => 'nullable|string',
-            'jamaahs' => 'nullable|array',
+            'jamaahs' => 'required|array|min:1',
             'jamaahs.*.nama_lengkap' => 'required|string|max:100',
             'jamaahs.*.hubungan_keluarga' => 'nullable|string|max:30',
             'jamaahs.*.is_kepala_keluarga' => 'nullable|boolean',
             'jamaahs.*.jenis_kelamin' => 'nullable|in:L,P',
             'jamaahs.*.telepon' => 'nullable|string|max:20',
+            'jamaahs.*.alamat' => 'nullable|string',
+            'jamaahs.*.kota_asal' => 'nullable|string|max:50|exists:kota_asals,nama_kota',
+            'jamaahs.*.pulau' => 'nullable|string|max:20',
+            'jamaahs.*.bandara_keberangkatan' => 'nullable|string|max:50',
             'jamaahs.*.nomor_paspor' => 'nullable|string|max:20',
             'jamaahs.*.tanggal_lahir' => 'nullable|date',
             'jamaahs.*.tempat_lahir' => 'nullable|string|max:100',
-            'jamaahs.*.foto_ktp' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
-            'jamaahs.*.foto_vaksin' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
-            'jamaahs.*.foto_visa' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
+            'jamaahs.*.file_ktp_kk' => 'nullable|file|mimes:jpeg,png,jpg,pdf|max:2048',
+            'jamaahs.*.file_vaksin' => 'nullable|file|mimes:jpeg,png,jpg,pdf|max:2048',
+            'jamaahs.*.file_visa' => 'nullable|file|mimes:jpeg,png,jpg,pdf|max:2048',
+            'jamaahs.*.file_paspor' => 'nullable|file|mimes:jpeg,png,jpg,pdf|max:2048',
         ]);
 
         $keluarga = $this->service->create($validated);
 
         return redirect()->route('transaksional.keluarga.index')
-            ->with('success', "Keluarga '{$keluarga->nama_kepala_keluarga}' berhasil ditambahkan!");
+            ->with('success', "Keluarga '{$keluarga->nama_keluarga}' berhasil ditambahkan!");
     }
 
     public function show($id)
@@ -94,39 +96,39 @@ class KeluargaController extends Controller
     public function update(Request $request, $id)
     {
         $validated = $request->validate([
-            'nama_kepala_keluarga' => 'required|string|max:100',
-            'telepon' => 'nullable|string|max:20',
-            'alamat' => 'nullable|string',
-            'kota_asal' => 'nullable|string|max:50',
-            'pulau' => 'nullable|string|max:20',
-            'bandara_keberangkatan' => 'nullable|string|max:50',
-            'bulan_keberangkatan' => 'nullable|integer|min:1|max:12',
-            'tahun_keberangkatan' => 'nullable|integer|min:2000|max:' . (date('Y') + 10),
+            'nama_keluarga' => 'required|string|max:100',
             'produk_paket' => 'required|string|max:100|exists:produk_pakets,nama_produk',
             'id_diskon' => 'nullable|exists:diskons,id_diskon',
             'agent' => 'nullable|string|max:100',
             'fee_agent' => 'nullable|integer|min:0',
+            'bulan_keberangkatan' => 'nullable|integer|min:1|max:12',
+            'tahun_keberangkatan' => 'nullable|integer|min:2000|max:' . (date('Y') + 10),
             'keterangan_diskon' => 'nullable|string',
             'catatan_tambahan' => 'nullable|string',
-            'jamaahs' => 'nullable|array',
+            'jamaahs' => 'required|array|min:1',
             'jamaahs.*.id_jamaah' => 'nullable|exists:jamaahs,id_jamaah',
             'jamaahs.*.nama_lengkap' => 'required|string|max:100',
             'jamaahs.*.hubungan_keluarga' => 'nullable|string|max:30',
             'jamaahs.*.is_kepala_keluarga' => 'nullable|boolean',
             'jamaahs.*.jenis_kelamin' => 'nullable|in:L,P',
             'jamaahs.*.telepon' => 'nullable|string|max:20',
+            'jamaahs.*.alamat' => 'nullable|string',
+            'jamaahs.*.kota_asal' => 'nullable|string|max:50|exists:kota_asals,nama_kota',
+            'jamaahs.*.pulau' => 'nullable|string|max:20',
+            'jamaahs.*.bandara_keberangkatan' => 'nullable|string|max:50',
             'jamaahs.*.nomor_paspor' => 'nullable|string|max:20',
             'jamaahs.*.tanggal_lahir' => 'nullable|date',
             'jamaahs.*.tempat_lahir' => 'nullable|string|max:100',
-            'jamaahs.*.foto_ktp' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
-            'jamaahs.*.foto_vaksin' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
-            'jamaahs.*.foto_visa' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
+            'jamaahs.*.file_ktp_kk' => 'nullable|file|mimes:jpeg,png,jpg,pdf|max:2048',
+            'jamaahs.*.file_vaksin' => 'nullable|file|mimes:jpeg,png,jpg,pdf|max:2048',
+            'jamaahs.*.file_visa' => 'nullable|file|mimes:jpeg,png,jpg,pdf|max:2048',
+            'jamaahs.*.file_paspor' => 'nullable|file|mimes:jpeg,png,jpg,pdf|max:2048',
         ]);
 
         $keluarga = $this->service->update($id, $validated);
 
         return redirect()->route('transaksional.keluarga.index')
-            ->with('success', "Keluarga '{$keluarga->nama_kepala_keluarga}' berhasil diperbarui!");
+            ->with('success', "Keluarga '{$keluarga->nama_keluarga}' berhasil diperbarui!");
     }
 
     public function destroy($id)
@@ -153,7 +155,7 @@ class KeluargaController extends Controller
             'id_jenis_transaksi' => 'required|exists:jenis_transaksis,id_jenis',
             'tanggal_transaksi' => 'required|date',
             'jumlah_bayar' => 'required|integer|min:1',
-            'bukti_pembayaran' => 'nullable|image|mimes:jpeg,png,jpg,pdf|max:2048',
+            'bukti_pembayaran' => 'nullable|file|mimes:jpeg,png,jpg,pdf|max:2048',
             'keterangan' => 'nullable|string'
         ]);
 
@@ -220,9 +222,21 @@ class KeluargaController extends Controller
                 'sisa_tagihan' => $sisaTagihanJamaah,
                 'status_pembayaran' => $statusJamaah
             ]);
+
+            // === TAMBAHKAN TRANSAKSI KE JAMAAH ===
+            TransaksiPembayaran::create([
+                'id_jamaah' => $jamaah->id_jamaah,
+                'id_metode_pembayaran' => $validated['id_metode_pembayaran'],
+                'id_jenis_transaksi' => $validated['id_jenis_transaksi'],
+                'tanggal_transaksi' => $validated['tanggal_transaksi'],
+                'jumlah_bayar' => round($bayarPerJamaah),
+                'bukti_pembayaran' => $buktiPath,
+                'keterangan' => $validated['keterangan'] . ' (Dari pembayaran keluarga)',
+                'created_by' => Auth::user()->name ?? 'System',
+            ]);
         }
 
         return redirect()->route('transaksional.keluarga.show', $id)
-            ->with('success', "Pembayaran keluarga sebesar Rp " . number_format($jumlahBayar, 0, ',', '.') . " berhasil!");
+            ->with('success', "Pembayaran keluarga sebesar Rp " . number_format($jumlahBayar, 0, ',', '.') . " berhasil dan telah masuk ke riwayat pembayaran jamaah masing-masing!");
     }
 }

@@ -1,0 +1,30 @@
+
+5. nilai inputan uang pakai koma - MASTER DONE - TRANSAKSIONAL ON PROGRESS
+11.fee agent tidak mengnaggu keberangkatan
+15.jika keluarga di bayar per orang di pembayaran jamaah per orang itu masukk ke invoice keluarga juga
+16.jangan langsung gabungkan di bayar tapi rincikan tiap pembayaran'
+19.di departure yang jamaah tampil yang mau berangkat di bulan itu saja, jangan mengambil semua jamaah di bulan lain dan tahun lain
+20.hilangkan harga tour di keberangkatan
+21.Tambah search di keberangkatan
+22.Perlengkapan Departure, Maskapai & Harga, Hotel & Tipe Kamar, Jenis Transaksi. pengeluaran kotor
+23.pendapatan dari seluruh jamaah di departure tersebut
+24.buat tiap kolom ada total harga nya
+25.cetak invoice tambah di aksi di jamaah
+------------------------------------------------------------------------------------------------------------------------------------
+12.riwayat pembayaran data baru dari bawah - DONE
+6. pecah pendampingan & agent - DONE
+7. jamaah bayar pendampingan kalau pakai pendampingan, jika tidak pakai pendampingan jamaah tetap bayar. - DONE
+8. agent nama dengan fee saja - DONE
+9. pendampingan ada 3 nama pendampingan, fee asli pendampiungan, sama fee untuk yang mendampingi - DONE
+1. ada pembayaran langsung dengan uang real / cash - DONE
+2. Paket Tour diganti dengan Paket Umroh Plus - DONE
+3. harga paket tour tidak ada langsung mengambil harga dasar di produk paket - DONE
+4. total kan semua druasi perjanlaan dengan plus turki - DONE
+13.no telp, alamt, kota asal, taruh di anggota keluarga - DONE
+14.pembayaran di keluarga create juga ke jamaah -DONE
+17.Nama Kepala Keluarga * di ganti nama kelompok atau nama group - DONE
+18.Anggota #1 di ganti ke jamaah #1 - DONE
+10.tagih di jamaah pendampingan - DONE
+26.keluarga ganti ke kelompok semua - DONE
+27.buat reset kuota - DONE
+------------------------------------------------------------------------------------------------------------------------------------

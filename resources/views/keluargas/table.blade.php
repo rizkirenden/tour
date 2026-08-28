@@ -5,7 +5,7 @@
                 <th class="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">#</th>
                 <th class="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Kode
                     Keluarga</th>
-                <th class="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Kepala
+                <th class="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Nama
                     Keluarga</th>
                 <th class="px-4 py-3 text-center text-xs font-semibold text-gray-500 uppercase tracking-wider">Anggota
                 </th>
@@ -21,17 +21,15 @@
         <tbody class="divide-y divide-gray-100">
             @forelse($data as $index => $item)
                 <tr class="hover:bg-gray-50 transition-colors duration-150">
-                    <td class="px-4 py-3 text-gray-500">
-                        {{ $data->firstItem() + $index }}
-                    </td>
+                    <td class="px-4 py-3 text-gray-500">{{ $data->firstItem() + $index }}</td>
                     <td class="px-4 py-3">
                         <span class="inline-flex px-2.5 py-1 bg-gray-100 text-gray-700 rounded-lg text-xs font-mono">
                             {{ $item->kode_keluarga }}
                         </span>
                     </td>
                     <td class="px-4 py-3">
-                        <p class="font-medium text-gray-800">{{ $item->nama_kepala_keluarga }}</p>
-                        <p class="text-xs text-gray-400">{{ $item->telepon ?? '-' }}</p>
+                        <p class="font-medium text-gray-800">{{ $item->nama_keluarga }}</p>
+                        <p class="text-xs text-gray-400">Agent: {{ $item->agent ?? '-' }}</p>
                     </td>
                     <td class="px-4 py-3 text-center">
                         <span
