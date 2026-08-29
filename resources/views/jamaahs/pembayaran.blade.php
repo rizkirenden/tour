@@ -66,8 +66,8 @@
                     </div>
                 </div>
 
-                <!-- Detail Keuangan -->
-                <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+                <!-- Detail Keuangan - 3 Kolom -->
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
                     <div class="bg-green-50 rounded-xl p-4 border border-green-200 text-center">
                         <p class="text-xs text-gray-500">Total Dibayar</p>
                         <p class="text-xl font-bold text-green-600">{{ $jamaah->total_dibayar_formatted }}</p>
@@ -80,10 +80,6 @@
                         <p class="text-xs text-gray-500">Status</p>
                         <p class="text-xl font-bold text-blue-600">{!! $jamaah->status_pembayaran_badge !!}</p>
                     </div>
-                    <div class="bg-purple-50 rounded-xl p-4 border border-purple-200 text-center">
-                        <p class="text-xs text-gray-500">Fee Agent</p>
-                        <p class="text-xl font-bold text-purple-600">{{ $jamaah->fee_agent_formatted }}</p>
-                    </div>
                 </div>
 
                 <!-- Detail Tagihan -->
@@ -92,43 +88,70 @@
                         <i class="fas fa-file-invoice text-yellow-500 mr-2"></i> Detail Tagihan
                         <span class="ml-2 text-xs text-gray-400">(per orang)</span>
                     </h6>
-                    <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                         <div class="bg-white rounded-lg p-3 border border-gray-200">
-                            <p class="text-xs text-gray-500">Tiket Domestik</p>
-                            <p class="text-sm font-bold text-gray-800">{{ $jamaah->total_tiket_domestik_formatted }}</p>
-                            <p class="text-xs text-gray-400">Pergi:
-                                {{ $jamaah->harga_tiket_pergi_domestik ? 'Rp ' . number_format($jamaah->harga_tiket_pergi_domestik, 0, ',', '.') : 'Rp 0' }}
+                            <p class="text-xs text-gray-500">Harga Produk</p>
+                            <p class="text-sm font-bold text-gray-800">
+                                {{ $jamaah->total_tagihan_sebelum_diskon_formatted }}
                             </p>
-                            <p class="text-xs text-gray-400">Pulang:
-                                {{ $jamaah->harga_tiket_pulang_domestik ? 'Rp ' . number_format($jamaah->harga_tiket_pulang_domestik, 0, ',', '.') : 'Rp 0' }}
-                            </p>
-                        </div>
-                        <div class="bg-white rounded-lg p-3 border border-gray-200">
-                            <p class="text-xs text-gray-500">Tiket International</p>
-                            <p class="text-sm font-bold text-gray-800">{{ $jamaah->total_tiket_international_formatted }}
-                            </p>
-                            <p class="text-xs text-gray-400">Pergi:
-                                {{ $jamaah->harga_tiket_pergi_international ? 'Rp ' . number_format($jamaah->harga_tiket_pergi_international, 0, ',', '.') : 'Rp 0' }}
-                            </p>
-                            <p class="text-xs text-gray-400">Pulang:
-                                {{ $jamaah->harga_tiket_pulang_international ? 'Rp ' . number_format($jamaah->harga_tiket_pulang_international, 0, ',', '.') : 'Rp 0' }}
-                            </p>
-                        </div>
-                        <div class="bg-white rounded-lg p-3 border border-gray-200">
-                            <p class="text-xs text-gray-500">Fee Agent</p>
-                            <p class="text-sm font-bold text-gray-800">{{ $jamaah->fee_agent_formatted }}</p>
                         </div>
                         <div class="bg-white rounded-lg p-3 border border-gray-200">
                             <p class="text-xs text-gray-500">Diskon</p>
                             <p class="text-sm font-bold text-red-600">{{ $jamaah->total_diskon_formatted }}</p>
-                            <p class="text-xs text-gray-400">{{ $jamaah->persen_diskon ?? 0 }}%</p>
                             @if ($jamaah->keterangan_diskon)
                                 <p class="text-xs text-gray-400">{{ $jamaah->keterangan_diskon }}</p>
                             @endif
                         </div>
                     </div>
+
+                    <!-- Agent & Pendampingan -->
+                    <div class="border-t border-gray-200 pt-4 mt-2">
+                        <p class="text-xs text-gray-400 mb-3">
+                            <i class="fas fa-info-circle mr-1"></i>
+                            Fee Agent & Pendampingan adalah informasi tambahan dan <span
+                                class="text-red-500 font-medium">TIDAK</span> termasuk dalam total tagihan
+                        </p>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div class="bg-blue-50 rounded-lg p-3 border border-blue-200">
+                                <p class="text-xs font-semibold text-blue-600 mb-2">
+                                    <i class="fas fa-user-tie mr-1"></i> Agent
+                                </p>
+                                <div class="flex justify-between text-sm">
+                                    <span class="text-gray-500">Nama Agent</span>
+                                    <span class="font-medium text-gray-700">{{ $jamaah->agent_name_formatted }}</span>
+                                </div>
+                                <div class="flex justify-between text-sm mt-1">
+                                    <span class="text-gray-500">Fee Agent</span>
+                                    <span class="font-medium text-blue-600">{{ $jamaah->fee_agent_formatted }}</span>
+                                </div>
+                            </div>
+
+                            <div class="bg-green-50 rounded-lg p-3 border border-green-200">
+                                <p class="text-xs font-semibold text-green-600 mb-2">
+                                    <i class="fas fa-users mr-1"></i> Pendampingan
+                                </p>
+                                <div class="flex justify-between text-sm">
+                                    <span class="text-gray-500">Nama Pendamping</span>
+                                    <span
+                                        class="font-medium text-gray-700">{{ $jamaah->pendampingan_nama_formatted }}</span>
+                                </div>
+                                <div class="flex justify-between text-sm mt-1">
+                                    <span class="text-gray-500">Fee Pendamping</span>
+                                    <span
+                                        class="font-medium text-green-600">{{ $jamaah->pendampingan_fee_formatted }}</span>
+                                </div>
+                                <div class="flex justify-between text-sm mt-1">
+                                    <span class="text-gray-500">Fee Petugas</span>
+                                    <span
+                                        class="font-medium text-purple-600">{{ $jamaah->pendampingan_fee_petugas_formatted }}</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
                     <div
-                        class="mt-3 text-sm text-gray-500 border-t border-gray-200 pt-3 flex flex-wrap items-center justify-between gap-2">
+                        class="mt-4 text-sm text-gray-500 border-t border-gray-200 pt-3 flex flex-wrap items-center justify-between gap-2">
                         <span>
                             <span class="font-medium">Total Sebelum Diskon:</span>
                             <span
@@ -200,19 +223,20 @@
                                             </td>
                                             <td class="px-3 py-2">
                                                 <span class="text-xs font-medium text-gray-700">
-                                                    {{ $transaksi->metodePembayaran->kode_bank ?? '-' }}
+                                                    {{ $transaksi->metodePembayaran->kode_bank ?? ($transaksi->metodePembayaran->e_wallet_type ?? $transaksi->metodePembayaran->jenis_pembayaran) }}
                                                 </span>
                                                 <p class="text-xs text-gray-400">
-                                                    {{ $transaksi->metodePembayaran->nama_bank ?? '-' }}</p>
+                                                    {{ $transaksi->metodePembayaran->nama_bank ?? $transaksi->metodePembayaran->jenis_pembayaran }}
+                                                </p>
                                             </td>
                                             <td class="px-3 py-2">
                                                 <span
                                                     class="px-2 py-1 rounded-full text-xs font-medium
-                                    {{ $transaksi->jenisTransaksi->kode == 'DP'
-                                        ? 'bg-yellow-100 text-yellow-700'
-                                        : ($transaksi->jenisTransaksi->kode == 'LUNAS'
-                                            ? 'bg-green-100 text-green-700'
-                                            : 'bg-blue-100 text-blue-700') }}">
+                                                    {{ $transaksi->jenisTransaksi->kode == 'DP'
+                                                        ? 'bg-yellow-100 text-yellow-700'
+                                                        : ($transaksi->jenisTransaksi->kode == 'LUNAS'
+                                                            ? 'bg-green-100 text-green-700'
+                                                            : 'bg-blue-100 text-blue-700') }}">
                                                     {{ $transaksi->jenisTransaksi->nama ?? '-' }}
                                                 </span>
                                             </td>
@@ -233,7 +257,6 @@
                                                 {{ $transaksi->keterangan ?? '-' }}
                                             </td>
                                             <td class="px-3 py-2 text-center">
-                                                <!-- Tombol Hapus Transaksi -->
                                                 <button onclick="confirmDeleteTransaksi({{ $transaksi->id_transaksi }})"
                                                     class="text-red-500 hover:text-red-700 transition-colors duration-200"
                                                     title="Hapus Transaksi">
@@ -273,48 +296,89 @@
                                 class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500 text-sm"
                                 required>
                                 <option value="">-- Pilih Metode --</option>
-                                @foreach ($metodePembayarans as $metode)
-                                    <option value="{{ $metode->id_metode }}"
-                                        {{ old('id_metode_pembayaran') == $metode->id_metode ? 'selected' : '' }}>
-                                        {{ $metode->kode_bank }} - {{ $metode->nama_bank }}
-                                        ({{ $metode->nomor_rekening }})
-                                    </option>
-                                @endforeach
+
+                                @php
+                                    $bankTransfers = $metodePembayarans->where('jenis_pembayaran', 'bank_transfer');
+                                    $cashs = $metodePembayarans->where('jenis_pembayaran', 'cash');
+                                    $eWallets = $metodePembayarans->where('jenis_pembayaran', 'e_wallet');
+                                @endphp
+
+                                @if ($bankTransfers->count() > 0)
+                                    <optgroup label="🏦 Bank Transfer">
+                                        @foreach ($bankTransfers as $metode)
+                                            <option value="{{ $metode->id_metode }}"
+                                                {{ old('id_metode_pembayaran') == $metode->id_metode ? 'selected' : '' }}>
+                                                {{ $metode->kode_bank }} - {{ $metode->nama_bank }}
+                                                ({{ $metode->nomor_rekening }})
+                                                @if ($metode->atas_nama)
+                                                    - a/n {{ $metode->atas_nama }}
+                                                @endif
+                                            </option>
+                                        @endforeach
+                                    </optgroup>
+                                @endif
+
+                                @if ($cashs->count() > 0)
+                                    <optgroup label="💰 Cash / Tunai">
+                                        @foreach ($cashs as $metode)
+                                            <option value="{{ $metode->id_metode }}"
+                                                {{ old('id_metode_pembayaran') == $metode->id_metode ? 'selected' : '' }}>
+                                                Cash / Tunai
+                                            </option>
+                                        @endforeach
+                                    </optgroup>
+                                @endif
+
+                                @if ($eWallets->count() > 0)
+                                    <optgroup label="📱 E-Wallet">
+                                        @foreach ($eWallets as $metode)
+                                            <option value="{{ $metode->id_metode }}"
+                                                {{ old('id_metode_pembayaran') == $metode->id_metode ? 'selected' : '' }}>
+                                                {{ $metode->e_wallet_type }} - {{ $metode->nomor_telepon }}
+                                            </option>
+                                        @endforeach
+                                    </optgroup>
+                                @endif
                             </select>
                             @error('id_metode_pembayaran')
                                 <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
                             @enderror
                         </div>
 
-                        <!-- Jenis Transaksi -->
+                        <!-- Jenis Transaksi - Dropdown -->
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-1.5">
                                 Jenis Transaksi <span class="text-red-500">*</span>
                             </label>
-                            <div class="grid grid-cols-3 gap-2">
+                            <select name="id_jenis_transaksi" id="id_jenis_transaksi"
+                                class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500 text-sm"
+                                required>
+                                <option value="">-- Pilih Jenis Transaksi --</option>
                                 @foreach ($jenisTransaksis as $jenis)
-                                    <button type="button" onclick="setJenisTransaksi('{{ $jenis->id_jenis }}')"
-                                        class="jenis-btn px-3 py-2 border-2 border-gray-200 rounded-xl hover:border-yellow-500 transition-all duration-200 text-center focus:outline-none text-xs"
-                                        data-id="{{ $jenis->id_jenis }}" data-kode="{{ $jenis->kode }}">
-                                        <i
-                                            class="fas {{ $jenis->kode == 'DP' ? 'fa-hand-holding-usd text-yellow-500' : ($jenis->kode == 'LUNAS' ? 'fa-check-circle text-green-500' : 'fa-coins text-blue-500') }} text-lg block mb-1"></i>
-                                        <span class="font-medium">{{ $jenis->nama }}</span>
-                                    </button>
+                                    <option value="{{ $jenis->id_jenis }}"
+                                        {{ old('id_jenis_transaksi') == $jenis->id_jenis ? 'selected' : '' }}
+                                        data-kode="{{ $jenis->kode }}">
+                                        {{ $jenis->nama }}
+                                        @if ($jenis->kode == 'DP')
+                                            (Pembayaran Awal)
+                                        @elseif ($jenis->kode == 'ANGSURAN')
+                                            (Cicilan)
+                                        @elseif ($jenis->kode == 'LUNAS')
+                                            (Pelunasan)
+                                        @endif
+                                    </option>
                                 @endforeach
-                            </div>
-                            <input type="hidden" name="id_jenis_transaksi" id="id_jenis_transaksi"
-                                value="{{ old('id_jenis_transaksi') }}">
+                            </select>
                             @error('id_jenis_transaksi')
                                 <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
                             @enderror
                             <p id="jenisInfo" class="text-xs text-gray-400 mt-2">
-                                <i class="fas fa-info-circle mr-1"></i> Silakan pilih jenis pembayaran
+                                <i class="fas fa-info-circle mr-1"></i> Pilih jenis pembayaran yang sesuai
                             </p>
                         </div>
                     </div>
 
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-4">
-                        <!-- Tanggal Transaksi -->
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-1.5">
                                 Tanggal Transaksi <span class="text-red-500">*</span>
@@ -328,7 +392,6 @@
                             @enderror
                         </div>
 
-                        <!-- Jumlah Bayar -->
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-1.5">
                                 Jumlah Bayar <span class="text-red-500">*</span>
@@ -364,7 +427,6 @@
                     </div>
 
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-4">
-                        <!-- Upload Bukti -->
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-1.5">Upload Bukti Pembayaran</label>
                             <input type="file" name="bukti_pembayaran" id="bukti_pembayaran"
@@ -382,7 +444,6 @@
                             @enderror
                         </div>
 
-                        <!-- Keterangan -->
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-1.5">Keterangan</label>
                             <input type="text" name="keterangan" id="keterangan" value="{{ old('keterangan') }}"
@@ -391,7 +452,6 @@
                         </div>
                     </div>
 
-                    <!-- Buttons -->
                     <div class="flex items-center justify-end gap-3 pt-6 border-t border-gray-100 mt-6">
                         <a href="{{ route('transaksional.jamaah.index') }}"
                             class="px-4 py-2 bg-gray-200 text-gray-700 rounded-xl hover:bg-gray-300 transition-colors text-sm font-medium">
@@ -410,7 +470,6 @@
 
 @push('scripts')
     <script>
-        // Preview Bukti Pembayaran
         function previewBukti(input) {
             const preview = document.getElementById('previewBukti');
             const image = document.getElementById('previewImage');
@@ -440,27 +499,10 @@
             }
         }
 
-        // Set Jenis Transaksi
-        function setJenisTransaksi(id) {
-            document.getElementById('id_jenis_transaksi').value = id;
-
-            // Reset semua button
-            document.querySelectorAll('.jenis-btn').forEach(btn => {
-                btn.classList.remove('border-yellow-500', 'bg-yellow-50');
-                btn.classList.add('border-gray-200');
-            });
-
-            // Highlight button yang dipilih
-            document.querySelectorAll('.jenis-btn').forEach(btn => {
-                if (btn.dataset.id == id) {
-                    btn.classList.remove('border-gray-200');
-                    btn.classList.add('border-yellow-500', 'bg-yellow-50');
-                }
-            });
-
-            // Update info
-            const btn = document.querySelector(`.jenis-btn[data-id="${id}"]`);
-            const kode = btn ? btn.dataset.kode : '';
+        // Update info jenis transaksi saat dropdown berubah
+        document.getElementById('id_jenis_transaksi').addEventListener('change', function() {
+            const selectedOption = this.options[this.selectedIndex];
+            const kode = selectedOption.dataset.kode || '';
             const info = document.getElementById('jenisInfo');
 
             if (kode === 'DP') {
@@ -470,11 +512,22 @@
                 info.innerHTML =
                     '<i class="fas fa-info-circle mr-1"></i> Angsuran: Pembayaran cicilan 50% - 99% dari total tagihan';
             } else if (kode === 'LUNAS') {
-                info.innerHTML = '<i class="fas fa-info-circle mr-1"></i> Lunas: Pembayaran 100% dari total tagihan';
+                info.innerHTML =
+                '<i class="fas fa-info-circle mr-1"></i> Lunas: Pembayaran 100% dari total tagihan';
+            } else {
+                info.innerHTML = '<i class="fas fa-info-circle mr-1"></i> Pilih jenis pembayaran yang sesuai';
             }
-        }
+        });
 
-        // Set Jumlah Bayar
+        // Trigger change event on load if there's old value
+        document.addEventListener('DOMContentLoaded', function() {
+            const oldJenis = '{{ old('id_jenis_transaksi') }}';
+            if (oldJenis) {
+                document.getElementById('id_jenis_transaksi').value = oldJenis;
+                document.getElementById('id_jenis_transaksi').dispatchEvent(new Event('change'));
+            }
+        });
+
         function setJumlahBayar(persen) {
             const totalTagihan = {{ $jamaah->total_tagihan_setelah_diskon }};
             const sisaTagihan = {{ $jamaah->sisa_tagihan }};
@@ -501,13 +554,5 @@
                 'Sisa tagihan: <span class="font-bold">' +
                 new Intl.NumberFormat('id-ID').format(sisa) + '</span>';
         }
-
-        // Auto set jika ada old value
-        document.addEventListener('DOMContentLoaded', function() {
-            const oldJenis = '{{ old('id_jenis_transaksi') }}';
-            if (oldJenis) {
-                setJenisTransaksi(oldJenis);
-            }
-        });
     </script>
 @endpush

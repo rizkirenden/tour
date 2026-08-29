@@ -61,6 +61,8 @@ class DepartureController extends Controller
             'nama_keberangkatan' => 'required|string|max:100',
             'tanggal_keberangkatan' => 'required|date',
             'tanggal_kepulangan' => 'required|date|after:tanggal_keberangkatan',
+            'bulan_keberangkatan' => 'nullable|integer|min:1|max:12',
+            'tahun_keberangkatan' => 'nullable|integer|min:2000|max:' . (date('Y') + 10),
             'kuota' => 'required|integer|min:1',
             'id_status' => 'nullable|exists:status_keberangkatans,id_status',
         ]);
@@ -71,29 +73,29 @@ class DepartureController extends Controller
             ->with('success', "Keberangkatan '{$departure->nama_keberangkatan}' berhasil dibuat! Silakan lengkapi data lainnya.");
     }
 
-   public function show($id)
-{
-    $departure = $this->service->getById($id);
-    $maskapaiOptions = $this->service->getMaskapaiOptions();
-    $hotelOptions = $this->service->getHotelOptions();
-    $jamaahs = $this->service->getAvailableJamaahs($id);
-    $perlengkapanOptions = $this->service->getPerlengkapanOptionsForDeparture($id);
-    $jenisTransaksiOptions = $this->service->getAvailableJenisTransaksi($id);
+    public function show($id)
+    {
+        $departure = $this->service->getById($id);
+        $maskapaiOptions = $this->service->getMaskapaiOptions();
+        $hotelOptions = $this->service->getHotelOptions();
+        $jamaahs = $this->service->getAvailableJamaahs($id);
+        $perlengkapanOptions = $this->service->getPerlengkapanOptionsForDeparture($id);
+        $jenisTransaksiOptions = $this->service->getAvailableJenisTransaksi($id);
 
-    // Load kamars untuk semua hotel yang ada di paket tour
-    if ($departure->produk && $departure->produk->paketTour) {
-        $departure->produk->paketTour->load('hotels.kamars');
+        // Load kamars untuk semua hotel yang ada di paket tour
+        if ($departure->produk && $departure->produk->paketTour) {
+            $departure->produk->paketTour->load('hotels.kamars');
+        }
+
+        return view('departures.show', compact(
+            'departure',
+            'maskapaiOptions',
+            'hotelOptions',
+            'jamaahs',
+            'perlengkapanOptions',
+            'jenisTransaksiOptions'
+        ));
     }
-
-    return view('departures.show', compact(
-        'departure',
-        'maskapaiOptions',
-        'hotelOptions',
-        'jamaahs',
-        'perlengkapanOptions',
-        'jenisTransaksiOptions'
-    ));
-}
 
     public function edit($id)
     {
@@ -115,6 +117,8 @@ class DepartureController extends Controller
             'nama_keberangkatan' => 'required|string|max:100',
             'tanggal_keberangkatan' => 'required|date',
             'tanggal_kepulangan' => 'required|date|after:tanggal_keberangkatan',
+            'bulan_keberangkatan' => 'nullable|integer|min:1|max:12',
+            'tahun_keberangkatan' => 'nullable|integer|min:2000|max:' . (date('Y') + 10),
             'kuota' => 'required|integer|min:1',
             'id_status' => 'nullable|exists:status_keberangkatans,id_status',
         ]);
@@ -131,6 +135,54 @@ class DepartureController extends Controller
 
         return redirect()->route('transaksional.departure.index')
             ->with('success', "Keberangkatan '{$nama}' berhasil dihapus!");
+    }
+
+    // ==========================================
+    // SYNC METHODS
+    // ==========================================
+
+    public function syncAll($id)
+    {
+        try {
+            $departure = $this->service->syncAllDepartureData($id);
+
+            return redirect()->route('transaksional.departure.show', $id)
+                ->with('success', 'Semua data berhasil disinkronisasi! Perlengkapan dan jenis transaksi telah diperbarui dengan jumlah jamaah terbaru (' . $departure->jamaahs->count() . ' jamaah).');
+        } catch (\Exception $e) {
+            return redirect()->back()
+                ->with('error', 'Gagal sinkronisasi: ' . $e->getMessage());
+        }
+    }
+
+
+    public function syncJamaahs($id)
+    {
+        try {
+            // Ambil semua jamaah yang tersedia untuk sync
+            $availableJamaahs = $this->service->getAvailableJamaahsForSync($id);
+
+            // Ambil jamaah yang sudah terdaftar
+            $departure = $this->service->getById($id);
+            $currentJamaahIds = $departure->jamaahs->pluck('id_jamaah')->toArray();
+
+            // Filter jamaah yang belum terdaftar
+            $newJamaahs = $availableJamaahs->filter(function ($jamaah) use ($currentJamaahIds) {
+                return !in_array($jamaah->id_jamaah, $currentJamaahIds);
+            });
+
+            // Simpan ke session agar bisa diambil di modal
+            session()->put('sync_jamaah_' . $id, $newJamaahs->pluck('id_jamaah')->toArray());
+
+            $message = $newJamaahs->count() > 0
+                ? $newJamaahs->count() . ' jamaah baru ditemukan. Silakan buka "Atur Daftar Jamaah" untuk menambahkannya.'
+                : 'Tidak ada jamaah baru yang tersedia.';
+
+            return redirect()->route('transaksional.departure.show', $id)
+                ->with('success', $message);
+        } catch (\Exception $e) {
+            return redirect()->back()
+                ->with('error', 'Gagal sync jamaah: ' . $e->getMessage());
+        }
     }
 
     // ==========================================
@@ -154,9 +206,9 @@ class DepartureController extends Controller
             ->whereIn('status_keberangkatans.nama_status', ['Aktif', 'Berangkat']);
 
         $jamaahs = Jamaah::where('produk_paket', $produk->nama_produk)
-                         ->whereNotIn('id_jamaah', $subquery)
-                         ->orderBy('nama_lengkap')
-                         ->get();
+            ->whereNotIn('id_jamaah', $subquery)
+            ->orderBy('nama_lengkap')
+            ->get();
 
         $html = '';
         if ($jamaahs->count() > 0) {
@@ -188,8 +240,8 @@ class DepartureController extends Controller
     public function getKamarsByHotel($idHotel)
     {
         $kamars = Kamar::where('id_hotel', $idHotel)
-                      ->orderBy('tipe_kamar')
-                      ->get();
+            ->orderBy('tipe_kamar')
+            ->get();
 
         return response()->json($kamars);
     }
@@ -210,6 +262,7 @@ class DepartureController extends Controller
         $selectedKamars = [];
         $details = collect();
 
+        // Ambil data dari DepartureHotelDetail
         if ($idHotel == $departure->id_hotel_mekkah) {
             $selectedKamars = $departure->hotelMekkahDetails->pluck('id_kamar')->toArray();
             $details = $departure->hotelMekkahDetails;
@@ -222,8 +275,8 @@ class DepartureController extends Controller
         }
 
         $kamars = Kamar::where('id_hotel', $idHotel)
-                      ->orderBy('tipe_kamar')
-                      ->get();
+            ->orderBy('tipe_kamar')
+            ->get();
 
         $html = '';
         if ($kamars->count() > 0) {
@@ -231,50 +284,62 @@ class DepartureController extends Controller
                 $isChecked = in_array($kamar->id_kamar, $selectedKamars) ? 'checked' : '';
                 $detail = $details->where('id_kamar', $kamar->id_kamar)->first();
 
+                // Ambil nilai dari DepartureHotelDetail
                 $jumlah = $detail->jumlah_kamar ?? 1;
-                $harga = $detail->harga_per_malam ?? $kamar->harga_per_malam ?? 0;
+                $harga = $detail->harga_per_malam ?? 0;
                 $durasi = $detail->durasi_menginap ?? 1;
                 $catatan = $detail->catatan ?? '';
 
                 $html .= '
-                <div class="kamar-item p-3 border border-gray-200 rounded-lg hover:bg-gray-50 transition">
-                    <div class="flex items-start gap-3">
-                        <input type="checkbox" name="kamar_ids[]" value="' . $kamar->id_kamar . '" ' . $isChecked . '
-                            class="kamar-checkbox w-4 h-4 text-yellow-500 border-gray-300 rounded focus:ring-yellow-500 mt-1">
-                        <div class="flex-1">
-                            <div class="flex items-center justify-between">
-                                <p class="font-medium text-gray-700">' . $kamar->tipe_kamar . '</p>
-                                <span class="text-xs text-gray-500">Kapasitas: ' . $kamar->kapasitas . ' orang</span>
-                            </div>
-                            <div class="grid grid-cols-2 gap-2 mt-2">
-                                <div>
-                                    <label class="text-xs text-gray-500">Jumlah Kamar</label>
-                                    <input type="number" name="kamar_jumlah[' . $kamar->id_kamar . ']" value="' . $jumlah . '"
-                                        class="kamar-jumlah w-full px-2 py-1 border border-gray-200 rounded text-sm"
-                                        min="1">
-                                </div>
-                                <div>
-                                    <label class="text-xs text-gray-500">Harga/Malam</label>
-                                    <input type="number" name="kamar_harga[' . $kamar->id_kamar . ']" value="' . $harga . '"
-                                        class="kamar-harga w-full px-2 py-1 border border-gray-200 rounded text-sm"
-                                        min="0">
-                                </div>
-                            </div>
-                            <div class="mt-2">
-                                <label class="text-xs text-gray-500">Durasi Menginap (Malam)</label>
-                                <input type="number" name="kamar_durasi[' . $kamar->id_kamar . ']" value="' . $durasi . '"
-                                    class="kamar-durasi w-full px-2 py-1 border border-gray-200 rounded text-sm"
+            <div class="kamar-item p-3 border border-gray-200 rounded-lg hover:bg-gray-50 transition">
+                <div class="flex items-start gap-3">
+                    <input type="checkbox" name="kamar_ids[]" value="' . $kamar->id_kamar . '" ' . $isChecked . '
+                        class="kamar-checkbox w-4 h-4 text-yellow-500 border-gray-300 rounded focus:ring-yellow-500 mt-1">
+                    <div class="flex-1">
+                        <div class="flex items-center justify-between">
+                            <p class="font-medium text-gray-700">' . $kamar->tipe_kamar . '</p>
+                            <span class="text-xs text-gray-500">Kapasitas: ' . $kamar->kapasitas . ' orang</span>
+                        </div>
+                        <div class="grid grid-cols-2 gap-2 mt-2">
+                            <div>
+                                <label class="text-xs text-gray-500">Jumlah Kamar</label>
+                                <input type="number" name="kamar_jumlah[' . $kamar->id_kamar . ']" value="' . $jumlah . '"
+                                    class="kamar-jumlah w-full px-2 py-1 border border-gray-200 rounded text-sm"
                                     min="1">
                             </div>
-                            <div class="mt-2">
-                                <label class="text-xs text-gray-500">Catatan</label>
-                                <input type="text" name="kamar_catatan[' . $kamar->id_kamar . ']" value="' . $catatan . '"
-                                    class="kamar-catatan w-full px-2 py-1 border border-gray-200 rounded text-sm"
-                                    placeholder="Catatan untuk tipe kamar ini">
+                            <div>
+                                <label class="text-xs text-gray-500">Harga/Malam</label>
+                                <div class="relative">
+                                    <span class="absolute left-2 top-1/2 -translate-y-1/2 text-gray-400 text-xs">Rp</span>
+                                    <input type="text"
+                                        name="kamar_harga_display[' . $kamar->id_kamar . ']"
+                                        id="kamar_harga_display_' . $kamar->id_kamar . '"
+                                        value="' . ($harga > 0 ? 'Rp ' . number_format($harga, 0, ',', '.') : 'Rp 0') . '"
+                                        class="kamar-harga w-full pl-8 pr-2 py-1 border border-gray-200 rounded text-sm"
+                                        placeholder="Rp 0"
+                                        oninput="formatRupiahHotel(this, ' . $kamar->id_kamar . ')">
+                                    <input type="hidden"
+                                        name="kamar_harga[' . $kamar->id_kamar . ']"
+                                        id="kamar_harga_' . $kamar->id_kamar . '"
+                                        value="' . $harga . '">
+                                </div>
                             </div>
                         </div>
+                        <div class="mt-2">
+                            <label class="text-xs text-gray-500">Durasi Menginap (Malam)</label>
+                            <input type="number" name="kamar_durasi[' . $kamar->id_kamar . ']" value="' . $durasi . '"
+                                class="kamar-durasi w-full px-2 py-1 border border-gray-200 rounded text-sm"
+                                min="1">
+                        </div>
+                        <div class="mt-2">
+                            <label class="text-xs text-gray-500">Catatan</label>
+                            <input type="text" name="kamar_catatan[' . $kamar->id_kamar . ']" value="' . $catatan . '"
+                                class="kamar-catatan w-full px-2 py-1 border border-gray-200 rounded text-sm"
+                                placeholder="Catatan untuk tipe kamar ini">
+                        </div>
                     </div>
-                </div>';
+                </div>
+            </div>';
             }
         } else {
             $html = '<p class="text-sm text-gray-400 col-span-2 text-center py-4">Tidak ada tipe kamar untuk hotel ini</p>';
@@ -608,28 +673,29 @@ class DepartureController extends Controller
         return redirect()->route('transaksional.departure.index')
             ->with('success', 'Semua perhitungan keuangan berhasil diperbarui!');
     }
+
     public function updatePaketTourHotel(Request $request, $id)
-{
-    $validated = $request->validate([
-        'id_paket_tour' => 'required|exists:paket_tours,id_paket_tour',
-        'paket_tour_hotels' => 'nullable|array',
-        'paket_tour_hotels.*.id_hotel' => 'nullable|exists:hotels,id_hotel',
-        'paket_tour_hotels.*.harga_per_malam' => 'nullable|integer|min:0',
-        'paket_tour_hotels.*.durasi_menginap' => 'nullable|integer|min:1',
-        'paket_tour_hotels.*.jumlah_kamar' => 'nullable|integer|min:1',
-        'paket_tour_hotels.*.tipe_kamar' => 'nullable|string|max:100',
-        'paket_tour_hotels.*.catatan' => 'nullable|string',
-    ]);
+    {
+        $validated = $request->validate([
+            'id_paket_tour' => 'required|exists:paket_tours,id_paket_tour',
+            'paket_tour_hotels' => 'nullable|array',
+            'paket_tour_hotels.*.id_hotel' => 'nullable|exists:hotels,id_hotel',
+            'paket_tour_hotels.*.harga_per_malam' => 'nullable|integer|min:0',
+            'paket_tour_hotels.*.durasi_menginap' => 'nullable|integer|min:1',
+            'paket_tour_hotels.*.jumlah_kamar' => 'nullable|integer|min:1',
+            'paket_tour_hotels.*.tipe_kamar' => 'nullable|string|max:100',
+            'paket_tour_hotels.*.catatan' => 'nullable|string',
+        ]);
 
-    $departure = $this->service->updatePaketTourHotel($id, $validated);
+        $departure = $this->service->updatePaketTourHotel($id, $validated);
 
-    return redirect()->route('transaksional.departure.show', $id)
-        ->with('success', 'Data hotel tour berhasil diperbarui!');
-}
+        return redirect()->route('transaksional.departure.show', $id)
+            ->with('success', 'Data hotel tour berhasil diperbarui!');
+    }
 
-public function getPaketTourHotels($id)
-{
-    $hotels = $this->service->getPaketTourHotelsByDeparture($id);
-    return response()->json($hotels);
-}
+    public function getPaketTourHotels($id)
+    {
+        $hotels = $this->service->getPaketTourHotelsByDeparture($id);
+        return response()->json($hotels);
+    }
 }

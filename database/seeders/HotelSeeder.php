@@ -101,5 +101,183 @@ class HotelSeeder extends Seeder
             'kapasitas' => 2,
             'fasilitas_kamar' => 'AC, TV, WiFi, Bathub',
         ]);
+
+        // ============ HOTEL 4 - MADRID, SPAIN ============
+        $hotel4 = Hotel::create([
+            'nama_hotel' => 'Hotel Real Madrid',
+            'lokasi' => 'Pusat Kota Madrid, dekat Santiago Bernabéu Stadium',
+            'tipe_hotel' => 'Luxury',
+            'bintang' => 5,
+            'negara' => 'Spanyol',
+            'kota' => 'Madrid',
+            'fasilitas' => 'AC, TV, WiFi, Kolam Renang, Restoran, Spa, Gym, Bar, Ruang Pertemuan',
+        ]);
+
+        Kamar::create([
+            'id_hotel' => $hotel4->id_hotel,
+            'tipe_kamar' => 'Presidential Suite',
+            'kapasitas' => 4,
+            'fasilitas_kamar' => 'AC, TV, WiFi, Bathub, Minibar, Living Room, Dining Room, Balkon',
+        ]);
+
+        Kamar::create([
+            'id_hotel' => $hotel4->id_hotel,
+            'tipe_kamar' => 'Executive Suite',
+            'kapasitas' => 2,
+            'fasilitas_kamar' => 'AC, TV, WiFi, Bathub, Minibar, Living Room',
+        ]);
+
+        Kamar::create([
+            'id_hotel' => $hotel4->id_hotel,
+            'tipe_kamar' => 'Deluxe Room',
+            'kapasitas' => 2,
+            'fasilitas_kamar' => 'AC, TV, WiFi, Bathub, Minibar',
+        ]);
+
+        Kamar::create([
+            'id_hotel' => $hotel4->id_hotel,
+            'tipe_kamar' => 'Standard Room',
+            'kapasitas' => 2,
+            'fasilitas_kamar' => 'AC, TV, WiFi',
+        ]);
+
+        // ============ HOTEL 5 - ISTANBUL, TURKEY ============
+        $hotel5 = Hotel::create([
+            'nama_hotel' => 'Hotel Sultanahmet Istanbul',
+            'lokasi' => 'Dekat Masjid Biru dan Hagia Sophia',
+            'tipe_hotel' => 'Premium',
+            'bintang' => 4,
+            'negara' => 'Turki',
+            'kota' => 'Istanbul',
+            'fasilitas' => 'AC, TV, WiFi, Restoran, Gym, Spa, Rooftop View, Kolam Renang',
+        ]);
+
+        Kamar::create([
+            'id_hotel' => $hotel5->id_hotel,
+            'tipe_kamar' => 'Suite with Bosphorus View',
+            'kapasitas' => 4,
+            'fasilitas_kamar' => 'AC, TV, WiFi, Bathub, Minibar, Living Room, Balkon dengan Pemandangan',
+        ]);
+
+        Kamar::create([
+            'id_hotel' => $hotel5->id_hotel,
+            'tipe_kamar' => 'Deluxe Suite',
+            'kapasitas' => 2,
+            'fasilitas_kamar' => 'AC, TV, WiFi, Bathub, Minibar, Balkon',
+        ]);
+
+        Kamar::create([
+            'id_hotel' => $hotel5->id_hotel,
+            'tipe_kamar' => 'Superior Room',
+            'kapasitas' => 2,
+            'fasilitas_kamar' => 'AC, TV, WiFi, Bathub',
+        ]);
+
+        Kamar::create([
+            'id_hotel' => $hotel5->id_hotel,
+            'tipe_kamar' => 'Standard Room',
+            'kapasitas' => 2,
+            'fasilitas_kamar' => 'AC, TV, WiFi',
+        ]);
+
+        // ============ HOTEL 6 - DUBAI, UAE (Tambahan) ============
+        $hotel6 = Hotel::create([
+            'nama_hotel' => 'Burj Al Arab Jumeirah',
+            'lokasi' => 'Jumeirah Beach, Dubai',
+            'tipe_hotel' => 'Luxury',
+            'bintang' => 7,
+            'negara' => 'Uni Emirat Arab',
+            'kota' => 'Dubai',
+            'fasilitas' => 'AC, TV, WiFi, Kolam Renang, Restoran, Spa, Gym, Private Beach, Helipad',
+        ]);
+
+        Kamar::create([
+            'id_hotel' => $hotel6->id_hotel,
+            'tipe_kamar' => 'Royal Suite',
+            'kapasitas' => 6,
+            'fasilitas_kamar' => 'AC, TV, WiFi, Bathub, Minibar, Living Room, Dining Room, Private Elevator, Cinema',
+        ]);
+
+        Kamar::create([
+            'id_hotel' => $hotel6->id_hotel,
+            'tipe_kamar' => 'Panoramic Suite',
+            'kapasitas' => 4,
+            'fasilitas_kamar' => 'AC, TV, WiFi, Bathub, Minibar, Living Room, Balkon',
+        ]);
+
+        Kamar::create([
+            'id_hotel' => $hotel6->id_hotel,
+            'tipe_kamar' => 'Deluxe Suite',
+            'kapasitas' => 2,
+            'fasilitas_kamar' => 'AC, TV, WiFi, Bathub, Minibar',
+        ]);
+
+        // ============ HOTEL 7 - TOKYO, JAPAN (Tambahan) ============
+        $hotel7 = Hotel::create([
+            'nama_hotel' => 'Hotel Imperial Tokyo',
+            'lokasi' => 'Pusat Kota Tokyo, dekat Istana Kekaisaran',
+            'tipe_hotel' => 'Luxury',
+            'bintang' => 5,
+            'negara' => 'Jepang',
+            'kota' => 'Tokyo',
+            'fasilitas' => 'AC, TV, WiFi, Kolam Renang, Restoran, Spa, Gym, Ruang Pertemuan',
+        ]);
+
+        Kamar::create([
+            'id_hotel' => $hotel7->id_hotel,
+            'tipe_kamar' => 'Imperial Suite',
+            'kapasitas' => 4,
+            'fasilitas_kamar' => 'AC, TV, WiFi, Bathub, Minibar, Living Room, View Kota',
+        ]);
+
+        Kamar::create([
+            'id_hotel' => $hotel7->id_hotel,
+            'tipe_kamar' => 'Executive Suite',
+            'kapasitas' => 2,
+            'fasilitas_kamar' => 'AC, TV, WiFi, Bathub, Minibar, Living Room',
+        ]);
+
+        Kamar::create([
+            'id_hotel' => $hotel7->id_hotel,
+            'tipe_kamar' => 'Standard Room',
+            'kapasitas' => 2,
+            'fasilitas_kamar' => 'AC, TV, WiFi',
+        ]);
+
+        // ============ HOTEL 8 - LONDON, UK (Tambahan) ============
+        $hotel8 = Hotel::create([
+            'nama_hotel' => 'The Ritz London',
+            'lokasi' => 'Piccadilly, London',
+            'tipe_hotel' => 'Luxury',
+            'bintang' => 5,
+            'negara' => 'Inggris',
+            'kota' => 'London',
+            'fasilitas' => 'AC, TV, WiFi, Restoran, Spa, Gym, Ruang Pertemuan, Klub Malam',
+        ]);
+
+        Kamar::create([
+            'id_hotel' => $hotel8->id_hotel,
+            'tipe_kamar' => 'Royal Suite',
+            'kapasitas' => 4,
+            'fasilitas_kamar' => 'AC, TV, WiFi, Bathub, Minibar, Living Room, Dining Room, Balkon',
+        ]);
+
+        Kamar::create([
+            'id_hotel' => $hotel8->id_hotel,
+            'tipe_kamar' => 'Deluxe Suite',
+            'kapasitas' => 2,
+            'fasilitas_kamar' => 'AC, TV, WiFi, Bathub, Minibar',
+        ]);
+
+        Kamar::create([
+            'id_hotel' => $hotel8->id_hotel,
+            'tipe_kamar' => 'Standard Room',
+            'kapasitas' => 2,
+            'fasilitas_kamar' => 'AC, TV, WiFi',
+        ]);
+
+        $this->command->info('Hotel dan Kamar berhasil di-seed!');
+        $this->command->info('Total Hotel: ' . Hotel::count());
+        $this->command->info('Total Kamar: ' . Kamar::count());
     }
 }

@@ -35,8 +35,8 @@ class Hotel extends Model
     public function paketTours()
     {
         return $this->belongsToMany(PaketTour::class, 'hotel_paket_tour', 'id_hotel', 'id_paket_tour')
-                    ->withPivot('durasi_menginap', 'harga_hotel', 'urutan', 'catatan')
-                    ->withTimestamps();
+            ->withPivot('durasi_menginap', 'harga_hotel', 'urutan', 'catatan')
+            ->withTimestamps();
     }
 
     public function getNamaHotelAttribute($value)
@@ -65,5 +65,9 @@ class Hotel extends Model
     public function scopeByBintang($query, $bintang)
     {
         return $query->where('bintang', $bintang);
+    }
+    public function getHargaPerMalamFormattedAttribute()
+    {
+        return $this->harga_per_malam ? 'Rp ' . number_format($this->harga_per_malam, 0, ',', '.') : 'Rp 0';
     }
 }

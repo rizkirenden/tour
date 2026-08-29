@@ -69,6 +69,10 @@ class KeluargaController extends Controller
             'jamaahs.*.file_vaksin' => 'nullable|file|mimes:jpeg,png,jpg,pdf|max:2048',
             'jamaahs.*.file_visa' => 'nullable|file|mimes:jpeg,png,jpg,pdf|max:2048',
             'jamaahs.*.file_paspor' => 'nullable|file|mimes:jpeg,png,jpg,pdf|max:2048',
+            // Pendampingan per jamaah
+            'jamaahs.*.pendampingan_nama' => 'nullable|string|max:100',
+            'jamaahs.*.pendampingan_fee' => 'nullable|integer|min:0',
+            'jamaahs.*.pendampingan_fee_petugas' => 'nullable|integer|min:0',
         ]);
 
         $keluarga = $this->service->create($validated);
@@ -80,7 +84,28 @@ class KeluargaController extends Controller
     public function show($id)
     {
         $keluarga = $this->service->getById($id);
-        return view('keluargas.show', compact('keluarga'));
+
+        // Ambil semua transaksi pembayaran dari semua jamaah dalam keluarga
+        $jamaahIds = $keluarga->jamaahs->pluck('id_jamaah')->toArray();
+        $transaksis = TransaksiPembayaran::with(['metodePembayaran', 'jenisTransaksi', 'jamaah'])
+            ->whereIn('id_jamaah', $jamaahIds)
+            ->orderBy('created_at', 'asc')  // ASC untuk urutan dari yang lama ke baru
+            ->get();
+
+        // Rekap pembayaran per jamaah
+        $rekapJamaah = [];
+        foreach ($keluarga->jamaahs as $jamaah) {
+            $rekapJamaah[$jamaah->id_jamaah] = [
+                'nama' => $jamaah->nama_lengkap,
+                'total_tagihan' => $jamaah->total_tagihan_setelah_diskon,
+                'total_dibayar' => $jamaah->total_dibayar,
+                'sisa_tagihan' => $jamaah->sisa_tagihan,
+                'status' => $jamaah->status_pembayaran,
+                'transaksi_count' => TransaksiPembayaran::where('id_jamaah', $jamaah->id_jamaah)->count()
+            ];
+        }
+
+        return view('keluargas.show', compact('keluarga', 'transaksis', 'rekapJamaah'));
     }
 
     public function edit($id)
@@ -123,6 +148,10 @@ class KeluargaController extends Controller
             'jamaahs.*.file_vaksin' => 'nullable|file|mimes:jpeg,png,jpg,pdf|max:2048',
             'jamaahs.*.file_visa' => 'nullable|file|mimes:jpeg,png,jpg,pdf|max:2048',
             'jamaahs.*.file_paspor' => 'nullable|file|mimes:jpeg,png,jpg,pdf|max:2048',
+            // Pendampingan per jamaah
+            'jamaahs.*.pendampingan_nama' => 'nullable|string|max:100',
+            'jamaahs.*.pendampingan_fee' => 'nullable|integer|min:0',
+            'jamaahs.*.pendampingan_fee_petugas' => 'nullable|integer|min:0',
         ]);
 
         $keluarga = $this->service->update($id, $validated);
@@ -223,7 +252,6 @@ class KeluargaController extends Controller
                 'status_pembayaran' => $statusJamaah
             ]);
 
-            // === TAMBAHKAN TRANSAKSI KE JAMAAH ===
             TransaksiPembayaran::create([
                 'id_jamaah' => $jamaah->id_jamaah,
                 'id_metode_pembayaran' => $validated['id_metode_pembayaran'],

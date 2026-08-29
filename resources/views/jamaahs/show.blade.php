@@ -26,7 +26,7 @@
                     <h5 class="text-sm font-semibold text-gray-700">Detail Jamaah</h5>
                     <p class="text-xs text-gray-400 mt-0.5">Informasi lengkap jamaah</p>
                 </div>
-                <div class="flex items-center gap-2">
+                <div class="flex items-center gap-2 flex-wrap">
                     <a href="{{ route('transaksional.jamaah.edit', $jamaah->id_jamaah) }}"
                         class="inline-flex items-center px-4 py-2 bg-yellow-500 text-white rounded-lg hover:bg-yellow-600 transition text-sm font-medium shadow-sm hover:shadow">
                         <i class="fas fa-edit mr-2"></i> Edit
@@ -75,6 +75,7 @@
                                 {{ $jamaah->total_tagihan_setelah_diskon_formatted }}</p>
                             <p class="text-sm text-gray-500">Total Tagihan</p>
                             <p class="text-sm text-green-600">{{ $jamaah->total_dibayar_formatted }} dibayar</p>
+                            <p class="text-sm text-red-500">{{ $jamaah->sisa_tagihan_formatted }} sisa</p>
                         </div>
                     </div>
                 </div>
@@ -234,7 +235,7 @@
                                 </div>
                                 <div class="flex justify-between text-sm">
                                     <dt class="text-gray-500">Fee Agent</dt>
-                                    <dd class="font-medium text-gray-700">{{ $jamaah->fee_agent_formatted }}</dd>
+                                    <dd class="font-medium text-blue-600">{{ $jamaah->fee_agent_formatted }}</dd>
                                 </div>
                             </dl>
                         </div>
@@ -251,19 +252,23 @@
                                 </div>
                                 <div class="flex justify-between text-sm">
                                     <dt class="text-gray-500">Fee Pendamping</dt>
-                                    <dd class="font-medium text-gray-700">{{ $jamaah->pendampingan_fee_formatted }}</dd>
+                                    <dd class="font-medium text-green-600">{{ $jamaah->pendampingan_fee_formatted }}</dd>
                                 </div>
                                 <div class="flex justify-between text-sm">
                                     <dt class="text-gray-500">Fee Petugas</dt>
-                                    <dd class="font-medium text-gray-700">
+                                    <dd class="font-medium text-purple-600">
                                         {{ $jamaah->pendampingan_fee_petugas_formatted }}</dd>
                                 </div>
-                                <div class="flex justify-between text-sm font-medium border-t border-gray-200 pt-2 mt-2">
-                                    <dt class="text-gray-700">Total Fee Agent & Pendampingan</dt>
-                                    <dd class="font-bold text-yellow-600">
-                                        {{ $jamaah->total_fee_agent_pendampingan_formatted }}</dd>
-                                </div>
                             </dl>
+                        </div>
+
+                        <!-- Informasi Catatan -->
+                        <div class="mt-3 pt-3 border-t border-gray-200">
+                            <p class="text-xs text-gray-400">
+                                <i class="fas fa-info-circle mr-1"></i>
+                                Fee Agent & Pendampingan adalah informasi tambahan dan <span
+                                    class="text-red-500 font-medium">TIDAK</span> termasuk dalam total tagihan
+                            </p>
                         </div>
                     </div>
 
@@ -280,7 +285,8 @@
                             <div class="flex justify-between text-sm border-b border-gray-100 pb-2">
                                 <dt class="text-gray-500">Total Tagihan</dt>
                                 <dd class="font-medium text-gray-700">
-                                    {{ $jamaah->total_tagihan_setelah_diskon_formatted }}</dd>
+                                    {{ $jamaah->total_tagihan_setelah_diskon_formatted }}
+                                </dd>
                             </div>
                             <div class="flex justify-between text-sm border-b border-gray-100 pb-2">
                                 <dt class="text-gray-500">Total Dibayar</dt>
@@ -309,52 +315,13 @@
                         </dl>
                     </div>
 
-                    <!-- Ringkasan Tagihan -->
-                    <div class="bg-gray-50 rounded-xl p-5 border border-gray-100 lg:col-span-2">
-                        <h6 class="text-sm font-semibold text-gray-700 mb-4 flex items-center">
-                            <i class="fas fa-file-invoice text-yellow-500 mr-2"></i> Ringkasan Tagihan
-                        </h6>
-                        <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
-                            <div class="bg-white rounded-lg p-3 border border-gray-200 text-center">
-                                <p class="text-xs text-gray-500">Tiket Domestik</p>
-                                <p class="text-sm font-bold text-gray-800">{{ $jamaah->total_tiket_domestik_formatted }}
-                                </p>
-                            </div>
-                            <div class="bg-white rounded-lg p-3 border border-gray-200 text-center">
-                                <p class="text-xs text-gray-500">Tiket International</p>
-                                <p class="text-sm font-bold text-gray-800">
-                                    {{ $jamaah->total_tiket_international_formatted }}</p>
-                            </div>
-                            <div class="bg-white rounded-lg p-3 border border-gray-200 text-center">
-                                <p class="text-xs text-gray-500">Fee Agent</p>
-                                <p class="text-sm font-bold text-gray-800">{{ $jamaah->fee_agent_formatted }}</p>
-                            </div>
-                            <div class="bg-white rounded-lg p-3 border border-gray-200 text-center">
-                                <p class="text-xs text-gray-500">Diskon</p>
-                                <p class="text-sm font-bold text-red-600">{{ $jamaah->total_diskon_formatted }}</p>
-                            </div>
-                        </div>
-                        <div class="mt-3 text-sm text-gray-500 border-t border-gray-200 pt-3">
-                            <span class="font-medium">Total Sebelum Diskon:</span>
-                            <span
-                                class="font-bold text-gray-700">{{ $jamaah->total_tagihan_sebelum_diskon_formatted }}</span>
-                            <span class="ml-4">→</span>
-                            <span class="font-medium">Diskon:</span>
-                            <span class="font-bold text-red-600">{{ $jamaah->total_diskon_formatted }}</span>
-                            <span class="ml-4">→</span>
-                            <span class="font-medium">Total Setelah Diskon:</span>
-                            <span
-                                class="font-bold text-yellow-600">{{ $jamaah->total_tagihan_setelah_diskon_formatted }}</span>
-                        </div>
-                    </div>
-
                     <!-- Dokumen -->
                     <div class="bg-gray-50 rounded-xl p-5 border border-gray-100 lg:col-span-2">
                         <h6 class="text-sm font-semibold text-gray-700 mb-4 flex items-center">
                             <i class="fas fa-folder-open text-yellow-500 mr-2"></i> Dokumen
                         </h6>
 
-                        <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                        <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
                             <!-- KTP/KK -->
                             <div class="bg-white rounded-lg p-3 border border-gray-200 text-center">
                                 <p class="text-xs text-gray-500 mb-2">KTP / KK</p>
@@ -504,13 +471,13 @@
                 <!-- Aksi Bawah -->
                 <div class="mt-6 pt-6 border-t border-gray-100 flex flex-wrap items-center justify-end gap-3">
                     <button type="button" onclick="window.print()"
-                        class="px-4 py-2 bg-gray-100 rounded-lg">Cetak</button>
+                        class="px-4 py-2 bg-gray-100 rounded-lg hover:bg-gray-200 transition">Cetak</button>
                     <a href="{{ route('transaksional.jamaah.index') }}"
-                        class="px-4 py-2 bg-gray-200 rounded-lg">Kembali</a>
+                        class="px-4 py-2 bg-gray-200 rounded-lg hover:bg-gray-300 transition">Kembali</a>
                     <a href="{{ route('transaksional.jamaah.edit', $jamaah->id_jamaah) }}"
-                        class="px-4 py-2 bg-yellow-500 text-white rounded-lg">Edit</a>
+                        class="px-4 py-2 bg-yellow-500 text-white rounded-lg hover:bg-yellow-600 transition">Edit</a>
                     <a href="{{ route('transaksional.jamaah.pembayaran', $jamaah->id_jamaah) }}"
-                        class="px-4 py-2 bg-green-500 text-white rounded-lg">Bayar</a>
+                        class="px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition">Bayar</a>
                 </div>
             </div>
         </div>

@@ -18,9 +18,9 @@ class KeluargaService
 
         if (!empty($filters['search'])) {
             $search = $filters['search'];
-            $query->where(function($q) use ($search) {
+            $query->where(function ($q) use ($search) {
                 $q->where('nama_keluarga', 'like', "%{$search}%")
-                  ->orWhere('kode_keluarga', 'like', "%{$search}%");
+                    ->orWhere('kode_keluarga', 'like', "%{$search}%");
             });
         }
 
@@ -111,6 +111,11 @@ class KeluargaService
                     $jamaahData['is_kepala_keluarga'] = $jamaahData['is_kepala_keluarga'] ?? false;
                     $jamaahData['produk_paket'] = $data['produk_paket'];
 
+                    // Pendampingan per jamaah
+                    $jamaahData['pendampingan_nama'] = $jamaahData['pendampingan_nama'] ?? null;
+                    $jamaahData['pendampingan_fee'] = (int) ($jamaahData['pendampingan_fee'] ?? 0);
+                    $jamaahData['pendampingan_fee_petugas'] = (int) ($jamaahData['pendampingan_fee_petugas'] ?? 0);
+
                     $jamaahData = $this->handleFileUploads($jamaahData, $index);
 
                     $kodeProduk = $produkKeluarga ? 'PKT' : 'PKT';
@@ -184,6 +189,11 @@ class KeluargaService
                     $jamaahData['id_keluarga'] = $keluarga->id_keluarga;
                     $jamaahData['produk_paket'] = $data['produk_paket'];
                     $jamaahData['nilai_diskon'] = $diskonPerOrang;
+
+                    // Pendampingan per jamaah
+                    $jamaahData['pendampingan_nama'] = $jamaahData['pendampingan_nama'] ?? null;
+                    $jamaahData['pendampingan_fee'] = (int) ($jamaahData['pendampingan_fee'] ?? 0);
+                    $jamaahData['pendampingan_fee_petugas'] = (int) ($jamaahData['pendampingan_fee_petugas'] ?? 0);
 
                     $jamaahData = $this->handleFileUploads($jamaahData, $index, $jamaahData['id_jamaah'] ?? null);
 

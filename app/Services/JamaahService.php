@@ -17,14 +17,14 @@ class JamaahService
 
         if (!empty($filters['search'])) {
             $search = $filters['search'];
-            $query->where(function($q) use ($search) {
+            $query->where(function ($q) use ($search) {
                 $q->where('nama_lengkap', 'like', "%{$search}%")
-                  ->orWhere('nomor_paspor', 'like', "%{$search}%")
-                  ->orWhere('id_keberangkatan', 'like', "%{$search}%")
-                  ->orWhere('produk_paket', 'like', "%{$search}%")
-                  ->orWhere('nik', 'like', "%{$search}%")
-                  ->orWhere('agent_name', 'like', "%{$search}%")
-                  ->orWhere('pendampingan_nama', 'like', "%{$search}%");
+                    ->orWhere('nomor_paspor', 'like', "%{$search}%")
+                    ->orWhere('id_keberangkatan', 'like', "%{$search}%")
+                    ->orWhere('produk_paket', 'like', "%{$search}%")
+                    ->orWhere('nik', 'like', "%{$search}%")
+                    ->orWhere('agent_name', 'like', "%{$search}%")
+                    ->orWhere('pendampingan_nama', 'like', "%{$search}%");
             });
         }
 
@@ -94,16 +94,15 @@ class JamaahService
             // Set default values
             $data['total_dibayar'] = (int) ($data['total_dibayar'] ?? 0);
 
-            // Ambil TOTAL HARGA dari produk
+            // Ambil TOTAL HARGA dari produk (hanya harga produk, tanpa fee agent & pendampingan)
             $produk = ProdukPaket::where('nama_produk', $data['produk_paket'])->first();
             $hargaProduk = $produk ? $produk->total_harga : 0;
 
-            // Hitung tagihan (total fee = fee_agent + pendampingan_fee + pendampingan_fee_petugas)
-            $totalFee = ($data['fee_agent'] ?? 0) + ($data['pendampingan_fee'] ?? 0) + ($data['pendampingan_fee_petugas'] ?? 0);
-            $data['total_tagihan_sebelum_diskon'] = $hargaProduk + $totalFee;
+            // HITUNG TAGIHAN - HANYA HARGA PRODUK (TANPA FEE AGENT & PENDAMPINGAN)
+            $data['total_tagihan_sebelum_diskon'] = $hargaProduk;
             $data['nilai_diskon'] = $nilaiDiskon;
             $data['total_diskon'] = $nilaiDiskon;
-            $data['total_tagihan_setelah_diskon'] = $data['total_tagihan_sebelum_diskon'] - $nilaiDiskon;
+            $data['total_tagihan_setelah_diskon'] = $hargaProduk - $nilaiDiskon;
             $data['sisa_tagihan'] = $data['total_tagihan_setelah_diskon'] - $data['total_dibayar'];
 
             // Tentukan status pembayaran
@@ -164,17 +163,16 @@ class JamaahService
                 $diskonData->increment('sudah_digunakan');
             }
 
-            // Hitung tagihan jika belum ada pembayaran
-            if ($jamaah->total_dibayar == 0) {
-                $produk = ProdukPaket::where('nama_produk', $data['produk_paket'])->first();
-                $hargaProduk = $produk ? $produk->total_harga : 0;
-                $totalFee = ($data['fee_agent'] ?? 0) + ($data['pendampingan_fee'] ?? 0) + ($data['pendampingan_fee_petugas'] ?? 0);
-                $data['total_tagihan_sebelum_diskon'] = $hargaProduk + $totalFee;
-                $data['nilai_diskon'] = $nilaiDiskon;
-                $data['total_diskon'] = $nilaiDiskon;
-                $data['total_tagihan_setelah_diskon'] = $data['total_tagihan_sebelum_diskon'] - $nilaiDiskon;
-                $data['sisa_tagihan'] = $data['total_tagihan_setelah_diskon'] - $data['total_dibayar'];
-            }
+            // Ambil TOTAL HARGA dari produk (hanya harga produk, tanpa fee agent & pendampingan)
+            $produk = ProdukPaket::where('nama_produk', $data['produk_paket'])->first();
+            $hargaProduk = $produk ? $produk->total_harga : 0;
+
+            // HITUNG TAGIHAN - HANYA HARGA PRODUK (TANPA FEE AGENT & PENDAMPINGAN)
+            $data['total_tagihan_sebelum_diskon'] = $hargaProduk;
+            $data['nilai_diskon'] = $nilaiDiskon;
+            $data['total_diskon'] = $nilaiDiskon;
+            $data['total_tagihan_setelah_diskon'] = $hargaProduk - $nilaiDiskon;
+            $data['sisa_tagihan'] = $data['total_tagihan_setelah_diskon'] - $data['total_dibayar'];
 
             $jamaah->update($data);
             return $jamaah->fresh();

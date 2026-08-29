@@ -197,6 +197,9 @@
                                                 'tanggal_lahir' => $jamaah->tanggal_lahir
                                                     ? $jamaah->tanggal_lahir->format('Y-m-d')
                                                     : null,
+                                                'pendampingan_nama' => $jamaah->pendampingan_nama,
+                                                'pendampingan_fee' => $jamaah->pendampingan_fee,
+                                                'pendampingan_fee_petugas' => $jamaah->pendampingan_fee_petugas,
                                                 'file_ktp_kk' => $jamaah->file_ktp_kk,
                                                 'file_vaksin' => $jamaah->file_vaksin,
                                                 'file_visa' => $jamaah->file_visa,
@@ -221,6 +224,9 @@
                                             'nomor_paspor' => '',
                                             'tempat_lahir' => '',
                                             'tanggal_lahir' => '',
+                                            'pendampingan_nama' => '',
+                                            'pendampingan_fee' => 0,
+                                            'pendampingan_fee_petugas' => 0,
                                             'file_ktp_kk' => null,
                                             'file_vaksin' => null,
                                             'file_visa' => null,
@@ -363,6 +369,45 @@
                                             </label>
                                         </div>
                                     </div>
+
+                                    <!-- Pendampingan (Informasi) -->
+                                    <div class="grid grid-cols-1 md:grid-cols-3 gap-3 mt-3 pt-3 border-t border-gray-200">
+                                        <div>
+                                            <label class="block text-xs font-medium text-gray-600 mb-1">Nama
+                                                Pendamping</label>
+                                            <input type="text" name="jamaahs[{{ $index }}][pendampingan_nama]"
+                                                value="{{ $jamaah['pendampingan_nama'] ?? '' }}"
+                                                class="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-yellow-500 text-sm"
+                                                placeholder="Nama pendamping">
+                                        </div>
+                                        <div>
+                                            <label class="block text-xs font-medium text-gray-600 mb-1">Fee
+                                                Pendamping</label>
+                                            <div class="relative">
+                                                <span
+                                                    class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-xs">Rp</span>
+                                                <input type="number"
+                                                    name="jamaahs[{{ $index }}][pendampingan_fee]"
+                                                    value="{{ $jamaah['pendampingan_fee'] ?? 0 }}"
+                                                    class="w-full pl-8 pr-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-yellow-500 text-sm"
+                                                    placeholder="0">
+                                            </div>
+                                        </div>
+                                        <div>
+                                            <label class="block text-xs font-medium text-gray-600 mb-1">Fee Petugas</label>
+                                            <div class="relative">
+                                                <span
+                                                    class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-xs">Rp</span>
+                                                <input type="number"
+                                                    name="jamaahs[{{ $index }}][pendampingan_fee_petugas]"
+                                                    value="{{ $jamaah['pendampingan_fee_petugas'] ?? 0 }}"
+                                                    class="w-full pl-8 pr-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-yellow-500 text-sm"
+                                                    placeholder="0">
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- File Upload -->
                                     <div class="grid grid-cols-1 md:grid-cols-4 gap-3 mt-3 pt-3 border-t border-gray-200">
                                         <div>
                                             <label class="block text-xs font-medium text-gray-600 mb-1">File KTP/KK</label>
@@ -570,6 +615,37 @@
                             </label>
                         </div>
                     </div>
+
+                    <!-- Pendampingan (Informasi) -->
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-3 mt-3 pt-3 border-t border-gray-200">
+                        <div>
+                            <label class="block text-xs font-medium text-gray-600 mb-1">Nama Pendamping</label>
+                            <input type="text" name="jamaahs[${jamaahIndex}][pendampingan_nama]"
+                                class="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-yellow-500 text-sm"
+                                placeholder="Nama pendamping">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-medium text-gray-600 mb-1">Fee Pendamping</label>
+                            <div class="relative">
+                                <span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-xs">Rp</span>
+                                <input type="number" name="jamaahs[${jamaahIndex}][pendampingan_fee]"
+                                    value="0"
+                                    class="w-full pl-8 pr-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-yellow-500 text-sm"
+                                    placeholder="0">
+                            </div>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-medium text-gray-600 mb-1">Fee Petugas</label>
+                            <div class="relative">
+                                <span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-xs">Rp</span>
+                                <input type="number" name="jamaahs[${jamaahIndex}][pendampingan_fee_petugas]"
+                                    value="0"
+                                    class="w-full pl-8 pr-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-yellow-500 text-sm"
+                                    placeholder="0">
+                            </div>
+                        </div>
+                    </div>
+
                     <div class="grid grid-cols-1 md:grid-cols-4 gap-3 mt-3 pt-3 border-t border-gray-200">
                         <div>
                             <label class="block text-xs font-medium text-gray-600 mb-1">File KTP/KK</label>

@@ -35,7 +35,8 @@
                     class="bg-gradient-to-r from-yellow-50 to-yellow-100/50 rounded-xl p-6 mb-6 border border-yellow-200/50">
                     <div class="flex flex-wrap items-start justify-between gap-4">
                         <div>
-                            <h2 class="text-2xl font-bold text-gray-800">{{ $keluarga->nama_kepala_keluarga }}</h2>
+                            <h2 class="text-2xl font-bold text-gray-800">
+                                {{ $keluarga->nama_kepala_keluarga ?? $keluarga->nama_keluarga }}</h2>
                             <span class="px-3 py-1 bg-blue-500 text-white text-xs font-medium rounded-full">
                                 {{ $keluarga->kode_keluarga }}
                             </span>
@@ -52,7 +53,7 @@
                     </div>
                 </div>
 
-                <!-- Detail Keuangan -->
+                <!-- Detail Keuangan - 3 Kolom -->
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
                     <div class="bg-green-50 rounded-xl p-4 border border-green-200 text-center">
                         <p class="text-xs text-gray-500">Total Dibayar</p>
@@ -68,7 +69,7 @@
                     </div>
                 </div>
 
-                <!-- Tambahkan setelah detail keuangan -->
+                <!-- Informasi Pembayaran Keluarga -->
                 <div class="bg-blue-50 rounded-xl p-4 border border-blue-200 mb-6">
                     <div class="flex items-start">
                         <i class="fas fa-info-circle text-blue-500 mt-0.5 mr-3"></i>
@@ -122,72 +123,126 @@
                     enctype="multipart/form-data">
                     @csrf
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <!-- Metode Pembayaran -->
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-1.5">Metode Pembayaran *</label>
-                            <select name="id_metode_pembayaran" class="w-full px-4 py-3 border border-gray-200 rounded-xl"
+                            <select name="id_metode_pembayaran"
+                                class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500"
                                 required>
-                                <option value="">-- Pilih --</option>
-                                @foreach ($metodePembayarans as $metode)
-                                    <option value="{{ $metode->id_metode }}">{{ $metode->kode_bank }} -
-                                        {{ $metode->nama_bank }}</option>
-                                @endforeach
+                                <option value="">-- Pilih Metode --</option>
+
+                                @php
+                                    $bankTransfers = $metodePembayarans->where('jenis_pembayaran', 'bank_transfer');
+                                    $cashs = $metodePembayarans->where('jenis_pembayaran', 'cash');
+                                    $eWallets = $metodePembayarans->where('jenis_pembayaran', 'e_wallet');
+                                @endphp
+
+                                @if ($bankTransfers->count() > 0)
+                                    <optgroup label="🏦 Bank Transfer">
+                                        @foreach ($bankTransfers as $metode)
+                                            <option value="{{ $metode->id_metode }}"
+                                                {{ old('id_metode_pembayaran') == $metode->id_metode ? 'selected' : '' }}>
+                                                {{ $metode->kode_bank }} - {{ $metode->nama_bank }}
+                                                ({{ $metode->nomor_rekening }})
+                                                @if ($metode->atas_nama)
+                                                    - a/n {{ $metode->atas_nama }}
+                                                @endif
+                                            </option>
+                                        @endforeach
+                                    </optgroup>
+                                @endif
+
+                                @if ($cashs->count() > 0)
+                                    <optgroup label="💰 Cash / Tunai">
+                                        @foreach ($cashs as $metode)
+                                            <option value="{{ $metode->id_metode }}"
+                                                {{ old('id_metode_pembayaran') == $metode->id_metode ? 'selected' : '' }}>
+                                                Cash / Tunai
+                                            </option>
+                                        @endforeach
+                                    </optgroup>
+                                @endif
+
+                                @if ($eWallets->count() > 0)
+                                    <optgroup label="📱 E-Wallet">
+                                        @foreach ($eWallets as $metode)
+                                            <option value="{{ $metode->id_metode }}"
+                                                {{ old('id_metode_pembayaran') == $metode->id_metode ? 'selected' : '' }}>
+                                                {{ $metode->e_wallet_type }} - {{ $metode->nomor_telepon }}
+                                            </option>
+                                        @endforeach
+                                    </optgroup>
+                                @endif
                             </select>
                         </div>
+
+                        <!-- Jenis Transaksi -->
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-1.5">Jenis Transaksi *</label>
-                            <select name="id_jenis_transaksi" class="w-full px-4 py-3 border border-gray-200 rounded-xl"
+                            <select name="id_jenis_transaksi"
+                                class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500"
                                 required>
                                 <option value="">-- Pilih --</option>
                                 @foreach ($jenisTransaksis as $jenis)
-                                    <option value="{{ $jenis->id_jenis }}">{{ $jenis->nama }}</option>
+                                    <option value="{{ $jenis->id_jenis }}"
+                                        {{ old('id_jenis_transaksi') == $jenis->id_jenis ? 'selected' : '' }}>
+                                        {{ $jenis->nama }}
+                                    </option>
                                 @endforeach
                             </select>
                         </div>
                     </div>
+
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-4">
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-1.5">Tanggal Transaksi *</label>
-                            <input type="date" name="tanggal_transaksi" value="{{ date('Y-m-d') }}"
-                                class="w-full px-4 py-3 border border-gray-200 rounded-xl" required>
+                            <input type="date" name="tanggal_transaksi"
+                                value="{{ old('tanggal_transaksi', date('Y-m-d')) }}"
+                                class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500"
+                                required>
                         </div>
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-1.5">Jumlah Bayar *</label>
                             <input type="number" name="jumlah_bayar" id="jumlah_bayar"
-                                class="w-full px-4 py-3 border border-gray-200 rounded-xl text-lg" placeholder="0"
-                                min="1" required>
-                            <div class="mt-2 flex gap-2">
+                                class="w-full px-4 py-3 border border-gray-200 rounded-xl text-lg focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500"
+                                placeholder="0" min="1" required>
+                            <div class="mt-2 flex gap-2 flex-wrap">
                                 <button type="button" onclick="setJumlah(25)"
-                                    class="px-3 py-1 bg-gray-100 rounded text-xs">25%</button>
+                                    class="px-3 py-1 bg-gray-100 text-gray-700 rounded-lg text-xs hover:bg-gray-200 transition">25%</button>
                                 <button type="button" onclick="setJumlah(50)"
-                                    class="px-3 py-1 bg-gray-100 rounded text-xs">50%</button>
+                                    class="px-3 py-1 bg-gray-100 text-gray-700 rounded-lg text-xs hover:bg-gray-200 transition">50%</button>
                                 <button type="button" onclick="setJumlah(75)"
-                                    class="px-3 py-1 bg-gray-100 rounded text-xs">75%</button>
+                                    class="px-3 py-1 bg-gray-100 text-gray-700 rounded-lg text-xs hover:bg-gray-200 transition">75%</button>
                                 <button type="button" onclick="setJumlah(100)"
-                                    class="px-3 py-1 bg-gray-100 rounded text-xs">100%</button>
+                                    class="px-3 py-1 bg-gray-100 text-gray-700 rounded-lg text-xs hover:bg-gray-200 transition">100%</button>
                                 <button type="button" onclick="setJumlahSisa()"
-                                    class="px-3 py-1 bg-yellow-100 rounded text-xs">Sisa</button>
+                                    class="px-3 py-1 bg-yellow-100 text-yellow-700 rounded-lg text-xs hover:bg-yellow-200 transition">Sisa</button>
                             </div>
                         </div>
                     </div>
+
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-4">
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-1.5">Upload Bukti</label>
                             <input type="file" name="bukti_pembayaran" accept="image/*,application/pdf"
-                                class="w-full px-3 py-2 border border-gray-200 rounded-xl">
+                                class="w-full px-3 py-2 border border-gray-200 rounded-xl focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500 text-sm file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-sm file:font-medium file:bg-yellow-50 file:text-yellow-700 hover:file:bg-yellow-100">
+                            <p class="text-xs text-gray-400 mt-1">Format: JPG, PNG, PDF (Max 2MB)</p>
                         </div>
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-1.5">Keterangan</label>
-                            <input type="text" name="keterangan"
-                                class="w-full px-4 py-3 border border-gray-200 rounded-xl"
+                            <input type="text" name="keterangan" value="{{ old('keterangan') }}"
+                                class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500"
                                 placeholder="Catatan (opsional)">
                         </div>
                     </div>
+
                     <div class="flex justify-end gap-3 pt-6 border-t mt-6">
                         <a href="{{ route('transaksional.keluarga.show', $keluarga->id_keluarga) }}"
-                            class="px-4 py-2 bg-gray-200 rounded-xl">Batal</a>
+                            class="px-4 py-2 bg-gray-200 text-gray-700 rounded-xl hover:bg-gray-300 transition">Batal</a>
                         <button type="submit"
-                            class="px-6 py-2 bg-yellow-500 text-white rounded-xl hover:bg-yellow-600">Proses
-                            Pembayaran</button>
+                            class="px-6 py-2 bg-yellow-500 text-white rounded-xl hover:bg-yellow-600 transition shadow-sm hover:shadow">
+                            <i class="fas fa-check-circle mr-2"></i> Proses Pembayaran
+                        </button>
                     </div>
                 </form>
             </div>

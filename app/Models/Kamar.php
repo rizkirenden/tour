@@ -29,4 +29,8 @@ class Kamar extends Model
     {
         return '<span class="inline-flex px-2 py-0.5 bg-blue-100 text-blue-700 rounded-full text-xs">' . $this->kapasitas . ' orang</span>';
     }
+    public function getHargaPerMalamFormattedAttribute()
+    {
+        return $this->harga_per_malam ? 'Rp ' . number_format($this->harga_per_malam, 0, ',', '.') : 'Rp 0';
+    }
 }

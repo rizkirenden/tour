@@ -15,10 +15,11 @@ class DatabaseSeeder extends Seeder
             KategoriPengeluaranSeeder::class,
             KotaAsalSeeder::class,
             MaskapaiSeeder::class,
+            MaskapaiTipeSeeder::class,
             MetodePembayaranSeeder::class,
             PerlengkapanSeeder::class,
             DiskonSeeder::class,
-             PaketTourSeeder::class,
+            PaketTourSeeder::class,
             ProdukPaketSeeder::class,
             PaketHotelSeeder::class,
         ]);

@@ -45,7 +45,7 @@ class DepartureHotelDetail extends Model
 
     public function getTotalHargaAttribute()
     {
-        return $this->harga_per_malam * $this->durasi_menginap * $this->jumlah_kamar;
+        return (int) $this->harga_per_malam * (int) $this->durasi_menginap * (int) $this->jumlah_kamar;
     }
 
     public function getTotalHargaFormattedAttribute()
@@ -56,5 +56,20 @@ class DepartureHotelDetail extends Model
     public function getHargaPerMalamFormattedAttribute()
     {
         return 'Rp ' . number_format($this->harga_per_malam, 0, ',', '.');
+    }
+
+    public function getJumlahKamarFormattedAttribute()
+    {
+        return $this->jumlah_kamar . ' Kamar';
+    }
+
+    public function getDurasiMenginapFormattedAttribute()
+    {
+        return $this->durasi_menginap . ' Malam';
+    }
+
+    public function getDetailTextAttribute()
+    {
+        return $this->tipe_kamar . ' - ' . $this->jumlah_kamar . ' Kamar × ' . $this->harga_per_malam_formatted . ' × ' . $this->durasi_menginap . ' Malam';
     }
 }

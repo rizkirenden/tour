@@ -88,6 +88,48 @@
                         </div>
                     </div>
 
+                    <!-- Bulan dan Tahun Keberangkatan -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1.5">
+                                Bulan Keberangkatan
+                            </label>
+                            <select name="bulan_keberangkatan"
+                                class="w-full px-4 py-2 border border-gray-200 rounded-xl focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500 text-sm">
+                                <option value="">Pilih Bulan</option>
+                                @for ($i = 1; $i <= 12; $i++)
+                                    <option value="{{ $i }}"
+                                        {{ old('bulan_keberangkatan') == $i ? 'selected' : '' }}>
+                                        {{ date('F', mktime(0, 0, 0, $i, 1)) }}
+                                    </option>
+                                @endfor
+                            </select>
+                            <p class="text-xs text-gray-400 mt-1">
+                                <i class="fas fa-info-circle mr-1"></i>
+                                Digunakan untuk filter jamaah yang akan ditambahkan ke keberangkatan ini
+                            </p>
+                            @error('bulan_keberangkatan')
+                                <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+                            @enderror
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1.5">
+                                Tahun Keberangkatan
+                            </label>
+                            <input type="number" name="tahun_keberangkatan"
+                                value="{{ old('tahun_keberangkatan', date('Y')) }}"
+                                class="w-full px-4 py-2 border border-gray-200 rounded-xl focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500 text-sm"
+                                min="2000" max="{{ date('Y') + 10 }}">
+                            <p class="text-xs text-gray-400 mt-1">
+                                <i class="fas fa-info-circle mr-1"></i>
+                                Digunakan untuk filter jamaah yang akan ditambahkan ke keberangkatan ini
+                            </p>
+                            @error('tahun_keberangkatan')
+                                <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+                            @enderror
+                        </div>
+                    </div>
+
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-1.5">

@@ -179,10 +179,6 @@
                                         <th
                                             class="px-3 py-2 text-center text-xs font-semibold text-gray-500 uppercase tracking-wider">
                                             Bintang</th>
-                                        <th
-                                            class="px-3 py-2 text-right text-xs font-semibold text-gray-500 uppercase tracking-wider">
-                                            Harga/Malam</th>
-                                    </tr>
                                 </thead>
                                 <tbody class="divide-y divide-gray-100">
                                     @foreach ($produk->paketTour->hotels as $index => $hotel)
@@ -201,21 +197,9 @@
                                                     <span class="text-gray-400 text-xs">-</span>
                                                 @endif
                                             </td>
-                                            <td class="px-3 py-2 text-right font-medium text-gray-700">
-                                                {{ $hotel->harga_per_malam_formatted }}
-                                            </td>
                                         </tr>
                                     @endforeach
                                 </tbody>
-                                <tfoot class="bg-gray-100">
-                                    <tr>
-                                        <td colspan="4" class="px-3 py-2 text-right font-semibold text-gray-700">Total
-                                        </td>
-                                        <td class="px-3 py-2 text-right font-bold text-yellow-600">
-                                            {{ $produk->paketTour->total_harga_hotel_formatted }}
-                                        </td>
-                                    </tr>
-                                </tfoot>
                             </table>
                         </div>
                     </div>

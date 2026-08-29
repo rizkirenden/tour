@@ -1,5 +1,4 @@
 <?php
-// app/Services/DepartureService.php
 
 namespace App\Services;
 
@@ -42,10 +41,10 @@ class DepartureService
 
         if (!empty($filters['search'])) {
             $search = $filters['search'];
-            $query->where(function($q) use ($search) {
+            $query->where(function ($q) use ($search) {
                 $q->where('nama_keberangkatan', 'like', "%{$search}%")
-                  ->orWhere('kode_keberangkatan', 'like', "%{$search}%")
-                  ->orWhere('produk_paket', 'like', "%{$search}%");
+                    ->orWhere('kode_keberangkatan', 'like', "%{$search}%")
+                    ->orWhere('produk_paket', 'like', "%{$search}%");
             });
         }
 
@@ -82,7 +81,6 @@ class DepartureService
             'departurePaketTourHotels.hotel',
             'departurePaketTourHotels.hotel.kamars',
             'departurePaketTourHotels.paketTour'
-
         ])->findOrFail($id);
     }
 
@@ -170,12 +168,13 @@ class DepartureService
             $departure->update($data);
 
             $isComplete = $departure->id_maskapai_domestik_berangkat &&
-                         $departure->id_maskapai_domestik_pulang &&
-                         $departure->id_maskapai_internasional_berangkat &&
-                         $departure->id_maskapai_internasional_pulang;
+                $departure->id_maskapai_domestik_pulang &&
+                $departure->id_maskapai_internasional_berangkat &&
+                $departure->id_maskapai_internasional_pulang;
 
             $departure->is_maskapai_complete = $isComplete;
             $departure->save();
+            $departure->recalculate();
 
             return $departure->load([
                 'maskapaiDomestikBerangkat',
@@ -201,6 +200,7 @@ class DepartureService
                 'id_hotel_transit' => $data['id_hotel_transit'] ?? null,
             ]);
 
+            // Hapus data lama di departure_hotel_details
             DepartureHotelDetail::where('id_departure', $id)->delete();
 
             if (!empty($data['kamar_ids'])) {
@@ -217,13 +217,18 @@ class DepartureService
                         }
 
                         if ($idHotel) {
+                            // Ambil harga dari request
+                            $hargaPerMalam = isset($data['kamar_harga'][$kamarId])
+                                ? (int) $data['kamar_harga'][$kamarId]
+                                : 0;
+
                             DepartureHotelDetail::create([
                                 'id_departure' => $id,
                                 'id_hotel' => $idHotel,
                                 'id_kamar' => $kamarId,
                                 'tipe_kamar' => $kamar->tipe_kamar,
                                 'jumlah_kamar' => $data['kamar_jumlah'][$kamarId] ?? 1,
-                                'harga_per_malam' => $data['kamar_harga'][$kamarId] ?? 0,
+                                'harga_per_malam' => $hargaPerMalam,
                                 'durasi_menginap' => $data['kamar_durasi'][$kamarId] ?? 1,
                                 'catatan' => $data['kamar_catatan'][$kamarId] ?? null,
                             ]);
@@ -233,8 +238,8 @@ class DepartureService
             }
 
             $isComplete = $departure->id_hotel_mekkah &&
-                         $departure->id_hotel_madinah &&
-                         $departure->id_hotel_transit;
+                $departure->id_hotel_madinah &&
+                $departure->id_hotel_transit;
 
             $departure->is_hotel_complete = $isComplete;
             $departure->save();
@@ -252,7 +257,7 @@ class DepartureService
     }
 
     // ==========================================
-    // UPDATE JAMAAH (MULTIPLE)
+    // UPDATE JAMAAH
     // ==========================================
 
     public function updateJamaah($id, array $data)
@@ -264,11 +269,13 @@ class DepartureService
                 $currentJamaahs = $departure->jamaahs->pluck('id_jamaah')->toArray();
                 $newJamaahs = $data['jamaah_ids'];
 
+                // Hapus jamaah yang tidak ada di list baru
                 $toRemove = array_diff($currentJamaahs, $newJamaahs);
                 foreach ($toRemove as $jamaahId) {
                     $departure->removeJamaah($jamaahId);
                 }
 
+                // Tambah jamaah baru
                 $toAdd = array_diff($newJamaahs, $currentJamaahs);
                 foreach ($toAdd as $jamaahId) {
                     try {
@@ -282,6 +289,7 @@ class DepartureService
             $isComplete = $departure->jamaahs()->count() > 0;
             $departure->is_jamaah_complete = $isComplete;
             $departure->save();
+
             $departure->recalculate();
 
             return $departure->load([
@@ -309,7 +317,7 @@ class DepartureService
     }
 
     // ==========================================
-    // PERLENGKAPAN (MULTIPLE)
+    // PERLENGKAPAN
     // ==========================================
 
     public function addMultiplePerlengkapanToDeparture($departureId, array $perlengkapanIds, array $data = [])
@@ -324,8 +332,8 @@ class DepartureService
                 if (!$perlengkapan) continue;
 
                 $exists = DeparturePerlengkapan::where('id_departure', $departureId)
-                                               ->where('id_perlengkapan', $perlengkapanId)
-                                               ->exists();
+                    ->where('id_perlengkapan', $perlengkapanId)
+                    ->exists();
 
                 if ($exists) continue;
 
@@ -380,8 +388,8 @@ class DepartureService
     {
         return DB::transaction(function () use ($departureId, $departurePerlengkapanId) {
             $departurePerlengkapan = DeparturePerlengkapan::where('id_departure', $departureId)
-                                                          ->where('id', $departurePerlengkapanId)
-                                                          ->firstOrFail();
+                ->where('id', $departurePerlengkapanId)
+                ->firstOrFail();
 
             $departurePerlengkapan->perlengkapanJamaahs()->delete();
             $departurePerlengkapan->delete();
@@ -404,8 +412,8 @@ class DepartureService
     {
         return DB::transaction(function () use ($departureId, $departurePerlengkapanId) {
             $departurePerlengkapan = DeparturePerlengkapan::where('id_departure', $departureId)
-                                                          ->where('id', $departurePerlengkapanId)
-                                                          ->firstOrFail();
+                ->where('id', $departurePerlengkapanId)
+                ->firstOrFail();
             $departurePerlengkapan->is_active = !$departurePerlengkapan->is_active;
             $departurePerlengkapan->save();
 
@@ -417,8 +425,8 @@ class DepartureService
     {
         return DB::transaction(function () use ($departurePerlengkapanId, $jamaahId, $status) {
             $perlengkapanJamaah = PerlengkapanJamaah::where('id_departure_perlengkapan', $departurePerlengkapanId)
-                                                    ->where('id_jamaah', $jamaahId)
-                                                    ->firstOrFail();
+                ->where('id_jamaah', $jamaahId)
+                ->firstOrFail();
             $perlengkapanJamaah->status_terima = $status;
             $perlengkapanJamaah->save();
 
@@ -429,23 +437,23 @@ class DepartureService
     public function getPerlengkapanOptionsForDeparture($departureId)
     {
         $existingIds = DeparturePerlengkapan::where('id_departure', $departureId)
-                                            ->pluck('id_perlengkapan')
-                                            ->toArray();
+            ->pluck('id_perlengkapan')
+            ->toArray();
 
         return Perlengkapan::whereNotIn('id_perlengkapan', $existingIds)
-                           ->orderBy('nama_perlengkapan')
-                           ->get();
+            ->orderBy('nama_perlengkapan')
+            ->get();
     }
 
     public function getPerlengkapanByDeparture($departureId)
     {
         return DeparturePerlengkapan::with(['perlengkapan', 'perlengkapanJamaahs.jamaah'])
-                                    ->where('id_departure', $departureId)
-                                    ->get();
+            ->where('id_departure', $departureId)
+            ->get();
     }
 
     // ==========================================
-    // JENIS TRANSAKSI METHODS - MULTIPLE
+    // JENIS TRANSAKSI
     // ==========================================
 
     public function getJenisTransaksiOptions()
@@ -456,19 +464,19 @@ class DepartureService
     public function getAvailableJenisTransaksi($departureId)
     {
         $existingIds = DepartureJenisTransaksi::where('id_departure', $departureId)
-                                              ->pluck('id_jenis_transaksi')
-                                              ->toArray();
+            ->pluck('id_jenis_transaksi')
+            ->toArray();
 
         return JenisTransaksi::whereNotIn('id_jenis', $existingIds)
-                             ->orderBy('nama')
-                             ->get();
+            ->orderBy('nama')
+            ->get();
     }
 
     public function getJenisTransaksiByDeparture($departureId)
     {
         return DepartureJenisTransaksi::with('jenisTransaksi')
-                                      ->where('id_departure', $departureId)
-                                      ->get();
+            ->where('id_departure', $departureId)
+            ->get();
     }
 
     public function addMultipleJenisTransaksiToDeparture($departureId, array $jenisTransaksiData)
@@ -504,11 +512,151 @@ class DepartureService
     }
 
     // ==========================================
-    // GET AVAILABLE JAMAAH
+    // SYNC METHODS
+    // ==========================================
+
+    public function syncAllDepartureData($id)
+    {
+        return DB::transaction(function () use ($id) {
+            $departure = $this->getById($id);
+            $jamaahCount = $departure->jamaahs->count();
+
+            if ($jamaahCount == 0) {
+                throw new \Exception('Tidak ada jamaah terdaftar. Tambahkan jamaah terlebih dahulu.');
+            }
+
+            // 1. Sinkronisasi Perlengkapan
+            $perlengkapanList = DeparturePerlengkapan::where('id_departure', $id)->get();
+            foreach ($perlengkapanList as $perlengkapan) {
+                // Update total harga berdasarkan jumlah jamaah terbaru
+                $perlengkapan->total_harga = $perlengkapan->harga_satuan * $perlengkapan->jumlah_per_jamaah * $jamaahCount;
+                $perlengkapan->save();
+
+                // Update PerlengkapanJamaah untuk setiap jamaah
+                $existingJamaahIds = $perlengkapan->perlengkapanJamaahs->pluck('id_jamaah')->toArray();
+                $currentJamaahIds = $departure->jamaahs->pluck('id_jamaah')->toArray();
+
+                // Tambahkan untuk jamaah baru yang belum punya perlengkapan ini
+                $newJamaahIds = array_diff($currentJamaahIds, $existingJamaahIds);
+                foreach ($newJamaahIds as $jamaahId) {
+                    PerlengkapanJamaah::create([
+                        'id_jamaah' => $jamaahId,
+                        'id_departure_perlengkapan' => $perlengkapan->id,
+                        'jumlah' => $perlengkapan->jumlah_per_jamaah,
+                        'harga_satuan' => $perlengkapan->harga_satuan,
+                        'total_harga' => $perlengkapan->harga_satuan * $perlengkapan->jumlah_per_jamaah,
+                        'status_terima' => 'Belum Diterima',
+                        'keterangan' => $perlengkapan->keterangan,
+                    ]);
+                }
+
+                // Hapus PerlengkapanJamaah untuk jamaah yang sudah tidak ada di departure
+                $removedJamaahIds = array_diff($existingJamaahIds, $currentJamaahIds);
+                if (!empty($removedJamaahIds)) {
+                    PerlengkapanJamaah::where('id_departure_perlengkapan', $perlengkapan->id)
+                        ->whereIn('id_jamaah', $removedJamaahIds)
+                        ->delete();
+                }
+            }
+
+            // 2. Sinkronisasi Jenis Transaksi
+            $jenisTransaksiList = DepartureJenisTransaksi::where('id_departure', $id)->get();
+            foreach ($jenisTransaksiList as $item) {
+                // Update total harga berdasarkan jumlah jamaah terbaru
+                $item->total_harga = $item->harga_satuan * $jamaahCount;
+                $item->save();
+            }
+
+            // 3. Recalculate semua data keuangan
+            $departure->recalculate();
+
+            // 4. Update status completion
+            $departure->is_perlengkapan_complete = $departure->departurePerlengkapan()->count() > 0;
+            $departure->is_jamaah_complete = $jamaahCount > 0;
+            $departure->save();
+
+            return $departure->fresh();
+        });
+    }
+
+    public function getAvailableJamaahsForSync($departureId)
+    {
+        $departure = Departure::find($departureId);
+
+        if (!$departure) {
+            return collect();
+        }
+
+        $subquery = DepartureJamaah::select('id_jamaah')
+            ->join('departures', 'departures.id_departure', '=', 'departure_jamaahs.id_departure')
+            ->join('status_keberangkatans', 'status_keberangkatans.id_status', '=', 'departures.id_status')
+            ->whereIn('status_keberangkatans.nama_status', ['Aktif', 'Berangkat']);
+
+        // Hanya jamaah yang sudah lunas
+        $query = Jamaah::whereNotIn('id_jamaah', $subquery)
+            ->where('status_pembayaran', 'Lunas')
+            ->where('bulan_keberangkatan', $departure->bulan_keberangkatan)
+            ->where('tahun_keberangkatan', $departure->tahun_keberangkatan);
+
+        return $query->orderBy('nama_lengkap')->get();
+    }
+
+    public function syncJamaahsForDeparture($departureId)
+    {
+        return DB::transaction(function () use ($departureId) {
+            $departure = $this->getById($departureId);
+
+            // Ambil semua jamaah yang memenuhi kriteria (lunas, bulan/tahun sesuai, belum terdaftar di departure aktif lain)
+            $availableJamaahs = $this->getAvailableJamaahs($departureId);
+
+            // Dapatkan ID jamaah yang sudah terdaftar di departure ini
+            $currentJamaahIds = $departure->jamaahs->pluck('id_jamaah')->toArray();
+
+            // Cari jamaah baru yang tersedia tapi belum terdaftar
+            $newJamaahIds = $availableJamaahs->pluck('id_jamaah')->toArray();
+            $toAdd = array_diff($newJamaahIds, $currentJamaahIds);
+
+            // Tambahkan jamaah baru
+            $addedCount = 0;
+            $addedNames = [];
+            foreach ($toAdd as $jamaahId) {
+                try {
+                    $jamaah = Jamaah::find($jamaahId);
+                    $departure->addJamaah($jamaahId);
+                    $addedCount++;
+                    $addedNames[] = $jamaah->nama_lengkap;
+                } catch (\Exception $e) {
+                    // Skip jika gagal
+                }
+            }
+
+            // Update status completion
+            $departure->is_jamaah_complete = $departure->jamaahs()->count() > 0;
+            $departure->save();
+
+            // Recalculate
+            $departure->recalculate();
+
+            return [
+                'departure' => $departure,
+                'added_count' => $addedCount,
+                'added_names' => $addedNames,
+                'total_jamaahs' => $departure->jamaahs->count()
+            ];
+        });
+    }
+
+    // ==========================================
+    // GET AVAILABLE JAMAAH (Filter by Month/Year)
     // ==========================================
 
     public function getAvailableJamaahs($departureId = null)
     {
+        $departure = null;
+        if ($departureId) {
+            $departure = Departure::find($departureId);
+        }
+
         $subquery = DepartureJamaah::select('id_jamaah')
             ->join('departures', 'departures.id_departure', '=', 'departure_jamaahs.id_departure')
             ->join('status_keberangkatans', 'status_keberangkatans.id_status', '=', 'departures.id_status')
@@ -518,9 +666,17 @@ class DepartureService
             $subquery->where('departures.id_departure', '!=', $departureId);
         }
 
-        return Jamaah::whereNotIn('id_jamaah', $subquery)
-                     ->orderBy('nama_lengkap')
-                     ->get();
+        // Hanya jamaah yang sudah lunas
+        $query = Jamaah::whereNotIn('id_jamaah', $subquery)
+            ->where('status_pembayaran', 'Lunas');
+
+        // Filter berdasarkan bulan dan tahun keberangkatan departure
+        if ($departure) {
+            $query->where('bulan_keberangkatan', $departure->bulan_keberangkatan)
+                ->where('tahun_keberangkatan', $departure->tahun_keberangkatan);
+        }
+
+        return $query->orderBy('nama_lengkap')->get();
     }
 
     public function getJamaahsByProduk($produkId, $departureId = null)
@@ -530,6 +686,11 @@ class DepartureService
             return collect();
         }
 
+        $departure = null;
+        if ($departureId) {
+            $departure = Departure::find($departureId);
+        }
+
         $subquery = DepartureJamaah::select('id_jamaah')
             ->join('departures', 'departures.id_departure', '=', 'departure_jamaahs.id_departure')
             ->join('status_keberangkatans', 'status_keberangkatans.id_status', '=', 'departures.id_status')
@@ -539,17 +700,23 @@ class DepartureService
             $subquery->where('departures.id_departure', '!=', $departureId);
         }
 
-        return Jamaah::where('produk_paket', $produk->nama_produk)
-                     ->whereNotIn('id_jamaah', $subquery)
-                     ->orderBy('nama_lengkap')
-                     ->get();
+        $query = Jamaah::where('produk_paket', $produk->nama_produk)
+            ->whereNotIn('id_jamaah', $subquery)
+            ->where('status_pembayaran', 'Lunas');
+
+        if ($departure) {
+            $query->where('bulan_keberangkatan', $departure->bulan_keberangkatan)
+                ->where('tahun_keberangkatan', $departure->tahun_keberangkatan);
+        }
+
+        return $query->orderBy('nama_lengkap')->get();
     }
 
     public function getProdukOptions()
     {
         return ProdukPaket::where('is_active', true)
-                         ->orderBy('nama_produk')
-                         ->get();
+            ->orderBy('nama_produk')
+            ->get();
     }
 
     public function getStatusOptions()
@@ -560,14 +727,18 @@ class DepartureService
     public function getMaskapaiOptions()
     {
         return Maskapai::with('tipePenerbangan')
-                      ->orderBy('nama_maskapai')
-                      ->get();
+            ->orderBy('nama_maskapai')
+            ->get();
     }
 
     public function getHotelOptions()
     {
         return Hotel::orderBy('nama_hotel')->get();
     }
+
+    // ==========================================
+    // RECALCULATE METHODS
+    // ==========================================
 
     public function recalculateAll()
     {
@@ -592,7 +763,7 @@ class DepartureService
     }
 
     // ==========================================
-    // ADD JAMAAH (Single)
+    // ADD/REMOVE JAMAAH (Single)
     // ==========================================
 
     public function addJamaah($departureId, $jamaahId, $catatan = null)
@@ -614,7 +785,7 @@ class DepartureService
     }
 
     // ==========================================
-    // PAKET TOUR HOTEL METHODS
+    // PAKET TOUR HOTEL
     // ==========================================
 
     public function updatePaketTourHotel($id, array $data)
@@ -658,8 +829,8 @@ class DepartureService
     public function getPaketTourHotelsByDeparture($id)
     {
         return DeparturePaketTourHotel::with(['hotel', 'paketTour'])
-                                  ->where('id_departure', $id)
-                                  ->orderBy('urutan')
-                                  ->get();
+            ->where('id_departure', $id)
+            ->orderBy('urutan')
+            ->get();
     }
 }
