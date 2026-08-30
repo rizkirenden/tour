@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Models\Jamaah;
 use App\Models\ProdukPaket;
+use App\Models\ProdukHargaBulanan;
 use App\Models\KotaAsal;
 use App\Models\Diskon;
 use Illuminate\Support\Facades\DB;
@@ -94,11 +95,30 @@ class JamaahService
             // Set default values
             $data['total_dibayar'] = (int) ($data['total_dibayar'] ?? 0);
 
-            // Ambil TOTAL HARGA dari produk (hanya harga produk, tanpa fee agent & pendampingan)
+            // AMBIL HARGA DARI PRODUK BERDASARKAN BULAN & TAHUN KEBERANGKATAN
             $produk = ProdukPaket::where('nama_produk', $data['produk_paket'])->first();
-            $hargaProduk = $produk ? $produk->total_harga : 0;
+            $hargaProduk = 0;
 
-            // HITUNG TAGIHAN - HANYA HARGA PRODUK (TANPA FEE AGENT & PENDAMPINGAN)
+            if ($produk) {
+                // Cari harga berdasarkan bulan dan tahun keberangkatan
+                $harga = ProdukHargaBulanan::where('produk_paket_id', $produk->id_produk)
+                    ->where('bulan', $data['bulan_keberangkatan'])
+                    ->where('tahun', $data['tahun_keberangkatan'])
+                    ->where('is_active', true)
+                    ->first();
+
+                if ($harga) {
+                    $hargaProduk = $harga->harga;
+                } else {
+                    // Jika tidak ada, ambil harga pertama yang aktif
+                    $hargaDefault = $produk->hargaBulanan()->active()->first();
+                    if ($hargaDefault) {
+                        $hargaProduk = $hargaDefault->harga;
+                    }
+                }
+            }
+
+            // HITUNG TAGIHAN - HARGA DARI PRODUK PER BULAN
             $data['total_tagihan_sebelum_diskon'] = $hargaProduk;
             $data['nilai_diskon'] = $nilaiDiskon;
             $data['total_diskon'] = $nilaiDiskon;
@@ -163,11 +183,30 @@ class JamaahService
                 $diskonData->increment('sudah_digunakan');
             }
 
-            // Ambil TOTAL HARGA dari produk (hanya harga produk, tanpa fee agent & pendampingan)
+            // AMBIL HARGA DARI PRODUK BERDASARKAN BULAN & TAHUN KEBERANGKATAN
             $produk = ProdukPaket::where('nama_produk', $data['produk_paket'])->first();
-            $hargaProduk = $produk ? $produk->total_harga : 0;
+            $hargaProduk = 0;
 
-            // HITUNG TAGIHAN - HANYA HARGA PRODUK (TANPA FEE AGENT & PENDAMPINGAN)
+            if ($produk) {
+                // Cari harga berdasarkan bulan dan tahun keberangkatan
+                $harga = ProdukHargaBulanan::where('produk_paket_id', $produk->id_produk)
+                    ->where('bulan', $data['bulan_keberangkatan'])
+                    ->where('tahun', $data['tahun_keberangkatan'])
+                    ->where('is_active', true)
+                    ->first();
+
+                if ($harga) {
+                    $hargaProduk = $harga->harga;
+                } else {
+                    // Jika tidak ada, ambil harga pertama yang aktif
+                    $hargaDefault = $produk->hargaBulanan()->active()->first();
+                    if ($hargaDefault) {
+                        $hargaProduk = $hargaDefault->harga;
+                    }
+                }
+            }
+
+            // HITUNG TAGIHAN - HARGA DARI PRODUK PER BULAN
             $data['total_tagihan_sebelum_diskon'] = $hargaProduk;
             $data['nilai_diskon'] = $nilaiDiskon;
             $data['total_diskon'] = $nilaiDiskon;

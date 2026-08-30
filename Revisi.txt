@@ -1,4 +1,19 @@
-25.cetak invoice tambah di aksi di jamaah
+29.di produk paket, ubah paket tour ke paket umroh plus
+32.buat ketika ada fee passport akan terbuka inputannya
+36.kopsurat yang berisikan logo, alamat, no-telp, email, tanda tangan direktur, syarat dan ketentuan, rekening pembayaran perusahaan. cap.
+37.lembar pertama invoice, lembara kedua syarat dan ketentuan, lembar terakhir lampiran pembayaran
+38.keluara/kelompok di show keluarga
+39.Nik boleh sama
+40.biar tidak lusan biar saja masukan di daftar jamaah, tapi tanda merah merah yang belum daftar
+41.atur hotel paket toure bisa beberapa tipe kamar, total seluruh nya juga belum
+42.Jenis Transaksi bukan per jamaah/ tapi masukkan harga total, lalu bagi per jamaah berapa
+43.Perlengkapan Departure nanti sudah di terima, baru hitung harganya masukkan ke total
+44.Jenis Transaksi, buat apakah sudah di terima jenis transaksi atau tidak samaa jaamaah
+45.bagian layout pemasukan di atas, pengeluaran di bawah
+46.passport masuk di pendapatan di departure yang pakai pendampingan
+47.pendampingan, fee passport 650 masuk ke pengeluaran, 100 masuk ke pendapatan
+48.pdf di keluarga
+50.upgrade hotel per jamaah
 ------------------------------------------------------------------------------------------------------------------------------------
 12.riwayat pembayaran data baru dari bawah - DONE
 6. pecah pendampingan & agent - DONE
@@ -26,5 +41,13 @@
 11.fee agent tidak mengnaggu harga di departure hanya menampilkan beberapa orang yang dapat fee agent - DONE
 22.Perlengkapan Departure, Maskapai & Harga, Hotel & Tipe Kamar, Jenis Transaksi. pengeluaran kotor - DONE
 23.pendapatan dari seluruh jamaah di departure tersebut - DONE
+25.cetak invoice tambah di riwayat pembayaran - DONE
+30.bisa upload multiple foto di flayer - DONE
+31.tambah bulan dan tahun di produk paket, karena tiap bulan beda beda harga nya - DONE
+49.multiple input harga paket -> DONE
+35.fee masih tertagih di keluarga - DONE
+34.fee agent di keluarga jamaah belum format rupiah - DONE
+33.muncul kan total pendampingan di create jamaah - DONE
 16.jangan langsung gabungkan di total bayar tapi rincikan tiap total pembayaran tiap tiap form di show, seperti Maskapai & Harga, Hotel & Tipe Kamar, Hotel Tour (Paket Tour), Daftar Jamaah (total seluruh pembayaran dari produk paket), Perlengkapan Departure, Jenis Transaksi - DONE
 ------------------------------------------------------------------------------------------------------------------------------------
+lanjut deep seek untuk pendampingan

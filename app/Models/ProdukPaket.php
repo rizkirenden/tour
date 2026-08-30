@@ -17,14 +17,13 @@ class ProdukPaket extends Model
         'deskripsi',
         'include_tur',
         'paket_tour_id',
-        'harga_dasar',
         'total_harga',
         'durasi_perjalanan',
         'durasi_mekkah',
         'durasi_madinah',
         'durasi_tour',
         'durasi_hari',
-        'flyer',
+        // FLYER DIHAPUS DARI FILLABLE
         'kategori',
         'is_active',
     ];
@@ -32,7 +31,6 @@ class ProdukPaket extends Model
     protected $casts = [
         'include_tur' => 'boolean',
         'is_active' => 'boolean',
-        'harga_dasar' => 'integer',
         'total_harga' => 'integer',
         'durasi_perjalanan' => 'integer',
         'durasi_mekkah' => 'integer',
@@ -41,34 +39,38 @@ class ProdukPaket extends Model
         'durasi_hari' => 'integer',
     ];
 
-    // Relasi ke Paket Tour
     public function paketTour()
     {
         return $this->belongsTo(PaketTour::class, 'paket_tour_id', 'id_paket_tour');
     }
 
-    // Accessor untuk URL flyer
-    public function getFlyerUrlAttribute()
+    public function hargaBulanan()
     {
-        if ($this->flyer) {
-            return asset('storage/' . $this->flyer);
-        }
-        return null;
+        return $this->hasMany(ProdukHargaBulanan::class, 'produk_paket_id', 'id_produk');
     }
 
-    // Accessor untuk harga dasar formatted
-    public function getHargaDasarFormattedAttribute()
+    public function getHargaByBulanTahun($bulan, $tahun)
     {
-        return 'Rp ' . number_format($this->harga_dasar, 0, ',', '.');
+        $harga = $this->hargaBulanan()
+            ->where('bulan', $bulan)
+            ->where('tahun', $tahun)
+            ->where('is_active', true)
+            ->first();
+
+        return $harga ? $harga->harga : 0;
     }
 
-    // Accessor untuk total harga formatted
+    public function getHargaPertamaAttribute()
+    {
+        $harga = $this->hargaBulanan()->active()->first();
+        return $harga ? $harga->harga : 0;
+    }
+
     public function getTotalHargaFormattedAttribute()
     {
         return 'Rp ' . number_format($this->total_harga, 0, ',', '.');
     }
 
-    // Accessor untuk durasi perjalanan formatted
     public function getDurasiPerjalananFormattedAttribute()
     {
         if ($this->durasi_perjalanan) {
@@ -77,7 +79,6 @@ class ProdukPaket extends Model
         return '-';
     }
 
-    // Accessor untuk durasi mekkah formatted
     public function getDurasiMekkahFormattedAttribute()
     {
         if ($this->durasi_mekkah) {
@@ -86,7 +87,6 @@ class ProdukPaket extends Model
         return '-';
     }
 
-    // Accessor untuk durasi madinah formatted
     public function getDurasiMadinahFormattedAttribute()
     {
         if ($this->durasi_madinah) {
@@ -95,7 +95,6 @@ class ProdukPaket extends Model
         return '-';
     }
 
-    // Accessor untuk durasi tour formatted
     public function getDurasiTourFormattedAttribute()
     {
         if ($this->durasi_tour) {
@@ -104,7 +103,6 @@ class ProdukPaket extends Model
         return '-';
     }
 
-    // Accessor untuk total durasi formatted
     public function getDurasiHariFormattedAttribute()
     {
         if ($this->durasi_hari) {
@@ -113,7 +111,6 @@ class ProdukPaket extends Model
         return '-';
     }
 
-    // Method untuk menghitung total durasi dari semua komponen
     public function calculateTotalDurasi()
     {
         $total = 0;
@@ -124,7 +121,6 @@ class ProdukPaket extends Model
         return $total;
     }
 
-    // Accessor untuk detail durasi lengkap
     public function getDetailDurasiAttribute()
     {
         $parts = [];
@@ -143,7 +139,6 @@ class ProdukPaket extends Model
         return !empty($parts) ? implode(' + ', $parts) : '-';
     }
 
-    // Accessor status
     public function getStatusLabelAttribute()
     {
         return $this->is_active ? 'Aktif' : 'Tidak Aktif';
@@ -173,11 +168,9 @@ class ProdukPaket extends Model
         return $query->where('is_active', true);
     }
 
-    // Boot method untuk auto update durasi_tour dan durasi_hari
     protected static function booted()
     {
         static::saving(function ($model) {
-            // Auto update durasi_tour dari paket_tour yang dipilih
             if ($model->include_tur && $model->paket_tour_id) {
                 $paketTour = PaketTour::find($model->paket_tour_id);
                 if ($paketTour) {
@@ -187,11 +180,7 @@ class ProdukPaket extends Model
                 $model->durasi_tour = 0;
             }
 
-            // Auto calculate total durasi
             $model->durasi_hari = $model->calculateTotalDurasi();
-
-            // Total harga hanya dari harga_dasar
-            $model->total_harga = (int) ($model->harga_dasar ?? 0);
         });
     }
 }

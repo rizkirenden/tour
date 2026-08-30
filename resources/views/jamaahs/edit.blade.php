@@ -237,9 +237,12 @@
                         </div>
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
                             <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-1.5">Bulan Keberangkatan</label>
-                                <select name="bulan_keberangkatan"
-                                    class="w-full px-4 py-2 border border-gray-200 rounded-xl focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500 text-sm">
+                                <label class="block text-sm font-medium text-gray-700 mb-1.5">
+                                    Bulan Keberangkatan <span class="text-red-500">*</span>
+                                </label>
+                                <select name="bulan_keberangkatan" id="bulan_keberangkatan"
+                                    class="w-full px-4 py-2 border border-gray-200 rounded-xl focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500 text-sm"
+                                    required>
                                     <option value="">Pilih Bulan</option>
                                     @for ($i = 1; $i <= 12; $i++)
                                         <option value="{{ $i }}"
@@ -248,13 +251,60 @@
                                         </option>
                                     @endfor
                                 </select>
+                                @error('bulan_keberangkatan')
+                                    <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+                                @enderror
                             </div>
                             <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-1.5">Tahun Keberangkatan</label>
-                                <input type="number" name="tahun_keberangkatan"
+                                <label class="block text-sm font-medium text-gray-700 mb-1.5">
+                                    Tahun Keberangkatan <span class="text-red-500">*</span>
+                                </label>
+                                <input type="number" name="tahun_keberangkatan" id="tahun_keberangkatan"
                                     value="{{ old('tahun_keberangkatan', $jamaah->tahun_keberangkatan ?? date('Y')) }}"
                                     class="w-full px-4 py-2 border border-gray-200 rounded-xl focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500 text-sm"
-                                    min="2000" max="{{ date('Y') + 10 }}">
+                                    min="2000" max="{{ date('Y') + 10 }}" required>
+                                @error('tahun_keberangkatan')
+                                    <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+                                @enderror
+                            </div>
+                        </div>
+
+                        <!-- Info Harga Produk -->
+                        <div id="hargaInfo"
+                            class="mt-4 {{ $jamaah->produk_paket && $jamaah->bulan_keberangkatan && $jamaah->tahun_keberangkatan ? '' : 'hidden' }}">
+                            <div class="bg-green-50 rounded-xl p-4 border border-green-200">
+                                <div class="flex items-center justify-between">
+                                    <div>
+                                        <p class="text-xs text-gray-500">Harga Produk untuk</p>
+                                        <p class="text-sm font-semibold text-gray-700" id="hargaBulanTahun">
+                                            @php
+                                                $bulanName = $jamaah->bulan_keberangkatan
+                                                    ? date('F', mktime(0, 0, 0, $jamaah->bulan_keberangkatan, 1))
+                                                    : '';
+                                            @endphp
+                                            {{ $bulanName }} {{ $jamaah->tahun_keberangkatan ?? '' }}
+                                        </p>
+                                    </div>
+                                    <div class="text-right">
+                                        <p class="text-xs text-gray-500">Harga</p>
+                                        <p class="text-xl font-bold text-yellow-600" id="hargaProdukDisplay">
+                                            {{ $jamaah->total_tagihan_sebelum_diskon_formatted ?? 'Rp 0' }}
+                                        </p>
+                                    </div>
+                                </div>
+                                <div id="flyerContainer"
+                                    class="mt-3 pt-3 border-t border-green-200 {{ $jamaah->produkPaketData?->hargaBulanan?->first()?->flyer ? '' : 'hidden' }}">
+                                    <p class="text-xs text-gray-500">Flyer</p>
+                                    <img id="flyerPreview"
+                                        src="{{ $jamaah->produkPaketData?->hargaBulanan?->first()?->flyer_url ?? '#' }}"
+                                        alt="Flyer" class="max-h-32 rounded-lg border border-gray-200 mt-1">
+                                </div>
+                                <div id="hargaWarning" class="mt-2 hidden">
+                                    <p class="text-xs text-yellow-600">
+                                        <i class="fas fa-exclamation-triangle mr-1"></i>
+                                        <span id="hargaWarningText"></span>
+                                    </p>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -298,7 +348,7 @@
                             </div>
                         </div>
 
-                        <!-- Pendampingan Section -->
+                        <!-- Pendampingan Section dengan Total -->
                         <div class="bg-green-50 rounded-xl p-4 border border-green-100">
                             <h6 class="text-xs font-semibold text-green-700 mb-3 flex items-center">
                                 <i class="fas fa-users text-green-500 mr-1"></i> Pendampingan
@@ -306,10 +356,10 @@
                             <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                                 <div>
                                     <label class="block text-sm font-medium text-gray-700 mb-1.5">Nama Pendamping</label>
-                                    <input type="text" name="pendampingan_nama"
+                                    <input type="text" name="pendampingan_nama" id="pendampingan_nama"
                                         value="{{ old('pendampingan_nama', $jamaah->pendampingan_nama) }}"
                                         class="w-full px-4 py-2 border border-gray-200 rounded-xl focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500 text-sm"
-                                        placeholder="Nama Pendamping">
+                                        placeholder="Nama Pendamping" oninput="updateTotalPendampingan()">
                                     @error('pendampingan_nama')
                                         <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
                                     @enderror
@@ -322,7 +372,7 @@
                                         <input type="text" name="pendampingan_fee" id="pendampingan_fee"
                                             value="{{ old('pendampingan_fee', number_format($jamaah->pendampingan_fee, 0, ',', '.')) }}"
                                             class="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-xl focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500 text-sm"
-                                            placeholder="0" oninput="formatRupiah(this)">
+                                            placeholder="0" oninput="formatRupiah(this); updateTotalPendampingan();">
                                     </div>
                                     @error('pendampingan_fee')
                                         <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
@@ -337,12 +387,30 @@
                                             id="pendampingan_fee_petugas"
                                             value="{{ old('pendampingan_fee_petugas', number_format($jamaah->pendampingan_fee_petugas, 0, ',', '.')) }}"
                                             class="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-xl focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500 text-sm"
-                                            placeholder="0" oninput="formatRupiah(this)">
+                                            placeholder="0" oninput="formatRupiah(this); updateTotalPendampingan();">
                                     </div>
                                     @error('pendampingan_fee_petugas')
                                         <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
                                     @enderror
                                 </div>
+                            </div>
+
+                            <!-- Total Pendampingan -->
+                            <div class="mt-3 pt-3 border-t border-green-200">
+                                <div class="flex items-center justify-between">
+                                    <p class="text-sm font-medium text-gray-700">
+                                        <i class="fas fa-calculator text-green-500 mr-1"></i>
+                                        Total Pendampingan
+                                    </p>
+                                    <p class="text-sm font-bold text-blue-600" id="totalPendampinganDisplay">
+                                        Rp
+                                        {{ isset($jamaah->pendampingan_fee) && isset($jamaah->pendampingan_fee_petugas) ? number_format($jamaah->pendampingan_fee + $jamaah->pendampingan_fee_petugas, 0, ',', '.') : '0' }}
+                                    </p>
+                                </div>
+                                <p class="text-xs text-gray-400 mt-1">
+                                    <i class="fas fa-info-circle mr-1"></i>
+                                    Total = Fee Pendamping + Fee Petugas
+                                </p>
                             </div>
                         </div>
                     </div>
@@ -590,6 +658,22 @@
                 element.value = value;
             }
 
+            // ==========================================
+            // UPDATE TOTAL PENDAMPINGAN
+            // ==========================================
+            function updateTotalPendampingan() {
+                const feeInput = document.getElementById('pendampingan_fee');
+                const petugasInput = document.getElementById('pendampingan_fee_petugas');
+                const totalDisplay = document.getElementById('totalPendampinganDisplay');
+
+                if (feeInput && petugasInput && totalDisplay) {
+                    const fee = parseInt(feeInput.value.replace(/\./g, '')) || 0;
+                    const petugas = parseInt(petugasInput.value.replace(/\./g, '')) || 0;
+                    const total = fee + petugas;
+                    totalDisplay.textContent = 'Rp ' + total.toLocaleString('id-ID');
+                }
+            }
+
             // Preview file function
             function previewFile(input, previewId) {
                 const preview = document.getElementById(previewId);
@@ -645,6 +729,75 @@
                 document.getElementById('bandara_keberangkatan').value = bandara;
             });
 
+            // ==========================================
+            // AMBIL HARGA PRODUK BERDASARKAN BULAN & TAHUN
+            // ==========================================
+            function getHargaProduk() {
+                const produkPaket = document.getElementById('produk_paket');
+                const bulan = document.getElementById('bulan_keberangkatan');
+                const tahun = document.getElementById('tahun_keberangkatan');
+                const hargaInfo = document.getElementById('hargaInfo');
+                const hargaDisplay = document.getElementById('hargaProdukDisplay');
+                const hargaBulanTahun = document.getElementById('hargaBulanTahun');
+                const warningDiv = document.getElementById('hargaWarning');
+                const warningText = document.getElementById('hargaWarningText');
+                const flyerContainer = document.getElementById('flyerContainer');
+                const flyerPreview = document.getElementById('flyerPreview');
+
+                if (!produkPaket.value || !bulan.value || !tahun.value) {
+                    hargaInfo.classList.add('hidden');
+                    return;
+                }
+
+                // Tampilkan loading
+                hargaDisplay.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Memuat...';
+                hargaInfo.classList.remove('hidden');
+
+                fetch(
+                        `{{ route('transaksional.get-harga-produk-by-bulan') }}?produk_paket=${encodeURIComponent(produkPaket.value)}&bulan=${bulan.value}&tahun=${tahun.value}`
+                    )
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            const bulanName = getBulanName(data.bulan || bulan.value);
+                            hargaDisplay.textContent = data.harga_formatted;
+                            hargaBulanTahun.textContent = `${bulanName} ${data.tahun || tahun.value}`;
+
+                            if (data.warning) {
+                                warningDiv.classList.remove('hidden');
+                                warningText.textContent = data.warning;
+                            } else {
+                                warningDiv.classList.add('hidden');
+                            }
+
+                            // Update flyer jika ada
+                            if (data.flyer) {
+                                flyerContainer.classList.remove('hidden');
+                                flyerPreview.src = data.flyer;
+                            } else {
+                                flyerContainer.classList.add('hidden');
+                            }
+                        } else {
+                            hargaDisplay.textContent = 'Harga tidak tersedia';
+                            warningDiv.classList.remove('hidden');
+                            warningText.textContent = data.error || 'Tidak ada harga yang tersedia untuk produk ini';
+                            flyerContainer.classList.add('hidden');
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        hargaDisplay.textContent = 'Error memuat harga';
+                    });
+            }
+
+            function getBulanName(bulan) {
+                const namaBulan = [
+                    'Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni',
+                    'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'
+                ];
+                return namaBulan[parseInt(bulan) - 1] || bulan;
+            }
+
             // Trigger on page load
             document.addEventListener('DOMContentLoaded', function() {
                 const kotaAsal = document.getElementById('kota_asal');
@@ -653,6 +806,29 @@
                     document.getElementById('pulau').value = selectedOption.dataset.pulau || '';
                     document.getElementById('bandara_keberangkatan').value = selectedOption.dataset.bandara || '';
                 }
+
+                // Event listener untuk produk, bulan, tahun
+                const produkPaket = document.getElementById('produk_paket');
+                const bulan = document.getElementById('bulan_keberangkatan');
+                const tahun = document.getElementById('tahun_keberangkatan');
+
+                if (produkPaket) {
+                    produkPaket.addEventListener('change', getHargaProduk);
+                }
+                if (bulan) {
+                    bulan.addEventListener('change', getHargaProduk);
+                }
+                if (tahun) {
+                    tahun.addEventListener('change', getHargaProduk);
+                }
+
+                // Panggil pertama kali jika ada nilai
+                if (produkPaket && produkPaket.value && bulan && bulan.value && tahun && tahun.value) {
+                    getHargaProduk();
+                }
+
+                // Update total pendampingan awal
+                updateTotalPendampingan();
 
                 // Form submit - clean semua input rupiah
                 const form = document.getElementById('jamaahForm');

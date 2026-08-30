@@ -26,10 +26,18 @@
                     <h5 class="text-sm font-semibold text-gray-700">Form Pembayaran</h5>
                     <p class="text-xs text-gray-400 mt-0.5">Lakukan pembayaran untuk jamaah</p>
                 </div>
-                <a href="{{ route('transaksional.jamaah.index') }}"
-                    class="inline-flex items-center px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition text-sm font-medium">
-                    <i class="fas fa-arrow-left mr-2"></i> Kembali
-                </a>
+                <div class="flex items-center gap-2 flex-wrap">
+                    @if ($transaksis->count() > 0)
+                        <a href="{{ route('transaksional.jamaah.cetak-pdf', $jamaah->id_jamaah) }}" target="_blank"
+                            class="inline-flex items-center px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition text-sm font-medium">
+                            <i class="fas fa-file-pdf mr-2"></i> Cetak PDF
+                        </a>
+                    @endif
+                    <a href="{{ route('transaksional.jamaah.index') }}"
+                        class="inline-flex items-center px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition text-sm font-medium">
+                        <i class="fas fa-arrow-left mr-2"></i> Kembali
+                    </a>
+                </div>
             </div>
 
             <div class="p-6">
@@ -171,14 +179,20 @@
 
                 <!-- Riwayat Transaksi -->
                 <div class="bg-gray-50 rounded-xl p-5 border border-gray-100 mb-6">
-                    <h6 class="text-sm font-semibold text-gray-700 mb-4 flex items-center justify-between">
-                        <span>
+                    <div class="flex items-center justify-between mb-4">
+                        <h6 class="text-sm font-semibold text-gray-700 flex items-center">
                             <i class="fas fa-history text-yellow-500 mr-2"></i> Riwayat Pembayaran
-                        </span>
-                        <span class="text-xs bg-blue-100 text-blue-800 px-2 py-0.5 rounded-full">
-                            {{ $transaksis->count() }} Transaksi
-                        </span>
-                    </h6>
+                            <span class="ml-2 text-xs bg-blue-100 text-blue-800 px-2 py-0.5 rounded-full">
+                                {{ $transaksis->count() }} Transaksi
+                            </span>
+                        </h6>
+                        @if ($transaksis->count() > 0)
+                            <a href="{{ route('transaksional.jamaah.cetak-pdf', $jamaah->id_jamaah) }}" target="_blank"
+                                class="inline-flex items-center px-3 py-1.5 bg-red-500 text-white rounded-lg hover:bg-red-600 transition text-xs font-medium">
+                                <i class="fas fa-file-pdf mr-1.5"></i> Cetak PDF
+                            </a>
+                        @endif
+                    </div>
 
                     @if ($transaksis->count() > 0)
                         <div class="overflow-x-auto">
@@ -283,7 +297,7 @@
 
                 <!-- Form Pembayaran -->
                 <form action="{{ route('transaksional.jamaah.bayar', $jamaah->id_jamaah) }}" method="POST"
-                    enctype="multipart/form-data">
+                    enctype="multipart/form-data" id="formPembayaran">
                     @csrf
 
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -398,10 +412,10 @@
                             </label>
                             <div class="relative">
                                 <span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm">Rp</span>
-                                <input type="number" name="jumlah_bayar" id="jumlah_bayar"
-                                    value="{{ old('jumlah_bayar') }}"
+                                <input type="text" name="jumlah_bayar" id="jumlah_bayar"
+                                    value="{{ old('jumlah_bayar') ? number_format(old('jumlah_bayar'), 0, ',', '.') : '' }}"
                                     class="w-full pl-10 pr-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500 text-lg"
-                                    placeholder="0" min="1" required>
+                                    placeholder="0" required oninput="formatRupiah(this)" autocomplete="off">
                             </div>
                             @error('jumlah_bayar')
                                 <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
@@ -470,6 +484,37 @@
 
 @push('scripts')
     <script>
+        // ==========================================
+        // FORMAT RUPIAH
+        // ==========================================
+        function formatRupiah(input) {
+            // Hapus semua karakter kecuali angka
+            let value = input.value.replace(/[^\d]/g, '');
+
+            if (value === '') {
+                input.value = '';
+                return;
+            }
+
+            // Konversi ke number
+            let number = parseInt(value);
+            if (isNaN(number)) {
+                input.value = '';
+                return;
+            }
+
+            // Format dengan titik ribuan
+            input.value = number.toLocaleString('id-ID');
+        }
+
+        function getRawValue(input) {
+            // Ambil nilai numerik dari input yang diformat
+            return parseInt(input.value.replace(/[^\d]/g, '')) || 0;
+        }
+
+        // ==========================================
+        // PREVIEW BUKTI
+        // ==========================================
         function previewBukti(input) {
             const preview = document.getElementById('previewBukti');
             const image = document.getElementById('previewImage');
@@ -491,15 +536,20 @@
             }
         }
 
+        // ==========================================
+        // DELETE TRANSACTION
+        // ==========================================
         function confirmDeleteTransaksi(id) {
             if (confirm(
                     'Yakin ingin menghapus transaksi pembayaran ini?\n\nData yang dihapus:\n- Jumlah pembayaran akan dikembalikan\n- Status pembayaran akan diperbarui otomatis\n- Bukti pembayaran akan dihapus'
-                )) {
+                    )) {
                 document.getElementById('delete-transaksi-form-' + id).submit();
             }
         }
 
-        // Update info jenis transaksi saat dropdown berubah
+        // ==========================================
+        // JENIS TRANSAKSI INFO
+        // ==========================================
         document.getElementById('id_jenis_transaksi').addEventListener('change', function() {
             const selectedOption = this.options[this.selectedIndex];
             const kode = selectedOption.dataset.kode || '';
@@ -519,15 +569,9 @@
             }
         });
 
-        // Trigger change event on load if there's old value
-        document.addEventListener('DOMContentLoaded', function() {
-            const oldJenis = '{{ old('id_jenis_transaksi') }}';
-            if (oldJenis) {
-                document.getElementById('id_jenis_transaksi').value = oldJenis;
-                document.getElementById('id_jenis_transaksi').dispatchEvent(new Event('change'));
-            }
-        });
-
+        // ==========================================
+        // SET JUMLAH BAYAR
+        // ==========================================
         function setJumlahBayar(persen) {
             const totalTagihan = {{ $jamaah->total_tagihan_setelah_diskon }};
             const sisaTagihan = {{ $jamaah->sisa_tagihan }};
@@ -537,22 +581,52 @@
                 jumlah = sisaTagihan;
             }
 
-            document.getElementById('jumlah_bayar').value = jumlah;
+            const input = document.getElementById('jumlah_bayar');
+            input.value = jumlah.toLocaleString('id-ID');
 
             document.getElementById('jumlahInfo').innerHTML =
                 '<i class="fas fa-info-circle mr-1"></i> ' +
                 persen + '% dari total tagihan: <span class="font-bold">Rp ' +
-                new Intl.NumberFormat('id-ID').format(jumlah) + '</span>';
+                jumlah.toLocaleString('id-ID') + '</span>';
         }
 
         function setJumlahBayarSisa() {
             const sisa = {{ $jamaah->sisa_tagihan }};
-            document.getElementById('jumlah_bayar').value = sisa;
+            const input = document.getElementById('jumlah_bayar');
+            input.value = sisa.toLocaleString('id-ID');
 
             document.getElementById('jumlahInfo').innerHTML =
                 '<i class="fas fa-info-circle mr-1"></i> ' +
-                'Sisa tagihan: <span class="font-bold">' +
-                new Intl.NumberFormat('id-ID').format(sisa) + '</span>';
+                'Sisa tagihan: <span class="font-bold">Rp ' +
+                sisa.toLocaleString('id-ID') + '</span>';
         }
+
+        // ==========================================
+        // DOM READY
+        // ==========================================
+        document.addEventListener('DOMContentLoaded', function() {
+            // Trigger change event for jenis transaksi
+            const oldJenis = '{{ old('id_jenis_transaksi') }}';
+            if (oldJenis) {
+                document.getElementById('id_jenis_transaksi').value = oldJenis;
+                document.getElementById('id_jenis_transaksi').dispatchEvent(new Event('change'));
+            }
+
+            // Format old value if exists
+            const jumlahBayarInput = document.getElementById('jumlah_bayar');
+            if (jumlahBayarInput.value) {
+                formatRupiah(jumlahBayarInput);
+            }
+        });
+
+        // ==========================================
+        // FORM SUBMIT - Convert formatted to raw
+        // ==========================================
+        document.getElementById('formPembayaran').addEventListener('submit', function(e) {
+            const input = document.getElementById('jumlah_bayar');
+            const rawValue = getRawValue(input);
+            // Update input value to raw number before submit
+            input.value = rawValue;
+        });
     </script>
 @endpush

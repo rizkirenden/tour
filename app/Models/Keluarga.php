@@ -59,6 +59,12 @@ class Keluarga extends Model
         return $this->belongsTo(Diskon::class, 'id_diskon', 'id_diskon');
     }
 
+    // Accessor untuk fee agent formatted
+    public function getFeeAgentFormattedAttribute()
+    {
+        return 'Rp ' . number_format($this->fee_agent, 0, ',', '.');
+    }
+
     public function getStatusPembayaranBadgeAttribute()
     {
         $colors = [

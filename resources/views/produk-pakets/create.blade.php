@@ -70,29 +70,138 @@
                         </div>
                     </div>
 
-                    <!-- Harga Dasar -->
+                    <!-- Harga Bulanan (WAJIB) -->
                     <div class="border-b border-gray-200 pb-4">
                         <h6 class="text-sm font-semibold text-gray-700 mb-4 flex items-center">
-                            <i class="fas fa-money-bill-wave text-yellow-500 mr-2"></i> Harga
+                            <i class="fas fa-calendar-alt text-yellow-500 mr-2"></i> Harga Per Bulan <span
+                                class="text-red-500">*</span>
+                            <span class="ml-2 text-xs text-gray-400">(minimal 1 data)</span>
+                            <button type="button" onclick="addHargaBulanan()"
+                                class="ml-auto text-xs bg-yellow-500 text-white px-3 py-1 rounded-lg hover:bg-yellow-600 transition">
+                                <i class="fas fa-plus mr-1"></i> Tambah
+                            </button>
                         </h6>
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1.5">
-                                Harga Dasar <span class="text-red-500">*</span>
-                            </label>
-                            <div class="relative">
-                                <span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm">Rp</span>
-                                <input type="text" name="harga_dasar" id="harga_dasar" value="{{ old('harga_dasar') }}"
-                                    class="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-xl focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500 text-sm"
-                                    placeholder="0" oninput="formatRupiah(this)" required>
-                            </div>
-                            @error('harga_dasar')
-                                <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
-                            @enderror
-                            <p class="text-xs text-gray-400 mt-1">
-                                <i class="fas fa-info-circle mr-1"></i>
-                                Harga dasar produk per orang
-                            </p>
+
+                        <div id="hargaBulananList">
+                            @if (old('harga_bulanan'))
+                                @foreach (old('harga_bulanan') as $index => $harga)
+                                    <div
+                                        class="harga-row grid grid-cols-1 md:grid-cols-4 gap-3 mb-2 items-end bg-gray-50 p-3 rounded-lg border border-gray-200">
+                                        <input type="hidden" name="harga_bulanan[{{ $index }}][id]"
+                                            value="{{ $harga['id'] ?? '' }}">
+                                        <div>
+                                            <label class="block text-xs font-medium text-gray-600 mb-1">Bulan <span
+                                                    class="text-red-500">*</span></label>
+                                            <select name="harga_bulanan[{{ $index }}][bulan]"
+                                                class="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500"
+                                                required>
+                                                <option value="">Pilih Bulan</option>
+                                                @for ($b = 1; $b <= 12; $b++)
+                                                    <option value="{{ $b }}"
+                                                        {{ ($harga['bulan'] ?? '') == $b ? 'selected' : '' }}>
+                                                        {{ \Carbon\Carbon::create()->month($b)->translatedFormat('F') }}
+                                                    </option>
+                                                @endfor
+                                            </select>
+                                        </div>
+                                        <div>
+                                            <label class="block text-xs font-medium text-gray-600 mb-1">Tahun <span
+                                                    class="text-red-500">*</span></label>
+                                            <select name="harga_bulanan[{{ $index }}][tahun]"
+                                                class="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500"
+                                                required>
+                                                <option value="">Pilih Tahun</option>
+                                                @for ($y = date('Y'); $y <= date('Y') + 5; $y++)
+                                                    <option value="{{ $y }}"
+                                                        {{ ($harga['tahun'] ?? '') == $y ? 'selected' : '' }}>
+                                                        {{ $y }}
+                                                    </option>
+                                                @endfor
+                                            </select>
+                                        </div>
+                                        <div>
+                                            <label class="block text-xs font-medium text-gray-600 mb-1">Harga (Rp) <span
+                                                    class="text-red-500">*</span></label>
+                                            <input type="text" name="harga_bulanan[{{ $index }}][harga]"
+                                                value="{{ isset($harga['harga']) ? number_format($harga['harga'], 0, ',', '.') : '' }}"
+                                                oninput="formatRupiah(this)"
+                                                class="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500"
+                                                placeholder="0" required>
+                                        </div>
+                                        <div class="flex items-center gap-2">
+                                            <label class="flex items-center gap-1 text-xs">
+                                                <input type="checkbox" name="harga_bulanan[{{ $index }}][is_active]"
+                                                    value="1"
+                                                    {{ isset($harga['is_active']) && $harga['is_active'] ? 'checked' : 'checked' }}>
+                                                Aktif
+                                            </label>
+                                            <button type="button" onclick="removeHargaRow(this)"
+                                                class="text-red-500 hover:text-red-700 text-sm">
+                                                <i class="fas fa-trash"></i>
+                                            </button>
+                                        </div>
+                                    </div>
+                                @endforeach
+                            @else
+                                <!-- Default 1 row jika tidak ada old data -->
+                                <div
+                                    class="harga-row grid grid-cols-1 md:grid-cols-4 gap-3 mb-2 items-end bg-gray-50 p-3 rounded-lg border border-gray-200">
+                                    <div>
+                                        <label class="block text-xs font-medium text-gray-600 mb-1">Bulan <span
+                                                class="text-red-500">*</span></label>
+                                        <select name="harga_bulanan[0][bulan]"
+                                            class="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500"
+                                            required>
+                                            <option value="">Pilih Bulan</option>
+                                            @for ($b = 1; $b <= 12; $b++)
+                                                <option value="{{ $b }}">
+                                                    {{ \Carbon\Carbon::create()->month($b)->translatedFormat('F') }}
+                                                </option>
+                                            @endfor
+                                        </select>
+                                    </div>
+                                    <div>
+                                        <label class="block text-xs font-medium text-gray-600 mb-1">Tahun <span
+                                                class="text-red-500">*</span></label>
+                                        <select name="harga_bulanan[0][tahun]"
+                                            class="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500"
+                                            required>
+                                            <option value="">Pilih Tahun</option>
+                                            @for ($y = date('Y'); $y <= date('Y') + 5; $y++)
+                                                <option value="{{ $y }}">{{ $y }}</option>
+                                            @endfor
+                                        </select>
+                                    </div>
+                                    <div>
+                                        <label class="block text-xs font-medium text-gray-600 mb-1">Harga (Rp) <span
+                                                class="text-red-500">*</span></label>
+                                        <input type="text" name="harga_bulanan[0][harga]" oninput="formatRupiah(this)"
+                                            class="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500"
+                                            placeholder="0" required>
+                                    </div>
+                                    <div class="flex items-center gap-2">
+                                        <label class="flex items-center gap-1 text-xs">
+                                            <input type="checkbox" name="harga_bulanan[0][is_active]" value="1"
+                                                checked>
+                                            Aktif
+                                        </label>
+                                        <button type="button" onclick="removeHargaRow(this)"
+                                            class="text-red-500 hover:text-red-700 text-sm">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                            @endif
                         </div>
+
+                        <p class="text-xs text-gray-400 mt-2">
+                            <i class="fas fa-info-circle mr-1"></i>
+                            <span class="text-red-500">* Wajib</span> - Tambahkan minimal 1 data harga per bulan untuk
+                            produk ini
+                        </p>
+                        @error('harga_bulanan')
+                            <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+                        @enderror
                     </div>
 
                     <!-- Durasi -->
@@ -328,6 +437,8 @@
 
 @push('scripts')
     <script>
+        let hargaIndex = {{ count(old('harga_bulanan', [])) > 0 ? count(old('harga_bulanan', [])) : 1 }};
+
         // Format Rupiah
         function formatRupiah(element) {
             let value = element.value.replace(/[^,\d]/g, '');
@@ -434,15 +545,80 @@
             document.getElementById('fileName').textContent = '';
         }
 
-        // Form submit - clean harga_dasar
+        // Harga Bulanan Functions
+        function addHargaBulanan() {
+            const container = document.getElementById('hargaBulananList');
+            const row = document.createElement('div');
+            row.className =
+                'harga-row grid grid-cols-1 md:grid-cols-4 gap-3 mb-2 items-end bg-gray-50 p-3 rounded-lg border border-gray-200';
+            row.innerHTML = `
+                <div>
+                    <label class="block text-xs font-medium text-gray-600 mb-1">Bulan <span class="text-red-500">*</span></label>
+                    <select name="harga_bulanan[${hargaIndex}][bulan]"
+                        class="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500" required>
+                        <option value="">Pilih Bulan</option>
+                        @for ($b = 1; $b <= 12; $b++)
+                            <option value="{{ $b }}">{{ \Carbon\Carbon::create()->month($b)->translatedFormat('F') }}</option>
+                        @endfor
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-xs font-medium text-gray-600 mb-1">Tahun <span class="text-red-500">*</span></label>
+                    <select name="harga_bulanan[${hargaIndex}][tahun]"
+                        class="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500" required>
+                        <option value="">Pilih Tahun</option>
+                        @for ($y = date('Y'); $y <= date('Y') + 5; $y++)
+                            <option value="{{ $y }}">{{ $y }}</option>
+                        @endfor
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-xs font-medium text-gray-600 mb-1">Harga (Rp) <span class="text-red-500">*</span></label>
+                    <input type="text" name="harga_bulanan[${hargaIndex}][harga]"
+                        oninput="formatRupiah(this)"
+                        class="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500"
+                        placeholder="0" required>
+                </div>
+                <div class="flex items-center gap-2">
+                    <label class="flex items-center gap-1 text-xs">
+                        <input type="checkbox" name="harga_bulanan[${hargaIndex}][is_active]" value="1" checked>
+                        Aktif
+                    </label>
+                    <button type="button" onclick="removeHargaRow(this)"
+                        class="text-red-500 hover:text-red-700 text-sm">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                </div>
+            `;
+            container.appendChild(row);
+            hargaIndex++;
+        }
+
+        function removeHargaRow(button) {
+            const row = button.closest('.harga-row');
+            const totalRows = document.querySelectorAll('.harga-row').length;
+
+            if (totalRows <= 1) {
+                alert('Minimal harus ada 1 data harga bulanan!');
+                return;
+            }
+
+            if (confirm('Hapus harga bulanan ini?')) {
+                row.remove();
+            }
+        }
+
+        // Form submit - clean harga
         document.addEventListener('DOMContentLoaded', function() {
             const form = document.getElementById('produkForm');
             if (form) {
                 form.addEventListener('submit', function(e) {
-                    const input = document.getElementById('harga_dasar');
-                    if (input) {
-                        input.value = input.value.replace(/\./g, '');
-                    }
+                    // Clean harga bulanan
+                    document.querySelectorAll('[name$="[harga]"]').forEach(input => {
+                        if (input.value) {
+                            input.value = input.value.replace(/\./g, '');
+                        }
+                    });
                 });
             }
 

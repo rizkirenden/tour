@@ -8,10 +8,13 @@ use App\Models\MetodePembayaran;
 use App\Models\JenisTransaksi;
 use App\Models\TransaksiPembayaran;
 use App\Models\Diskon;
+use App\Models\ProdukPaket;
+use App\Models\ProdukHargaBulanan;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Auth;
+use Barryvdh\DomPDF\Facade\Pdf;
 
 class JamaahController extends Controller
 {
@@ -68,8 +71,8 @@ class JamaahController extends Controller
             'kota_asal' => 'required|string|max:50|exists:kota_asals,nama_kota',
             'pulau' => 'nullable|string|max:20',
             'bandara_keberangkatan' => 'nullable|string|max:50',
-            'bulan_keberangkatan' => 'nullable|integer|min:1|max:12',
-            'tahun_keberangkatan' => 'nullable|integer|min:2000|max:' . (date('Y') + 10),
+            'bulan_keberangkatan' => 'required|integer|min:1|max:12',
+            'tahun_keberangkatan' => 'required|integer|min:2000|max:' . (date('Y') + 10),
             'file_ktp_kk' => 'nullable|file|mimes:jpeg,png,jpg,pdf|max:2048',
             'file_vaksin' => 'nullable|file|mimes:jpeg,png,jpg,pdf|max:2048',
             'file_visa' => 'nullable|file|mimes:jpeg,png,jpg,pdf|max:2048',
@@ -170,8 +173,8 @@ class JamaahController extends Controller
             'kota_asal' => 'required|string|max:50|exists:kota_asals,nama_kota',
             'pulau' => 'nullable|string|max:20',
             'bandara_keberangkatan' => 'nullable|string|max:50',
-            'bulan_keberangkatan' => 'nullable|integer|min:1|max:12',
-            'tahun_keberangkatan' => 'nullable|integer|min:2000|max:' . (date('Y') + 10),
+            'bulan_keberangkatan' => 'required|integer|min:1|max:12',
+            'tahun_keberangkatan' => 'required|integer|min:2000|max:' . (date('Y') + 10),
             'file_ktp_kk' => 'nullable|file|mimes:jpeg,png,jpg,pdf|max:2048',
             'file_vaksin' => 'nullable|file|mimes:jpeg,png,jpg,pdf|max:2048',
             'file_visa' => 'nullable|file|mimes:jpeg,png,jpg,pdf|max:2048',
@@ -280,6 +283,10 @@ class JamaahController extends Controller
 
     public function bayar(Request $request, $id)
     {
+        // Clean jumlah_bayar from formatting (remove dots)
+        $jumlahBayarRaw = preg_replace('/[^\d]/', '', $request->input('jumlah_bayar'));
+        $request->merge(['jumlah_bayar' => (int) $jumlahBayarRaw]);
+
         $validated = $request->validate([
             'id_metode_pembayaran' => 'required|exists:metode_pembayarans,id_metode',
             'id_jenis_transaksi' => 'required|exists:jenis_transaksis,id_jenis',
@@ -295,9 +302,10 @@ class JamaahController extends Controller
         $jumlahBayar = $validated['jumlah_bayar'];
         $jenisTransaksi = JenisTransaksi::find($validated['id_jenis_transaksi']);
 
+        // Validate based on transaction type
         if ($jenisTransaksi->kode == 'LUNAS' && $jumlahBayar < ($totalTagihan - $totalDibayarSaatIni)) {
             return redirect()->back()
-                ->with('error', 'Jumlah bayar untuk pelunasan harus sebesar sisa tagihan: ' . number_format($totalTagihan - $totalDibayarSaatIni, 0, ',', '.'));
+                ->with('error', 'Jumlah bayar untuk pelunasan harus sebesar sisa tagihan: Rp ' . number_format($totalTagihan - $totalDibayarSaatIni, 0, ',', '.'));
         }
 
         if ($jumlahBayar > ($totalTagihan - $totalDibayarSaatIni)) {
@@ -326,6 +334,7 @@ class JamaahController extends Controller
         $totalDibayarBaru = $totalDibayarSaatIni + $jumlahBayar;
         $sisaTagihanBaru = $totalTagihan - $totalDibayarBaru;
 
+        // Determine payment status
         if ($sisaTagihanBaru <= 0) {
             $status = 'Lunas';
         } elseif ($totalDibayarBaru == 0) {
@@ -342,6 +351,7 @@ class JamaahController extends Controller
             'status_pembayaran' => $status
         ]);
 
+        // Update keluarga if exists
         if ($jamaah->id_keluarga) {
             $keluargaService = new \App\Services\KeluargaService();
             $keluargaService->recalculateKeluarga($jamaah->id_keluarga);
@@ -373,17 +383,20 @@ class JamaahController extends Controller
         $jamaahId = $transaksi->id_jamaah;
         $jumlahBayar = $transaksi->jumlah_bayar;
 
+        // Delete file bukti
         if ($transaksi->bukti_pembayaran && Storage::disk('public')->exists($transaksi->bukti_pembayaran)) {
             Storage::disk('public')->delete($transaksi->bukti_pembayaran);
         }
 
         $transaksi->delete();
 
+        // Update jamaah
         $jamaah = $this->service->getById($jamaahId);
         $totalTagihan = $jamaah->total_tagihan_setelah_diskon;
         $totalDibayarBaru = $jamaah->transaksis()->sum('jumlah_bayar');
         $sisaTagihanBaru = $totalTagihan - $totalDibayarBaru;
 
+        // Determine payment status
         if ($sisaTagihanBaru <= 0) {
             $status = 'Lunas';
         } elseif ($totalDibayarBaru == 0) {
@@ -400,6 +413,7 @@ class JamaahController extends Controller
             'status_pembayaran' => $status
         ]);
 
+        // Update keluarga if exists
         if ($jamaah->id_keluarga) {
             $keluargaService = new \App\Services\KeluargaService();
             $keluargaService->recalculateKeluarga($jamaah->id_keluarga);
@@ -407,5 +421,120 @@ class JamaahController extends Controller
 
         return redirect()->route('transaksional.jamaah.pembayaran', $jamaahId)
             ->with('success', 'Transaksi pembayaran berhasil dihapus!');
+    }
+
+    // ==========================================
+    // CETAK PDF RIWAYAT PEMBAYARAN DENGAN BASE64
+    // ==========================================
+    public function cetakPdfRiwayat($id)
+    {
+        // Ambil data jamaah dengan relasi
+        $jamaah = $this->service->getByIdWithRelations($id);
+
+        // Ambil transaksi dengan relasi
+        $transaksis = TransaksiPembayaran::with(['metodePembayaran', 'jenisTransaksi'])
+                        ->where('id_jamaah', $id)
+                        ->orderBy('created_at', 'asc')
+                        ->get();
+
+        // Konversi gambar bukti ke base64
+        foreach ($transaksis as $transaksi) {
+            if ($transaksi->bukti_pembayaran) {
+                $fullPath = storage_path('app/public/' . $transaksi->bukti_pembayaran);
+
+                // Cek apakah file exists
+                if (file_exists($fullPath)) {
+                    $extension = strtolower(pathinfo($fullPath, PATHINFO_EXTENSION));
+                    $mimeType = mime_content_type($fullPath);
+
+                    // Baca file dan konversi ke base64
+                    $imageData = base64_encode(file_get_contents($fullPath));
+
+                    // Simpan base64 ke dalam object transaksi
+                    $transaksi->bukti_base64 = 'data:' . $mimeType . ';base64,' . $imageData;
+                    $transaksi->bukti_extension = $extension;
+                    $transaksi->bukti_name = basename($transaksi->bukti_pembayaran);
+                    $transaksi->bukti_exists = true;
+                } else {
+                    $transaksi->bukti_exists = false;
+                    $transaksi->bukti_base64 = null;
+                }
+            } else {
+                $transaksi->bukti_exists = false;
+                $transaksi->bukti_base64 = null;
+            }
+        }
+
+        $data = [
+            'jamaah' => $jamaah,
+            'transaksis' => $transaksis,
+            'total_transaksi' => $transaksis->sum('jumlah_bayar'),
+            'tanggal_cetak' => now()->format('d/m/Y H:i:s'),
+            'dicetak_oleh' => Auth::user()->name ?? 'System'
+        ];
+
+        $pdf = Pdf::loadView('jamaahs.pdf-riwayat', $data);
+        $pdf->setPaper('A4', 'portrait');
+        $pdf->setOptions([
+            'isRemoteEnabled' => true,
+            'isHtml5ParserEnabled' => true,
+            'isPhpEnabled' => true
+        ]);
+
+        return $pdf->download('Riwayat_Pembayaran_' . $jamaah->nama_lengkap . '_' . date('Ymd_His') . '.pdf');
+    }
+
+    // ==========================================
+    // GET HARGA PRODUK BY BULAN & TAHUN (AJAX)
+    // ==========================================
+    public function getHargaProdukByBulan(Request $request)
+    {
+        $request->validate([
+            'produk_paket' => 'required|string|exists:produk_pakets,nama_produk',
+            'bulan' => 'required|integer|min:1|max:12',
+            'tahun' => 'required|integer|min:2000',
+        ]);
+
+        $produk = ProdukPaket::where('nama_produk', $request->produk_paket)->first();
+        if (!$produk) {
+            return response()->json(['error' => 'Produk tidak ditemukan'], 404);
+        }
+
+        // Cari harga berdasarkan bulan dan tahun
+        $harga = ProdukHargaBulanan::where('produk_paket_id', $produk->id_produk)
+            ->where('bulan', $request->bulan)
+            ->where('tahun', $request->tahun)
+            ->where('is_active', true)
+            ->first();
+
+        if ($harga) {
+            return response()->json([
+                'success' => true,
+                'harga' => $harga->harga,
+                'harga_formatted' => $harga->harga_formatted,
+                'flyer' => $harga->flyer_url,
+                'bulan_formatted' => $harga->bulan_formatted,
+                'tahun' => $harga->tahun,
+            ]);
+        }
+
+        // Jika tidak ada harga untuk bulan/tahun tersebut, cari harga pertama yang aktif
+        $hargaDefault = $produk->hargaBulanan()->active()->first();
+        if ($hargaDefault) {
+            return response()->json([
+                'success' => true,
+                'harga' => $hargaDefault->harga,
+                'harga_formatted' => $hargaDefault->harga_formatted,
+                'flyer' => $hargaDefault->flyer_url,
+                'bulan_formatted' => $hargaDefault->bulan_formatted,
+                'tahun' => $hargaDefault->tahun,
+                'warning' => 'Harga untuk bulan/tahun yang dipilih tidak tersedia, menggunakan harga default'
+            ]);
+        }
+
+        return response()->json([
+            'success' => false,
+            'error' => 'Tidak ada harga yang tersedia untuk produk ini'
+        ], 404);
     }
 }

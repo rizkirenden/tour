@@ -4,13 +4,15 @@ namespace App\Services;
 
 use App\Models\ProdukPaket;
 use App\Models\PaketTour;
+use App\Models\ProdukHargaBulanan;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
 
 class ProdukPaketService
 {
     public function getAll(array $filters = [])
     {
-        $query = ProdukPaket::with('paketTour');
+        $query = ProdukPaket::with('paketTour', 'hargaBulanan');
 
         if (!empty($filters['search'])) {
             $search = $filters['search'];
@@ -25,7 +27,7 @@ class ProdukPaketService
 
     public function getById($id)
     {
-        return ProdukPaket::with('paketTour')->findOrFail($id);
+        return ProdukPaket::with('paketTour', 'hargaBulanan')->findOrFail($id);
     }
 
     public function getByIdWithRelations($id)
@@ -33,6 +35,7 @@ class ProdukPaketService
         return ProdukPaket::with([
             'paketTour',
             'paketTour.hotels',
+            'hargaBulanan',
         ])->findOrFail($id);
     }
 
@@ -41,14 +44,11 @@ class ProdukPaketService
         return DB::transaction(function () use ($data) {
             $data['include_tur'] = $data['include_tur'] ?? false;
             $data['is_active'] = $data['is_active'] ?? true;
-            $data['harga_dasar'] = (int) ($data['harga_dasar'] ?? 0);
 
-            // Jika include_tur = false, set paket_tour_id menjadi null
             if (!$data['include_tur']) {
                 $data['paket_tour_id'] = null;
             }
 
-            // Ambil durasi_tour dari paket_tour yang dipilih
             $data['durasi_tour'] = 0;
             if ($data['include_tur'] && !empty($data['paket_tour_id'])) {
                 $paketTour = PaketTour::find($data['paket_tour_id']);
@@ -57,7 +57,6 @@ class ProdukPaketService
                 }
             }
 
-            // Hitung total durasi dari semua komponen
             $totalDurasi = 0;
             $totalDurasi += (int) ($data['durasi_perjalanan'] ?? 0);
             $totalDurasi += (int) ($data['durasi_mekkah'] ?? 0);
@@ -65,11 +64,24 @@ class ProdukPaketService
             $totalDurasi += (int) ($data['durasi_tour'] ?? 0);
             $data['durasi_hari'] = $totalDurasi;
 
-            // Total harga hanya dari harga_dasar
-            $data['total_harga'] = $data['harga_dasar'];
+            $data['total_harga'] = 0;
 
-            // Create produk
             $produk = ProdukPaket::create($data);
+
+            if (!empty($data['harga_bulanan'])) {
+                foreach ($data['harga_bulanan'] as $hargaData) {
+                    if (!empty($hargaData['bulan']) && !empty($hargaData['tahun']) && isset($hargaData['harga'])) {
+                        $harga = ProdukHargaBulanan::create([
+                            'produk_paket_id' => $produk->id_produk,
+                            'bulan' => $hargaData['bulan'],
+                            'tahun' => $hargaData['tahun'],
+                            'harga' => (int) $hargaData['harga'],
+                            'flyer' => $hargaData['flyer'] ?? null,
+                            'is_active' => $hargaData['is_active'] ?? true,
+                        ]);
+                    }
+                }
+            }
 
             return $produk->fresh();
         });
@@ -82,14 +94,11 @@ class ProdukPaketService
 
             $data['include_tur'] = $data['include_tur'] ?? false;
             $data['is_active'] = $data['is_active'] ?? true;
-            $data['harga_dasar'] = (int) ($data['harga_dasar'] ?? 0);
 
-            // Jika include_tur = false, set paket_tour_id menjadi null
             if (!$data['include_tur']) {
                 $data['paket_tour_id'] = null;
             }
 
-            // Ambil durasi_tour dari paket_tour yang dipilih
             $data['durasi_tour'] = 0;
             if ($data['include_tur'] && !empty($data['paket_tour_id'])) {
                 $paketTour = PaketTour::find($data['paket_tour_id']);
@@ -98,7 +107,6 @@ class ProdukPaketService
                 }
             }
 
-            // Hitung total durasi dari semua komponen
             $totalDurasi = 0;
             $totalDurasi += (int) ($data['durasi_perjalanan'] ?? 0);
             $totalDurasi += (int) ($data['durasi_mekkah'] ?? 0);
@@ -106,11 +114,60 @@ class ProdukPaketService
             $totalDurasi += (int) ($data['durasi_tour'] ?? 0);
             $data['durasi_hari'] = $totalDurasi;
 
-            // Total harga hanya dari harga_dasar
-            $data['total_harga'] = $data['harga_dasar'];
-
-            // Update produk
             $produk->update($data);
+
+            if (isset($data['harga_bulanan'])) {
+                $idsToKeep = [];
+                foreach ($data['harga_bulanan'] as $hargaData) {
+                    if (!empty($hargaData['id'])) {
+                        $idsToKeep[] = $hargaData['id'];
+                    }
+                }
+
+                if (!empty($idsToKeep)) {
+                    // Hapus flyer dari harga yang akan dihapus
+                    $toDelete = $produk->hargaBulanan()->whereNotIn('id', $idsToKeep)->get();
+                    foreach ($toDelete as $harga) {
+                        if ($harga->flyer && Storage::disk('public')->exists($harga->flyer)) {
+                            Storage::disk('public')->delete($harga->flyer);
+                        }
+                    }
+                    $produk->hargaBulanan()->whereNotIn('id', $idsToKeep)->delete();
+                } else {
+                    // Hapus semua flyer
+                    foreach ($produk->hargaBulanan as $harga) {
+                        if ($harga->flyer && Storage::disk('public')->exists($harga->flyer)) {
+                            Storage::disk('public')->delete($harga->flyer);
+                        }
+                    }
+                    $produk->hargaBulanan()->delete();
+                }
+
+                foreach ($data['harga_bulanan'] as $hargaData) {
+                    if (!empty($hargaData['bulan']) && !empty($hargaData['tahun']) && isset($hargaData['harga'])) {
+                        if (!empty($hargaData['id'])) {
+                            // Update existing - flyer sudah ditangani di controller
+                            ProdukHargaBulanan::where('id', $hargaData['id'])->update([
+                                'bulan' => $hargaData['bulan'],
+                                'tahun' => $hargaData['tahun'],
+                                'harga' => (int) $hargaData['harga'],
+                                'flyer' => $hargaData['flyer'] ?? null,
+                                'is_active' => $hargaData['is_active'] ?? true,
+                            ]);
+                        } else {
+                            // Create new
+                            ProdukHargaBulanan::create([
+                                'produk_paket_id' => $produk->id_produk,
+                                'bulan' => $hargaData['bulan'],
+                                'tahun' => $hargaData['tahun'],
+                                'harga' => (int) $hargaData['harga'],
+                                'flyer' => $hargaData['flyer'] ?? null,
+                                'is_active' => $hargaData['is_active'] ?? true,
+                            ]);
+                        }
+                    }
+                }
+            }
 
             return $produk->fresh();
         });
@@ -121,6 +178,15 @@ class ProdukPaketService
         return DB::transaction(function () use ($id) {
             $produk = $this->getById($id);
             $nama = $produk->nama_produk;
+
+            // Hapus flyer dari semua harga bulanan
+            foreach ($produk->hargaBulanan as $harga) {
+                if ($harga->flyer && Storage::disk('public')->exists($harga->flyer)) {
+                    Storage::disk('public')->delete($harga->flyer);
+                }
+            }
+
+            $produk->hargaBulanan()->delete();
             $produk->delete();
             return $nama;
         });

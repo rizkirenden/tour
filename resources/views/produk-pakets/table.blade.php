@@ -7,8 +7,8 @@
                 </th>
                 <th class="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Kategori
                 </th>
-                <th class="px-4 py-3 text-right text-xs font-semibold text-gray-500 uppercase tracking-wider">Harga Dasar
-                </th>
+                <th class="px-4 py-3 text-center text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                    Harga/Bulan</th>
                 <th class="px-4 py-3 text-center text-xs font-semibold text-gray-500 uppercase tracking-wider">Durasi
                 </th>
                 <th class="px-4 py-3 text-center text-xs font-semibold text-gray-500 uppercase tracking-wider">Include
@@ -33,8 +33,19 @@
                     <td class="px-4 py-3">
                         <span class="text-sm text-gray-600">{{ $item->kategori ?? '-' }}</span>
                     </td>
-                    <td class="px-4 py-3 text-right font-bold text-yellow-600">
-                        {{ $item->harga_dasar_formatted }}
+                    <td class="px-4 py-3 text-center">
+                        @if ($item->hargaBulanan->count() > 0)
+                            <span
+                                class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-700">
+                                <i class="fas fa-calendar-alt mr-1"></i>
+                                {{ $item->hargaBulanan->count() }}
+                            </span>
+                            <div class="text-xs text-gray-400 mt-1">
+                                {{ $item->hargaBulanan->first()->harga_formatted ?? '' }}
+                            </div>
+                        @else
+                            <span class="text-xs text-gray-400">-</span>
+                        @endif
                     </td>
                     <td class="px-4 py-3 text-center">
                         <span class="text-sm font-medium text-gray-700">{{ $item->durasi_hari }} Hari</span>

@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Models\Keluarga;
 use App\Models\Jamaah;
 use App\Models\ProdukPaket;
+use App\Models\ProdukHargaBulanan;
 use App\Models\KotaAsal;
 use App\Models\Diskon;
 use Illuminate\Support\Facades\DB;
@@ -43,8 +44,8 @@ class KeluargaService
             $data['kode_keluarga'] = Keluarga::generateKodeKeluarga();
 
             // Set default values
-            $data['fee_agent'] = $data['fee_agent'] ?? 0;
-            $data['total_dibayar'] = $data['total_dibayar'] ?? 0;
+            $data['fee_agent'] = (int) ($data['fee_agent'] ?? 0);
+            $data['total_dibayar'] = (int) ($data['total_dibayar'] ?? 0);
 
             // Ambil data diskon dari ID (nilai diskon per orang)
             $nilaiDiskonPerOrang = 0;
@@ -58,18 +59,34 @@ class KeluargaService
 
             // Ambil produk paket dari keluarga
             $produkKeluarga = ProdukPaket::where('nama_produk', $data['produk_paket'])->first();
-            $hargaProduk = $produkKeluarga ? $produkKeluarga->total_harga : 0;
+            $hargaProduk = 0;
+            
+            if ($produkKeluarga) {
+                // Cari harga berdasarkan bulan dan tahun keberangkatan
+                $harga = ProdukHargaBulanan::where('produk_paket_id', $produkKeluarga->id_produk)
+                    ->where('bulan', $data['bulan_keberangkatan'])
+                    ->where('tahun', $data['tahun_keberangkatan'])
+                    ->where('is_active', true)
+                    ->first();
+                
+                if ($harga) {
+                    $hargaProduk = $harga->harga;
+                } else {
+                    // Jika tidak ada, ambil harga pertama yang aktif
+                    $hargaDefault = $produkKeluarga->hargaBulanan()->active()->first();
+                    if ($hargaDefault) {
+                        $hargaProduk = $hargaDefault->harga;
+                    }
+                }
+            }
 
-            // Hitung total tagihan
+            // Hitung total tagihan (HANYA harga produk, fee agent tidak termasuk)
             $totalTagihan = 0;
             $jumlahAnggota = count($data['jamaahs'] ?? []);
 
             if (!empty($data['jamaahs']) && $jumlahAnggota > 0) {
-                $feeAgentPerOrang = $data['fee_agent'] / $jumlahAnggota;
-
                 foreach ($data['jamaahs'] as $jamaahData) {
-                    $jamaahData['produk_paket'] = $data['produk_paket'];
-                    $totalTagihan += $hargaProduk + $feeAgentPerOrang;
+                    $totalTagihan += $hargaProduk;
                 }
             }
 
@@ -83,15 +100,7 @@ class KeluargaService
             $data['sisa_tagihan'] = $data['total_tagihan_setelah_diskon'] - $data['total_dibayar'];
 
             // Tentukan status pembayaran
-            if ($data['total_dibayar'] == 0) {
-                $data['status_pembayaran'] = 'Belum Bayar';
-            } elseif ($data['total_dibayar'] >= $data['total_tagihan_setelah_diskon']) {
-                $data['status_pembayaran'] = 'Lunas';
-            } elseif ($data['total_dibayar'] >= $data['total_tagihan_setelah_diskon'] * 0.5) {
-                $data['status_pembayaran'] = 'Setoran';
-            } else {
-                $data['status_pembayaran'] = 'DP';
-            }
+            $data['status_pembayaran'] = $this->determinePaymentStatus($data['total_dibayar'], $data['total_tagihan_setelah_diskon']);
 
             // Create Keluarga
             $keluarga = Keluarga::create($data);
@@ -103,13 +112,18 @@ class KeluargaService
 
             // Create Jamaah anggota keluarga
             if (!empty($data['jamaahs'])) {
-                $feeAgentPerOrang = $data['fee_agent'] / $jumlahAnggota;
                 $diskonPerOrang = $nilaiDiskonPerOrang;
 
                 foreach ($data['jamaahs'] as $index => $jamaahData) {
                     $jamaahData['id_keluarga'] = $keluarga->id_keluarga;
                     $jamaahData['is_kepala_keluarga'] = $jamaahData['is_kepala_keluarga'] ?? false;
                     $jamaahData['produk_paket'] = $data['produk_paket'];
+                    
+                    // ==========================================
+                    // SET FEE AGENT DARI KELUARGA
+                    // ==========================================
+                    $jamaahData['fee_agent'] = (int) ($data['fee_agent'] ?? 0);
+                    $jamaahData['agent_name'] = $data['agent'] ?? null;
 
                     // Pendampingan per jamaah
                     $jamaahData['pendampingan_nama'] = $jamaahData['pendampingan_nama'] ?? null;
@@ -124,7 +138,8 @@ class KeluargaService
                     $jamaahData['bulan_keberangkatan'] = $jamaahData['bulan_keberangkatan'] ?? $keluarga->bulan_keberangkatan;
                     $jamaahData['tahun_keberangkatan'] = $jamaahData['tahun_keberangkatan'] ?? $keluarga->tahun_keberangkatan;
 
-                    $totalTagihanJamaah = $hargaProduk + $feeAgentPerOrang;
+                    // Tagihan per jamaah = harga produk (tanpa fee agent)
+                    $totalTagihanJamaah = $hargaProduk;
                     $diskonJamaah = $diskonPerOrang;
 
                     $jamaahData['total_tagihan_sebelum_diskon'] = $totalTagihanJamaah;
@@ -158,7 +173,29 @@ class KeluargaService
                 }
             }
 
+            // Ambil produk paket
+            $produkKeluarga = ProdukPaket::where('nama_produk', $data['produk_paket'])->first();
+            $hargaProduk = 0;
+            
+            if ($produkKeluarga) {
+                $harga = ProdukHargaBulanan::where('produk_paket_id', $produkKeluarga->id_produk)
+                    ->where('bulan', $data['bulan_keberangkatan'])
+                    ->where('tahun', $data['tahun_keberangkatan'])
+                    ->where('is_active', true)
+                    ->first();
+                
+                if ($harga) {
+                    $hargaProduk = $harga->harga;
+                } else {
+                    $hargaDefault = $produkKeluarga->hargaBulanan()->active()->first();
+                    if ($hargaDefault) {
+                        $hargaProduk = $hargaDefault->harga;
+                    }
+                }
+            }
+
             // Update data keluarga
+            $data['fee_agent'] = (int) ($data['fee_agent'] ?? 0);
             $data['nilai_diskon'] = $nilaiDiskonPerOrang;
             $keluarga->update($data);
 
@@ -179,16 +216,19 @@ class KeluargaService
                 $existingIds = collect($data['jamaahs'])->pluck('id_jamaah')->filter()->toArray();
                 $keluarga->jamaahs()->whereNotIn('id_jamaah', $existingIds)->delete();
 
-                $produkKeluarga = ProdukPaket::where('nama_produk', $data['produk_paket'])->first();
-                $hargaProduk = $produkKeluarga ? $produkKeluarga->total_harga : 0;
                 $jumlahAnggota = count($data['jamaahs']);
-                $feeAgentPerOrang = $data['fee_agent'] / max($jumlahAnggota, 1);
                 $diskonPerOrang = $nilaiDiskonPerOrang;
 
                 foreach ($data['jamaahs'] as $index => $jamaahData) {
                     $jamaahData['id_keluarga'] = $keluarga->id_keluarga;
                     $jamaahData['produk_paket'] = $data['produk_paket'];
                     $jamaahData['nilai_diskon'] = $diskonPerOrang;
+                    
+                    // ==========================================
+                    // SET FEE AGENT DARI KELUARGA
+                    // ==========================================
+                    $jamaahData['fee_agent'] = (int) ($data['fee_agent'] ?? 0);
+                    $jamaahData['agent_name'] = $data['agent'] ?? null;
 
                     // Pendampingan per jamaah
                     $jamaahData['pendampingan_nama'] = $jamaahData['pendampingan_nama'] ?? null;
@@ -204,7 +244,8 @@ class KeluargaService
                         $jamaahData['bulan_keberangkatan'] = $jamaahData['bulan_keberangkatan'] ?? $keluarga->bulan_keberangkatan;
                         $jamaahData['tahun_keberangkatan'] = $jamaahData['tahun_keberangkatan'] ?? $keluarga->tahun_keberangkatan;
 
-                        $totalTagihanJamaah = $hargaProduk + $feeAgentPerOrang;
+                        // Tagihan per jamaah = harga produk (tanpa fee agent)
+                        $totalTagihanJamaah = $hargaProduk;
                         $diskonJamaah = $diskonPerOrang;
 
                         $jamaahData['total_tagihan_sebelum_diskon'] = $totalTagihanJamaah;
