@@ -348,18 +348,20 @@
                             </div>
                         </div>
 
-                        <!-- Pendampingan Section dengan Total -->
+                        <!-- Pendampingan Section - PERBAIKAN TERBARU -->
                         <div class="bg-green-50 rounded-xl p-4 border border-green-100">
                             <h6 class="text-xs font-semibold text-green-700 mb-3 flex items-center">
                                 <i class="fas fa-users text-green-500 mr-1"></i> Pendampingan
                             </h6>
-                            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+
+                            <!-- Nama Pendamping & Fee Pendamping -->
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                                 <div>
                                     <label class="block text-sm font-medium text-gray-700 mb-1.5">Nama Pendamping</label>
                                     <input type="text" name="pendampingan_nama" id="pendampingan_nama"
                                         value="{{ old('pendampingan_nama', $jamaah->pendampingan_nama) }}"
                                         class="w-full px-4 py-2 border border-gray-200 rounded-xl focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500 text-sm"
-                                        placeholder="Nama Pendamping" oninput="updateTotalPendampingan()">
+                                        placeholder="Nama Pendamping">
                                     @error('pendampingan_nama')
                                         <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
                                     @enderror
@@ -378,20 +380,41 @@
                                         <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
                                     @enderror
                                 </div>
-                                <div>
-                                    <label class="block text-sm font-medium text-gray-700 mb-1.5">Fee Petugas</label>
-                                    <div class="relative">
-                                        <span
-                                            class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm">Rp</span>
-                                        <input type="text" name="pendampingan_fee_petugas"
-                                            id="pendampingan_fee_petugas"
-                                            value="{{ old('pendampingan_fee_petugas', number_format($jamaah->pendampingan_fee_petugas, 0, ',', '.')) }}"
-                                            class="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-xl focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500 text-sm"
-                                            placeholder="0" oninput="formatRupiah(this); updateTotalPendampingan();">
+                            </div>
+
+                            <!-- BUTTON untuk Menampilkan Fee Petugas -->
+                            <div class="mt-3 pt-3 border-t border-green-200">
+                                <button type="button" id="btnShowFeePetugas" onclick="showFeePetugas()"
+                                    class="inline-flex items-center px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition text-sm font-medium
+                                    {{ $jamaah->pendampingan_fee_petugas > 0 ? 'hidden' : '' }}">
+                                    <i class="fas fa-plus mr-2"></i> Tambah Fee Petugas
+                                </button>
+                                <button type="button" id="btnHideFeePetugas" onclick="hideFeePetugas()"
+                                    class="inline-flex items-center px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition text-sm font-medium
+                                    {{ $jamaah->pendampingan_fee_petugas > 0 ? '' : 'hidden' }}">
+                                    <i class="fas fa-times mr-2"></i> Hapus Fee Petugas
+                                </button>
+                            </div>
+
+                            <!-- Fee Petugas -->
+                            <div id="feePetugasContainer" class="mt-3"
+                                style="display: {{ $jamaah->pendampingan_fee_petugas > 0 ? 'block' : 'none' }};">
+                                <div class="grid grid-cols-1 md:grid-cols-1 gap-4">
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 mb-1.5">Fee Petugas</label>
+                                        <div class="relative">
+                                            <span
+                                                class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm">Rp</span>
+                                            <input type="text" name="pendampingan_fee_petugas"
+                                                id="pendampingan_fee_petugas"
+                                                value="{{ old('pendampingan_fee_petugas', number_format($jamaah->pendampingan_fee_petugas, 0, ',', '.')) }}"
+                                                class="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-xl focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500 text-sm"
+                                                placeholder="0" oninput="formatRupiah(this); updateTotalPendampingan();">
+                                        </div>
+                                        @error('pendampingan_fee_petugas')
+                                            <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+                                        @enderror
                                     </div>
-                                    @error('pendampingan_fee_petugas')
-                                        <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
-                                    @enderror
                                 </div>
                             </div>
 
@@ -409,7 +432,7 @@
                                 </div>
                                 <p class="text-xs text-gray-400 mt-1">
                                     <i class="fas fa-info-circle mr-1"></i>
-                                    Total = Fee Pendamping + Fee Petugas
+                                    Total = Fee Pendamping + Fee Petugas (jika ada)
                                 </p>
                             </div>
                         </div>
@@ -659,31 +682,70 @@
             }
 
             // ==========================================
-            // UPDATE TOTAL PENDAMPINGAN
+            // SHOW FEE PETUGAS - EDIT
+            // ==========================================
+            function showFeePetugas() {
+                var container = document.getElementById('feePetugasContainer');
+                var btnShow = document.getElementById('btnShowFeePetugas');
+                var btnHide = document.getElementById('btnHideFeePetugas');
+
+                container.style.display = 'block';
+                btnShow.classList.add('hidden');
+                btnHide.classList.remove('hidden');
+
+                document.getElementById('pendampingan_fee_petugas').focus();
+                updateTotalPendampingan();
+            }
+
+            // ==========================================
+            // HIDE FEE PETUGAS - EDIT
+            // ==========================================
+            function hideFeePetugas() {
+                var container = document.getElementById('feePetugasContainer');
+                var btnShow = document.getElementById('btnShowFeePetugas');
+                var btnHide = document.getElementById('btnHideFeePetugas');
+                var input = document.getElementById('pendampingan_fee_petugas');
+
+                container.style.display = 'none';
+                btnShow.classList.remove('hidden');
+                btnHide.classList.add('hidden');
+                input.value = '0';
+
+                updateTotalPendampingan();
+            }
+
+            // ==========================================
+            // UPDATE TOTAL PENDAMPINGAN - EDIT
             // ==========================================
             function updateTotalPendampingan() {
-                const feeInput = document.getElementById('pendampingan_fee');
-                const petugasInput = document.getElementById('pendampingan_fee_petugas');
-                const totalDisplay = document.getElementById('totalPendampinganDisplay');
+                var feeInput = document.getElementById('pendampingan_fee');
+                var petugasInput = document.getElementById('pendampingan_fee_petugas');
+                var totalDisplay = document.getElementById('totalPendampinganDisplay');
+                var container = document.getElementById('feePetugasContainer');
 
-                if (feeInput && petugasInput && totalDisplay) {
-                    const fee = parseInt(feeInput.value.replace(/\./g, '')) || 0;
-                    const petugas = parseInt(petugasInput.value.replace(/\./g, '')) || 0;
-                    const total = fee + petugas;
+                if (feeInput && totalDisplay) {
+                    var fee = parseInt(feeInput.value.replace(/\./g, '')) || 0;
+                    var petugas = 0;
+
+                    if (container.style.display !== 'none') {
+                        petugas = parseInt(petugasInput.value.replace(/\./g, '')) || 0;
+                    }
+
+                    var total = fee + petugas;
                     totalDisplay.textContent = 'Rp ' + total.toLocaleString('id-ID');
                 }
             }
 
             // Preview file function
             function previewFile(input, previewId) {
-                const preview = document.getElementById(previewId);
-                const nameSpan = document.getElementById(previewId + '_name');
+                var preview = document.getElementById(previewId);
+                var nameSpan = document.getElementById(previewId + '_name');
 
                 if (input.files && input.files[0]) {
-                    const file = input.files[0];
-                    const ext = file.name.split('.').pop().toLowerCase();
-                    const isPDF = ext === 'pdf';
-                    const isImage = ['jpg', 'jpeg', 'png'].includes(ext);
+                    var file = input.files[0];
+                    var ext = file.name.split('.').pop().toLowerCase();
+                    var isPDF = ext === 'pdf';
+                    var isImage = ['jpg', 'jpeg', 'png'].includes(ext);
 
                     if (isPDF || isImage) {
                         preview.classList.remove('hidden');
@@ -692,7 +754,7 @@
                         }
 
                         if (isImage) {
-                            const reader = new FileReader();
+                            var reader = new FileReader();
                             reader.onload = function(e) {
                                 preview.innerHTML = `
                                     <img src="${e.target.result}" class="w-16 h-16 object-cover rounded-lg border border-gray-200">
@@ -721,9 +783,9 @@
 
             // Auto fill pulau dan bandara
             document.getElementById('kota_asal').addEventListener('change', function() {
-                const selectedOption = this.options[this.selectedIndex];
-                const pulau = selectedOption.dataset.pulau || '';
-                const bandara = selectedOption.dataset.bandara || '';
+                var selectedOption = this.options[this.selectedIndex];
+                var pulau = selectedOption.dataset.pulau || '';
+                var bandara = selectedOption.dataset.bandara || '';
 
                 document.getElementById('pulau').value = pulau;
                 document.getElementById('bandara_keberangkatan').value = bandara;
@@ -733,35 +795,36 @@
             // AMBIL HARGA PRODUK BERDASARKAN BULAN & TAHUN
             // ==========================================
             function getHargaProduk() {
-                const produkPaket = document.getElementById('produk_paket');
-                const bulan = document.getElementById('bulan_keberangkatan');
-                const tahun = document.getElementById('tahun_keberangkatan');
-                const hargaInfo = document.getElementById('hargaInfo');
-                const hargaDisplay = document.getElementById('hargaProdukDisplay');
-                const hargaBulanTahun = document.getElementById('hargaBulanTahun');
-                const warningDiv = document.getElementById('hargaWarning');
-                const warningText = document.getElementById('hargaWarningText');
-                const flyerContainer = document.getElementById('flyerContainer');
-                const flyerPreview = document.getElementById('flyerPreview');
+                var produkPaket = document.getElementById('produk_paket');
+                var bulan = document.getElementById('bulan_keberangkatan');
+                var tahun = document.getElementById('tahun_keberangkatan');
+                var hargaInfo = document.getElementById('hargaInfo');
+                var hargaDisplay = document.getElementById('hargaProdukDisplay');
+                var hargaBulanTahun = document.getElementById('hargaBulanTahun');
+                var warningDiv = document.getElementById('hargaWarning');
+                var warningText = document.getElementById('hargaWarningText');
+                var flyerContainer = document.getElementById('flyerContainer');
+                var flyerPreview = document.getElementById('flyerPreview');
 
                 if (!produkPaket.value || !bulan.value || !tahun.value) {
                     hargaInfo.classList.add('hidden');
                     return;
                 }
 
-                // Tampilkan loading
                 hargaDisplay.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Memuat...';
                 hargaInfo.classList.remove('hidden');
 
                 fetch(
                         `{{ route('transaksional.get-harga-produk-by-bulan') }}?produk_paket=${encodeURIComponent(produkPaket.value)}&bulan=${bulan.value}&tahun=${tahun.value}`
                     )
-                    .then(response => response.json())
-                    .then(data => {
+                    .then(function(response) {
+                        return response.json();
+                    })
+                    .then(function(data) {
                         if (data.success) {
-                            const bulanName = getBulanName(data.bulan || bulan.value);
+                            var bulanName = getBulanName(data.bulan || bulan.value);
                             hargaDisplay.textContent = data.harga_formatted;
-                            hargaBulanTahun.textContent = `${bulanName} ${data.tahun || tahun.value}`;
+                            hargaBulanTahun.textContent = bulanName + ' ' + (data.tahun || tahun.value);
 
                             if (data.warning) {
                                 warningDiv.classList.remove('hidden');
@@ -770,7 +833,6 @@
                                 warningDiv.classList.add('hidden');
                             }
 
-                            // Update flyer jika ada
                             if (data.flyer) {
                                 flyerContainer.classList.remove('hidden');
                                 flyerPreview.src = data.flyer;
@@ -784,14 +846,14 @@
                             flyerContainer.classList.add('hidden');
                         }
                     })
-                    .catch(error => {
+                    .catch(function(error) {
                         console.error('Error:', error);
                         hargaDisplay.textContent = 'Error memuat harga';
                     });
             }
 
             function getBulanName(bulan) {
-                const namaBulan = [
+                var namaBulan = [
                     'Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni',
                     'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'
                 ];
@@ -800,17 +862,16 @@
 
             // Trigger on page load
             document.addEventListener('DOMContentLoaded', function() {
-                const kotaAsal = document.getElementById('kota_asal');
+                var kotaAsal = document.getElementById('kota_asal');
                 if (kotaAsal.value) {
-                    const selectedOption = kotaAsal.options[kotaAsal.selectedIndex];
+                    var selectedOption = kotaAsal.options[kotaAsal.selectedIndex];
                     document.getElementById('pulau').value = selectedOption.dataset.pulau || '';
                     document.getElementById('bandara_keberangkatan').value = selectedOption.dataset.bandara || '';
                 }
 
-                // Event listener untuk produk, bulan, tahun
-                const produkPaket = document.getElementById('produk_paket');
-                const bulan = document.getElementById('bulan_keberangkatan');
-                const tahun = document.getElementById('tahun_keberangkatan');
+                var produkPaket = document.getElementById('produk_paket');
+                var bulan = document.getElementById('bulan_keberangkatan');
+                var tahun = document.getElementById('tahun_keberangkatan');
 
                 if (produkPaket) {
                     produkPaket.addEventListener('change', getHargaProduk);
@@ -822,21 +883,20 @@
                     tahun.addEventListener('change', getHargaProduk);
                 }
 
-                // Panggil pertama kali jika ada nilai
                 if (produkPaket && produkPaket.value && bulan && bulan.value && tahun && tahun.value) {
                     getHargaProduk();
                 }
 
-                // Update total pendampingan awal
+                // Inisialisasi total pendampingan
                 updateTotalPendampingan();
 
                 // Form submit - clean semua input rupiah
-                const form = document.getElementById('jamaahForm');
+                var form = document.getElementById('jamaahForm');
                 if (form) {
                     form.addEventListener('submit', function(e) {
-                        const rupiahInputs = ['fee_agent', 'pendampingan_fee', 'pendampingan_fee_petugas'];
+                        var rupiahInputs = ['fee_agent', 'pendampingan_fee', 'pendampingan_fee_petugas'];
                         rupiahInputs.forEach(function(id) {
-                            const input = document.getElementById(id);
+                            var input = document.getElementById(id);
                             if (input) {
                                 input.value = input.value.replace(/\./g, '');
                             }

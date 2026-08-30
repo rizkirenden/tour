@@ -323,7 +323,7 @@
                             </div>
                         </div>
 
-                        <!-- Pendampingan Section dengan Toggle Fee Petugas -->
+                        <!-- Pendampingan Section - PERBAIKAN TERBARU -->
                         <div class="bg-green-50 rounded-xl p-4 border border-green-100">
                             <h6 class="text-xs font-semibold text-green-700 mb-3 flex items-center">
                                 <i class="fas fa-users text-green-500 mr-1"></i> Pendampingan
@@ -357,24 +357,20 @@
                                 </div>
                             </div>
 
-                            <!-- Toggle Fee Petugas -->
+                            <!-- BUTTON untuk Menampilkan Fee Petugas -->
                             <div class="mt-3 pt-3 border-t border-green-200">
-                                <label class="flex items-center gap-2 cursor-pointer">
-                                    <input type="checkbox" id="toggleFeePetugasCreate"
-                                        {{ old('pendampingan_fee_petugas', 0) > 0 ? 'checked' : '' }}
-                                        onchange="toggleFeePetugasCreate()"
-                                        class="w-4 h-4 text-green-500 border-gray-300 rounded focus:ring-green-500">
-                                    <span class="text-sm font-medium text-gray-700">
-                                        <i class="fas fa-user-cog mr-1"></i>
-                                        Ada Fee Petugas
-                                    </span>
-                                    <span class="text-xs text-gray-400">(centang untuk mengaktifkan)</span>
-                                </label>
+                                <button type="button" id="btnShowFeePetugas" onclick="showFeePetugas()"
+                                    class="inline-flex items-center px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition text-sm font-medium">
+                                    <i class="fas fa-plus mr-2"></i> Tambah Fee Petugas
+                                </button>
+                                <button type="button" id="btnHideFeePetugas" onclick="hideFeePetugas()"
+                                    class="inline-flex items-center px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition text-sm font-medium hidden">
+                                    <i class="fas fa-times mr-2"></i> Hapus Fee Petugas
+                                </button>
                             </div>
 
-                            <!-- Fee Petugas (Toggle) -->
-                            <div id="feePetugasContainerCreate"
-                                class="mt-3 {{ old('pendampingan_fee_petugas', 0) > 0 ? '' : 'hidden' }}">
+                            <!-- Fee Petugas -->
+                            <div id="feePetugasContainer" class="mt-3 hidden">
                                 <div class="grid grid-cols-1 md:grid-cols-1 gap-4">
                                     <div>
                                         <label class="block text-sm font-medium text-gray-700 mb-1.5">Fee Petugas</label>
@@ -382,11 +378,10 @@
                                             <span
                                                 class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm">Rp</span>
                                             <input type="text" name="pendampingan_fee_petugas"
-                                                id="pendampingan_fee_petugas_create"
+                                                id="pendampingan_fee_petugas"
                                                 value="{{ old('pendampingan_fee_petugas', 0) }}"
                                                 class="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-xl focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500 text-sm"
-                                                placeholder="0"
-                                                oninput="formatRupiah(this); updateTotalPendampinganCreate();">
+                                                placeholder="0" oninput="formatRupiah(this); updateTotalPendampingan();">
                                         </div>
                                         @error('pendampingan_fee_petugas')
                                             <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
@@ -402,7 +397,7 @@
                                         <i class="fas fa-calculator text-green-500 mr-1"></i>
                                         Total Pendampingan
                                     </p>
-                                    <p class="text-sm font-bold text-blue-600" id="totalPendampinganDisplayCreate">
+                                    <p class="text-sm font-bold text-blue-600" id="totalPendampinganDisplay">
                                         Rp 0
                                     </p>
                                 </div>
@@ -585,61 +580,71 @@
             }
 
             // ==========================================
-            // TOGGLE FEE PETUGAS - CREATE
+            // SHOW FEE PETUGAS
             // ==========================================
-            function toggleFeePetugasCreate() {
-                const checkbox = document.getElementById('toggleFeePetugasCreate');
-                const container = document.getElementById('feePetugasContainerCreate');
-                const input = document.getElementById('pendampingan_fee_petugas_create');
+            function showFeePetugas() {
+                var container = document.getElementById('feePetugasContainer');
+                var btnShow = document.getElementById('btnShowFeePetugas');
+                var btnHide = document.getElementById('btnHideFeePetugas');
 
-                if (checkbox.checked) {
-                    container.classList.remove('hidden');
-                    container.style.display = 'block';
-                    if (input && input.value === '0') {
-                        input.value = '';
-                    }
-                } else {
-                    container.classList.add('hidden');
-                    container.style.display = 'none';
-                    if (input) {
-                        input.value = '0';
-                    }
-                }
-                updateTotalPendampinganCreate();
+                container.style.display = 'block';
+                btnShow.classList.add('hidden');
+                btnHide.classList.remove('hidden');
+
+                document.getElementById('pendampingan_fee_petugas').focus();
+                updateTotalPendampingan();
             }
 
             // ==========================================
-            // UPDATE TOTAL PENDAMPINGAN - CREATE
+            // HIDE FEE PETUGAS
             // ==========================================
-            function updateTotalPendampinganCreate() {
-                const feeInput = document.getElementById('pendampingan_fee');
-                const petugasInput = document.getElementById('pendampingan_fee_petugas_create');
-                const totalDisplay = document.getElementById('totalPendampinganDisplayCreate');
-                const checkbox = document.getElementById('toggleFeePetugasCreate');
+            function hideFeePetugas() {
+                var container = document.getElementById('feePetugasContainer');
+                var btnShow = document.getElementById('btnShowFeePetugas');
+                var btnHide = document.getElementById('btnHideFeePetugas');
+                var input = document.getElementById('pendampingan_fee_petugas');
+
+                container.style.display = 'none';
+                btnShow.classList.remove('hidden');
+                btnHide.classList.add('hidden');
+                input.value = '0';
+
+                updateTotalPendampingan();
+            }
+
+            // ==========================================
+            // UPDATE TOTAL PENDAMPINGAN
+            // ==========================================
+            function updateTotalPendampingan() {
+                var feeInput = document.getElementById('pendampingan_fee');
+                var petugasInput = document.getElementById('pendampingan_fee_petugas');
+                var totalDisplay = document.getElementById('totalPendampinganDisplay');
+                var container = document.getElementById('feePetugasContainer');
 
                 if (feeInput && totalDisplay) {
-                    const fee = parseInt(feeInput.value.replace(/\./g, '')) || 0;
-                    let petugas = 0;
+                    var fee = parseInt(feeInput.value.replace(/\./g, '')) || 0;
+                    var petugas = 0;
 
-                    if (checkbox && checkbox.checked && petugasInput) {
+                    // Hanya ambil nilai petugas jika container visible
+                    if (container.style.display !== 'none') {
                         petugas = parseInt(petugasInput.value.replace(/\./g, '')) || 0;
                     }
 
-                    const total = fee + petugas;
+                    var total = fee + petugas;
                     totalDisplay.textContent = 'Rp ' + total.toLocaleString('id-ID');
                 }
             }
 
             // Preview file function
             function previewFile(input, previewId) {
-                const preview = document.getElementById(previewId);
-                const nameSpan = document.getElementById(previewId + '_name');
+                var preview = document.getElementById(previewId);
+                var nameSpan = document.getElementById(previewId + '_name');
 
                 if (input.files && input.files[0]) {
-                    const file = input.files[0];
-                    const ext = file.name.split('.').pop().toLowerCase();
-                    const isPDF = ext === 'pdf';
-                    const isImage = ['jpg', 'jpeg', 'png'].includes(ext);
+                    var file = input.files[0];
+                    var ext = file.name.split('.').pop().toLowerCase();
+                    var isPDF = ext === 'pdf';
+                    var isImage = ['jpg', 'jpeg', 'png'].includes(ext);
 
                     if (isPDF || isImage) {
                         preview.classList.remove('hidden');
@@ -648,7 +653,7 @@
                         }
 
                         if (isImage) {
-                            const reader = new FileReader();
+                            var reader = new FileReader();
                             reader.onload = function(e) {
                                 preview.innerHTML = `
                                     <img src="${e.target.result}" class="w-16 h-16 object-cover rounded-lg border border-gray-200">
@@ -677,66 +682,66 @@
 
             // Auto generate ID Keberangkatan
             document.getElementById('produk_paket').addEventListener('change', function() {
-                const selectedOption = this.options[this.selectedIndex];
-                const kodeProduk = selectedOption.dataset.kode || 'PKT';
-                const idKeberangkatan = document.getElementById('id_keberangkatan');
+                var selectedOption = this.options[this.selectedIndex];
+                var kodeProduk = selectedOption.dataset.kode || 'PKT';
+                var idKeberangkatan = document.getElementById('id_keberangkatan');
 
                 if (kodeProduk) {
-                    const tahun = new Date().getFullYear();
-                    const bulan = String(new Date().getMonth() + 1).padStart(2, '0');
-                    const random = String(Math.floor(Math.random() * 1000)).padStart(3, '0');
+                    var tahun = new Date().getFullYear();
+                    var bulan = String(new Date().getMonth() + 1).padStart(2, '0');
+                    var random = String(Math.floor(Math.random() * 1000)).padStart(3, '0');
                     idKeberangkatan.value = kodeProduk + '-' + tahun + bulan + '-' + random;
                 } else {
                     idKeberangkatan.value = '';
                 }
 
-                // Trigger get harga
                 getHargaProduk();
             });
 
             // Auto fill pulau dan bandara
             document.getElementById('kota_asal').addEventListener('change', function() {
-                const selectedOption = this.options[this.selectedIndex];
-                const pulau = selectedOption.dataset.pulau || '';
-                const bandara = selectedOption.dataset.bandara || '';
+                var selectedOption = this.options[this.selectedIndex];
+                var pulau = selectedOption.dataset.pulau || '';
+                var bandara = selectedOption.dataset.bandara || '';
 
                 document.getElementById('pulau').value = pulau;
                 document.getElementById('bandara_keberangkatan').value = bandara;
             });
 
             // ==========================================
-            // AMBIL HARGA PRODUK BERDASARKAN BULAN & TAHUN
+            // AMBIL HARGA PRODUK
             // ==========================================
             function getHargaProduk() {
-                const produkPaket = document.getElementById('produk_paket');
-                const bulan = document.getElementById('bulan_keberangkatan');
-                const tahun = document.getElementById('tahun_keberangkatan');
-                const hargaInfo = document.getElementById('hargaInfo');
-                const hargaDisplay = document.getElementById('hargaProdukDisplay');
-                const hargaBulanTahun = document.getElementById('hargaBulanTahun');
-                const warningDiv = document.getElementById('hargaWarning');
-                const warningText = document.getElementById('hargaWarningText');
-                const flyerContainer = document.getElementById('flyerContainer');
-                const flyerPreview = document.getElementById('flyerPreview');
+                var produkPaket = document.getElementById('produk_paket');
+                var bulan = document.getElementById('bulan_keberangkatan');
+                var tahun = document.getElementById('tahun_keberangkatan');
+                var hargaInfo = document.getElementById('hargaInfo');
+                var hargaDisplay = document.getElementById('hargaProdukDisplay');
+                var hargaBulanTahun = document.getElementById('hargaBulanTahun');
+                var warningDiv = document.getElementById('hargaWarning');
+                var warningText = document.getElementById('hargaWarningText');
+                var flyerContainer = document.getElementById('flyerContainer');
+                var flyerPreview = document.getElementById('flyerPreview');
 
                 if (!produkPaket.value || !bulan.value || !tahun.value) {
                     hargaInfo.classList.add('hidden');
                     return;
                 }
 
-                // Tampilkan loading
                 hargaDisplay.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Memuat...';
                 hargaInfo.classList.remove('hidden');
 
                 fetch(
                         `{{ route('transaksional.get-harga-produk-by-bulan') }}?produk_paket=${encodeURIComponent(produkPaket.value)}&bulan=${bulan.value}&tahun=${tahun.value}`
                     )
-                    .then(response => response.json())
-                    .then(data => {
+                    .then(function(response) {
+                        return response.json();
+                    })
+                    .then(function(data) {
                         if (data.success) {
-                            const bulanName = getBulanName(data.bulan || bulan.value);
+                            var bulanName = getBulanName(data.bulan || bulan.value);
                             hargaDisplay.textContent = data.harga_formatted;
-                            hargaBulanTahun.textContent = `${bulanName} ${data.tahun || tahun.value}`;
+                            hargaBulanTahun.textContent = bulanName + ' ' + (data.tahun || tahun.value);
 
                             if (data.warning) {
                                 warningDiv.classList.remove('hidden');
@@ -758,32 +763,34 @@
                             flyerContainer.classList.add('hidden');
                         }
                     })
-                    .catch(error => {
+                    .catch(function(error) {
                         console.error('Error:', error);
                         hargaDisplay.textContent = 'Error memuat harga';
                     });
             }
 
             function getBulanName(bulan) {
-                const namaBulan = [
+                var namaBulan = [
                     'Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni',
                     'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'
                 ];
                 return namaBulan[parseInt(bulan) - 1] || bulan;
             }
 
-            // Trigger on page load
+            // ==========================================
+            // DOM READY
+            // ==========================================
             document.addEventListener('DOMContentLoaded', function() {
-                const kotaAsal = document.getElementById('kota_asal');
+                var kotaAsal = document.getElementById('kota_asal');
                 if (kotaAsal.value) {
-                    const selectedOption = kotaAsal.options[kotaAsal.selectedIndex];
+                    var selectedOption = kotaAsal.options[kotaAsal.selectedIndex];
                     document.getElementById('pulau').value = selectedOption.dataset.pulau || '';
                     document.getElementById('bandara_keberangkatan').value = selectedOption.dataset.bandara || '';
                 }
 
-                const produkPaket = document.getElementById('produk_paket');
-                const bulan = document.getElementById('bulan_keberangkatan');
-                const tahun = document.getElementById('tahun_keberangkatan');
+                var produkPaket = document.getElementById('produk_paket');
+                var bulan = document.getElementById('bulan_keberangkatan');
+                var tahun = document.getElementById('tahun_keberangkatan');
 
                 if (produkPaket) {
                     produkPaket.addEventListener('change', getHargaProduk);
@@ -799,20 +806,17 @@
                     getHargaProduk();
                 }
 
-                // Inisialisasi toggle fee petugas
-                toggleFeePetugasCreate();
-                updateTotalPendampinganCreate();
+                // Inisialisasi
+                updateTotalPendampingan();
 
-                const form = document.getElementById('jamaahForm');
+                // Form submit - clean semua input rupiah
+                var form = document.getElementById('jamaahForm');
                 if (form) {
                     form.addEventListener('submit', function(e) {
-                        const rupiahInputs = ['fee_agent', 'pendampingan_fee',
-                            'pendampingan_fee_petugas_create'
-                        ];
+                        var rupiahInputs = ['fee_agent', 'pendampingan_fee', 'pendampingan_fee_petugas'];
                         rupiahInputs.forEach(function(id) {
-                            const input = document.getElementById(id);
+                            var input = document.getElementById(id);
                             if (input) {
-                                // Hapus titik sebelum submit
                                 input.value = input.value.replace(/\./g, '');
                             }
                         });

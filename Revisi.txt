@@ -1,5 +1,4 @@
 29.di produk paket, ubah paket tour ke paket umroh plus
-32.buat ketika ada fee passport akan terbuka inputannya
 36.kopsurat yang berisikan logo, alamat, no-telp, email, tanda tangan direktur, syarat dan ketentuan, rekening pembayaran perusahaan. cap.
 37.lembar pertama invoice, lembara kedua syarat dan ketentuan, lembar terakhir lampiran pembayaran
 38.keluara/kelompok di show keluarga
@@ -48,6 +47,7 @@
 35.fee masih tertagih di keluarga - DONE
 34.fee agent di keluarga jamaah belum format rupiah - DONE
 33.muncul kan total pendampingan di create jamaah - DONE
+32.buat ketika ada fee passport akan terbuka inputannya - DONE
 16.jangan langsung gabungkan di total bayar tapi rincikan tiap total pembayaran tiap tiap form di show, seperti Maskapai & Harga, Hotel & Tipe Kamar, Hotel Tour (Paket Tour), Daftar Jamaah (total seluruh pembayaran dari produk paket), Perlengkapan Departure, Jenis Transaksi - DONE
 ------------------------------------------------------------------------------------------------------------------------------------
 lanjut deep seek untuk pendampingan

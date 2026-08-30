@@ -230,7 +230,8 @@
 
                             @if (count($oldJamaahs) > 0)
                                 @foreach ($oldJamaahs as $index => $jamaah)
-                                    <div class="jamaah-row bg-gray-50 rounded-xl p-4 mb-3 border border-gray-200">
+                                    <div class="jamaah-row bg-gray-50 rounded-xl p-4 mb-3 border border-gray-200"
+                                        id="jamaah-row-{{ $index }}">
                                         <div class="flex items-center justify-between mb-3">
                                             <span class="text-sm font-medium text-gray-700">Jamaah
                                                 #{{ $index + 1 }}</span>
@@ -364,44 +365,71 @@
                                             </div>
                                         </div>
 
-                                        <!-- Pendampingan (Informasi) -->
-                                        <div
-                                            class="grid grid-cols-1 md:grid-cols-3 gap-3 mt-3 pt-3 border-t border-gray-200">
-                                            <div>
-                                                <label class="block text-xs font-medium text-gray-600 mb-1">Nama
-                                                    Pendamping</label>
-                                                <input type="text"
-                                                    name="jamaahs[{{ $index }}][pendampingan_nama]"
-                                                    value="{{ $jamaah['pendampingan_nama'] ?? '' }}"
-                                                    class="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-yellow-500 text-sm"
-                                                    placeholder="Nama pendamping">
-                                            </div>
-                                            <div>
-                                                <label class="block text-xs font-medium text-gray-600 mb-1">Fee
-                                                    Pendamping</label>
-                                                <div class="relative">
-                                                    <span
-                                                        class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-xs">Rp</span>
+                                        <!-- Pendampingan (Informasi) dengan Toggle Fee Petugas -->
+                                        <div class="mt-3 pt-3 border-t border-gray-200">
+                                            <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+                                                <div>
+                                                    <label class="block text-xs font-medium text-gray-600 mb-1">Nama
+                                                        Pendamping</label>
                                                     <input type="text"
-                                                        name="jamaahs[{{ $index }}][pendampingan_fee]"
-                                                        value="{{ $jamaah['pendampingan_fee'] ?? 0 }}"
-                                                        oninput="formatRupiah(this)"
-                                                        class="w-full pl-8 pr-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-yellow-500 text-sm"
-                                                        placeholder="0">
+                                                        name="jamaahs[{{ $index }}][pendampingan_nama]"
+                                                        value="{{ $jamaah['pendampingan_nama'] ?? '' }}"
+                                                        class="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-yellow-500 text-sm"
+                                                        placeholder="Nama pendamping">
+                                                </div>
+                                                <div>
+                                                    <label class="block text-xs font-medium text-gray-600 mb-1">Fee
+                                                        Pendamping</label>
+                                                    <div class="relative">
+                                                        <span
+                                                            class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-xs">Rp</span>
+                                                        <input type="text"
+                                                            name="jamaahs[{{ $index }}][pendampingan_fee]"
+                                                            value="{{ $jamaah['pendampingan_fee'] ?? 0 }}"
+                                                            oninput="formatRupiah(this); updateTotalPendampingan({{ $index }})"
+                                                            class="w-full pl-8 pr-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-yellow-500 text-sm"
+                                                            placeholder="0">
+                                                    </div>
+                                                </div>
+                                                <div>
+                                                    <div class="flex items-center gap-2 pt-2">
+                                                        <button type="button"
+                                                            onclick="showFeePetugas({{ $index }})"
+                                                            id="btnShowFeePetugas-{{ $index }}"
+                                                            class="inline-flex items-center px-3 py-1.5 bg-green-500 text-white text-xs rounded-lg hover:bg-green-600 transition"
+                                                            style="{{ isset($jamaah['pendampingan_fee_petugas']) && $jamaah['pendampingan_fee_petugas'] > 0 ? 'display:none;' : '' }}">
+                                                            <i class="fas fa-plus mr-1"></i> Tambah Fee Petugas
+                                                        </button>
+                                                        <button type="button"
+                                                            onclick="hideFeePetugas({{ $index }})"
+                                                            id="btnHideFeePetugas-{{ $index }}"
+                                                            class="inline-flex items-center px-3 py-1.5 bg-red-500 text-white text-xs rounded-lg hover:bg-red-600 transition"
+                                                            style="{{ isset($jamaah['pendampingan_fee_petugas']) && $jamaah['pendampingan_fee_petugas'] > 0 ? '' : 'display:none;' }}">
+                                                            <i class="fas fa-times mr-1"></i> Hapus
+                                                        </button>
+                                                    </div>
                                                 </div>
                                             </div>
-                                            <div>
-                                                <label class="block text-xs font-medium text-gray-600 mb-1">Fee
-                                                    Petugas</label>
-                                                <div class="relative">
-                                                    <span
-                                                        class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-xs">Rp</span>
-                                                    <input type="text"
-                                                        name="jamaahs[{{ $index }}][pendampingan_fee_petugas]"
-                                                        value="{{ $jamaah['pendampingan_fee_petugas'] ?? 0 }}"
-                                                        oninput="formatRupiah(this)"
-                                                        class="w-full pl-8 pr-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-yellow-500 text-sm"
-                                                        placeholder="0">
+
+                                            <!-- Fee Petugas Container -->
+                                            <div id="feePetugasContainer-{{ $index }}" class="mt-3"
+                                                style="display: {{ isset($jamaah['pendampingan_fee_petugas']) && $jamaah['pendampingan_fee_petugas'] > 0 ? 'block' : 'none' }};">
+                                                <div class="grid grid-cols-1 md:grid-cols-1 gap-3">
+                                                    <div>
+                                                        <label class="block text-xs font-medium text-gray-600 mb-1">Fee
+                                                            Petugas</label>
+                                                        <div class="relative">
+                                                            <span
+                                                                class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-xs">Rp</span>
+                                                            <input type="text"
+                                                                name="jamaahs[{{ $index }}][pendampingan_fee_petugas]"
+                                                                id="pendampingan_fee_petugas-{{ $index }}"
+                                                                value="{{ $jamaah['pendampingan_fee_petugas'] ?? 0 }}"
+                                                                oninput="formatRupiah(this); updateTotalPendampingan({{ $index }})"
+                                                                class="w-full pl-8 pr-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-yellow-500 text-sm"
+                                                                placeholder="0">
+                                                        </div>
+                                                    </div>
                                                 </div>
                                             </div>
                                         </div>
@@ -456,7 +484,8 @@
                                 @endforeach
                             @else
                                 <!-- Default 1 jamaah -->
-                                <div class="jamaah-row bg-gray-50 rounded-xl p-4 mb-3 border border-gray-200">
+                                <div class="jamaah-row bg-gray-50 rounded-xl p-4 mb-3 border border-gray-200"
+                                    id="jamaah-row-0">
                                     <div class="flex items-center justify-between mb-3">
                                         <span class="text-sm font-medium text-gray-700">Jamaah #1</span>
                                         <button type="button" onclick="removeJamaah(this)"
@@ -567,36 +596,62 @@
                                         </div>
                                     </div>
 
-                                    <!-- Pendampingan (Informasi) -->
-                                    <div class="grid grid-cols-1 md:grid-cols-3 gap-3 mt-3 pt-3 border-t border-gray-200">
-                                        <div>
-                                            <label class="block text-xs font-medium text-gray-600 mb-1">Nama
-                                                Pendamping</label>
-                                            <input type="text" name="jamaahs[0][pendampingan_nama]"
-                                                class="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-yellow-500 text-sm"
-                                                placeholder="Nama pendamping">
-                                        </div>
-                                        <div>
-                                            <label class="block text-xs font-medium text-gray-600 mb-1">Fee
-                                                Pendamping</label>
-                                            <div class="relative">
-                                                <span
-                                                    class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-xs">Rp</span>
-                                                <input type="text" name="jamaahs[0][pendampingan_fee]" value="0"
-                                                    oninput="formatRupiah(this)"
-                                                    class="w-full pl-8 pr-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-yellow-500 text-sm"
-                                                    placeholder="0">
+                                    <!-- Pendampingan (Informasi) dengan Toggle Fee Petugas -->
+                                    <div class="mt-3 pt-3 border-t border-gray-200">
+                                        <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+                                            <div>
+                                                <label class="block text-xs font-medium text-gray-600 mb-1">Nama
+                                                    Pendamping</label>
+                                                <input type="text" name="jamaahs[0][pendampingan_nama]"
+                                                    class="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-yellow-500 text-sm"
+                                                    placeholder="Nama pendamping">
+                                            </div>
+                                            <div>
+                                                <label class="block text-xs font-medium text-gray-600 mb-1">Fee
+                                                    Pendamping</label>
+                                                <div class="relative">
+                                                    <span
+                                                        class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-xs">Rp</span>
+                                                    <input type="text" name="jamaahs[0][pendampingan_fee]"
+                                                        value="0"
+                                                        oninput="formatRupiah(this); updateTotalPendampingan(0)"
+                                                        class="w-full pl-8 pr-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-yellow-500 text-sm"
+                                                        placeholder="0">
+                                                </div>
+                                            </div>
+                                            <div>
+                                                <div class="flex items-center gap-2 pt-2">
+                                                    <button type="button" onclick="showFeePetugas(0)"
+                                                        id="btnShowFeePetugas-0"
+                                                        class="inline-flex items-center px-3 py-1.5 bg-green-500 text-white text-xs rounded-lg hover:bg-green-600 transition">
+                                                        <i class="fas fa-plus mr-1"></i> Tambah Fee Petugas
+                                                    </button>
+                                                    <button type="button" onclick="hideFeePetugas(0)"
+                                                        id="btnHideFeePetugas-0"
+                                                        class="inline-flex items-center px-3 py-1.5 bg-red-500 text-white text-xs rounded-lg hover:bg-red-600 transition"
+                                                        style="display:none;">
+                                                        <i class="fas fa-times mr-1"></i> Hapus
+                                                    </button>
+                                                </div>
                                             </div>
                                         </div>
-                                        <div>
-                                            <label class="block text-xs font-medium text-gray-600 mb-1">Fee Petugas</label>
-                                            <div class="relative">
-                                                <span
-                                                    class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-xs">Rp</span>
-                                                <input type="text" name="jamaahs[0][pendampingan_fee_petugas]"
-                                                    value="0" oninput="formatRupiah(this)"
-                                                    class="w-full pl-8 pr-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-yellow-500 text-sm"
-                                                    placeholder="0">
+
+                                        <!-- Fee Petugas Container -->
+                                        <div id="feePetugasContainer-0" class="mt-3" style="display:none;">
+                                            <div class="grid grid-cols-1 md:grid-cols-1 gap-3">
+                                                <div>
+                                                    <label class="block text-xs font-medium text-gray-600 mb-1">Fee
+                                                        Petugas</label>
+                                                    <div class="relative">
+                                                        <span
+                                                            class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-xs">Rp</span>
+                                                        <input type="text" name="jamaahs[0][pendampingan_fee_petugas]"
+                                                            id="pendampingan_fee_petugas-0" value="0"
+                                                            oninput="formatRupiah(this); updateTotalPendampingan(0)"
+                                                            class="w-full pl-8 pr-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-yellow-500 text-sm"
+                                                            placeholder="0">
+                                                    </div>
+                                                </div>
                                             </div>
                                         </div>
                                     </div>
@@ -678,6 +733,68 @@
             let jamaahIndex = {{ count(old('jamaahs', [0])) }};
 
             // ==========================================
+            // TOGGLE FEE PETUGAS - SHOW
+            // ==========================================
+            function showFeePetugas(index) {
+                var container = document.getElementById('feePetugasContainer-' + index);
+                var btnShow = document.getElementById('btnShowFeePetugas-' + index);
+                var btnHide = document.getElementById('btnHideFeePetugas-' + index);
+                var input = document.getElementById('pendampingan_fee_petugas-' + index);
+
+                container.style.display = 'block';
+                btnShow.style.display = 'none';
+                btnHide.style.display = 'inline-flex';
+
+                if (input && input.value === '0') {
+                    input.value = '';
+                }
+                if (input) {
+                    input.focus();
+                }
+                updateTotalPendampingan(index);
+            }
+
+            // ==========================================
+            // TOGGLE FEE PETUGAS - HIDE
+            // ==========================================
+            function hideFeePetugas(index) {
+                var container = document.getElementById('feePetugasContainer-' + index);
+                var btnShow = document.getElementById('btnShowFeePetugas-' + index);
+                var btnHide = document.getElementById('btnHideFeePetugas-' + index);
+                var input = document.getElementById('pendampingan_fee_petugas-' + index);
+
+                container.style.display = 'none';
+                btnShow.style.display = 'inline-flex';
+                btnHide.style.display = 'none';
+                if (input) {
+                    input.value = '0';
+                }
+                updateTotalPendampingan(index);
+            }
+
+            // ==========================================
+            // UPDATE TOTAL PENDAMPINGAN
+            // ==========================================
+            function updateTotalPendampingan(index) {
+                var feeInput = document.querySelector('input[name="jamaahs[' + index + '][pendampingan_fee]"]');
+                var petugasInput = document.getElementById('pendampingan_fee_petugas-' + index);
+                var totalSpan = document.getElementById('total-pendampingan-' + index);
+                var container = document.getElementById('feePetugasContainer-' + index);
+
+                if (feeInput && totalSpan) {
+                    var fee = parseInt(feeInput.value.replace(/\./g, '')) || 0;
+                    var petugas = 0;
+
+                    if (container && container.style.display !== 'none' && petugasInput) {
+                        petugas = parseInt(petugasInput.value.replace(/\./g, '')) || 0;
+                    }
+
+                    var total = fee + petugas;
+                    totalSpan.textContent = 'Rp ' + total.toLocaleString('id-ID');
+                }
+            }
+
+            // ==========================================
             // AMBIL HARGA PRODUK BERDASARKAN BULAN & TAHUN
             // ==========================================
             function getHargaProduk() {
@@ -705,7 +822,7 @@
 
                 fetch(
                         `{{ route('transaksional.get-harga-produk-by-bulan') }}?produk_paket=${encodeURIComponent(produkPaket.value)}&bulan=${bulan.value}&tahun=${tahun.value}`
-                        )
+                    )
                     .then(response => response.json())
                     .then(data => {
                         if (data.success) {
@@ -720,7 +837,6 @@
                                 warningDiv.classList.add('hidden');
                             }
 
-                            // Enable submit jika harga ditemukan
                             btnSubmit.disabled = false;
                             btnSubmit.classList.remove('opacity-50', 'cursor-not-allowed');
                         } else {
@@ -761,24 +877,14 @@
                 }
             });
 
-            // Update total pendampingan
+            // Update total pendampingan - event listener untuk input
             document.addEventListener('input', function(e) {
-                if (e.target && (e.target.name && e.target.name.includes('pendampingan_fee') ||
-                        e.target.name && e.target.name.includes('pendampingan_fee_petugas'))) {
+                if (e.target && e.target.name && e.target.name.includes('pendampingan_fee')) {
                     const row = e.target.closest('.jamaah-row');
                     if (row) {
-                        const index = row.querySelector('input[name$="[nama_lengkap]"]').name.match(/\d+/)[0];
-                        const feeInput = row.querySelector(`input[name="jamaahs[${index}][pendampingan_fee]"]`);
-                        const petugasInput = row.querySelector(
-                            `input[name="jamaahs[${index}][pendampingan_fee_petugas]"]`);
-                        const totalSpan = document.getElementById(`total-pendampingan-${index}`);
-
-                        if (feeInput && petugasInput && totalSpan) {
-                            const fee = parseInt(feeInput.value.replace(/\./g, '')) || 0;
-                            const petugas = parseInt(petugasInput.value.replace(/\./g, '')) || 0;
-                            const total = fee + petugas;
-                            totalSpan.textContent = 'Rp ' + total.toLocaleString('id-ID');
-                        }
+                        const nameAttr = e.target.name;
+                        const index = nameAttr.match(/\d+/)[0];
+                        updateTotalPendampingan(parseInt(index));
                     }
                 }
             });
@@ -787,6 +893,7 @@
                 const container = document.getElementById('jamaahContainer');
                 const row = document.createElement('div');
                 row.className = 'jamaah-row bg-gray-50 rounded-xl p-4 mb-3 border border-gray-200';
+                row.id = 'jamaah-row-' + jamaahIndex;
                 row.innerHTML = `
                     <div class="flex items-center justify-between mb-3">
                         <span class="text-sm font-medium text-gray-700">Jamaah #${jamaahIndex + 1}</span>
@@ -882,32 +989,58 @@
                         </div>
                     </div>
 
-                    <!-- Pendampingan (Informasi) -->
-                    <div class="grid grid-cols-1 md:grid-cols-3 gap-3 mt-3 pt-3 border-t border-gray-200">
-                        <div>
-                            <label class="block text-xs font-medium text-gray-600 mb-1">Nama Pendamping</label>
-                            <input type="text" name="jamaahs[${jamaahIndex}][pendampingan_nama]"
-                                class="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-yellow-500 text-sm"
-                                placeholder="Nama pendamping">
-                        </div>
-                        <div>
-                            <label class="block text-xs font-medium text-gray-600 mb-1">Fee Pendamping</label>
-                            <div class="relative">
-                                <span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-xs">Rp</span>
-                                <input type="text" name="jamaahs[${jamaahIndex}][pendampingan_fee]"
-                                    value="0" oninput="formatRupiah(this)"
-                                    class="w-full pl-8 pr-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-yellow-500 text-sm"
-                                    placeholder="0">
+                    <!-- Pendampingan (Informasi) dengan Toggle Fee Petugas -->
+                    <div class="mt-3 pt-3 border-t border-gray-200">
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+                            <div>
+                                <label class="block text-xs font-medium text-gray-600 mb-1">Nama Pendamping</label>
+                                <input type="text" name="jamaahs[${jamaahIndex}][pendampingan_nama]"
+                                    class="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-yellow-500 text-sm"
+                                    placeholder="Nama pendamping">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-medium text-gray-600 mb-1">Fee Pendamping</label>
+                                <div class="relative">
+                                    <span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-xs">Rp</span>
+                                    <input type="text" name="jamaahs[${jamaahIndex}][pendampingan_fee]"
+                                        value="0" oninput="formatRupiah(this); updateTotalPendampingan(${jamaahIndex})"
+                                        class="w-full pl-8 pr-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-yellow-500 text-sm"
+                                        placeholder="0">
+                                </div>
+                            </div>
+                            <div>
+                                <div class="flex items-center gap-2 pt-2">
+                                    <button type="button" onclick="showFeePetugas(${jamaahIndex})"
+                                        id="btnShowFeePetugas-${jamaahIndex}"
+                                        class="inline-flex items-center px-3 py-1.5 bg-green-500 text-white text-xs rounded-lg hover:bg-green-600 transition">
+                                        <i class="fas fa-plus mr-1"></i> Tambah Fee Petugas
+                                    </button>
+                                    <button type="button" onclick="hideFeePetugas(${jamaahIndex})"
+                                        id="btnHideFeePetugas-${jamaahIndex}"
+                                        class="inline-flex items-center px-3 py-1.5 bg-red-500 text-white text-xs rounded-lg hover:bg-red-600 transition"
+                                        style="display:none;">
+                                        <i class="fas fa-times mr-1"></i> Hapus
+                                    </button>
+                                </div>
                             </div>
                         </div>
-                        <div>
-                            <label class="block text-xs font-medium text-gray-600 mb-1">Fee Petugas</label>
-                            <div class="relative">
-                                <span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-xs">Rp</span>
-                                <input type="text" name="jamaahs[${jamaahIndex}][pendampingan_fee_petugas]"
-                                    value="0" oninput="formatRupiah(this)"
-                                    class="w-full pl-8 pr-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-yellow-500 text-sm"
-                                    placeholder="0">
+
+                        <!-- Fee Petugas Container -->
+                        <div id="feePetugasContainer-${jamaahIndex}" class="mt-3" style="display:none;">
+                            <div class="grid grid-cols-1 md:grid-cols-1 gap-3">
+                                <div>
+                                    <label class="block text-xs font-medium text-gray-600 mb-1">Fee Petugas</label>
+                                    <div class="relative">
+                                        <span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-xs">Rp</span>
+                                        <input type="text"
+                                            name="jamaahs[${jamaahIndex}][pendampingan_fee_petugas]"
+                                            id="pendampingan_fee_petugas-${jamaahIndex}"
+                                            value="0"
+                                            oninput="formatRupiah(this); updateTotalPendampingan(${jamaahIndex})"
+                                            class="w-full pl-8 pr-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-yellow-500 text-sm"
+                                            placeholder="0">
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -995,6 +1128,11 @@
                 if (produkPaket && produkPaket.value && bulan && bulan.value && tahun && tahun.value) {
                     getHargaProduk();
                 }
+
+                // Inisialisasi total pendampingan untuk semua jamaah
+                document.querySelectorAll('.jamaah-row').forEach(function(row, index) {
+                    updateTotalPendampingan(index);
+                });
 
                 // Form submit - clean semua input rupiah
                 const form = document.getElementById('keluargaForm');
