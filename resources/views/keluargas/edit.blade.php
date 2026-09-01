@@ -1,7 +1,7 @@
 @extends('layouts.app')
 
-@section('title', 'Edit Keluarga - Arrum Tour')
-@section('page-title', 'Edit Keluarga')
+@section('title', 'Edit Keluarga / Kelompok - Arrum Tour')
+@section('page-title', 'Edit Keluarga / Kelompok')
 
 @section('breadcrumb')
     <li class="inline-flex items-center">
@@ -10,7 +10,8 @@
     </li>
     <li class="inline-flex items-center">
         <i class="fas fa-chevron-right text-gray-400 mx-2 text-xs"></i>
-        <a href="{{ route('transaksional.keluarga.index') }}" class="text-gray-500 hover:text-yellow-600">Keluarga</a>
+        <a href="{{ route('transaksional.keluarga.index') }}" class="text-gray-500 hover:text-yellow-600">Keluarga /
+            Kelompok</a>
     </li>
     <li class="inline-flex items-center">
         <i class="fas fa-chevron-right text-gray-400 mx-2 text-xs"></i>
@@ -23,8 +24,8 @@
         <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
             <div class="px-6 py-4 border-b border-gray-100 flex flex-wrap items-center justify-between gap-3">
                 <div>
-                    <h5 class="text-sm font-semibold text-gray-700">Form Edit Keluarga</h5>
-                    <p class="text-xs text-gray-400 mt-0.5">Edit data keluarga dan jamaah</p>
+                    <h5 class="text-sm font-semibold text-gray-700">Form Edit Keluarga / Kelompok</h5>
+                    <p class="text-xs text-gray-400 mt-0.5">Edit data keluarga / kelompok dan jamaah</p>
                 </div>
                 <a href="{{ route('transaksional.keluarga.show', $keluarga->id_keluarga) }}"
                     class="inline-flex items-center px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition text-sm font-medium">
@@ -38,7 +39,7 @@
                 @method('PUT')
 
                 <div class="p-6 space-y-6">
-                    <!-- Informasi Keluarga -->
+                    <!-- Informasi Keluarga / Kelompok -->
                     <div class="border-b border-gray-200 pb-4">
                         <h6 class="text-sm font-semibold text-gray-700 mb-4 flex items-center">
                             <i class="fas fa-users text-yellow-500 mr-2"></i> Informasi Keluarga / Kelompok
@@ -46,7 +47,7 @@
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div>
                                 <label class="block text-sm font-medium text-gray-700 mb-1.5">
-                                    Kode Keluarga
+                                    Kode Keluarga / Kelompok
                                 </label>
                                 <input type="text" value="{{ $keluarga->kode_keluarga }}"
                                     class="w-full px-4 py-2 border border-gray-200 rounded-xl bg-gray-100 text-sm cursor-not-allowed"
@@ -247,7 +248,8 @@
                                     @endforeach
                                 </select>
                                 <p class="text-xs text-gray-400 mt-1">
-                                    <i class="fas fa-info-circle mr-1"></i> Diskon berlaku untuk seluruh anggota keluarga
+                                    <i class="fas fa-info-circle mr-1"></i> Diskon berlaku untuk seluruh jamaah dalam
+                                    keluarga / kelompok
                                 </p>
                             </div>
                             <div>
@@ -464,7 +466,7 @@
                                                     value="1"
                                                     {{ $jamaah['is_kepala_keluarga'] ?? false ? 'checked' : '' }}
                                                     class="w-4 h-4 text-yellow-500 border-gray-300 rounded focus:ring-yellow-500">
-                                                <span>Kepala Keluarga</span>
+                                                <span>Kepala Keluarga / Kelompok</span>
                                             </label>
                                         </div>
                                     </div>
@@ -765,8 +767,8 @@
                 const warningText = document.getElementById('hargaWarningText');
                 const btnSubmit = document.getElementById('btnSubmit');
 
-                console.log('getHargaProduk dipanggil - produk:', produkPaket?.value, 'bulan:', bulan?.value, 'tahun:',
-                    tahun?.value);
+                console.log('getHargaProduk dipanggil - produk:', produkPaket?.value, 'bulan:', bulan?.value, 'tahun:', tahun
+                    ?.value);
 
                 if (!produkPaket.value || !bulan.value || !tahun.value) {
                     hargaInfo.classList.add('hidden');
@@ -952,7 +954,7 @@
                             <label class="flex items-center gap-2 text-sm text-gray-700 cursor-pointer">
                                 <input type="checkbox" name="jamaahs[${jamaahIndex}][is_kepala_keluarga]" value="1"
                                     class="w-4 h-4 text-yellow-500 border-gray-300 rounded focus:ring-yellow-500">
-                                <span>Kepala Keluarga</span>
+                                <span>Kepala Keluarga / Kelompok</span>
                             </label>
                         </div>
                     </div>
@@ -1015,7 +1017,7 @@
 
                     <!-- Total Pendampingan -->
                     <div class="mt-2 text-xs text-gray-500">
-                        Total Pendampingan: 
+                        Total Pendampingan:
                         <span class="font-bold text-blue-600" id="total-pendampingan-${jamaahIndex}">Rp 0</span>
                         <span class="text-gray-400">(Fee Pendamping + Fee Petugas)</span>
                     </div>
@@ -1112,7 +1114,7 @@
                                 input.value = input.value.replace(/\./g, '');
                             }
                         });
-                        // Clean pendampingan fee di jamaahs
+                        // Clean pendampingan fee di jamaah
                         document.querySelectorAll(
                             '[name$="[pendampingan_fee]"], [name$="[pendampingan_fee_petugas]"]').forEach(
                             function(input) {

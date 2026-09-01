@@ -1,7 +1,7 @@
 @extends('layouts.app')
 
-@section('title', 'Detail Keluarga - Arrum Tour')
-@section('page-title', 'Detail Keluarga')
+@section('title', 'Detail Keluarga / Kelompok - Arrum Tour')
+@section('page-title', 'Detail Keluarga / Kelompok')
 
 @section('breadcrumb')
     <li class="inline-flex items-center">
@@ -10,7 +10,8 @@
     </li>
     <li class="inline-flex items-center">
         <i class="fas fa-chevron-right text-gray-400 mx-2 text-xs"></i>
-        <a href="{{ route('transaksional.keluarga.index') }}" class="text-gray-500 hover:text-yellow-600">Keluarga</a>
+        <a href="{{ route('transaksional.keluarga.index') }}" class="text-gray-500 hover:text-yellow-600">Keluarga /
+            Kelompok</a>
     </li>
     <li class="inline-flex items-center">
         <i class="fas fa-chevron-right text-gray-400 mx-2 text-xs"></i>
@@ -23,8 +24,8 @@
         <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
             <div class="px-6 py-4 border-b border-gray-100 flex flex-wrap items-center justify-between gap-3">
                 <div>
-                    <h5 class="text-sm font-semibold text-gray-700">Detail Keluarga</h5>
-                    <p class="text-xs text-gray-400 mt-0.5">Informasi lengkap keluarga dan riwayat pembayaran</p>
+                    <h5 class="text-sm font-semibold text-gray-700">Detail Keluarga / Kelompok</h5>
+                    <p class="text-xs text-gray-400 mt-0.5">Informasi lengkap keluarga / kelompok dan riwayat pembayaran</p>
                 </div>
                 <div class="flex items-center gap-2 flex-wrap">
                     <a href="{{ route('transaksional.keluarga.edit', $keluarga->id_keluarga) }}"
@@ -197,16 +198,16 @@
                         </div>
                     @else
                         <div class="text-center py-4">
-                            <p class="text-sm text-gray-400">Tidak ada jamaah dalam keluarga ini</p>
+                            <p class="text-sm text-gray-400">Tidak ada jamaah dalam keluarga / kelompok ini</p>
                         </div>
                     @endif
                 </div>
 
-                <!-- Riwayat Pembayaran Keluarga -->
+                <!-- Riwayat Pembayaran Keluarga / Kelompok -->
                 <div class="bg-gray-50 rounded-xl p-5 border border-gray-100 mb-6">
                     <h6 class="text-sm font-semibold text-gray-700 mb-4 flex items-center justify-between">
                         <span>
-                            <i class="fas fa-history text-yellow-500 mr-2"></i> Riwayat Pembayaran Keluarga
+                            <i class="fas fa-history text-yellow-500 mr-2"></i> Riwayat Pembayaran Keluarga / Kelompok
                         </span>
                         <span class="text-xs bg-blue-100 text-blue-800 px-2 py-0.5 rounded-full">
                             {{ $transaksis->count() }} Transaksi
@@ -309,7 +310,7 @@
                     @else
                         <div class="text-center py-8">
                             <i class="fas fa-inbox text-4xl text-gray-300 mb-3 block"></i>
-                            <p class="text-sm text-gray-400">Belum ada riwayat pembayaran untuk keluarga ini</p>
+                            <p class="text-sm text-gray-400">Belum ada riwayat pembayaran untuk keluarga / kelompok ini</p>
                             <a href="{{ route('transaksional.keluarga.pembayaran', $keluarga->id_keluarga) }}"
                                 class="mt-3 inline-flex items-center px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition text-sm">
                                 <i class="fas fa-plus mr-2"></i> Tambah Pembayaran
@@ -351,7 +352,7 @@
                     </a>
                     <a href="{{ route('transaksional.keluarga.edit', $keluarga->id_keluarga) }}"
                         class="inline-flex items-center px-4 py-2 bg-yellow-500 text-white rounded-lg hover:bg-yellow-600 transition text-sm font-medium shadow-sm hover:shadow">
-                        <i class="fas fa-edit mr-2"></i> Edit Keluarga
+                        <i class="fas fa-edit mr-2"></i> Edit Keluarga / Kelompok
                     </a>
                     <a href="{{ route('transaksional.keluarga.pembayaran', $keluarga->id_keluarga) }}"
                         class="inline-flex items-center px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition text-sm font-medium shadow-sm hover:shadow">

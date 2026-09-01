@@ -212,13 +212,13 @@
 
                         <div class="mb-4">
                             <label class="block text-sm font-medium text-gray-700 mb-1.5">
-                                Durasi Perjalanan <span class="text-gray-400 text-xs">(total hari perjalanan)</span>
+                                Durasi Perjalanan
                             </label>
                             <div class="relative">
                                 <input type="number" name="durasi_perjalanan" id="durasi_perjalanan"
                                     value="{{ old('durasi_perjalanan') }}" oninput="calculateTotalDurasi()"
                                     class="w-full px-4 py-2 border border-gray-200 rounded-xl focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500 text-sm"
-                                    placeholder="Contoh: 12" min="0">
+                                    placeholder="Contoh: 2" min="0">
                                 <span class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm">Hari</span>
                             </div>
                             @error('durasi_perjalanan')
@@ -257,10 +257,10 @@
                             </div>
                         </div>
 
-                        <!-- Durasi Tour (Auto dari Paket Tour) -->
+                        <!-- Durasi Umroh Plus (Auto dari Paket) -->
                         <div class="mt-4">
                             <label class="block text-sm font-medium text-gray-700 mb-1.5">
-                                Durasi Tour <span class="text-gray-400 text-xs">(otomatis dari paket tour)</span>
+                                Durasi Umroh Plus <span class="text-gray-400 text-xs">(otomatis dari paket)</span>
                             </label>
                             <div class="relative">
                                 <input type="number" name="durasi_tour" id="durasi_tour"
@@ -271,7 +271,7 @@
                             </div>
                             <p class="text-xs text-blue-500 mt-1">
                                 <i class="fas fa-info-circle mr-1"></i>
-                                Durasi tour akan otomatis terisi saat memilih paket tour
+                                Durasi umroh plus akan otomatis terisi saat memilih paket
                             </p>
                         </div>
 
@@ -288,7 +288,7 @@
                             </div>
                             <p class="text-xs text-gray-400 mt-1">
                                 <i class="fas fa-info-circle mr-1"></i>
-                                Total durasi = Perjalanan + Mekkah + Madinah + Tour
+                                Total durasi = Perjalanan + Mekkah + Madinah + Umroh Plus
                             </p>
                         </div>
                     </div>
@@ -300,7 +300,7 @@
                         </h6>
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-1.5">Include Tur</label>
+                                <label class="block text-sm font-medium text-gray-700 mb-1.5">Include Umroh Plus</label>
                                 <select name="include_tur" id="include_tur"
                                     class="w-full px-4 py-2 border border-gray-200 rounded-xl focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500 text-sm"
                                     onchange="togglePaketTour()">
@@ -327,23 +327,23 @@
                         </div>
                     </div>
 
-                    <!-- Pilih Paket Tour -->
+                    <!-- Pilih Umroh Plus -->
                     <div id="paketTourSection" class="border-b border-gray-200 pb-4" style="display: none;">
                         <h6 class="text-sm font-semibold text-gray-700 mb-4 flex items-center">
-                            <i class="fas fa-route text-yellow-500 mr-2"></i> Pilih Paket Tour
-                            <span class="ml-2 text-xs text-gray-400">(Pilih tour yang sudah tersedia)</span>
+                            <i class="fas fa-route text-yellow-500 mr-2"></i> Pilih Umroh Plus
+                            <span class="ml-2 text-xs text-gray-400">(Pilih paket umroh plus yang sudah tersedia)</span>
                         </h6>
 
                         <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1.5">Paket Tour</label>
+                            <label class="block text-sm font-medium text-gray-700 mb-1.5">Umroh Plus</label>
                             <select name="paket_tour_id" id="paket_tour_id"
                                 class="w-full px-4 py-2 border border-gray-200 rounded-xl focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500 text-sm"
                                 onchange="loadPaketTourInfo(this.value)">
-                                <option value="">-- Pilih Paket Tour --</option>
+                                <option value="">-- Pilih Umroh Plus --</option>
                                 @foreach ($paketTours as $tour)
                                     <option value="{{ $tour->id_paket_tour }}"
                                         {{ old('paket_tour_id') == $tour->id_paket_tour ? 'selected' : '' }}>
-                                        {{ $tour->kota_tujuan ?? 'Tour' }} - {{ $tour->negara ?? '' }}
+                                        {{ $tour->kota_tujuan ?? 'Umroh Plus' }} - {{ $tour->negara ?? '' }}
                                         ({{ $tour->durasi_hari ?? 0 }} Hari)
                                     </option>
                                 @endforeach
@@ -353,7 +353,7 @@
                             @enderror
                         </div>
 
-                        <!-- Informasi Paket Tour yang dipilih -->
+                        <!-- Informasi Umroh Plus yang dipilih -->
                         <div id="paketTourInfo" class="mt-3 bg-blue-50 rounded-lg p-3 border border-blue-200 hidden">
                             <div class="grid grid-cols-2 md:grid-cols-3 gap-2 text-sm">
                                 <div>
@@ -365,7 +365,7 @@
                                     <span id="info_negara" class="font-medium text-gray-700">-</span>
                                 </div>
                                 <div>
-                                    <span class="text-gray-500">Durasi Tour:</span>
+                                    <span class="text-gray-500">Durasi Umroh Plus:</span>
                                     <span id="info_durasi" class="font-medium text-blue-600">0 Hari</span>
                                 </div>
                             </div>
@@ -446,7 +446,7 @@
             element.value = value;
         }
 
-        // Toggle Paket Tour Section
+        // Toggle Umroh Plus Section
         function togglePaketTour() {
             const includeTurSelect = document.getElementById('include_tur');
             const paketTourSection = document.getElementById('paketTourSection');
@@ -468,7 +468,7 @@
             }
         }
 
-        // Load Paket Tour Info via AJAX
+        // Load Umroh Plus Info via AJAX
         function loadPaketTourInfo(tourId) {
             const infoDiv = document.getElementById('paketTourInfo');
             const durasiTourInput = document.getElementById('durasi_tour');

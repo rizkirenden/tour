@@ -19,7 +19,7 @@ return new class extends Migration
 
             // === DATA PRIBADI ===
             $table->string('nama_lengkap', 100);
-            $table->string('nik', 20)->nullable()->unique()->comment('Nomor Induk Kependudukan');
+            $table->string('nik', 20)->nullable()->comment('Nomor Induk Kependudukan');
             $table->string('nama_ayah', 100)->nullable()->comment('Nama ayah kandung');
             $table->string('pekerjaan', 100)->nullable()->comment('Pekerjaan jamaah');
             $table->string('telepon', 20)->nullable();

@@ -55,7 +55,10 @@ class JamaahController extends Controller
             'produk_paket' => 'required|string|max:100|exists:produk_pakets,nama_produk',
             'id_diskon' => 'nullable|exists:diskons,id_diskon',
             'nama_lengkap' => 'required|string|max:100',
-            'nik' => 'nullable|string|max:20|unique:jamaahs,nik',
+            // ==========================================
+            // NIK - TIDAK ADA VALIDASI UNIQUE
+            // ==========================================
+            'nik' => 'nullable|string|max:20',
             'nama_ayah' => 'nullable|string|max:100',
             'pekerjaan' => 'nullable|string|max:100',
             'telepon' => 'nullable|string|max:20',
@@ -157,7 +160,10 @@ class JamaahController extends Controller
             'produk_paket' => 'required|string|max:100|exists:produk_pakets,nama_produk',
             'id_diskon' => 'nullable|exists:diskons,id_diskon',
             'nama_lengkap' => 'required|string|max:100',
-            'nik' => ['nullable', 'string', 'max:20', Rule::unique('jamaahs', 'nik')->ignore($id, 'id_jamaah')],
+            // ==========================================
+            // NIK - TIDAK ADA VALIDASI UNIQUE DI UPDATE
+            // ==========================================
+            'nik' => ['nullable', 'string', 'max:20'],
             'nama_ayah' => 'nullable|string|max:100',
             'pekerjaan' => 'nullable|string|max:100',
             'telepon' => 'nullable|string|max:20',

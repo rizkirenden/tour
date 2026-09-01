@@ -53,7 +53,7 @@
                             </div>
                             @if ($produk->include_tur)
                                 <p class="text-xs text-blue-600 mt-1">
-                                    <i class="fas fa-route mr-1"></i> Include Tur:
+                                    <i class="fas fa-route mr-1"></i> Umroh Plus:
                                     {{ $produk->paketTour->kota_tujuan ?? '-' }}
                                 </p>
                             @endif
@@ -85,7 +85,7 @@
                                 <dd class="font-medium text-gray-700">{{ $produk->nama_produk }}</dd>
                             </div>
                             <div class="flex justify-between text-sm border-b border-gray-100 pb-2">
-                                <dt class="text-gray-500">Include Tur</dt>
+                                <dt class="text-gray-500">Umroh Plus</dt>
                                 <dd>{!! $produk->include_tur_badge !!}</dd>
                             </div>
                             <div class="flex justify-between text-sm border-b border-gray-100 pb-2">
@@ -115,7 +115,7 @@
                             </div>
                             @if ($produk->include_tur)
                                 <div class="flex justify-between text-sm border-b border-gray-100 pb-2">
-                                    <dt class="text-gray-500">Durasi Tour</dt>
+                                    <dt class="text-gray-500">Durasi Umroh Plus</dt>
                                     <dd class="font-medium text-blue-600">{{ $produk->durasi_tour ?? 0 }} Hari</dd>
                                 </div>
                             @endif
@@ -291,11 +291,11 @@
                     </div>
                 </div>
 
-                <!-- Paket Tour -->
+                <!-- Umroh Plus -->
                 @if ($produk->include_tur && $produk->paketTour)
                     <div class="mt-6 bg-gray-50 rounded-xl p-5 border border-gray-100">
                         <h6 class="text-sm font-semibold text-gray-700 mb-4 flex items-center">
-                            <i class="fas fa-route text-yellow-500 mr-2"></i> Paket Tour
+                            <i class="fas fa-route text-yellow-500 mr-2"></i> Umroh Plus
                         </h6>
                         <div class="bg-white rounded-lg p-4 border border-gray-200">
                             <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">

@@ -4,10 +4,10 @@
             <tr class="border-b border-gray-200">
                 <th class="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">#</th>
                 <th class="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Kode
-                    Keluarga</th>
+                    Keluarga / Kelompok</th>
                 <th class="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Nama
-                    Keluarga</th>
-                <th class="px-4 py-3 text-center text-xs font-semibold text-gray-500 uppercase tracking-wider">Anggota
+                    Keluarga / Kelompok</th>
+                <th class="px-4 py-3 text-center text-xs font-semibold text-gray-500 uppercase tracking-wider">Jamaah
                 </th>
                 <th class="px-4 py-3 text-center text-xs font-semibold text-gray-500 uppercase tracking-wider">Diskon
                 </th>
@@ -34,7 +34,7 @@
                     <td class="px-4 py-3 text-center">
                         <span
                             class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-                            {{ $item->jamaahs->count() }} Anggota
+                            {{ $item->jamaahs->count() }} Jamaah
                         </span>
                     </td>
                     <td class="px-4 py-3 text-center">
@@ -91,8 +91,9 @@
                             <div class="w-16 h-16 bg-gray-100 rounded-2xl flex items-center justify-center mb-3">
                                 <i class="fas fa-users text-gray-300 text-3xl"></i>
                             </div>
-                            <p class="text-gray-500 font-medium">Belum ada data keluarga</p>
-                            <p class="text-gray-400 text-sm mt-1">Klik tombol "Tambah Keluarga" untuk menambahkan</p>
+                            <p class="text-gray-500 font-medium">Belum ada data keluarga / kelompok</p>
+                            <p class="text-gray-400 text-sm mt-1">Klik tombol "Tambah Keluarga / Kelompok" untuk
+                                menambahkan</p>
                         </div>
                     </td>
                 </tr>
@@ -108,7 +109,7 @@
 @push('scripts')
     <script>
         function confirmDelete(id) {
-            if (confirm('Yakin ingin menghapus keluarga ini?\nSemua anggota keluarga juga akan dihapus!')) {
+            if (confirm('Yakin ingin menghapus keluarga / kelompok ini?\nSemua jamaah juga akan dihapus!')) {
                 document.getElementById('delete-form-' + id).submit();
             }
         }

@@ -1,7 +1,7 @@
 @extends('layouts.app')
 
-@section('title', 'Tambah Keluarga - Arrum Tour')
-@section('page-title', 'Tambah Keluarga')
+@section('title', 'Tambah Keluarga / Kelompok - Arrum Tour')
+@section('page-title', 'Tambah Keluarga / Kelompok')
 
 @section('breadcrumb')
     <li class="inline-flex items-center">
@@ -10,7 +10,8 @@
     </li>
     <li class="inline-flex items-center">
         <i class="fas fa-chevron-right text-gray-400 mx-2 text-xs"></i>
-        <a href="{{ route('transaksional.keluarga.index') }}" class="text-gray-500 hover:text-yellow-600">Keluarga</a>
+        <a href="{{ route('transaksional.keluarga.index') }}" class="text-gray-500 hover:text-yellow-600">Keluarga /
+            Kelompok</a>
     </li>
     <li class="inline-flex items-center">
         <i class="fas fa-chevron-right text-gray-400 mx-2 text-xs"></i>
@@ -22,8 +23,8 @@
     <div class="mx-auto">
         <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
             <div class="px-6 py-4 border-b border-gray-100">
-                <h5 class="text-sm font-semibold text-gray-700">Form Tambah Keluarga</h5>
-                <p class="text-xs text-gray-400 mt-0.5">Lengkapi data keluarga dan anggota</p>
+                <h5 class="text-sm font-semibold text-gray-700">Form Tambah Keluarga / Kelompok</h5>
+                <p class="text-xs text-gray-400 mt-0.5">Lengkapi data keluarga / kelompok dan jamaah</p>
             </div>
 
             <form action="{{ route('transaksional.keluarga.store') }}" method="POST" id="keluargaForm"
@@ -31,7 +32,7 @@
                 @csrf
 
                 <div class="p-6 space-y-6">
-                    <!-- Informasi Keluarga -->
+                    <!-- Informasi Keluarga / Kelompok -->
                     <div class="border-b border-gray-200 pb-4">
                         <h6 class="text-sm font-semibold text-gray-700 mb-4 flex items-center">
                             <i class="fas fa-users text-yellow-500 mr-2"></i> Informasi Keluarga / Kelompok
@@ -198,7 +199,8 @@
                                     @endforeach
                                 </select>
                                 <p class="text-xs text-gray-400 mt-1">
-                                    <i class="fas fa-info-circle mr-1"></i> Diskon berlaku untuk seluruh anggota keluarga
+                                    <i class="fas fa-info-circle mr-1"></i> Diskon berlaku untuk seluruh jamaah dalam
+                                    keluarga / kelompok
                                 </p>
                             </div>
                             <div>
@@ -360,7 +362,7 @@
                                                         value="1"
                                                         {{ $jamaah['is_kepala_keluarga'] ?? false ? 'checked' : '' }}
                                                         class="w-4 h-4 text-yellow-500 border-gray-300 rounded focus:ring-yellow-500">
-                                                    <span>Kepala Keluarga</span>
+                                                    <span>Kepala Keluarga / Kelompok</span>
                                                 </label>
                                             </div>
                                         </div>
@@ -591,7 +593,7 @@
                                                 <input type="checkbox" name="jamaahs[0][is_kepala_keluarga]"
                                                     value="1" checked
                                                     class="w-4 h-4 text-yellow-500 border-gray-300 rounded focus:ring-yellow-500">
-                                                <span>Kepala Keluarga</span>
+                                                <span>Kepala Keluarga / Kelompok</span>
                                             </label>
                                         </div>
                                     </div>
@@ -984,7 +986,7 @@
                             <label class="flex items-center gap-2 text-sm text-gray-700 cursor-pointer">
                                 <input type="checkbox" name="jamaahs[${jamaahIndex}][is_kepala_keluarga]" value="1"
                                     class="w-4 h-4 text-yellow-500 border-gray-300 rounded focus:ring-yellow-500">
-                                <span>Kepala Keluarga</span>
+                                <span>Kepala Keluarga / Kelompok</span>
                             </label>
                         </div>
                     </div>
@@ -1047,7 +1049,7 @@
 
                     <!-- Total Pendampingan -->
                     <div class="mt-2 text-xs text-gray-500">
-                        Total Pendampingan: 
+                        Total Pendampingan:
                         <span class="font-bold text-blue-600" id="total-pendampingan-${jamaahIndex}">Rp 0</span>
                         <span class="text-gray-400">(Fee Pendamping + Fee Petugas)</span>
                     </div>
@@ -1145,7 +1147,7 @@
                                 input.value = input.value.replace(/\./g, '');
                             }
                         });
-                        // Clean pendampingan fee di jamaahs
+                        // Clean pendampingan fee di jamaah
                         document.querySelectorAll(
                             '[name$="[pendampingan_fee]"], [name$="[pendampingan_fee_petugas]"]').forEach(
                             function(input) {

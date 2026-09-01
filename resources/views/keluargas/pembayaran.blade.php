@@ -1,13 +1,13 @@
 @extends('layouts.app')
 
-@section('title', 'Pembayaran Keluarga - Arrum Tour')
-@section('page-title', 'Pembayaran Keluarga')
+@section('title', 'Pembayaran Keluarga / Kelompok - Arrum Tour')
+@section('page-title', 'Pembayaran Keluarga / Kelompok')
 
 @section('breadcrumb')
     <li class="inline-flex items-center">
         <i class="fas fa-chevron-right text-gray-400 mx-2 text-xs"></i>
         <a href="{{ route('transaksional.keluarga.show', $keluarga->id_keluarga) }}"
-            class="text-gray-500 hover:text-yellow-600">Keluarga</a>
+            class="text-gray-500 hover:text-yellow-600">Keluarga / Kelompok</a>
     </li>
     <li class="inline-flex items-center">
         <i class="fas fa-chevron-right text-gray-400 mx-2 text-xs"></i>
@@ -20,8 +20,8 @@
         <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
             <div class="px-6 py-4 border-b border-gray-100 flex flex-wrap items-center justify-between gap-3">
                 <div>
-                    <h5 class="text-sm font-semibold text-gray-700">Form Pembayaran Keluarga</h5>
-                    <p class="text-xs text-gray-400 mt-0.5">Lakukan pembayaran untuk seluruh keluarga</p>
+                    <h5 class="text-sm font-semibold text-gray-700">Form Pembayaran Keluarga / Kelompok</h5>
+                    <p class="text-xs text-gray-400 mt-0.5">Lakukan pembayaran untuk seluruh keluarga / kelompok</p>
                 </div>
                 <a href="{{ route('transaksional.keluarga.show', $keluarga->id_keluarga) }}"
                     class="inline-flex items-center px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition text-sm font-medium">
@@ -42,7 +42,7 @@
                             </span>
                             {!! $keluarga->status_pembayaran_badge !!}
                             <p class="text-gray-500 text-sm mt-1">
-                                <i class="fas fa-users mr-1"></i> Anggota: {{ $keluarga->jamaahs->count() }} Orang
+                                <i class="fas fa-users mr-1"></i> Jamaah: {{ $keluarga->jamaahs->count() }} Orang
                             </p>
                         </div>
                         <div class="text-right">
@@ -69,16 +69,16 @@
                     </div>
                 </div>
 
-                <!-- Informasi Pembayaran Keluarga -->
+                <!-- Informasi Pembayaran Keluarga / Kelompok -->
                 <div class="bg-blue-50 rounded-xl p-4 border border-blue-200 mb-6">
                     <div class="flex items-start">
                         <i class="fas fa-info-circle text-blue-500 mt-0.5 mr-3"></i>
                         <div>
-                            <p class="text-sm text-blue-700 font-medium">Informasi Pembayaran Keluarga</p>
+                            <p class="text-sm text-blue-700 font-medium">Informasi Pembayaran Keluarga / Kelompok</p>
                             <p class="text-xs text-blue-600 mt-1">
-                                Pembayaran akan dibagi secara proporsional ke seluruh anggota keluarga berdasarkan tagihan
+                                Pembayaran akan dibagi secara proporsional ke seluruh jamaah berdasarkan tagihan
                                 masing-masing.
-                                Setiap anggota akan menerima catatan pembayaran dari keluarga.
+                                Setiap jamaah akan menerima catatan pembayaran dari keluarga / kelompok.
                             </p>
                             <p class="text-xs text-blue-600 mt-1">
                                 <i class="fas fa-check-circle mr-1"></i>
@@ -88,15 +88,15 @@
                     </div>
                 </div>
 
-                <!-- Daftar Anggota -->
+                <!-- Daftar Jamaah -->
                 <div class="bg-gray-50 rounded-xl p-5 border border-gray-100 mb-6">
-                    <h6 class="text-sm font-semibold text-gray-700 mb-4">Rincian Tagihan per Anggota</h6>
+                    <h6 class="text-sm font-semibold text-gray-700 mb-4">Rincian Tagihan per Jamaah</h6>
                     <div class="overflow-x-auto">
                         <table class="w-full text-sm">
                             <thead>
                                 <tr class="border-b border-gray-200">
                                     <th class="px-3 py-2 text-left">#</th>
-                                    <th class="px-3 py-2 text-left">Nama</th>
+                                    <th class="px-3 py-2 text-left">Nama Jamaah</th>
                                     <th class="px-3 py-2 text-right">Tagihan</th>
                                     <th class="px-3 py-2 text-right">Dibayar</th>
                                     <th class="px-3 py-2 text-center">Status</th>

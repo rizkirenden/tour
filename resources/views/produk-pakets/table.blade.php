@@ -11,8 +11,8 @@
                     Harga/Bulan</th>
                 <th class="px-4 py-3 text-center text-xs font-semibold text-gray-500 uppercase tracking-wider">Durasi
                 </th>
-                <th class="px-4 py-3 text-center text-xs font-semibold text-gray-500 uppercase tracking-wider">Include
-                    Tur</th>
+                <th class="px-4 py-3 text-center text-xs font-semibold text-gray-500 uppercase tracking-wider">Umroh Plus
+                </th>
                 <th class="px-4 py-3 text-center text-xs font-semibold text-gray-500 uppercase tracking-wider">Status
                 </th>
                 <th class="px-4 py-3 text-center text-xs font-semibold text-gray-500 uppercase tracking-wider">Aksi</th>
