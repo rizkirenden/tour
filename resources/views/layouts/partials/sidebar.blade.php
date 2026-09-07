@@ -112,6 +112,14 @@
                             <span class="ml-3">Paket Tour</span>
                         </a>
                     </li>
+                    <!-- Tambahkan menu Dokumen Perusahaan -->
+                    <li>
+                        <a href="{{ route('master.dokumen.index') }}"
+                            class="flex items-center px-3 py-2 rounded-lg text-sm transition-all duration-200 {{ request()->routeIs('master.dokumen.*') ? 'bg-yellow-500/50 text-white' : 'text-yellow-200 hover:bg-yellow-500/30 hover:text-white' }}">
+                            <i class="fas fa-file-image w-5 text-center text-xs"></i>
+                            <span class="ml-3">Setting Dokumen</span>
+                        </a>
+                    </li>
                 </ul>
             </li>
 

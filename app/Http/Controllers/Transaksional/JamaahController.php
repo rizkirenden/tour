@@ -432,35 +432,54 @@ class JamaahController extends Controller
     // ==========================================
     // CETAK PDF RIWAYAT PEMBAYARAN DENGAN BASE64
     // ==========================================
+
     public function cetakPdfRiwayat($id)
-    {
+{
+    // Set waktu eksekusi lebih lama
+    set_time_limit(300);
+
+    try {
         // Ambil data jamaah dengan relasi
         $jamaah = $this->service->getByIdWithRelations($id);
 
-        // Ambil transaksi dengan relasi
+        // Ambil transaksi dengan limit 100
         $transaksis = TransaksiPembayaran::with(['metodePembayaran', 'jenisTransaksi'])
-                        ->where('id_jamaah', $id)
-                        ->orderBy('created_at', 'asc')
-                        ->get();
+            ->where('id_jamaah', $id)
+            ->orderBy('created_at', 'desc')
+            ->limit(100)
+            ->get()
+            ->reverse();
 
         // Konversi gambar bukti ke base64
         foreach ($transaksis as $transaksi) {
             if ($transaksi->bukti_pembayaran) {
                 $fullPath = storage_path('app/public/' . $transaksi->bukti_pembayaran);
 
-                // Cek apakah file exists
                 if (file_exists($fullPath)) {
-                    $extension = strtolower(pathinfo($fullPath, PATHINFO_EXTENSION));
-                    $mimeType = mime_content_type($fullPath);
+                    $fileSize = filesize($fullPath);
+                    // Proses jika file < 500KB
+                    if ($fileSize < 500000) {
+                        $extension = strtolower(pathinfo($fullPath, PATHINFO_EXTENSION));
+                        $mimeType = mime_content_type($fullPath);
 
-                    // Baca file dan konversi ke base64
-                    $imageData = base64_encode(file_get_contents($fullPath));
-
-                    // Simpan base64 ke dalam object transaksi
-                    $transaksi->bukti_base64 = 'data:' . $mimeType . ';base64,' . $imageData;
-                    $transaksi->bukti_extension = $extension;
-                    $transaksi->bukti_name = basename($transaksi->bukti_pembayaran);
-                    $transaksi->bukti_exists = true;
+                        // Untuk gambar
+                        if (in_array($extension, ['jpg', 'jpeg', 'png', 'gif', 'webp', 'bmp'])) {
+                            $imageData = base64_encode(file_get_contents($fullPath));
+                            $transaksi->bukti_base64 = 'data:' . $mimeType . ';base64,' . $imageData;
+                            $transaksi->bukti_exists = true;
+                        } else {
+                            // Untuk file lain (PDF, dll)
+                            $transaksi->bukti_exists = true;
+                            $transaksi->bukti_base64 = null;
+                        }
+                        $transaksi->bukti_extension = $extension;
+                        $transaksi->bukti_name = basename($transaksi->bukti_pembayaran);
+                    } else {
+                        $transaksi->bukti_exists = true;
+                        $transaksi->bukti_base64 = null;
+                        $transaksi->bukti_extension = pathinfo($fullPath, PATHINFO_EXTENSION);
+                        $transaksi->bukti_name = basename($transaksi->bukti_pembayaran);
+                    }
                 } else {
                     $transaksi->bukti_exists = false;
                     $transaksi->bukti_base64 = null;
@@ -479,16 +498,27 @@ class JamaahController extends Controller
             'dicetak_oleh' => Auth::user()->name ?? 'System'
         ];
 
+        // Generate PDF
         $pdf = Pdf::loadView('jamaahs.pdf-riwayat', $data);
         $pdf->setPaper('A4', 'portrait');
+
+        // OPTIMASI
         $pdf->setOptions([
-            'isRemoteEnabled' => true,
+            'defaultFont' => 'sans-serif',
             'isHtml5ParserEnabled' => true,
-            'isPhpEnabled' => true
+            'isRemoteEnabled' => false,
+            'isPhpEnabled' => false,
+            'dpi' => 96,
+            'isFontSubsettingEnabled' => false,
+            'isJavascriptEnabled' => false,
         ]);
 
         return $pdf->download('Riwayat_Pembayaran_' . $jamaah->nama_lengkap . '_' . date('Ymd_His') . '.pdf');
+
+    } catch (\Exception $e) {
+        return back()->with('error', 'Gagal generate PDF: ' . $e->getMessage());
     }
+}
 
     // ==========================================
     // GET HARGA PRODUK BY BULAN & TAHUN (AJAX)

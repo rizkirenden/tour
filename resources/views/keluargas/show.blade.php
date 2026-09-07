@@ -342,10 +342,6 @@
 
                 <!-- Aksi Bawah -->
                 <div class="mt-6 pt-6 border-t border-gray-100 flex flex-wrap items-center justify-end gap-3">
-                    <button type="button" onclick="window.print()"
-                        class="inline-flex items-center px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition text-sm font-medium">
-                        <i class="fas fa-print mr-2"></i> Cetak
-                    </button>
                     <a href="{{ route('transaksional.keluarga.index') }}"
                         class="inline-flex items-center px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition text-sm font-medium">
                         <i class="fas fa-arrow-left mr-2"></i> Kembali
@@ -357,6 +353,11 @@
                     <a href="{{ route('transaksional.keluarga.pembayaran', $keluarga->id_keluarga) }}"
                         class="inline-flex items-center px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition text-sm font-medium shadow-sm hover:shadow">
                         <i class="fas fa-money-bill-wave mr-2"></i> Bayar
+                    </a>
+                    <a href="{{ route('transaksional.keluarga.cetak_pembayaran', $keluarga->id_keluarga) }}"
+                        target="_blank"
+                        class="inline-flex items-center px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition text-sm font-medium shadow-sm hover:shadow">
+                        <i class="fas fa-print mr-2"></i> Cetak PDF
                     </a>
                 </div>
             </div>

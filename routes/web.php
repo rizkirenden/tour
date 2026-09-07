@@ -17,6 +17,8 @@ use App\Http\Controllers\Master\PaketTourController;
 use App\Http\Controllers\Transaksional\JamaahController;
 use App\Http\Controllers\Transaksional\KeluargaController;
 use App\Http\Controllers\Transaksional\DepartureController;
+use App\Http\Controllers\Master\DokumenController;
+
 
 Route::get('/', [DashboardController::class, 'index'])->name('dashboard');
 
@@ -28,6 +30,10 @@ Route::prefix('master')->name('master.')->group(function () {
     Route::patch('produk/{id}/toggle-status', [ProdukPaketController::class, 'toggleStatus'])->name('produk.toggle-status');
     Route::get('get-paket-tour-info/{id}', [ProdukPaketController::class, 'getPaketTourInfo'])->name('get-paket-tour-info');
     Route::patch('produk/{id}/update-status-keberangkatan', [ProdukPaketController::class, 'updateStatusKeberangkatan'])->name('produk.update-status-keberangkatan');
+
+    Route::get('dokumen', [DokumenController::class, 'index'])->name('dokumen.index');
+    Route::post('dokumen/upload', [DokumenController::class, 'upload'])->name('dokumen.upload');
+    Route::delete('dokumen/delete/{id}', [DokumenController::class, 'delete'])->name('dokumen.delete');
 
     // HARGA BULANAN ROUTES
     Route::post('produk/{produkId}/harga-bulanan', [ProdukPaketController::class, 'storeHargaBulanan'])->name('produk.harga-bulanan.store');
@@ -69,6 +75,7 @@ Route::prefix('transaksional')->name('transaksional.')->group(function () {
     Route::resource('keluarga', KeluargaController::class);
     Route::get('keluarga/{id}/pembayaran', [KeluargaController::class, 'pembayaran'])->name('keluarga.pembayaran');
     Route::post('keluarga/{id}/bayar', [KeluargaController::class, 'bayar'])->name('keluarga.bayar');
+    Route::get('keluarga/{id}/cetak-pembayaran', [KeluargaController::class, 'cetakPembayaran'])->name('keluarga.cetak_pembayaran');
 
     // Jamaah
     Route::resource('jamaah', JamaahController::class);
@@ -77,7 +84,7 @@ Route::prefix('transaksional')->name('transaksional.')->group(function () {
     Route::delete('jamaah/bukti/{id}', [JamaahController::class, 'hapusBukti'])->name('jamaah.hapus-bukti');
     Route::delete('jamaah/transaksi/{id}', [JamaahController::class, 'hapusTransaksi'])->name('jamaah.hapus-transaksi');
     Route::get('jamaah/{id}/cetak-pdf', [JamaahController::class, 'cetakPdfRiwayat'])->name('jamaah.cetak-pdf');
-    
+
     // ==========================================
     // ROUTE UNTUK GET HARGA PRODUK BY BULAN
     // ==========================================

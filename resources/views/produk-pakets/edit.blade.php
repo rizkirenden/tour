@@ -95,7 +95,7 @@
                             @php $editIndex = 0; @endphp
                             @foreach ($produk->hargaBulanan as $harga)
                                 <div
-                                    class="harga-row grid grid-cols-1 md:grid-cols-4 gap-3 mb-2 items-end bg-gray-50 p-3 rounded-lg border border-gray-200">
+                                    class="harga-row grid grid-cols-1 md:grid-cols-5 gap-3 mb-2 items-end bg-gray-50 p-3 rounded-lg border border-gray-200">
                                     <input type="hidden" name="harga_bulanan[{{ $editIndex }}][id]"
                                         value="{{ $harga->id }}">
                                     <div>
@@ -136,6 +136,19 @@
                                             oninput="formatRupiah(this)"
                                             class="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500"
                                             placeholder="0" required>
+                                    </div>
+                                    <div>
+                                        <label class="block text-xs font-medium text-gray-600 mb-1">Flyer</label>
+                                        @if ($harga->flyer_url)
+                                            <div class="mb-1 p-1 bg-white rounded border border-gray-200">
+                                                <img src="{{ $harga->flyer_url }}" alt="Flyer" class="max-h-12 rounded">
+                                                <p class="text-xs text-gray-400 truncate">{{ basename($harga->flyer) }}</p>
+                                            </div>
+                                        @endif
+                                        <input type="file" name="harga_bulanan[{{ $editIndex }}][flyer]"
+                                            accept="image/*"
+                                            class="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-yellow-500 file:mr-2 file:py-1 file:px-3 file:rounded-lg file:border-0 file:text-sm file:bg-yellow-50 file:text-yellow-700 hover:file:bg-yellow-100">
+                                        <p class="text-xs text-gray-400 mt-1">Kosongkan jika tidak ingin mengganti</p>
                                     </div>
                                     <div class="flex items-center gap-2">
                                         <label class="flex items-center gap-1 text-xs">
@@ -343,68 +356,6 @@
                                     </span>
                                 </div>
                             </div>
-                            <div class="mt-2 text-xs text-gray-500">
-                                <span class="text-gray-500">Total Harga Hotel:</span>
-                                <span id="info_total_hotel" class="font-medium text-yellow-600">
-                                    {{ $produk->paketTour->total_harga_hotel_formatted ?? 'Rp 0' }}
-                                </span>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Upload Flyer -->
-                    <div>
-                        <h6 class="text-sm font-semibold text-gray-700 mb-4 flex items-center">
-                            <i class="fas fa-image text-yellow-500 mr-2"></i> Upload Flyer
-                            <span class="ml-2 text-xs text-gray-400">(opsional)</span>
-                        </h6>
-
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1.5">
-                                File Flyer
-                            </label>
-
-                            @if ($produk->flyer_url)
-                                <div class="mb-3 p-3 bg-gray-50 rounded-lg border border-gray-200">
-                                    <p class="text-sm text-gray-600 mb-2">Flyer saat ini:</p>
-                                    <img src="{{ $produk->flyer_url }}" alt="Flyer {{ $produk->nama_produk }}"
-                                        class="max-h-48 rounded-lg border border-gray-200">
-                                    <p class="text-xs text-gray-400 mt-1">{{ basename($produk->flyer) }}</p>
-                                </div>
-                            @endif
-
-                            <div class="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-gray-300 border-dashed rounded-xl hover:border-yellow-400 transition-colors cursor-pointer"
-                                id="dropzone">
-                                <div class="space-y-1 text-center">
-                                    <i class="fas fa-cloud-upload-alt text-4xl text-gray-400"></i>
-                                    <div class="flex text-sm text-gray-600">
-                                        <label for="flyer"
-                                            class="relative cursor-pointer rounded-md font-medium text-yellow-600 hover:text-yellow-500 focus-within:outline-none focus-within:ring-2 focus-within:ring-yellow-500">
-                                            <span>Upload file baru</span>
-                                            <input id="flyer" name="flyer" type="file" class="sr-only"
-                                                accept="image/*" onchange="previewImage(event)">
-                                        </label>
-                                        <p class="pl-1">atau drag and drop</p>
-                                    </div>
-                                    <p class="text-xs text-gray-500">PNG, JPG, JPEG, GIF, SVG up to 2MB</p>
-                                    <div id="filePreview" class="hidden mt-3">
-                                        <img id="imagePreview" src="#" alt="Preview Flyer"
-                                            class="max-h-48 rounded-lg mx-auto border border-gray-200">
-                                        <p id="fileName" class="text-sm text-gray-600 mt-2"></p>
-                                        <button type="button" onclick="removeFile()"
-                                            class="mt-2 text-sm text-red-500 hover:text-red-700">
-                                            <i class="fas fa-times mr-1"></i> Hapus file
-                                        </button>
-                                    </div>
-                                </div>
-                            </div>
-                            @error('flyer')
-                                <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
-                            @enderror
-                            <p class="text-xs text-gray-400 mt-2">
-                                <i class="fas fa-info-circle mr-1"></i>
-                                Upload file baru akan menggantikan flyer yang lama
-                            </p>
                         </div>
                     </div>
 
@@ -474,7 +425,6 @@
             document.getElementById('info_kota').textContent = 'Memuat...';
             document.getElementById('info_negara').textContent = 'Memuat...';
             document.getElementById('info_durasi').textContent = 'Memuat...';
-            document.getElementById('info_total_hotel').textContent = 'Memuat...';
 
             fetch(`/master/get-paket-tour-info/${tourId}`)
                 .then(response => response.json())
@@ -482,7 +432,6 @@
                     document.getElementById('info_kota').textContent = data.kota_tujuan || '-';
                     document.getElementById('info_negara').textContent = data.negara || '-';
                     document.getElementById('info_durasi').textContent = data.durasi_hari + ' Hari';
-                    document.getElementById('info_total_hotel').textContent = data.total_harga_hotel || 'Rp 0';
 
                     durasiTourInput.value = data.durasi_hari || 0;
                     calculateTotalDurasi();
@@ -492,7 +441,6 @@
                     document.getElementById('info_kota').textContent = 'Error';
                     document.getElementById('info_negara').textContent = 'Error';
                     document.getElementById('info_durasi').textContent = 'Error';
-                    document.getElementById('info_total_hotel').textContent = 'Error';
                 });
         }
 
@@ -507,40 +455,12 @@
             document.getElementById('durasi_hari').value = Math.round(total);
         }
 
-        // Preview Image
-        function previewImage(event) {
-            const file = event.target.files[0];
-            if (file) {
-                const reader = new FileReader();
-                reader.onload = function(e) {
-                    const preview = document.getElementById('filePreview');
-                    const imagePreview = document.getElementById('imagePreview');
-                    const fileName = document.getElementById('fileName');
-
-                    preview.classList.remove('hidden');
-                    imagePreview.src = e.target.result;
-                    fileName.textContent = file.name;
-                };
-                reader.readAsDataURL(file);
-            }
-        }
-
-        function removeFile() {
-            const fileInput = document.getElementById('flyer');
-            const preview = document.getElementById('filePreview');
-
-            fileInput.value = '';
-            preview.classList.add('hidden');
-            document.getElementById('imagePreview').src = '#';
-            document.getElementById('fileName').textContent = '';
-        }
-
         // Harga Bulanan Functions
         function addHargaBulanan() {
             const container = document.getElementById('hargaBulananList');
             const row = document.createElement('div');
             row.className =
-                'harga-row grid grid-cols-1 md:grid-cols-4 gap-3 mb-2 items-end bg-gray-50 p-3 rounded-lg border border-gray-200';
+                'harga-row grid grid-cols-1 md:grid-cols-5 gap-3 mb-2 items-end bg-gray-50 p-3 rounded-lg border border-gray-200';
             row.innerHTML = `
                 <div>
                     <label class="block text-xs font-medium text-gray-600 mb-1">Bulan <span class="text-red-500">*</span></label>
@@ -568,6 +488,12 @@
                         oninput="formatRupiah(this)"
                         class="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500"
                         placeholder="0" required>
+                </div>
+                <div>
+                    <label class="block text-xs font-medium text-gray-600 mb-1">Flyer</label>
+                    <input type="file" name="harga_bulanan[${hargaIndex}][flyer]" accept="image/*"
+                        class="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-yellow-500 file:mr-2 file:py-1 file:px-3 file:rounded-lg file:border-0 file:text-sm file:bg-yellow-50 file:text-yellow-700 hover:file:bg-yellow-100">
+                    <p class="text-xs text-gray-400 mt-1">PNG, JPG, JPEG, SVG (max 2MB)</p>
                 </div>
                 <div class="flex items-center gap-2">
                     <label class="flex items-center gap-1 text-xs">
@@ -603,39 +529,11 @@
             const form = document.getElementById('produkForm');
             if (form) {
                 form.addEventListener('submit', function(e) {
-                    // Clean harga bulanan
                     document.querySelectorAll('[name$="[harga]"]').forEach(input => {
                         if (input.value) {
                             input.value = input.value.replace(/\./g, '');
                         }
                     });
-                });
-            }
-
-            // Drag and Drop
-            const dropzone = document.getElementById('dropzone');
-            if (dropzone) {
-                dropzone.addEventListener('dragover', function(e) {
-                    e.preventDefault();
-                    this.classList.add('border-yellow-500', 'bg-yellow-50');
-                });
-
-                dropzone.addEventListener('dragleave', function(e) {
-                    e.preventDefault();
-                    this.classList.remove('border-yellow-500', 'bg-yellow-50');
-                });
-
-                dropzone.addEventListener('drop', function(e) {
-                    e.preventDefault();
-                    this.classList.remove('border-yellow-500', 'bg-yellow-50');
-
-                    const files = e.dataTransfer.files;
-                    if (files.length > 0) {
-                        const fileInput = document.getElementById('flyer');
-                        fileInput.files = files;
-                        const event = new Event('change');
-                        fileInput.dispatchEvent(event);
-                    }
                 });
             }
 

@@ -5,10 +5,13 @@ namespace App\Http\Controllers\Transaksional;
 use App\Http\Controllers\Controller;
 use App\Services\KeluargaService;
 use App\Models\TransaksiPembayaran;
+use App\Models\MetodePembayaran;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Auth;
+use Barryvdh\DomPDF\Facade\Pdf;
+use App\Models\DokumenPerusahaan;
 
 class KeluargaController extends Controller
 {
@@ -266,5 +269,102 @@ class KeluargaController extends Controller
 
         return redirect()->route('transaksional.keluarga.show', $id)
             ->with('success', "Pembayaran keluarga sebesar Rp " . number_format($jumlahBayar, 0, ',', '.') . " berhasil dan telah masuk ke riwayat pembayaran jamaah masing-masing!");
+    }
+
+        public function cetakPembayaran($id)
+    {
+        $keluarga = $this->service->getById($id);
+
+        // Ambil semua transaksi pembayaran dari semua jamaah dalam keluarga
+        $jamaahIds = $keluarga->jamaahs->pluck('id_jamaah')->toArray();
+        $transaksis = TransaksiPembayaran::with(['metodePembayaran', 'jenisTransaksi', 'jamaah'])
+            ->whereIn('id_jamaah', $jamaahIds)
+            ->orderBy('created_at', 'asc')
+            ->get();
+
+        // Tambahkan data bukti pembayaran ke setiap transaksi
+        foreach ($transaksis as $transaksi) {
+            if ($transaksi->bukti_pembayaran) {
+                $path = storage_path('app/public/' . $transaksi->bukti_pembayaran);
+                if (file_exists($path)) {
+                    $extension = pathinfo($path, PATHINFO_EXTENSION);
+                    $isImage = in_array(strtolower($extension), ['jpg', 'jpeg', 'png', 'gif', 'webp', 'bmp']);
+
+                    if ($isImage) {
+                        $imageData = base64_encode(file_get_contents($path));
+                        $transaksi->bukti_base64 = 'data:image/' . $extension . ';base64,' . $imageData;
+                        $transaksi->bukti_exists = true;
+                    } else {
+                        $transaksi->bukti_base64 = null;
+                        $transaksi->bukti_exists = true;
+                        $transaksi->is_pdf_file = strtolower($extension) == 'pdf';
+                    }
+                    $transaksi->bukti_extension = $extension;
+                    $transaksi->bukti_name = basename($transaksi->bukti_pembayaran);
+                } else {
+                    $transaksi->bukti_exists = false;
+                }
+            } else {
+                $transaksi->bukti_exists = false;
+            }
+        }
+
+        // Ambil semua metode pembayaran yang aktif
+        $metodePembayarans = MetodePembayaran::active()
+            ->orderBy('jenis_pembayaran')
+            ->orderBy('nama_bank')
+            ->get();
+
+        // Ambil logo dari tabel dokumen_perusahaans
+        $logo = DokumenPerusahaan::where('jenis', 'logo')->first();
+        $logoBase64 = null;
+        $logoExists = false;
+        
+        if ($logo) {
+            // Cek file di storage
+            $fullPath = storage_path('app/public/' . $logo->path);
+            
+            if (file_exists($fullPath)) {
+                $logoExists = true;
+                $imageData = file_get_contents($fullPath);
+                $logoBase64 = 'data:image/png;base64,' . base64_encode($imageData);
+            } else {
+                // Coba cek di public/assets sebagai fallback
+                $fallbackPath = public_path('assets/logo.PNG');
+                if (file_exists($fallbackPath)) {
+                    $logoExists = true;
+                    $imageData = file_get_contents($fallbackPath);
+                    $logoBase64 = 'data:image/png;base64,' . base64_encode($imageData);
+                }
+            }
+        }
+
+        $total_transaksi = $transaksis->sum('jumlah_bayar');
+        $dicetak_oleh = Auth::user()->name ?? 'System';
+        $tanggal_cetak = date('d/m/Y H:i');
+
+        $data = compact(
+            'keluarga',
+            'transaksis',
+            'total_transaksi',
+            'dicetak_oleh',
+            'tanggal_cetak',
+            'metodePembayarans',
+            'logoBase64',
+            'logoExists'
+        );
+
+        $pdf = Pdf::loadView('keluargas.pdf-riwayat-keluarga', $data);
+        $pdf->setPaper('A4', 'portrait');
+
+        // Set options untuk better quality
+        $pdf->setOptions([
+            'defaultFont' => 'sans-serif',
+            'isHtml5ParserEnabled' => true,
+            'isRemoteEnabled' => true,
+            'isPhpEnabled' => true,
+        ]);
+
+        return $pdf->download('Riwayat_Pembayaran_Keluarga_' . $keluarga->kode_keluarga . '.pdf');
     }
 }
