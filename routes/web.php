@@ -91,53 +91,110 @@ Route::prefix('transaksional')->name('transaksional.')->group(function () {
     Route::get('get-harga-produk-by-bulan', [JamaahController::class, 'getHargaProdukByBulan'])
         ->name('get-harga-produk-by-bulan');
 
-    // Departure
-    Route::resource('departure', DepartureController::class);
-    Route::post('departure/{id}/add-jamaah', [DepartureController::class, 'addJamaah'])->name('departure.add-jamaah');
-    Route::delete('departure/{departureId}/remove-jamaah/{jamaahId}', [DepartureController::class, 'removeJamaah'])->name('departure.remove-jamaah');
-    Route::patch('departure/{id}/update-status', [DepartureController::class, 'updateStatus'])->name('departure.update-status');
-    Route::post('departure/{id}/recalculate', [DepartureController::class, 'recalculate'])->name('departure.recalculate');
-    Route::post('departure/recalculate-all', [DepartureController::class, 'recalculateAll'])->name('departure.recalculate-all');
+   // ==========================================
+// DEPARTURE ROUTES
+// ==========================================
 
-    Route::get('get-jamaah-by-produk/{id_produk}', [DepartureController::class, 'getJamaahByProduk'])->name('get-jamaah-by-produk');
-    Route::get('get-kamars-by-hotel/{id_hotel}', [DepartureController::class, 'getKamarsByHotel'])->name('get-kamars-by-hotel');
+Route::resource('departure', DepartureController::class);
 
-    Route::put('departure/{id}/update-maskapai', [DepartureController::class, 'updateMaskapai'])->name('departure.update-maskapai');
-    Route::put('departure/{id}/update-hotel', [DepartureController::class, 'updateHotel'])->name('departure.update-hotel');
-    Route::put('departure/{id}/update-jamaah', [DepartureController::class, 'updateJamaah'])->name('departure.update-jamaah');
-    Route::put('departure/{id}/update-catatan', [DepartureController::class, 'updateCatatan'])->name('departure.update-catatan');
+// ==========================================
+// JAMAAH MANAGEMENT
+// ==========================================
+Route::post('departure/{id}/add-jamaah', [DepartureController::class, 'addJamaah'])
+    ->name('departure.add-jamaah');
+Route::delete('departure/{departureId}/remove-jamaah/{jamaahId}', [DepartureController::class, 'removeJamaah'])
+    ->name('departure.remove-jamaah');
+Route::put('departure/{id}/update-jamaah', [DepartureController::class, 'updateJamaah'])
+    ->name('departure.update-jamaah');
 
-    Route::put('departure/{id}/update-perlengkapan', [DepartureController::class, 'updatePerlengkapan'])->name('departure.update-perlengkapan');
-    Route::delete('departure/{departureId}/remove-perlengkapan/{departurePerlengkapanId}', [DepartureController::class, 'removePerlengkapan'])->name('departure.remove-perlengkapan');
-    Route::patch('departure/{departureId}/toggle-perlengkapan/{departurePerlengkapanId}', [DepartureController::class, 'togglePerlengkapan'])->name('departure.toggle-perlengkapan');
-    Route::patch('departure/update-perlengkapan-status-jamaah/{departurePerlengkapanId}/{jamaahId}', [DepartureController::class, 'updatePerlengkapanStatusJamaah'])->name('departure.update-perlengkapan-status-jamaah');
+// ==========================================
+// MASKAPAI
+// ==========================================
+Route::put('departure/{id}/update-maskapai', [DepartureController::class, 'updateMaskapai'])
+    ->name('departure.update-maskapai');
 
-    Route::get('get-jamaah-by-produk/{id_produk}', [DepartureController::class, 'getJamaahByProduk'])->name('get-jamaah-by-produk');
-    Route::get('get-kamars-by-hotel-with-selected/{idHotel}/{departureId}', [DepartureController::class, 'getKamarsByHotelWithSelected'])->name('get-kamars-by-hotel-with-selected');
+// ==========================================
+// HOTEL
+// ==========================================
+Route::put('departure/{id}/update-hotel', [DepartureController::class, 'updateHotel'])
+    ->name('departure.update-hotel');
 
-    Route::put('departure/{id}/update-maskapai', [DepartureController::class, 'updateMaskapai'])->name('departure.update-maskapai');
-    Route::put('departure/{id}/update-hotel', [DepartureController::class, 'updateHotel'])->name('departure.update-hotel');
-    Route::put('departure/{id}/update-jamaah', [DepartureController::class, 'updateJamaah'])->name('departure.update-jamaah');
-    Route::put('departure/{id}/update-perlengkapan', [DepartureController::class, 'updatePerlengkapan'])->name('departure.update-perlengkapan');
-    Route::put('departure/{id}/update-catatan', [DepartureController::class, 'updateCatatan'])->name('departure.update-catatan');
+// ==========================================
+// PERLENGKAPAN
+// ==========================================
+Route::put('departure/{id}/update-perlengkapan', [DepartureController::class, 'updatePerlengkapan'])
+    ->name('departure.update-perlengkapan');
+Route::delete('departure/{departureId}/remove-perlengkapan/{departurePerlengkapanId}', [DepartureController::class, 'removePerlengkapan'])
+    ->name('departure.remove-perlengkapan');
+Route::patch('departure/{departureId}/toggle-perlengkapan/{departurePerlengkapanId}', [DepartureController::class, 'togglePerlengkapan'])
+    ->name('departure.toggle-perlengkapan');
+   Route::patch('departure/update-perlengkapan-status-jamaah/{departurePerlengkapanId}/{jamaahId}',[DepartureController::class, 'updatePerlengkapanStatusJamaah'])->name('departure.update-perlengkapan-status-jamaah');
+Route::get('get-perlengkapan-detail/{perlengkapanId}', [DepartureController::class, 'getPerlengkapanDetail'])
+    ->name('get-perlengkapan-detail');
 
-    Route::delete('departure/{departureId}/remove-perlengkapan/{departurePerlengkapanId}', [DepartureController::class, 'removePerlengkapan'])->name('departure.remove-perlengkapan');
-    Route::patch('departure/{departureId}/toggle-perlengkapan/{departurePerlengkapanId}', [DepartureController::class, 'togglePerlengkapan'])->name('departure.toggle-perlengkapan');
-    Route::patch('departure/update-perlengkapan-status-jamaah/{departurePerlengkapanId}/{jamaahId}', [DepartureController::class, 'updatePerlengkapanStatusJamaah'])->name('departure.update-perlengkapan-status-jamaah');
+// ==========================================
+// JENIS TRANSAKSI
+// ==========================================
+Route::put('departure/{id}/jenis-transaksi', [DepartureController::class, 'updateJenisTransaksi'])
+    ->name('departure.update-jenis-transaksi');
+Route::delete('departure/{departureId}/jenis-transaksi/{jenisTransaksiId}', [DepartureController::class, 'removeJenisTransaksi'])
+    ->name('departure.remove-jenis-transaksi');
+Route::patch('departure/{departureId}/jenis-transaksi/{jenisTransaksiId}/harga', [DepartureController::class, 'updateJenisTransaksiHarga'])
+    ->name('departure.update-jenis-transaksi-harga');
 
-    Route::post('departure/{id}/add-jamaah', [DepartureController::class, 'addJamaah'])->name('departure.add-jamaah');
-    Route::delete('departure/{departureId}/remove-jamaah/{jamaahId}', [DepartureController::class, 'removeJamaah'])->name('departure.remove-jamaah');
-    Route::patch('departure/{id}/update-status', [DepartureController::class, 'updateStatus'])->name('departure.update-status');
-    Route::post('departure/{id}/recalculate', [DepartureController::class, 'recalculate'])->name('departure.recalculate');
-    Route::post('departure/recalculate-all', [DepartureController::class, 'recalculateAll'])->name('departure.recalculate-all');
+// ==========================================
+// PAKET TOUR HOTEL
+// ==========================================
+Route::put('departure/{id}/paket-tour-hotel', [DepartureController::class, 'updatePaketTourHotel'])
+    ->name('departure.update-paket-tour-hotel');
+Route::get('departure/{id}/paket-tour-hotels', [DepartureController::class, 'getPaketTourHotels'])
+    ->name('departure.get-paket-tour-hotels');
 
-    Route::get('get-perlengkapan-detail/{perlengkapanId}', [DepartureController::class, 'getPerlengkapanDetail'])->name('get-perlengkapan-detail');
+// ==========================================
+// CATATAN
+// ==========================================
+Route::put('departure/{id}/update-catatan', [DepartureController::class, 'updateCatatan'])
+    ->name('departure.update-catatan');
 
-    Route::put('departure/{id}/jenis-transaksi', [DepartureController::class, 'updateJenisTransaksi'])->name('departure.update-jenis-transaksi');
-    Route::delete('departure/{departureId}/jenis-transaksi/{jenisTransaksiId}', [DepartureController::class, 'removeJenisTransaksi'])->name('departure.remove-jenis-transaksi');
-    Route::patch('departure/{departureId}/jenis-transaksi/{jenisTransaksiId}/harga', [DepartureController::class, 'updateJenisTransaksiHarga'])->name('departure.update-jenis-transaksi-harga');
-    Route::put('departure/{id}/paket-tour-hotel', [DepartureController::class, 'updatePaketTourHotel'])->name('departure.update-paket-tour-hotel');
-    Route::get('departure/{id}/paket-tour-hotels', [DepartureController::class, 'getPaketTourHotels'])->name('departure.get-paket-tour-hotels');
-    Route::post('departure/{id}/sync-all', [DepartureController::class, 'syncAll'])->name('departure.sync-all');
-    Route::post('departure/{id}/sync-jamaahs', [DepartureController::class, 'syncJamaahs'])->name('departure.sync-jamaahs');
+// ==========================================
+// STATUS & RECALCULATE
+// ==========================================
+Route::patch('departure/{id}/update-status', [DepartureController::class, 'updateStatus'])
+    ->name('departure.update-status');
+Route::post('departure/{id}/recalculate', [DepartureController::class, 'recalculate'])
+    ->name('departure.recalculate');
+Route::post('departure/recalculate-all', [DepartureController::class, 'recalculateAll'])
+    ->name('departure.recalculate-all');
+
+    // ✅ Route toggle status jamaah per jenis transaksi
+Route::patch(
+    'departure/update-jenis-transaksi-status-jamaah/{departureJenisTransaksiId}/{jamaahId}',
+    [DepartureController::class, 'updateJenisTransaksiStatusJamaah']
+)->name('departure.update-jenis-transaksi-status-jamaah');
+
+// ✅ Route detail jenis transaksi (AJAX)
+Route::get(
+    'get-jenis-transaksi-detail/{departureJenisTransaksiId}',
+    [DepartureController::class, 'getJenisTransaksiDetail']
+)->name('get-jenis-transaksi-detail');
+
+// ==========================================
+// SYNC
+// ==========================================
+Route::post('departure/{id}/sync-all', [DepartureController::class, 'syncAll'])
+    ->name('departure.sync-all');
+Route::post('departure/{id}/sync-jamaahs', [DepartureController::class, 'syncJamaahs'])
+    ->name('departure.sync-jamaahs');
+
+// ==========================================
+// AJAX / API
+// ==========================================
+Route::get('get-jamaah-by-produk/{id_produk}', [DepartureController::class, 'getJamaahByProduk'])
+    ->name('get-jamaah-by-produk');
+Route::get('get-kamars-by-hotel/{idHotel}', [DepartureController::class, 'getKamarsByHotel'])
+    ->name('get-kamars-by-hotel');
+Route::get('get-kamars-by-hotel-with-selected/{idHotel}/{departureId}', [DepartureController::class, 'getKamarsByHotelWithSelected'])
+    ->name('get-kamars-by-hotel-with-selected');
+Route::get('get-kamars-by-hotel-for-tour/{idHotel}/{departureId}', [DepartureController::class, 'getKamarsByHotelForTour'])
+    ->name('get-kamars-for-tour');
 });

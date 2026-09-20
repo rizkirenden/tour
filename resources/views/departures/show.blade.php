@@ -126,7 +126,6 @@
                             </div>
                         </div>
 
-                        <!-- SEARCH MASKAPAI -->
                         <div class="mb-3">
                             <div class="relative">
                                 <i class="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm"></i>
@@ -223,8 +222,8 @@
                                         <div class="flex items-center justify-between">
                                             <h5 class="text-sm font-semibold text-gray-700">
                                                 {{ $departure->hotel_mekkah_nama }}</h5>
-                                            <span
-                                                class="text-sm font-bold text-yellow-600">{{ $departure->total_harga_hotel_mekkah_formatted }}</span>
+                                            <span class="text-sm font-bold text-yellow-600">
+                                                {{ $departure->total_harga_hotel_mekkah_formatted }}</span>
                                         </div>
                                         @if ($hotelMekkahDetails->count() > 0)
                                             <div class="grid grid-cols-1 gap-2 mt-2">
@@ -257,8 +256,8 @@
                                         <div class="flex items-center justify-between">
                                             <h5 class="text-sm font-semibold text-gray-700">
                                                 {{ $departure->hotel_madinah_nama }}</h5>
-                                            <span
-                                                class="text-sm font-bold text-yellow-600">{{ $departure->total_harga_hotel_madinah_formatted }}</span>
+                                            <span class="text-sm font-bold text-yellow-600">
+                                                {{ $departure->total_harga_hotel_madinah_formatted }}</span>
                                         </div>
                                         @if ($hotelMadinahDetails->count() > 0)
                                             <div class="grid grid-cols-1 gap-2 mt-2">
@@ -291,8 +290,8 @@
                                         <div class="flex items-center justify-between">
                                             <h5 class="text-sm font-semibold text-gray-700">
                                                 {{ $departure->hotel_transit_nama }}</h5>
-                                            <span
-                                                class="text-sm font-bold text-yellow-600">{{ $departure->total_harga_hotel_transit_formatted }}</span>
+                                            <span class="text-sm font-bold text-yellow-600">
+                                                {{ $departure->total_harga_hotel_transit_formatted }}</span>
                                         </div>
                                         @if ($hotelTransitDetails->count() > 0)
                                             <div class="grid grid-cols-1 gap-2 mt-2">
@@ -366,7 +365,6 @@
                             </div>
                         </div>
 
-                        <!-- SEARCH HOTEL TOUR -->
                         <div class="mb-3">
                             <div class="relative">
                                 <i
@@ -424,8 +422,8 @@
 
                                     <div class="mt-3 pt-3 border-t border-gray-200 flex items-center justify-between">
                                         <span class="text-sm font-semibold text-gray-700">Total Hotel Tour</span>
-                                        <span
-                                            class="text-lg font-bold text-blue-600">{{ $departure->total_harga_paket_tour_hotel_formatted }}</span>
+                                        <span class="text-lg font-bold text-blue-600">
+                                            {{ $departure->total_harga_paket_tour_hotel_formatted }}</span>
                                     </div>
                                 @else
                                     <div class="text-center py-6">
@@ -440,7 +438,6 @@
                                 @endif
                             </div>
 
-                            <!-- Informasi Paket Tour (Tanpa Harga) -->
                             <div class="mt-3 pt-3 border-t border-gray-200">
                                 <div class="grid grid-cols-2 gap-2">
                                     <div class="flex items-center justify-between text-sm">
@@ -483,7 +480,6 @@
                             <div class="flex items-center gap-2">
                                 {!! $departure->jamaah_status_badge !!}
 
-                                <!-- Tombol Sync Jamaah -->
                                 <form
                                     action="{{ route('transaksional.departure.sync-jamaahs', $departure->id_departure) }}"
                                     method="POST"
@@ -503,7 +499,6 @@
                             </div>
                         </div>
 
-                        <!-- Search Jamaah di View -->
                         <div class="mb-3">
                             <div class="relative">
                                 <i
@@ -589,14 +584,8 @@
                                     {{ $departure->departurePerlengkapan->count() }} item
                                 </span>
                                 @php
-                                    $totalItems = $departure->departurePerlengkapan->sum(function ($p) {
-                                        return $p->perlengkapanJamaahs->count();
-                                    });
-                                    $totalReceived = $departure->departurePerlengkapan->sum(function ($p) {
-                                        return $p->perlengkapanJamaahs
-                                            ->where('status_terima', 'Sudah Diterima')
-                                            ->count();
-                                    });
+                                    $totalItems = $departure->total_perlengkapan_item;
+                                    $totalReceived = $departure->total_perlengkapan_diterima;
                                 @endphp
                                 <span class="ml-2 text-xs bg-green-100 text-green-800 px-2 py-0.5 rounded-full">
                                     {{ $totalReceived }} / {{ $totalItems }} diterima
@@ -611,7 +600,6 @@
                             </div>
                         </div>
 
-                        <!-- SEARCH PERLENGKAPAN -->
                         <div class="mb-3">
                             <div class="relative">
                                 <i
@@ -638,6 +626,10 @@
                                             $belumTerima = $totalPerItem - $sudahTerima;
                                             $progressPercent =
                                                 $totalPerItem > 0 ? round(($sudahTerima / $totalPerItem) * 100) : 0;
+
+                                            $totalDiterima = $perlengkapan->perlengkapanJamaahs
+                                                ->where('status_terima', 'Sudah Diterima')
+                                                ->sum('total_harga');
                                         @endphp
 
                                         <div class="bg-white rounded-lg p-3 border border-gray-200 hover:shadow-md transition-shadow duration-200 perlengkapan-item"
@@ -659,12 +651,13 @@
                                                     </div>
                                                 </div>
                                                 <div class="flex items-center gap-1 ml-2 flex-shrink-0">
-                                                    <button onclick="openPerlengkapanDetailModal({{ $perlengkapan->id }})"
+                                                    <button type="button"
+                                                        onclick="openPerlengkapanDetailModal({{ $perlengkapan->id }})"
                                                         class="p-1 text-blue-500 hover:bg-blue-50 rounded transition"
                                                         title="Lihat Detail">
                                                         <i class="fas fa-eye text-xs"></i>
                                                     </button>
-                                                    <button
+                                                    <button type="button"
                                                         onclick="removePerlengkapan({{ $departure->id_departure }}, {{ $perlengkapan->id }})"
                                                         class="p-1 text-red-500 hover:bg-red-50 rounded transition"
                                                         title="Hapus">
@@ -696,20 +689,50 @@
                                                 </div>
                                             </div>
 
-                                            <div
-                                                class="mt-2 pt-2 border-t border-gray-100 flex items-center justify-between">
-                                                <span class="text-xs text-gray-500">Total Harga</span>
-                                                <span
-                                                    class="text-sm font-bold text-yellow-600">{{ $perlengkapan->total_harga_formatted }}</span>
+                                            <div class="mt-2 pt-2 border-t border-gray-100">
+                                                <div class="flex items-center justify-between">
+                                                    <div>
+                                                        <span class="text-xs text-gray-500">Total Diterima</span>
+                                                        <p class="text-[10px] text-gray-400">
+                                                            {{ $sudahTerima }} dari {{ $totalPerItem }} item
+                                                        </p>
+                                                    </div>
+                                                    <div class="text-right">
+                                                        <span class="text-sm font-bold text-purple-600">
+                                                            Rp {{ number_format($totalDiterima, 0, ',', '.') }}
+                                                        </span>
+                                                        <p class="text-[10px] text-gray-400">
+                                                            dari Rp
+                                                            {{ number_format($perlengkapan->total_harga, 0, ',', '.') }}
+                                                        </p>
+                                                    </div>
+                                                </div>
                                             </div>
                                         </div>
                                     @endforeach
                                 </div>
 
-                                <div class="mt-3 pt-3 border-t border-gray-200 flex items-center justify-between">
-                                    <span class="text-sm font-semibold text-gray-700">Total Semua Perlengkapan</span>
-                                    <span
-                                        class="text-lg font-bold text-purple-600">{{ $departure->total_harga_perlengkapan_formatted }}</span>
+                                <div class="mt-3 pt-3 border-t border-gray-200">
+                                    <div class="flex items-center justify-between">
+                                        <div>
+                                            <span class="text-sm font-semibold text-gray-700">Total Perlengkapan
+                                                Diterima</span>
+                                            <p class="text-xs text-gray-400 mt-0.5">
+                                                <i class="fas fa-info-circle mr-1"></i>
+                                                Hanya dihitung dari perlengkapan yang <strong>sudah diterima</strong> jamaah
+                                            </p>
+                                        </div>
+                                        <span class="text-lg font-bold text-purple-600">
+                                            {{ $departure->total_harga_perlengkapan_formatted }}
+                                        </span>
+                                    </div>
+
+                                    <div class="flex items-center justify-between mt-1">
+                                        <span class="text-xs text-gray-400">Total semua perlengkapan (target):</span>
+                                        <span class="text-xs text-gray-500 font-medium">
+                                            {{ $departure->total_harga_perlengkapan_all_formatted }}
+                                        </span>
+                                    </div>
                                 </div>
                             @else
                                 <div class="text-center py-8">
@@ -735,6 +758,13 @@
                                 <span class="ml-2 text-xs bg-blue-100 text-blue-800 px-2 py-0.5 rounded-full">
                                     {{ $departure->departureJenisTransaksis->count() }} item
                                 </span>
+                                @php
+                                    $totalJtItems = $departure->total_jenis_transaksi_item;
+                                    $totalJtReceived = $departure->total_jenis_transaksi_diterima;
+                                @endphp
+                                <span class="ml-2 text-xs bg-green-100 text-green-800 px-2 py-0.5 rounded-full">
+                                    {{ $totalJtReceived }} / {{ $totalJtItems }} diterima
+                                </span>
                             </h6>
                             <div class="flex items-center gap-2">
                                 <button onclick="openJenisTransaksiModal()"
@@ -744,7 +774,6 @@
                             </div>
                         </div>
 
-                        <!-- Search Jenis Transaksi di View -->
                         <div class="mb-3">
                             <div class="relative">
                                 <i
@@ -763,6 +792,20 @@
                             @if ($jenisTransaksiList->count() > 0)
                                 <div class="grid grid-cols-1 md:grid-cols-2 gap-3 max-h-96 overflow-y-auto pr-1">
                                     @foreach ($jenisTransaksiList as $item)
+                                        @php
+                                            $totalPerItem = $item->departureJenisTransaksiJamaahs->count();
+                                            $sudahTerima = $item->departureJenisTransaksiJamaahs
+                                                ->where('status_terima', 'Sudah Diterima')
+                                                ->count();
+                                            $belumTerima = $totalPerItem - $sudahTerima;
+                                            $progressPercent =
+                                                $totalPerItem > 0 ? round(($sudahTerima / $totalPerItem) * 100) : 0;
+
+                                            $totalDiterima = $item->departureJenisTransaksiJamaahs
+                                                ->where('status_terima', 'Sudah Diterima')
+                                                ->sum('total_harga');
+                                        @endphp
+
                                         <div class="bg-white rounded-lg p-3 border border-gray-200 hover:shadow-md transition-shadow duration-200 jenis-transaksi-item"
                                             data-nama="{{ strtolower($item->jenisTransaksi->nama) }}">
                                             <div class="flex items-start justify-between">
@@ -776,18 +819,27 @@
                                                             <p class="text-sm font-semibold text-gray-800 truncate">
                                                                 {{ $item->jenisTransaksi->nama }}</p>
                                                             <p class="text-xs text-gray-400">
-                                                                {{ $item->harga_satuan_formatted }} / jamaah</p>
+                                                                Total: {{ $item->total_harga_formatted }} · Rp
+                                                                {{ number_format($item->harga_satuan, 0, ',', '.') }} /
+                                                                jamaah
+                                                            </p>
                                                         </div>
                                                     </div>
                                                 </div>
                                                 <div class="flex items-center gap-1 ml-2 flex-shrink-0">
-                                                    <button
-                                                        onclick="editJenisTransaksiHarga({{ $departure->id_departure }}, {{ $item->id_jenis_transaksi }}, '{{ $item->harga_satuan }}')"
+                                                    <button type="button"
+                                                        onclick="openJenisTransaksiDetailModal({{ $item->id }})"
                                                         class="p-1 text-blue-500 hover:bg-blue-50 rounded transition"
-                                                        title="Edit Harga">
+                                                        title="Lihat Detail">
+                                                        <i class="fas fa-eye text-xs"></i>
+                                                    </button>
+                                                    <button type="button"
+                                                        onclick="editJenisTransaksiHarga({{ $departure->id_departure }}, {{ $item->id_jenis_transaksi }}, '{{ $item->total_harga }}')"
+                                                        class="p-1 text-blue-500 hover:bg-blue-50 rounded transition"
+                                                        title="Edit Harga Total">
                                                         <i class="fas fa-edit text-xs"></i>
                                                     </button>
-                                                    <button
+                                                    <button type="button"
                                                         onclick="removeJenisTransaksi({{ $departure->id_departure }}, {{ $item->id_jenis_transaksi }})"
                                                         class="p-1 text-red-500 hover:bg-red-50 rounded transition"
                                                         title="Hapus">
@@ -801,12 +853,41 @@
                                                     </form>
                                                 </div>
                                             </div>
-                                            <div
-                                                class="mt-2 pt-2 border-t border-gray-100 flex items-center justify-between">
-                                                <span class="text-xs text-gray-500">Total ({{ $totalJamaah }}
-                                                    jamaah)</span>
-                                                <span
-                                                    class="text-sm font-bold text-purple-600">{{ $item->total_harga_formatted }}</span>
+
+                                            <div class="mt-2">
+                                                <div class="flex items-center justify-between text-xs">
+                                                    <span class="text-gray-500">Progress penerimaan</span>
+                                                    <div class="flex items-center gap-2">
+                                                        <span class="text-green-600">{{ $sudahTerima }} diterima</span>
+                                                        @if ($belumTerima > 0)
+                                                            <span class="text-yellow-600">{{ $belumTerima }}
+                                                                belum</span>
+                                                        @endif
+                                                    </div>
+                                                </div>
+                                                <div class="w-full bg-gray-200 rounded-full h-1.5 mt-1">
+                                                    <div class="h-1.5 rounded-full transition-all duration-500 {{ $progressPercent >= 100 ? 'bg-green-500' : 'bg-yellow-500' }}"
+                                                        style="width: {{ $progressPercent }}%"></div>
+                                                </div>
+                                            </div>
+
+                                            <div class="mt-2 pt-2 border-t border-gray-100">
+                                                <div class="flex items-center justify-between">
+                                                    <div>
+                                                        <span class="text-xs text-gray-500">Total Diterima</span>
+                                                        <p class="text-[10px] text-gray-400">
+                                                            {{ $sudahTerima }} dari {{ $totalPerItem }} item
+                                                        </p>
+                                                    </div>
+                                                    <div class="text-right">
+                                                        <span class="text-sm font-bold text-purple-600">
+                                                            Rp {{ number_format($totalDiterima, 0, ',', '.') }}
+                                                        </span>
+                                                        <p class="text-[10px] text-gray-400">
+                                                            dari Rp {{ number_format($item->total_harga, 0, ',', '.') }}
+                                                        </p>
+                                                    </div>
+                                                </div>
                                             </div>
 
                                             @if ($item->catatan)
@@ -816,10 +897,28 @@
                                     @endforeach
                                 </div>
 
-                                <div class="mt-3 pt-3 border-t border-gray-200 flex items-center justify-between">
-                                    <span class="text-sm font-semibold text-gray-700">Total Semua Jenis Transaksi</span>
-                                    <span
-                                        class="text-lg font-bold text-purple-600">{{ $departure->total_jenis_transaksi_formatted }}</span>
+                                <div class="mt-3 pt-3 border-t border-gray-200">
+                                    <div class="flex items-center justify-between">
+                                        <div>
+                                            <span class="text-sm font-semibold text-gray-700">Total Jenis Transaksi
+                                                Diterima</span>
+                                            <p class="text-xs text-gray-400 mt-0.5">
+                                                <i class="fas fa-info-circle mr-1"></i>
+                                                Hanya dihitung dari jenis transaksi yang <strong>sudah diterima</strong>
+                                                jamaah
+                                            </p>
+                                        </div>
+                                        <span class="text-lg font-bold text-purple-600">
+                                            {{ $departure->total_jenis_transaksi_formatted }}
+                                        </span>
+                                    </div>
+
+                                    <div class="flex items-center justify-between mt-1">
+                                        <span class="text-xs text-gray-400">Total semua jenis transaksi (target):</span>
+                                        <span class="text-xs text-gray-500 font-medium">
+                                            {{ $departure->total_jenis_transaksi_all_formatted }}
+                                        </span>
+                                    </div>
                                 </div>
                             @else
                                 <div class="text-center py-8">
@@ -852,7 +951,6 @@
                             </h6>
                         </div>
 
-                        <!-- Search Agent -->
                         <div class="mb-3">
                             <div class="relative">
                                 <i
@@ -863,12 +961,10 @@
                         </div>
 
                         @php
-                            // Ambil semua jamaah yang memiliki agent_name (tidak kosong)
                             $jamaahsWithAgent = $departure->jamaahs->filter(function ($jamaah) {
                                 return !empty($jamaah->agent_name) && trim($jamaah->agent_name) !== '';
                             });
 
-                            // Group by agent_name
                             $groupedByAgent = $jamaahsWithAgent->groupBy(function ($jamaah) {
                                 return $jamaah->agent_name ?? 'Agent Tidak Diketahui';
                             });
@@ -880,7 +976,6 @@
 
                         <div id="agentList">
                             @if ($jamaahsWithAgent->count() > 0)
-                                <!-- Statistik Agent -->
                                 <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-4">
                                     <div class="bg-white rounded-lg p-3 border border-gray-200 text-center">
                                         <p class="text-xs text-gray-500">Total Agent</p>
@@ -901,7 +996,6 @@
                                     </div>
                                 </div>
 
-                                <!-- Tabel Agent & Jamaah -->
                                 <div class="overflow-x-auto">
                                     <table class="w-full text-sm border border-gray-200 rounded-lg">
                                         <thead class="bg-purple-50">
@@ -961,7 +1055,6 @@
                                                         </td>
                                                     </tr>
                                                 @endforeach
-                                                <!-- Baris Total per Agent -->
                                                 <tr class="bg-purple-50/50 border-t border-purple-200">
                                                     <td colspan="4"
                                                         class="px-4 py-2 text-right text-sm font-medium text-purple-700">
@@ -989,7 +1082,6 @@
                                     </table>
                                 </div>
 
-                                <!-- Daftar Jamaah Tanpa Agent -->
                                 @if ($jamaahsWithoutAgent->count() > 0)
                                     <div class="mt-4">
                                         <p class="text-sm font-medium text-gray-600 mb-2 flex items-center gap-2">
@@ -1043,7 +1135,6 @@
                                     </div>
                                 @endif
                             @else
-                                <!-- Jika tidak ada jamaah dengan agent -->
                                 <div class="text-center py-8">
                                     <div
                                         class="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-3">
@@ -1056,7 +1147,6 @@
                                             Total jamaah terdaftar: <strong>{{ $departure->jamaahs->count() }}</strong>
                                             orang
                                         </p>
-                                        <!-- Tampilkan semua jamaah tanpa agent dalam tabel -->
                                         <div class="mt-4 text-left overflow-x-auto">
                                             <table class="w-full text-sm border border-gray-200 rounded-lg">
                                                 <thead class="bg-gray-50">
@@ -1132,7 +1222,6 @@
                             <i class="fas fa-money-bill-wave text-yellow-500 mr-2"></i> Ringkasan Keuangan
                         </h6>
 
-                        <!-- Detail Pengeluaran -->
                         <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
                             <div class="bg-white rounded-lg p-3 border border-gray-200 text-center">
                                 <p class="text-xs text-gray-500">Total Pendapatan</p>
@@ -1155,9 +1244,43 @@
                             </div>
                         </div>
 
+                        <div class="bg-white rounded-lg p-3 border border-gray-200 mb-4">
+                            <p class="text-xs font-medium text-gray-600 mb-2">
+                                <i class="fas fa-list mr-1"></i> Rincian Pengeluaran
+                            </p>
+                            <div class="grid grid-cols-2 md:grid-cols-3 gap-2 text-xs">
+                                <div class="flex justify-between">
+                                    <span class="text-gray-500">Maskapai:</span>
+                                    <span
+                                        class="font-medium text-gray-700">{{ $departure->total_harga_maskapai_formatted }}</span>
+                                </div>
+                                <div class="flex justify-between">
+                                    <span class="text-gray-500">Hotel:</span>
+                                    <span
+                                        class="font-medium text-gray-700">{{ $departure->total_harga_hotel_all_formatted }}</span>
+                                </div>
+                                <div class="flex justify-between">
+                                    <span class="text-gray-500">Hotel Tour:</span>
+                                    <span
+                                        class="font-medium text-gray-700">{{ $departure->total_harga_paket_tour_hotel_formatted }}</span>
+                                </div>
+                                <div class="flex justify-between">
+                                    <span class="text-gray-500">Perlengkapan:</span>
+                                    <span
+                                        class="font-medium text-purple-600">{{ $departure->total_harga_perlengkapan_formatted }}</span>
+                                </div>
+                                <div class="flex justify-between">
+                                    <span class="text-gray-500">Jenis Transaksi:</span>
+                                    <span
+                                        class="font-medium text-gray-700">{{ $departure->total_jenis_transaksi_formatted }}</span>
+                                </div>
+                            </div>
+                            <p class="text-[10px] text-gray-400 mt-2">
+                                <i class="fas fa-info-circle mr-1"></i>
+                                Perlengkapan & Jenis Transaksi hanya dihitung setelah diterima jamaah
+                            </p>
+                        </div>
 
-
-                        <!-- Keuntungan -->
                         <div class="grid grid-cols-2 gap-4">
                             <div class="bg-white rounded-lg p-3 border border-gray-200 text-center">
                                 <p class="text-xs text-gray-500">Keuntungan</p>
@@ -1198,7 +1321,6 @@
 
                 <!-- Aksi Bawah -->
                 <div class="mt-6 pt-6 border-t border-gray-100 flex flex-wrap items-center justify-end gap-3">
-                    <!-- Tombol Sinkronisasi Ulang (Perlengkapan & Jenis Transaksi) -->
                     <form action="{{ route('transaksional.departure.sync-all', $departure->id_departure) }}"
                         method="POST"
                         onsubmit="return confirm('Sinkronisasi akan memperbarui semua perlengkapan dan jenis transaksi dengan jumlah jamaah terbaru ({{ $departure->jamaahs->count() }} jamaah). Lanjutkan?')">
@@ -1257,14 +1379,11 @@
                     @endphp
 
                     @if ($availableHotels->count() > 0)
-                        <div class="space-y-3">
+                        <div class="space-y-4">
                             @foreach ($availableHotels as $index => $hotel)
                                 @php
-                                    $existing = $tourHotels->where('id_hotel', $hotel->id_hotel)->first();
-                                    $isChecked = $existing ? true : false;
-                                    $hargaPerMalam = $existing
-                                        ? $existing->harga_per_malam
-                                        : $hotel->harga_per_malam ?? 0;
+                                    $hotelTourItems = $tourHotels->where('id_hotel', $hotel->id_hotel);
+                                    $isChecked = $hotelTourItems->count() > 0;
                                 @endphp
                                 <div class="bg-white border border-gray-200 rounded-xl p-4 hover:shadow-md transition-shadow duration-200 hotel-tour-item"
                                     data-hotel-id="{{ $hotel->id_hotel }}" data-index="{{ $loop->index }}">
@@ -1295,76 +1414,13 @@
                                                 </span>
                                             </div>
 
-                                            <div class="mt-3">
-                                                <label class="text-xs text-gray-500 font-medium">Tipe Kamar</label>
-                                                <select name="paket_tour_hotels[{{ $loop->index }}][tipe_kamar]"
-                                                    id="tipeKamar-{{ $loop->index }}"
-                                                    class="hotel-tour-tipe w-full px-3 py-1.5 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500"
-                                                    {{ !$isChecked ? 'disabled' : '' }}>
-                                                    <option value="">-- Pilih Tipe Kamar --</option>
-                                                </select>
-                                                <div id="kamarLoading-{{ $loop->index }}"
-                                                    class="mt-1 text-xs text-gray-400 hidden">
-                                                    <i class="fas fa-spinner fa-spin mr-1"></i> Memuat tipe kamar...
-                                                </div>
-                                            </div>
+                                            <div id="kamarContainer-{{ $loop->index }}"
+                                                class="mt-3 grid grid-cols-1 md:grid-cols-2 gap-3"></div>
 
-                                            <div class="grid grid-cols-2 md:grid-cols-3 gap-3 mt-3">
-                                                <div>
-                                                    <label class="text-xs text-gray-500 font-medium">Harga per
-                                                        Malam</label>
-                                                    <div class="relative">
-                                                        <span
-                                                            class="absolute left-2 top-1/2 -translate-y-1/2 text-gray-400 text-xs">Rp</span>
-                                                        <input type="text"
-                                                            name="paket_tour_hotels[{{ $loop->index }}][harga_per_malam_display]"
-                                                            id="harga_per_malam_display_{{ $loop->index }}"
-                                                            value="{{ $hargaPerMalam > 0 ? 'Rp ' . number_format($hargaPerMalam, 0, ',', '.') : 'Rp 0' }}"
-                                                            class="hotel-tour-price w-full pl-8 pr-2 py-1.5 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500 hotel-tour-harga"
-                                                            placeholder="Rp 0"
-                                                            oninput="formatRupiahHotelTour(this, {{ $loop->index }})"
-                                                            onblur="formatRupiahHotelTour(this, {{ $loop->index }})"
-                                                            {{ !$isChecked ? 'disabled' : '' }}>
-                                                        <input type="hidden"
-                                                            name="paket_tour_hotels[{{ $loop->index }}][harga_per_malam]"
-                                                            id="harga_per_malam_{{ $loop->index }}"
-                                                            value="{{ $hargaPerMalam }}">
-                                                    </div>
-                                                </div>
-                                                <div>
-                                                    <label class="text-xs text-gray-500 font-medium">Durasi
-                                                        Menginap</label>
-                                                    <input type="number"
-                                                        name="paket_tour_hotels[{{ $loop->index }}][durasi_menginap]"
-                                                        value="{{ $existing->durasi_menginap ?? 1 }}"
-                                                        class="hotel-tour-durasi w-full px-2 py-1.5 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500"
-                                                        min="1" {{ !$isChecked ? 'disabled' : '' }}>
-                                                </div>
-                                                <div>
-                                                    <label class="text-xs text-gray-500 font-medium">Jumlah Kamar</label>
-                                                    <input type="number"
-                                                        name="paket_tour_hotels[{{ $loop->index }}][jumlah_kamar]"
-                                                        value="{{ $existing->jumlah_kamar ?? 1 }}"
-                                                        class="hotel-tour-kamar w-full px-2 py-1.5 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500"
-                                                        min="1" {{ !$isChecked ? 'disabled' : '' }}>
-                                                </div>
+                                            <div class="mt-2 text-sm text-gray-500">
+                                                Total: <span id="totalHotelTour-{{ $loop->index }}"
+                                                    class="font-bold text-yellow-600">Rp 0</span>
                                             </div>
-                                            <div class="mt-2">
-                                                <label class="text-xs text-gray-500 font-medium">Catatan</label>
-                                                <input type="text"
-                                                    name="paket_tour_hotels[{{ $loop->index }}][catatan]"
-                                                    value="{{ $existing->catatan ?? '' }}"
-                                                    class="hotel-tour-catatan w-full px-2 py-1.5 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500"
-                                                    placeholder="Catatan (opsional)" {{ !$isChecked ? 'disabled' : '' }}>
-                                            </div>
-                                            @if ($existing)
-                                                <div
-                                                    class="mt-2 flex items-center justify-end bg-yellow-50 rounded-lg px-3 py-1.5 border border-yellow-200">
-                                                    <span class="text-sm font-medium text-gray-600 mr-2">Total:</span>
-                                                    <span
-                                                        class="text-sm font-bold text-yellow-600">{{ $existing->total_harga_formatted }}</span>
-                                                </div>
-                                            @endif
                                         </div>
                                     </div>
                                 </div>
@@ -1601,7 +1657,6 @@
                 @csrf
                 @method('PUT')
 
-                <!-- SEARCH HOTEL -->
                 <div class="mb-4">
                     <div class="relative">
                         <i class="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm"></i>
@@ -1689,7 +1744,7 @@
     </div>
 
     <!-- ========================================== -->
-    <!-- MODAL JAMAAH DENGAN SEARCH -->
+    <!-- MODAL JAMAAH -->
     <!-- ========================================== -->
     <div id="jamaahModal" class="fixed inset-0 bg-black/50 z-50 hidden flex items-center justify-center">
         <div class="bg-white rounded-2xl max-w-4xl w-full max-h-[90vh] overflow-hidden">
@@ -1697,12 +1752,6 @@
                 <h5 class="text-lg font-semibold text-gray-800 flex items-center">
                     <i class="fas fa-users text-yellow-500 mr-2"></i>
                     Tambah Daftar Jamaah
-                    <span class="ml-2 text-xs bg-purple-100 text-purple-700 px-2 py-0.5 rounded-full" id="syncBadge">
-                        @if (session()->has('sync_jamaah_' . $departure->id_departure))
-                            <i class="fas fa-sync-alt mr-1"></i>
-                            {{ count(session('sync_jamaah_' . $departure->id_departure, [])) }} baru
-                        @endif
-                    </span>
                 </h5>
                 <button onclick="closeJamaahModal()" class="text-gray-400 hover:text-gray-600">
                     <i class="fas fa-times text-xl"></i>
@@ -1713,7 +1762,6 @@
                 @csrf
                 @method('PUT')
 
-                <!-- SEARCH JAMAAH -->
                 <div class="mb-4">
                     <div class="relative">
                         <i class="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm"></i>
@@ -1721,21 +1769,22 @@
                             placeholder="Cari jamaah berdasarkan nama, produk, atau status..."
                             class="w-full pl-10 pr-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500 text-sm">
                     </div>
-                    <div class="flex items-center gap-4 mt-2 text-xs text-gray-400">
-                        <span><i class="fas fa-info-circle mr-1"></i> Ketik untuk mencari jamaah</span>
-                        <span id="jamaahCountModal" class="font-medium text-gray-600">{{ $jamaahs->count() }} jamaah
-                            tersedia</span>
-                        @if (session()->has('sync_jamaah_' . $departure->id_departure))
-                            @php
-                                $syncIds = session('sync_jamaah_' . $departure->id_departure, []);
-                                $syncCount = count($syncIds);
-                            @endphp
-                            @if ($syncCount > 0)
-                                <span class="text-xs bg-purple-100 text-purple-700 px-2 py-0.5 rounded-full">
-                                    <i class="fas fa-sync-alt mr-1"></i> {{ $syncCount }} jamaah baru dari sync
-                                </span>
+                    @php
+                        $lunasCount = $jamaahs->where('status_pembayaran', 'Lunas')->count();
+                        $belumLunasCount = $jamaahs->where('status_pembayaran', '!=', 'Lunas')->count();
+                    @endphp
+                    <div class="flex flex-wrap items-center gap-4 mt-2 text-xs">
+                        <span class="text-gray-400"><i class="fas fa-info-circle mr-1"></i> Ketik untuk mencari
+                            jamaah</span>
+                        <span id="jamaahCountModal" class="font-medium">
+                            <span class="text-gray-600">{{ $jamaahs->count() }} jamaah tersedia</span>
+                            @if ($lunasCount > 0)
+                                <span class="text-green-600 font-medium">· {{ $lunasCount }} Lunas</span>
                             @endif
-                        @endif
+                            @if ($belumLunasCount > 0)
+                                <span class="text-red-600 font-bold">· {{ $belumLunasCount }} Belum Lunas</span>
+                            @endif
+                        </span>
                     </div>
                 </div>
 
@@ -1743,23 +1792,41 @@
                     id="jamaahModalList">
                     @php
                         $selectedJamaahs = $departure->jamaahs->pluck('id_jamaah')->toArray();
-                        // Ambil ID jamaah dari session sync
-                        $syncIds = session('sync_jamaah_' . $departure->id_departure, []);
                     @endphp
                     @forelse($jamaahs as $jamaah)
+                        @php
+                            $isLunas = $jamaah->status_pembayaran == 'Lunas';
+
+                            if ($isLunas) {
+                                $borderClass = 'border border-green-200';
+                                $bgClass = 'bg-green-50';
+                                $badgeClass = 'bg-green-100 text-green-700';
+                                $badgeText = 'LUNAS';
+                            } else {
+                                $borderClass = 'border-2 border-red-500';
+                                $bgClass = 'bg-red-50';
+                                $badgeClass = 'bg-red-100 text-red-700';
+                                $badgeText = 'BELUM LUNAS';
+                            }
+                        @endphp
                         <label
-                            class="jamaah-modal-item flex items-center p-2 border border-gray-200 rounded-lg hover:bg-gray-50 transition cursor-pointer
-                            {{ in_array($jamaah->id_jamaah, $syncIds) ? 'border-purple-300 bg-purple-50' : '' }}"
+                            class="jamaah-modal-item relative flex items-center p-2 {{ $borderClass }} {{ $bgClass }} rounded-lg hover:shadow-md transition cursor-pointer"
                             data-name="{{ strtolower($jamaah->nama_lengkap) }}"
                             data-produk="{{ strtolower($jamaah->produk_paket) }}"
                             data-status="{{ strtolower($jamaah->status_pembayaran) }}">
+
+                            <span
+                                class="absolute -top-1.5 -right-1.5 text-[10px] font-bold px-1.5 py-0.5 rounded-full {{ $badgeClass }} shadow-sm">
+                                {{ $badgeText }}
+                            </span>
+
                             <input type="checkbox" name="jamaah_ids[]" value="{{ $jamaah->id_jamaah }}"
                                 {{ in_array($jamaah->id_jamaah, $selectedJamaahs) ? 'checked' : '' }}
-                                class="w-4 h-4 text-yellow-500 border-gray-300 rounded focus:ring-yellow-500">
-                            <div class="ml-2 overflow-hidden">
+                                class="w-4 h-4 text-yellow-500 border-gray-300 rounded focus:ring-yellow-500 flex-shrink-0">
+                            <div class="ml-2 overflow-hidden flex-1">
                                 <p class="text-sm font-medium text-gray-700 truncate">{{ $jamaah->nama_lengkap }}</p>
                                 <p class="text-xs text-gray-400 truncate">{{ $jamaah->produk_paket }}</p>
-                                <p class="text-xs">
+                                <p class="text-xs mt-0.5">
                                     <span
                                         class="px-1.5 py-0.5 rounded-full text-xs font-medium
                                     {{ $jamaah->status_pembayaran == 'Lunas'
@@ -1771,19 +1838,12 @@
                                                 : 'bg-red-100 text-red-700')) }}">
                                         {{ $jamaah->status_pembayaran }}
                                     </span>
-                                    @if (in_array($jamaah->id_jamaah, $syncIds))
-                                        <span class="ml-1 text-xs text-purple-600">
-                                            <i class="fas fa-sync-alt"></i> baru
-                                        </span>
-                                    @endif
                                 </p>
                             </div>
                         </label>
                     @empty
                         <p class="text-sm text-gray-400 col-span-3 text-center py-4">
                             Tidak ada jamaah yang tersedia untuk bulan/tahun keberangkatan ini.
-                            <br><span class="text-xs">Pastikan jamaah sudah lunas dan memiliki bulan/tahun keberangkatan
-                                yang sesuai.</span>
                         </p>
                     @endforelse
                 </div>
@@ -1897,7 +1957,7 @@
     </div>
 
     <!-- ========================================== -->
-    <!-- MODAL TAMBAH JENIS TRANSAKSI KE DEPARTURE -->
+    <!-- MODAL TAMBAH JENIS TRANSAKSI -->
     <!-- ========================================== -->
     <div id="jenisTransaksiModal" class="fixed inset-0 bg-black/50 z-50 hidden flex items-center justify-center">
         <div class="bg-white rounded-2xl max-w-4xl w-full max-h-[90vh] overflow-y-auto">
@@ -1915,7 +1975,10 @@
                 @csrf
                 @method('PUT')
 
-                <!-- SEARCH JENIS TRANSAKSI -->
+                @php
+                    $totalJamaah = $departure->jamaahs->count();
+                @endphp
+
                 <div class="mb-4">
                     <div class="relative">
                         <i class="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm"></i>
@@ -1953,21 +2016,23 @@
                                     @endif
                                     <div class="grid grid-cols-2 gap-2 mt-2">
                                         <div>
-                                            <label class="text-xs text-gray-500">Harga Satuan (per Jamaah)</label>
+                                            <label class="text-xs text-gray-500">Harga Total</label>
                                             <div class="relative">
                                                 <span
                                                     class="absolute left-2 top-1/2 -translate-y-1/2 text-gray-400 text-xs">Rp</span>
-                                                <input type="text"
-                                                    name="harga_satuan_display[{{ $jenis->id_jenis }}]"
-                                                    id="harga_satuan_display_{{ $jenis->id_jenis }}"
+                                                <input type="text" name="harga_total_display[{{ $jenis->id_jenis }}]"
+                                                    id="harga_total_display_{{ $jenis->id_jenis }}"
                                                     class="jenis-harga w-full pl-8 pr-2 py-1.5 border border-gray-200 rounded text-sm rupiah-input"
                                                     placeholder="Rp 0"
-                                                    oninput="formatRupiahJenisTransaksi(this, 'harga_satuan_{{ $jenis->id_jenis }}')"
-                                                    onblur="formatRupiahJenisTransaksi(this, 'harga_satuan_{{ $jenis->id_jenis }}')"
+                                                    oninput="formatRupiahJenisTransaksi(this, 'harga_total_{{ $jenis->id_jenis }}')"
+                                                    onblur="formatRupiahJenisTransaksi(this, 'harga_total_{{ $jenis->id_jenis }}')"
                                                     value="Rp 0">
-                                                <input type="hidden" name="harga_satuan[{{ $jenis->id_jenis }}]"
-                                                    id="harga_satuan_{{ $jenis->id_jenis }}" value="0">
+                                                <input type="hidden" name="harga_total[{{ $jenis->id_jenis }}]"
+                                                    id="harga_total_{{ $jenis->id_jenis }}" value="0">
                                             </div>
+                                            <p class="text-[10px] text-gray-400 mt-0.5">
+                                                Dibagi ke {{ $totalJamaah }} jamaah
+                                            </p>
                                         </div>
                                         <div>
                                             <label class="text-xs text-gray-500">Catatan</label>
@@ -1986,24 +2051,23 @@
                     </div>
                     <p class="text-xs text-gray-400 mt-2">
                         <i class="fas fa-info-circle mr-1"></i>
-                        Centang jenis transaksi yang ingin ditambahkan. Harga akan dikalikan dengan jumlah jamaah
-                        ({{ $departure->jamaahs->count() }} orang)
+                        Masukkan <strong>harga total</strong> (bukan per jamaah). Sistem otomatis membagi rata ke
+                        <strong>{{ $totalJamaah }} jamaah</strong>.
                     </p>
                 </div>
 
-                <!-- Default Value -->
                 <div class="bg-gray-50 rounded-lg p-4 border border-gray-200">
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1.5">Default Harga Satuan</label>
+                            <label class="block text-sm font-medium text-gray-700 mb-1.5">Default Harga Total</label>
                             <div class="relative">
                                 <span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm">Rp</span>
-                                <input type="text" name="default_harga_satuan_display"
-                                    id="default_harga_satuan_display"
+                                <input type="text" name="default_harga_total_display"
+                                    id="default_harga_total_display"
                                     class="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-xl focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500 text-sm rupiah-input"
-                                    placeholder="Rp 0" oninput="formatRupiahJenisTransaksi(this, 'default_harga_satuan')"
-                                    onblur="formatRupiahJenisTransaksi(this, 'default_harga_satuan')" value="Rp 0">
-                                <input type="hidden" name="default_harga_satuan" id="default_harga_satuan"
+                                    placeholder="Rp 0" oninput="formatRupiahJenisTransaksi(this, 'default_harga_total')"
+                                    onblur="formatRupiahJenisTransaksi(this, 'default_harga_total')" value="Rp 0">
+                                <input type="hidden" name="default_harga_total" id="default_harga_total"
                                     value="0">
                             </div>
                         </div>
@@ -2017,7 +2081,7 @@
                     <div class="flex flex-wrap items-center gap-3 mt-3">
                         <button type="button" onclick="fillAllHarga()"
                             class="text-sm text-blue-500 hover:text-blue-700">
-                            <i class="fas fa-fill-drip mr-1"></i> Isi Semua Harga
+                            <i class="fas fa-fill-drip mr-1"></i> Isi Semua Harga Total
                         </button>
                         <button type="button" onclick="fillAllCatatan()"
                             class="text-sm text-blue-500 hover:text-blue-700">
@@ -2040,7 +2104,7 @@
                         Jenis transaksi akan ditambahkan ke <strong>SEMUA</strong> jamaah yang terdaftar di departure ini.
                     </p>
                     <p class="text-xs text-blue-500 mt-1">
-                        Jumlah jamaah saat ini: <strong>{{ $departure->jamaahs->count() }}</strong> orang
+                        Jumlah jamaah saat ini: <strong>{{ $totalJamaah }}</strong> orang
                     </p>
                 </div>
 
@@ -2062,7 +2126,7 @@
     <div id="editJenisTransaksiModal" class="fixed inset-0 bg-black/50 z-50 hidden flex items-center justify-center">
         <div class="bg-white rounded-2xl max-w-md w-full">
             <div class="px-6 py-4 border-b border-gray-200 flex items-center justify-between">
-                <h5 class="text-lg font-semibold text-gray-800">Edit Harga Jenis Transaksi</h5>
+                <h5 class="text-lg font-semibold text-gray-800">Edit Harga Total Jenis Transaksi</h5>
                 <button onclick="closeEditJenisTransaksiModal()" class="text-gray-400 hover:text-gray-600">
                     <i class="fas fa-times text-xl"></i>
                 </button>
@@ -2071,18 +2135,22 @@
                 @csrf
                 @method('PATCH')
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1.5">Harga Satuan (per Jamaah) <span
+                    <label class="block text-sm font-medium text-gray-700 mb-1.5">Harga Total <span
                             class="text-red-500">*</span></label>
                     <div class="relative">
                         <span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm">Rp</span>
-                        <input type="text" name="harga_satuan_display" id="edit_harga_satuan_display"
+                        <input type="text" name="harga_total_display" id="edit_harga_total_display"
                             class="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-xl focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500 text-sm rupiah-input"
-                            placeholder="Rp 0" oninput="formatRupiahJenisTransaksi(this, 'edit_harga_satuan')"
-                            onblur="formatRupiahJenisTransaksi(this, 'edit_harga_satuan')">
-                        <input type="hidden" name="harga_satuan" id="edit_harga_satuan" value="0">
+                            placeholder="Rp 0" oninput="formatRupiahJenisTransaksi(this, 'edit_harga_total')"
+                            onblur="formatRupiahJenisTransaksi(this, 'edit_harga_total')">
+                        <input type="hidden" name="harga_total" id="edit_harga_total" value="0">
                     </div>
                     <p class="text-xs text-gray-400 mt-1">
                         Jumlah jamaah saat ini: {{ $departure->jamaahs->count() }} orang
+                    </p>
+                    <p class="text-xs text-gray-400 mt-0.5">
+                        <i class="fas fa-info-circle mr-1"></i>
+                        Sistem akan otomatis membagi rata ke setiap jamaah
                     </p>
                 </div>
                 <div class="flex items-center justify-end gap-3 pt-4 border-t border-gray-100 mt-4">
@@ -2145,6 +2213,29 @@
         </div>
     </div>
 
+    <!-- ========================================== -->
+    <!-- MODAL DETAIL JENIS TRANSAKSI -->
+    <!-- ========================================== -->
+    <div id="jenisTransaksiDetailModal" class="fixed inset-0 bg-black/50 z-50 hidden flex items-center justify-center">
+        <div class="bg-white rounded-2xl max-w-3xl w-full max-h-[90vh] overflow-hidden">
+            <div class="sticky top-0 bg-white px-6 py-4 border-b border-gray-200 flex items-center justify-between">
+                <h5 class="text-lg font-semibold text-gray-800" id="jenisTransaksiDetailTitle">Detail Jenis Transaksi
+                </h5>
+                <button onclick="closeJenisTransaksiDetailModal()" class="text-gray-400 hover:text-gray-600">
+                    <i class="fas fa-times text-xl"></i>
+                </button>
+            </div>
+            <div class="p-6 overflow-y-auto max-h-[calc(90vh-80px)]" id="jenisTransaksiDetailContent">
+                <div class="flex items-center justify-center py-12">
+                    <div class="text-center">
+                        <i class="fas fa-spinner fa-spin text-3xl text-yellow-500 mb-3"></i>
+                        <p class="text-gray-500">Memuat data...</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <form id="recalculate-form" action="{{ route('transaksional.departure.recalculate', $departure->id_departure) }}"
         method="POST" class="hidden">
         @csrf
@@ -2165,11 +2256,7 @@
                     const search = this.value.toLowerCase();
                     document.querySelectorAll('.maskapai-item').forEach(function(item) {
                         const name = item.dataset.nama || '';
-                        if (name.includes(search)) {
-                            item.style.display = 'flex';
-                        } else {
-                            item.style.display = 'none';
-                        }
+                        item.style.display = name.includes(search) ? 'flex' : 'none';
                     });
                 });
             }
@@ -2181,11 +2268,7 @@
                     const search = this.value.toLowerCase();
                     document.querySelectorAll('.hotel-item').forEach(function(item) {
                         const name = item.dataset.nama || '';
-                        if (name.includes(search)) {
-                            item.style.display = 'block';
-                        } else {
-                            item.style.display = 'none';
-                        }
+                        item.style.display = name.includes(search) ? 'block' : 'none';
                     });
                 });
             }
@@ -2195,14 +2278,11 @@
             if (searchHotelTour) {
                 searchHotelTour.addEventListener('keyup', function() {
                     const search = this.value.toLowerCase();
-                    document.querySelectorAll('.hotel-tour-item').forEach(function(item) {
+                    document.querySelectorAll('#hotelTourList .hotel-tour-item').forEach(function(item) {
                         const name = item.dataset.nama || '';
                         const kota = item.dataset.kota || '';
-                        if (name.includes(search) || kota.includes(search)) {
-                            item.style.display = 'block';
-                        } else {
-                            item.style.display = 'none';
-                        }
+                        item.style.display = (name.includes(search) || kota.includes(search)) ?
+                            'block' : 'none';
                     });
                 });
             }
@@ -2214,11 +2294,7 @@
                     const search = this.value.toLowerCase();
                     document.querySelectorAll('.perlengkapan-item').forEach(function(item) {
                         const name = item.dataset.nama || '';
-                        if (name.includes(search)) {
-                            item.style.display = 'block';
-                        } else {
-                            item.style.display = 'none';
-                        }
+                        item.style.display = name.includes(search) ? 'block' : 'none';
                     });
                 });
             }
@@ -2230,11 +2306,7 @@
                     const search = this.value.toLowerCase();
                     document.querySelectorAll('.jamaah-item').forEach(function(item) {
                         const name = item.dataset.name || '';
-                        if (name.includes(search)) {
-                            item.style.display = 'flex';
-                        } else {
-                            item.style.display = 'none';
-                        }
+                        item.style.display = name.includes(search) ? 'flex' : 'none';
                     });
                 });
             }
@@ -2246,11 +2318,7 @@
                     const search = this.value.toLowerCase();
                     document.querySelectorAll('.jenis-transaksi-item').forEach(function(item) {
                         const name = item.dataset.nama || '';
-                        if (name.includes(search)) {
-                            item.style.display = 'block';
-                        } else {
-                            item.style.display = 'none';
-                        }
+                        item.style.display = name.includes(search) ? 'block' : 'none';
                     });
                 });
             }
@@ -2260,21 +2328,34 @@
             if (searchJamaahModal) {
                 searchJamaahModal.addEventListener('keyup', function() {
                     const search = this.value.toLowerCase();
-                    let visibleCount = 0;
+                    let visibleCount = 0,
+                        lunasCount = 0,
+                        belumLunasCount = 0;
+
                     document.querySelectorAll('.jamaah-modal-item').forEach(function(item) {
                         const name = item.dataset.name || '';
                         const produk = item.dataset.produk || '';
                         const status = item.dataset.status || '';
+
                         if (name.includes(search) || produk.includes(search) || status.includes(
                                 search)) {
                             item.style.display = 'flex';
                             visibleCount++;
+                            if (status === 'lunas') lunasCount++;
+                            else belumLunasCount++;
                         } else {
                             item.style.display = 'none';
                         }
                     });
-                    document.getElementById('jamaahCountModal').textContent = visibleCount +
-                        ' jamaah tersedia';
+
+                    let countHtml = '<span class="text-gray-600">' + visibleCount +
+                        ' jamaah tersedia</span>';
+                    if (lunasCount > 0) countHtml += ' <span class="text-green-600 font-medium">· ' +
+                        lunasCount + ' Lunas</span>';
+                    if (belumLunasCount > 0) countHtml += ' <span class="text-red-600 font-bold">· ' +
+                        belumLunasCount + ' Belum Lunas</span>';
+
+                    document.getElementById('jamaahCountModal').innerHTML = countHtml;
                 });
             }
 
@@ -2299,83 +2380,87 @@
                 });
             }
 
-            // ============================================
-            // AGENT SEARCH
-            // ============================================
+            // Search Agent
             const searchAgent = document.getElementById('searchAgent');
             if (searchAgent) {
                 searchAgent.addEventListener('keyup', function() {
                     const search = this.value.toLowerCase();
-
-                    document.querySelectorAll('.agent-group-item').forEach(function(item) {
-                        const agentName = item.dataset.agent || '';
-                        const jamaahs = item.querySelectorAll('.agent-group-content .grid .flex');
-                        let hasMatch = false;
-
-                        if (agentName.includes(search)) {
-                            hasMatch = true;
-                        } else {
-                            jamaahs.forEach(function(jamaah) {
-                                const name = jamaah.querySelector('.text-sm.font-medium')
-                                    ?.textContent
-                                    ?.toLowerCase() || '';
-                                if (name.includes(search)) {
-                                    hasMatch = true;
-                                }
-                            });
-                        }
-
-                        if (hasMatch || search === '') {
-                            item.style.display = 'block';
-                            if (search !== '') {
-                                const content = item.querySelector('.agent-group-content');
-                                const icon = item.querySelector('.fa-chevron-down');
-                                if (content) content.classList.remove('hidden');
-                                if (icon) icon.style.transform = 'rotate(180deg)';
-                            }
+                    document.querySelectorAll('.agent-row, .no-agent-row').forEach(function(item) {
+                        const agent = item.dataset.agent || '';
+                        const name = item.dataset.name || '';
+                        if (agent.includes(search) || name.includes(search) || search === '') {
+                            item.style.display = '';
                         } else {
                             item.style.display = 'none';
                         }
                     });
                 });
             }
+
+            // ============================================
+            // INITIAL EVENT LISTENERS
+            // ============================================
+
+            // Hotel Tour Checkbox
+            document.querySelectorAll('.hotel-tour-item .hotel-tour-checkbox').forEach(function(checkbox) {
+                checkbox.addEventListener('change', function() {
+                    const parent = this.closest('.hotel-tour-item');
+                    const index = parent.dataset.index;
+                    const hotelId = parent.dataset.hotelId;
+
+                    if (checkbox.checked) {
+                        loadKamarsForHotelTourItem(hotelId, index);
+                    } else {
+                        const container = document.getElementById('kamarContainer-' + index);
+                        if (container) {
+                            container.innerHTML =
+                                '<p class="text-sm text-gray-400 col-span-2 text-center py-4">Centang hotel untuk mengatur kamar</p>';
+                        }
+                        const totalEl = document.getElementById('totalHotelTour-' + index);
+                        if (totalEl) totalEl.textContent = 'Rp 0';
+                        calculateGrandTotalHotelTour();
+                    }
+                });
+            });
+
+            // Hotel Select
+            document.querySelectorAll('.hotel-select').forEach(function(select) {
+                select.addEventListener('change', function() {
+                    const containerId = this.dataset.container;
+                    const totalId = this.dataset.total;
+                    loadKamarsWithSelected(this.id, containerId, totalId);
+                });
+            });
+
+            // Jenis Transaksi Checkbox di Modal
+            document.querySelectorAll('.jenis-transaksi-checkbox').forEach(function(checkbox) {
+                checkbox.addEventListener('change', function() {
+                    const parent = this.closest('.jenis-transaksi-modal-item');
+                    if (parent) {
+                        const inputs = parent.querySelectorAll(
+                            'input[type="number"], input[type="text"]');
+                        inputs.forEach(function(input) {
+                            input.disabled = !checkbox.checked;
+                            if (!checkbox.checked) {
+                                input.classList.add('opacity-50', 'bg-gray-50');
+                            } else {
+                                input.classList.remove('opacity-50', 'bg-gray-50');
+                            }
+                        });
+                    }
+                });
+                checkbox.dispatchEvent(new Event('change'));
+            });
+
+            // Close modal on click outside
+            document.querySelectorAll('.fixed.inset-0.bg-black\\/50').forEach(function(modal) {
+                modal.addEventListener('click', function(e) {
+                    if (e.target === this) {
+                        this.classList.add('hidden');
+                    }
+                });
+            });
         });
-
-        // ============================================
-        // AGENT GROUP TOGGLE FUNCTIONS
-        // ============================================
-
-        function toggleAgentGroup(element) {
-            const parent = element.closest('.agent-group-item');
-            const content = parent.querySelector('.agent-group-content');
-            const icon = element.querySelector('.fa-chevron-down');
-
-            if (content) {
-                if (content.classList.contains('hidden')) {
-                    content.classList.remove('hidden');
-                    if (icon) icon.style.transform = 'rotate(180deg)';
-                } else {
-                    content.classList.add('hidden');
-                    if (icon) icon.style.transform = 'rotate(0deg)';
-                }
-            }
-        }
-
-        function toggleNoAgentList(element) {
-            const parent = element.closest('.bg-white');
-            const content = parent.querySelector('.no-agent-content');
-            const icon = element.querySelector('.fa-chevron-down');
-
-            if (content) {
-                if (content.classList.contains('hidden')) {
-                    content.classList.remove('hidden');
-                    if (icon) icon.style.transform = 'rotate(180deg)';
-                } else {
-                    content.classList.add('hidden');
-                    if (icon) icon.style.transform = 'rotate(0deg)';
-                }
-            }
-        }
 
         // ============================================
         // PAKET TOUR HOTEL FUNCTIONS
@@ -2383,90 +2468,146 @@
 
         function openPaketTourHotelModal() {
             document.getElementById('paketTourHotelModal').classList.remove('hidden');
-            calculateTotalPaketTourHotel();
-            loadAllKamars();
+            loadAllKamarsForHotelTour();
         }
 
         function closePaketTourHotelModal() {
             document.getElementById('paketTourHotelModal').classList.add('hidden');
         }
 
-        function loadAllKamars() {
-            document.querySelectorAll('.hotel-tour-item').forEach(function(item) {
+        function loadAllKamarsForHotelTour() {
+            document.querySelectorAll('#paketTourHotelModal .hotel-tour-item').forEach(function(item) {
                 const hotelId = item.dataset.hotelId;
                 const index = item.dataset.index;
-                loadKamarsForHotelTour(hotelId, index);
+                const checkbox = item.querySelector('.hotel-tour-checkbox');
+                if (checkbox && checkbox.checked) {
+                    loadKamarsForHotelTourItem(hotelId, index);
+                }
             });
         }
 
-        function loadKamarsForHotelTour(hotelId, index) {
-            const selectElement = document.getElementById('tipeKamar-' + index);
-            const loadingElement = document.getElementById('kamarLoading-' + index);
+        function loadKamarsForHotelTourItem(hotelId, index) {
+            const container = document.getElementById('kamarContainer-' + index);
             const countElement = document.getElementById('kamarCount-' + index);
+            const departureId = {{ $departure->id_departure }};
 
-            if (!hotelId) {
-                selectElement.innerHTML = '<option value="">-- Pilih Hotel Terlebih Dahulu --</option>';
-                countElement.textContent = '0 tipe kamar';
-                return;
-            }
+            if (!hotelId || !container) return;
 
-            loadingElement.classList.remove('hidden');
-            selectElement.disabled = true;
+            container.innerHTML =
+                '<p class="text-sm text-gray-400 col-span-2 text-center py-4"><i class="fas fa-spinner fa-spin mr-2"></i> Memuat tipe kamar...</p>';
 
-            fetch(`/transaksional/get-kamars-by-hotel/${hotelId}`)
+            fetch(`/transaksional/get-kamars-by-hotel-for-tour/${hotelId}/${departureId}`)
                 .then(response => response.json())
                 .then(data => {
-                    loadingElement.classList.add('hidden');
-                    selectElement.disabled = false;
+                    let html = data.html.replace(/INDEX/g, index);
+                    container.innerHTML = html;
+                    if (countElement) countElement.textContent = data.count + ' tipe kamar';
 
-                    if (data.length > 0) {
-                        let options = '<option value="">-- Pilih Tipe Kamar --</option>';
-                        data.forEach(function(kamar) {
-                            let label = kamar.tipe_kamar;
-                            if (kamar.kapasitas) {
-                                label += ' (Kapasitas: ' + kamar.kapasitas + ' orang)';
-                            }
-                            if (kamar.fasilitas_kamar) {
-                                label += ' - ' + kamar.fasilitas_kamar.substring(0, 30);
-                            }
-                            options += '<option value="' + kamar.tipe_kamar + '">' + label + '</option>';
+                    container.querySelectorAll('.kamar-checkbox').forEach(function(checkbox) {
+                        checkbox.addEventListener('change', function() {
+                            calculateHotelTourTotal(index);
+                            const parent = this.closest('.kamar-item');
+                            const inputs = parent.querySelectorAll('input:not(.kamar-checkbox)');
+                            inputs.forEach(function(input) {
+                                input.disabled = !checkbox.checked;
+                                if (!checkbox.checked) {
+                                    input.classList.add('opacity-50', 'bg-gray-50');
+                                } else {
+                                    input.classList.remove('opacity-50', 'bg-gray-50');
+                                }
+                            });
                         });
-                        selectElement.innerHTML = options;
-                        countElement.textContent = data.length + ' tipe kamar';
+                        checkbox.dispatchEvent(new Event('change'));
+                    });
 
-                        const item = document.querySelector(`.hotel-tour-item[data-index="${index}"]`);
-                        if (item) {
-                            const existingTipe = item.querySelector('input[name$="[tipe_kamar]"]');
-                            if (existingTipe && existingTipe.value) {
-                                selectElement.value = existingTipe.value;
-                            }
-                        }
-                    } else {
-                        selectElement.innerHTML = '<option value="">-- Tidak ada tipe kamar --</option>';
-                        countElement.textContent = '0 tipe kamar';
-                    }
+                    container.querySelectorAll('.kamar-jumlah, .kamar-harga, .kamar-durasi').forEach(function(input) {
+                        input.addEventListener('change', function() {
+                            calculateHotelTourTotal(index);
+                        });
+                        input.addEventListener('keyup', function() {
+                            calculateHotelTourTotal(index);
+                        });
+                    });
+
+                    calculateHotelTourTotal(index);
                 })
                 .catch(error => {
                     console.error('Error:', error);
-                    loadingElement.classList.add('hidden');
-                    selectElement.innerHTML = '<option value="">-- Gagal memuat data --</option>';
-                    selectElement.disabled = false;
-                    countElement.textContent = 'Error';
+                    container.innerHTML =
+                        '<p class="text-sm text-red-500 col-span-2 text-center py-4">Gagal memuat tipe kamar.</p>';
+                    if (countElement) countElement.textContent = 'Error';
                 });
         }
 
-        function calculateTotalPaketTourHotel() {
+        function calculateHotelTourTotal(index) {
+            const container = document.getElementById('kamarContainer-' + index);
+            if (!container) return 0;
             let total = 0;
-            document.querySelectorAll('.hotel-tour-item').forEach(function(item) {
-                const checkbox = item.querySelector('.hotel-tour-checkbox');
+
+            container.querySelectorAll('.kamar-item').forEach(function(item) {
+                const checkbox = item.querySelector('.kamar-checkbox');
                 if (checkbox && checkbox.checked) {
-                    const price = parseInt(item.querySelector('.hotel-tour-price').value) || 0;
-                    const durasi = parseInt(item.querySelector('.hotel-tour-durasi').value) || 1;
-                    const kamar = parseInt(item.querySelector('.hotel-tour-kamar').value) || 1;
-                    total += price * durasi * kamar;
+                    const jumlah = parseInt(item.querySelector('.kamar-jumlah').value) || 0;
+                    const hargaInput = item.querySelector('.kamar-harga');
+                    let harga = 0;
+                    if (hargaInput) {
+                        const rawValue = hargaInput.value.replace(/^Rp\s*/, '').replace(/\./g, '');
+                        harga = parseInt(rawValue) || 0;
+                    }
+                    const durasi = parseInt(item.querySelector('.kamar-durasi').value) || 1;
+                    total += jumlah * harga * durasi;
                 }
             });
-            document.getElementById('totalPaketTourHotelPreview').textContent = 'Rp ' + total.toLocaleString('id-ID');
+
+            const totalElement = document.getElementById('totalHotelTour-' + index);
+            if (totalElement) totalElement.textContent = 'Rp ' + total.toLocaleString('id-ID');
+            calculateGrandTotalHotelTour();
+            return total;
+        }
+
+        function calculateGrandTotalHotelTour() {
+            let grandTotal = 0;
+            document.querySelectorAll('#paketTourHotelModal .hotel-tour-item').forEach(function(item) {
+                const checkbox = item.querySelector('.hotel-tour-checkbox');
+                if (checkbox && checkbox.checked) {
+                    const index = item.dataset.index;
+                    const container = document.getElementById('kamarContainer-' + index);
+                    if (container) {
+                        container.querySelectorAll('.kamar-item').forEach(function(kamarItem) {
+                            const kamarCheckbox = kamarItem.querySelector('.kamar-checkbox');
+                            if (kamarCheckbox && kamarCheckbox.checked) {
+                                const jumlah = parseInt(kamarItem.querySelector('.kamar-jumlah').value) ||
+                                0;
+                                const hargaInput = kamarItem.querySelector('.kamar-harga');
+                                let harga = 0;
+                                if (hargaInput) {
+                                    const rawValue = hargaInput.value.replace(/^Rp\s*/, '').replace(/\./g,
+                                        '');
+                                    harga = parseInt(rawValue) || 0;
+                                }
+                                const durasi = parseInt(kamarItem.querySelector('.kamar-durasi').value) ||
+                                1;
+                                grandTotal += jumlah * harga * durasi;
+                            }
+                        });
+                    }
+                }
+            });
+
+            const previewEl = document.getElementById('totalPaketTourHotelPreview');
+            if (previewEl) previewEl.textContent = 'Rp ' + grandTotal.toLocaleString('id-ID');
+            return grandTotal;
+        }
+
+        function formatRupiahHotelTourKamar(input, kamarId, index) {
+            let value = input.value.replace(/[^,\d]/g, '');
+            value = value.replace(/^Rp\s*/, '').replace(/\./g, '').replace(/,/g, '.');
+            if (value === '' || isNaN(value)) value = '0';
+            const number = parseInt(value);
+            input.value = 'Rp ' + number.toLocaleString('id-ID');
+            const hiddenInput = document.getElementById('tour_kamar_harga_' + kamarId + '_' + index);
+            if (hiddenInput) hiddenInput.value = number;
+            calculateHotelTourTotal(index);
         }
 
         // ============================================
@@ -2475,18 +2616,11 @@
 
         function openMaskapaiModal() {
             document.getElementById('maskapaiModal').classList.remove('hidden');
-            // Inisialisasi format rupiah untuk semua input harga di modal maskapai
             document.querySelectorAll('.maskapai-harga').forEach(function(input) {
                 const hiddenInput = document.getElementById(input.id.replace('display', ''));
                 let value = 0;
-                if (hiddenInput) {
-                    value = parseInt(hiddenInput.value) || 0;
-                }
-                if (value > 0) {
-                    input.value = 'Rp ' + value.toLocaleString('id-ID');
-                } else {
-                    input.value = 'Rp 0';
-                }
+                if (hiddenInput) value = parseInt(hiddenInput.value) || 0;
+                input.value = value > 0 ? 'Rp ' + value.toLocaleString('id-ID') : 'Rp 0';
             });
         }
 
@@ -2559,7 +2693,7 @@
                 .catch(error => {
                     console.error('Error:', error);
                     container.innerHTML =
-                        '<p class="text-sm text-red-500 col-span-2 text-center py-4">Gagal memuat tipe kamar. Silakan coba lagi.</p>';
+                        '<p class="text-sm text-red-500 col-span-2 text-center py-4">Gagal memuat tipe kamar.</p>';
                 });
         }
 
@@ -2596,7 +2730,21 @@
             document.querySelectorAll('.jamaah-modal-item').forEach(function(item) {
                 item.style.display = 'flex';
             });
-            document.getElementById('jamaahCountModal').textContent = '{{ $jamaahs->count() }} jamaah tersedia';
+
+            const allItems = document.querySelectorAll('.jamaah-modal-item');
+            let lunasCount = 0,
+                belumLunasCount = 0;
+            allItems.forEach(function(item) {
+                if (item.dataset.status === 'lunas') lunasCount++;
+                else belumLunasCount++;
+            });
+
+            let countHtml = '<span class="text-gray-600">' + allItems.length + ' jamaah tersedia</span>';
+            if (lunasCount > 0) countHtml += ' <span class="text-green-600 font-medium">· ' + lunasCount + ' Lunas</span>';
+            if (belumLunasCount > 0) countHtml += ' <span class="text-red-600 font-bold">· ' + belumLunasCount +
+                ' Belum Lunas</span>';
+
+            document.getElementById('jamaahCountModal').innerHTML = countHtml;
         }
 
         function closeJamaahModal() {
@@ -2637,8 +2785,7 @@
 
         function removePerlengkapan(departureId, departurePerlengkapanId) {
             if (confirm('Yakin ingin menghapus perlengkapan ini dari departure?')) {
-                document.getElementById('remove-perlengkapan-form-' + departureId + '-' + departurePerlengkapanId)
-                    .submit();
+                document.getElementById('remove-perlengkapan-form-' + departureId + '-' + departurePerlengkapanId).submit();
             }
         }
 
@@ -2648,7 +2795,6 @@
 
             content.innerHTML =
                 `<div class="flex items-center justify-center py-12"><div class="text-center"><i class="fas fa-spinner fa-spin text-3xl text-yellow-500 mb-3"></i><p class="text-gray-500">Memuat data...</p></div></div>`;
-
             modal.classList.remove('hidden');
 
             fetch(`/transaksional/get-perlengkapan-detail/${perlengkapanId}`)
@@ -2656,7 +2802,7 @@
                 .then(data => {
                     content.innerHTML = data.html;
                     document.getElementById('perlengkapanDetailTitle').textContent = 'Detail: ' + data
-                        .nama_perlengkapan;
+                    .nama_perlengkapan;
                 })
                 .catch(error => {
                     console.error('Error:', error);
@@ -2669,14 +2815,28 @@
             document.getElementById('perlengkapanDetailModal').classList.add('hidden');
         }
 
+        // ✅ TOGGLE STATUS JAMAAH (Perlengkapan)
         function toggleStatusJamaah(departurePerlengkapanId, jamaahId, currentStatus) {
             const newStatus = currentStatus === 'Sudah Diterima' ? 'Belum Diterima' : 'Sudah Diterima';
-            document.getElementById('status_input_' + departurePerlengkapanId + '_' + jamaahId).value = newStatus;
-            document.getElementById('status-jamaah-form-' + departurePerlengkapanId + '-' + jamaahId).submit();
+
+            const inputEl = document.getElementById('status_input_' + departurePerlengkapanId + '_' + jamaahId);
+            if (inputEl) {
+                inputEl.value = newStatus;
+            } else {
+                console.error('Input tidak ditemukan: status_input_' + departurePerlengkapanId + '_' + jamaahId);
+                return;
+            }
+
+            const formEl = document.getElementById('status-jamaah-form-' + departurePerlengkapanId + '-' + jamaahId);
+            if (formEl) {
+                formEl.submit();
+            } else {
+                console.error('Form tidak ditemukan: status-jamaah-form-' + departurePerlengkapanId + '-' + jamaahId);
+            }
         }
 
         // ============================================
-        // JENIS TRANSAKSI FUNCTIONS
+        // JENIS TRANSAKSI FUNCTIONS (HARGA TOTAL + TOGGLE)
         // ============================================
 
         function openJenisTransaksiModal() {
@@ -2688,31 +2848,19 @@
             document.getElementById('jenisTransaksiCountModal').textContent =
                 '{{ $jenisTransaksiOptions->count() }} jenis transaksi tersedia';
 
-            // Inisialisasi format rupiah untuk semua input harga
             document.querySelectorAll('#jenisTransaksiModalList .jenis-harga').forEach(function(input) {
                 const hiddenId = input.id.replace('display_', '');
                 const hiddenInput = document.getElementById(hiddenId);
                 let value = 0;
-                if (hiddenInput) {
-                    value = parseInt(hiddenInput.value) || 0;
-                }
-                if (value > 0) {
-                    input.value = 'Rp ' + value.toLocaleString('id-ID');
-                } else {
-                    input.value = 'Rp 0';
-                }
+                if (hiddenInput) value = parseInt(hiddenInput.value) || 0;
+                input.value = value > 0 ? 'Rp ' + value.toLocaleString('id-ID') : 'Rp 0';
             });
 
-            // Inisialisasi default harga
-            const defaultHargaDisplay = document.getElementById('default_harga_satuan_display');
-            const defaultHarga = document.getElementById('default_harga_satuan');
+            const defaultHargaDisplay = document.getElementById('default_harga_total_display');
+            const defaultHarga = document.getElementById('default_harga_total');
             if (defaultHargaDisplay && defaultHarga) {
                 let value = parseInt(defaultHarga.value) || 0;
-                if (value > 0) {
-                    defaultHargaDisplay.value = 'Rp ' + value.toLocaleString('id-ID');
-                } else {
-                    defaultHargaDisplay.value = 'Rp 0';
-                }
+                defaultHargaDisplay.value = value > 0 ? 'Rp ' + value.toLocaleString('id-ID') : 'Rp 0';
             }
         }
 
@@ -2732,8 +2880,8 @@
 
             form.action = '/transaksional/departure/' + departureId + '/jenis-transaksi/' + jenisTransaksiId + '/harga';
 
-            const displayInput = document.getElementById('edit_harga_satuan_display');
-            const hiddenInput = document.getElementById('edit_harga_satuan');
+            const displayInput = document.getElementById('edit_harga_total_display');
+            const hiddenInput = document.getElementById('edit_harga_total');
 
             if (displayInput && hiddenInput) {
                 const number = parseInt(currentHarga) || 0;
@@ -2749,11 +2897,11 @@
         }
 
         function fillAllHarga() {
-            const defaultHargaDisplay = document.getElementById('default_harga_satuan_display');
-            const defaultHarga = document.getElementById('default_harga_satuan');
+            const defaultHargaDisplay = document.getElementById('default_harga_total_display');
+            const defaultHarga = document.getElementById('default_harga_total');
 
             if (!defaultHarga.value || defaultHarga.value == '0') {
-                alert('Silakan isi default harga satuan terlebih dahulu!');
+                alert('Silakan isi default harga total terlebih dahulu!');
                 return;
             }
 
@@ -2762,9 +2910,7 @@
                     input.value = defaultHargaDisplay.value;
                     const hiddenId = input.id.replace('display_', '');
                     const hiddenInput = document.getElementById(hiddenId);
-                    if (hiddenInput) {
-                        hiddenInput.value = defaultHarga.value;
-                    }
+                    if (hiddenInput) hiddenInput.value = defaultHarga.value;
                 }
             });
         }
@@ -2772,9 +2918,7 @@
         function fillAllCatatan() {
             const defaultCatatan = document.getElementById('default_catatan').value;
             document.querySelectorAll('#jenisTransaksiModalList .jenis-catatan').forEach(function(input) {
-                if (!input.disabled) {
-                    input.value = defaultCatatan;
-                }
+                if (!input.disabled) input.value = defaultCatatan;
             });
         }
 
@@ -2792,6 +2936,56 @@
                     checkbox.checked = false;
                     checkbox.dispatchEvent(new Event('change'));
                 });
+        }
+
+        // ✅ DETAIL JENIS TRANSAKSI & TOGGLE STATUS
+        function openJenisTransaksiDetailModal(jenisTransaksiId) {
+            const modal = document.getElementById('jenisTransaksiDetailModal');
+            const content = document.getElementById('jenisTransaksiDetailContent');
+
+            content.innerHTML =
+                `<div class="flex items-center justify-center py-12"><div class="text-center"><i class="fas fa-spinner fa-spin text-3xl text-yellow-500 mb-3"></i><p class="text-gray-500">Memuat data...</p></div></div>`;
+            modal.classList.remove('hidden');
+
+            fetch(`/transaksional/get-jenis-transaksi-detail/${jenisTransaksiId}`)
+                .then(response => response.json())
+                .then(data => {
+                    content.innerHTML = data.html;
+                    document.getElementById('jenisTransaksiDetailTitle').textContent = 'Detail: ' + data
+                        .nama_jenis_transaksi;
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    content.innerHTML =
+                        `<div class="text-center py-12"><i class="fas fa-exclamation-circle text-3xl text-red-500 mb-3"></i><p class="text-gray-500">Gagal memuat data. Silakan coba lagi.</p></div>`;
+                });
+        }
+
+        function closeJenisTransaksiDetailModal() {
+            document.getElementById('jenisTransaksiDetailModal').classList.add('hidden');
+        }
+
+        function toggleStatusJenisTransaksiJamaah(departureJenisTransaksiId, jamaahId, currentStatus) {
+            const newStatus = currentStatus === 'Sudah Diterima' ? 'Belum Diterima' : 'Sudah Diterima';
+
+            const inputEl = document.getElementById('jenis_transaksi_status_input_' + departureJenisTransaksiId + '_' +
+                jamaahId);
+            if (inputEl) {
+                inputEl.value = newStatus;
+            } else {
+                console.error('Input tidak ditemukan: jenis_transaksi_status_input_' + departureJenisTransaksiId + '_' +
+                    jamaahId);
+                return;
+            }
+
+            const formEl = document.getElementById('jenis-transaksi-jamaah-form-' + departureJenisTransaksiId + '-' +
+                jamaahId);
+            if (formEl) {
+                formEl.submit();
+            } else {
+                console.error('Form tidak ditemukan: jenis-transaksi-jamaah-form-' + departureJenisTransaksiId + '-' +
+                    jamaahId);
+            }
         }
 
         // ============================================
@@ -2817,105 +3011,34 @@
         }
 
         // ============================================
-        // FORMAT RUPIAH HOTEL TOUR FUNCTION
-        // ============================================
-
-        function formatRupiahHotelTour(input, index) {
-            let value = input.value.replace(/[^,\d]/g, '');
-            value = value.replace(/^Rp\s*/, '');
-            value = value.replace(/\./g, '');
-            value = value.replace(/,/g, '.');
-
-            if (value === '' || isNaN(value)) {
-                value = '0';
-            }
-
-            const number = parseInt(value);
-            const formatted = 'Rp ' + number.toLocaleString('id-ID');
-
-            input.value = formatted;
-
-            const hiddenInput = document.getElementById('harga_per_malam_' + index);
-            if (hiddenInput) {
-                hiddenInput.value = number;
-            }
-
-            calculateTotalPaketTourHotel();
-        }
-
-        // ============================================
-        // FORMAT RUPIAH MASKAPAI FUNCTION
+        // FORMAT RUPIAH FUNCTIONS
         // ============================================
 
         function formatRupiahMaskapai(input, hiddenId) {
-            let value = input.value.replace(/[^,\d]/g, '');
-            value = value.replace(/^Rp\s*/, '');
-            value = value.replace(/\./g, '');
-            value = value.replace(/,/g, '.');
-
-            if (value === '' || isNaN(value)) {
-                value = '0';
-            }
-
+            let value = input.value.replace(/[^,\d]/g, '').replace(/^Rp\s*/, '').replace(/\./g, '').replace(/,/g, '.');
+            if (value === '' || isNaN(value)) value = '0';
             const number = parseInt(value);
-            const formatted = 'Rp ' + number.toLocaleString('id-ID');
-
-            input.value = formatted;
-
+            input.value = 'Rp ' + number.toLocaleString('id-ID');
             const hiddenInput = document.getElementById(hiddenId);
-            if (hiddenInput) {
-                hiddenInput.value = number;
-            }
+            if (hiddenInput) hiddenInput.value = number;
         }
-
-        // ============================================
-        // FORMAT RUPIAH JENIS TRANSAKSI FUNCTION
-        // ============================================
 
         function formatRupiahJenisTransaksi(input, hiddenId) {
-            let value = input.value.replace(/[^,\d]/g, '');
-            value = value.replace(/^Rp\s*/, '');
-            value = value.replace(/\./g, '');
-            value = value.replace(/,/g, '.');
-
-            if (value === '' || isNaN(value)) {
-                value = '0';
-            }
-
+            let value = input.value.replace(/[^,\d]/g, '').replace(/^Rp\s*/, '').replace(/\./g, '').replace(/,/g, '.');
+            if (value === '' || isNaN(value)) value = '0';
             const number = parseInt(value);
-            const formatted = 'Rp ' + number.toLocaleString('id-ID');
-
-            input.value = formatted;
-
+            input.value = 'Rp ' + number.toLocaleString('id-ID');
             const hiddenInput = document.getElementById(hiddenId);
-            if (hiddenInput) {
-                hiddenInput.value = number;
-            }
+            if (hiddenInput) hiddenInput.value = number;
         }
 
-        // ============================================
-        // FORMAT RUPIAH HOTEL FUNCTION
-        // ============================================
-
         function formatRupiahHotel(input, kamarId) {
-            let value = input.value.replace(/[^,\d]/g, '');
-            value = value.replace(/^Rp\s*/, '');
-            value = value.replace(/\./g, '');
-            value = value.replace(/,/g, '.');
-
-            if (value === '' || isNaN(value)) {
-                value = '0';
-            }
-
+            let value = input.value.replace(/[^,\d]/g, '').replace(/^Rp\s*/, '').replace(/\./g, '').replace(/,/g, '.');
+            if (value === '' || isNaN(value)) value = '0';
             const number = parseInt(value);
-            const formatted = 'Rp ' + number.toLocaleString('id-ID');
-
-            input.value = formatted;
-
+            input.value = 'Rp ' + number.toLocaleString('id-ID');
             const hiddenInput = document.getElementById('kamar_harga_' + kamarId);
-            if (hiddenInput) {
-                hiddenInput.value = number;
-            }
+            if (hiddenInput) hiddenInput.value = number;
 
             const container = input.closest('.kamar-item').closest('.grid');
             if (container) {
@@ -2923,167 +3046,6 @@
                 const totalId = containerId.replace('kamarContainer', 'totalHotel');
                 calculateHotelTotal(containerId, totalId);
             }
-        }
-
-        // ============================================
-        // INITIAL EVENT LISTENERS
-        // ============================================
-
-        document.addEventListener('DOMContentLoaded', function() {
-            // Hotel Tour Checkbox
-            document.querySelectorAll('.hotel-tour-checkbox').forEach(function(checkbox) {
-                checkbox.addEventListener('change', function() {
-                    const parent = this.closest('.hotel-tour-item');
-                    const inputs = parent.querySelectorAll('input:not(.hotel-tour-checkbox)');
-
-                    inputs.forEach(function(input) {
-                        input.disabled = !checkbox.checked;
-                        if (!checkbox.checked) {
-                            input.classList.add('opacity-50', 'bg-gray-50');
-                        } else {
-                            input.classList.remove('opacity-50', 'bg-gray-50');
-                        }
-                    });
-
-                    calculateTotalPaketTourHotel();
-                });
-                checkbox.dispatchEvent(new Event('change'));
-            });
-
-            document.querySelectorAll('.hotel-tour-price, .hotel-tour-durasi, .hotel-tour-kamar').forEach(function(
-                input) {
-                input.addEventListener('input', function() {
-                    calculateTotalPaketTourHotel();
-                });
-                input.addEventListener('change', function() {
-                    calculateTotalPaketTourHotel();
-                });
-            });
-
-            // Hotel Select
-            document.querySelectorAll('.hotel-select').forEach(function(select) {
-                select.addEventListener('change', function() {
-                    const containerId = this.dataset.container;
-                    const totalId = this.dataset.total;
-                    loadKamarsWithSelected(this.id, containerId, totalId);
-                });
-            });
-
-            // Jenis Transaksi Checkbox di Modal
-            document.querySelectorAll('.jenis-transaksi-checkbox').forEach(function(checkbox) {
-                checkbox.addEventListener('change', function() {
-                    const parent = this.closest('.jenis-transaksi-modal-item');
-                    if (parent) {
-                        const inputs = parent.querySelectorAll(
-                            'input[type="number"], input[type="text"]');
-                        inputs.forEach(function(input) {
-                            input.disabled = !checkbox.checked;
-                            if (!checkbox.checked) {
-                                input.classList.add('opacity-50', 'bg-gray-50');
-                            } else {
-                                input.classList.remove('opacity-50', 'bg-gray-50');
-                            }
-                        });
-                    }
-                });
-                checkbox.dispatchEvent(new Event('change'));
-            });
-
-            // Close modal on click outside
-            document.querySelectorAll('.fixed.inset-0.bg-black\\/50').forEach(function(modal) {
-                modal.addEventListener('click', function(e) {
-                    if (e.target === this) {
-                        this.classList.add('hidden');
-                    }
-                });
-            });
-
-            // Inisialisasi agent groups default: collapsed
-            document.querySelectorAll('.agent-group-content').forEach(function(content) {
-                content.classList.add('hidden');
-            });
-            document.querySelectorAll('.no-agent-content').forEach(function(content) {
-                content.classList.add('hidden');
-            });
-        });
-        // ============================================
-        // SYNC JAMAAH FUNCTION
-        // ============================================
-
-        function syncJamaah() {
-            const departureId = {{ $departure->id_departure }};
-            const modalList = document.getElementById('jamaahModalList');
-            const modal = document.getElementById('jamaahModal');
-
-            // Tampilkan loading di modal
-            modal.classList.remove('hidden');
-            modalList.innerHTML = `
-        <div class="col-span-3 text-center py-8">
-            <i class="fas fa-spinner fa-spin text-2xl text-purple-500 mb-2"></i>
-            <p class="text-gray-500">Mencari jamaah baru...</p>
-        </div>
-    `;
-
-            // Update count
-            document.getElementById('jamaahCountModal').textContent = 'Memuat...';
-            document.getElementById('searchJamaahModal').value = '';
-
-            // Kirim request
-            fetch('{{ route('transaksional.departure.sync-jamaahs', $departure->id_departure) }}', {
-                    method: 'POST',
-                    headers: {
-                        'X-CSRF-TOKEN': '{{ csrf_token() }}',
-                        'Content-Type': 'application/json',
-                        'Accept': 'application/json'
-                    }
-                })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.success) {
-                        // Update modal list dengan jamaah baru
-                        modalList.innerHTML = data.html;
-                        document.getElementById('jamaahCountModal').textContent = data.count + ' jamaah tersedia';
-
-                        // Tampilkan pesan sukses
-                        if (data.count > 0) {
-                            // Gunakan toast atau alert
-                            if (typeof toastr !== 'undefined') {
-                                toastr.success(data.message);
-                            } else {
-                                // Tampilkan pesan di modal
-                                const infoDiv = document.createElement('div');
-                                infoDiv.className = 'mt-2 text-sm text-green-600 font-medium';
-                                infoDiv.innerHTML = '<i class="fas fa-check-circle mr-1"></i> ' + data.message;
-                                const parentDiv = document.getElementById('jamaahModalList').parentNode;
-                                const existingInfo = parentDiv.querySelector('.sync-info');
-                                if (existingInfo) existingInfo.remove();
-                                parentDiv.insertBefore(infoDiv, document.getElementById('jamaahModalList'));
-                            }
-                        } else {
-                            if (typeof toastr !== 'undefined') {
-                                toastr.info(data.message);
-                            }
-                        }
-                    } else {
-                        modalList.innerHTML = `
-                <div class="col-span-3 text-center py-8">
-                    <i class="fas fa-exclamation-circle text-2xl text-red-500 mb-2"></i>
-                    <p class="text-gray-500">${data.message}</p>
-                </div>
-            `;
-                        document.getElementById('jamaahCountModal').textContent = '0 jamaah tersedia';
-                    }
-                })
-                .catch(error => {
-                    console.error('Error:', error);
-                    modalList.innerHTML = `
-            <div class="col-span-3 text-center py-8">
-                <i class="fas fa-exclamation-circle text-2xl text-red-500 mb-2"></i>
-                <p class="text-gray-500">Gagal memuat data. Silakan coba lagi.</p>
-            </div>
-        `;
-                    document.getElementById('jamaahCountModal').textContent = 'Error';
-                });
         }
     </script>
 @endpush

@@ -1,5 +1,4 @@
 <?php
-// app/Models/DeparturePaketTourHotel.php
 
 namespace App\Models;
 
@@ -16,6 +15,7 @@ class DeparturePaketTourHotel extends Model
         'id_departure',
         'id_paket_tour',
         'id_hotel',
+        'id_kamar',
         'urutan',
         'harga_per_malam',
         'durasi_menginap',
@@ -30,6 +30,10 @@ class DeparturePaketTourHotel extends Model
         'jumlah_kamar' => 'integer',
         'urutan' => 'integer',
     ];
+
+    // ==========================================
+    // RELATIONSHIPS
+    // ==========================================
 
     public function departure()
     {
@@ -46,9 +50,18 @@ class DeparturePaketTourHotel extends Model
         return $this->belongsTo(Hotel::class, 'id_hotel', 'id_hotel');
     }
 
+    public function kamar()
+    {
+        return $this->belongsTo(Kamar::class, 'id_kamar', 'id_kamar');
+    }
+
+    // ==========================================
+    // ACCESSORS
+    // ==========================================
+
     public function getTotalHargaAttribute()
     {
-        return $this->harga_per_malam * $this->durasi_menginap * $this->jumlah_kamar;
+        return ($this->harga_per_malam ?? 0) * ($this->durasi_menginap ?? 0) * ($this->jumlah_kamar ?? 0);
     }
 
     public function getTotalHargaFormattedAttribute()
@@ -58,6 +71,6 @@ class DeparturePaketTourHotel extends Model
 
     public function getHargaPerMalamFormattedAttribute()
     {
-        return 'Rp ' . number_format($this->harga_per_malam, 0, ',', '.');
+        return 'Rp ' . number_format($this->harga_per_malam ?? 0, 0, ',', '.');
     }
 }

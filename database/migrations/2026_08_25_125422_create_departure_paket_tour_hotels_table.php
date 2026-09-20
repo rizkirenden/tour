@@ -1,5 +1,4 @@
 <?php
-// database/migrations/2026_08_25_000001_create_departure_paket_tour_hotels_table.php
 
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
@@ -14,6 +13,10 @@ return new class extends Migration
             $table->foreignId('id_departure')->constrained('departures', 'id_departure')->onDelete('cascade');
             $table->foreignId('id_paket_tour')->constrained('paket_tours', 'id_paket_tour')->onDelete('cascade');
             $table->foreignId('id_hotel')->constrained('hotels', 'id_hotel')->onDelete('cascade');
+
+            // HAPUS ->after('id_hotel')
+            $table->unsignedBigInteger('id_kamar')->nullable();
+
             $table->integer('urutan')->default(0);
             $table->integer('harga_per_malam')->default(0);
             $table->integer('durasi_menginap')->default(1);
@@ -23,6 +26,11 @@ return new class extends Migration
             $table->timestamps();
 
             $table->index(['id_departure', 'id_paket_tour']);
+
+            $table->foreign('id_kamar')
+                ->references('id_kamar')
+                ->on('kamars')
+                ->onDelete('set null');
         });
     }
 

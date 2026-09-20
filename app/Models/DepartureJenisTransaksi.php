@@ -44,4 +44,29 @@ class DepartureJenisTransaksi extends Model
     {
         return 'Rp ' . number_format($this->total_harga, 0, ',', '.');
     }
+
+/**
+ * ✅ Relasi ke detail per jamaah
+ */
+public function departureJenisTransaksiJamaahs()
+{
+    return $this->hasMany(DepartureJenisTransaksiJamaah::class, 'id_departure_jenis_transaksi', 'id');
+}
+
+// ==========================================
+// ACCESSORS — HANYA YANG SUDAH DITERIMA
+// ==========================================
+
+public function getTotalHargaDiterimaAttribute()
+{
+    return $this->departureJenisTransaksiJamaahs()
+        ->where('status_terima', 'Sudah Diterima')
+        ->sum('total_harga');
+}
+
+public function getTotalHargaDiterimaFormattedAttribute()
+{
+    return 'Rp ' . number_format($this->total_harga_diterima, 0, ',', '.');
+}
+
 }

@@ -1068,9 +1068,6 @@
         </div>
     @endif
 
-    <!-- ==========================================
-    LAMPIRAN BUKTI PEMBAYARAN (HALAMAN TERPISAH)
-    ========================================== -->
     @php
         $transaksiDenganBukti = $transaksis->filter(function ($t) {
             return ($t->bukti_exists ?? false) && !empty($t->bukti_base64);
