@@ -41,6 +41,12 @@ Route::prefix('master')->name('master.')->group(function () {
     Route::delete('produk/harga-bulanan/{hargaId}', [ProdukPaketController::class, 'destroyHargaBulanan'])->name('produk.harga-bulanan.destroy');
     Route::patch('produk/harga-bulanan/{hargaId}/toggle', [ProdukPaketController::class, 'toggleHargaBulanan'])->name('produk.harga-bulanan.toggle');
 
+      Route::post('produk/{produkId}/keberangkatan', [ProdukPaketController::class, 'storeKeberangkatan'])->name('produk.keberangkatan.store');
+    Route::delete('keberangkatan/{keberangkatanId}', [ProdukPaketController::class, 'destroyKeberangkatan'])->name('produk.keberangkatan.destroy');
+    Route::patch('keberangkatan/{keberangkatanId}/toggle', [ProdukPaketController::class, 'toggleKeberangkatan'])->name('produk.keberangkatan.toggle');
+
+    Route::get('get-paket-tour-info/{id}', [ProdukPaketController::class, 'getPaketTourInfo'])->name('get-paket-tour-info');
+
     Route::resource('metode-pembayaran', MetodePembayaranController::class);
     Route::patch('metode-pembayaran/{id}/toggle-status', [MetodePembayaranController::class, 'toggleStatus'])->name('metode-pembayaran.toggle-status');
 
@@ -90,6 +96,8 @@ Route::prefix('transaksional')->name('transaksional.')->group(function () {
     // ==========================================
     Route::get('get-harga-produk-by-bulan', [JamaahController::class, 'getHargaProdukByBulan'])
         ->name('get-harga-produk-by-bulan');
+
+        
 
    // ==========================================
 // DEPARTURE ROUTES

@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Models\ProdukPaket;
 use App\Models\PaketTour;
 use App\Models\ProdukHargaBulanan;
+use App\Models\ProdukKeberangkatan;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 
@@ -12,13 +13,25 @@ class ProdukPaketService
 {
     public function getAll(array $filters = [])
     {
-        $query = ProdukPaket::with('paketTour', 'hargaBulanan');
+        $query = ProdukPaket::with('paketTour', 'hargaBulanan', 'keberangkatan');
 
         if (!empty($filters['search'])) {
             $search = $filters['search'];
-            $query->where(function($q) use ($search) {
+            $query->where(function ($q) use ($search) {
                 $q->where('nama_produk', 'like', "%{$search}%")
                   ->orWhere('kategori', 'like', "%{$search}%");
+            });
+        }
+
+        if (!empty($filters['bulan_keberangkatan'])) {
+            $query->whereHas('keberangkatan', function ($q) use ($filters) {
+                $q->where('bulan', $filters['bulan_keberangkatan']);
+            });
+        }
+
+        if (!empty($filters['tahun_keberangkatan'])) {
+            $query->whereHas('keberangkatan', function ($q) use ($filters) {
+                $q->where('tahun', $filters['tahun_keberangkatan']);
             });
         }
 
@@ -27,7 +40,7 @@ class ProdukPaketService
 
     public function getById($id)
     {
-        return ProdukPaket::with('paketTour', 'hargaBulanan')->findOrFail($id);
+        return ProdukPaket::with('paketTour', 'hargaBulanan', 'keberangkatan')->findOrFail($id);
     }
 
     public function getByIdWithRelations($id)
@@ -36,6 +49,7 @@ class ProdukPaketService
             'paketTour',
             'paketTour.hotels',
             'hargaBulanan',
+            'keberangkatan',
         ])->findOrFail($id);
     }
 
@@ -66,12 +80,15 @@ class ProdukPaketService
 
             $data['total_harga'] = 0;
 
+            $keberangkatanData = $data['keberangkatan'] ?? [];
+            unset($data['keberangkatan']);
+
             $produk = ProdukPaket::create($data);
 
             if (!empty($data['harga_bulanan'])) {
                 foreach ($data['harga_bulanan'] as $hargaData) {
                     if (!empty($hargaData['bulan']) && !empty($hargaData['tahun']) && isset($hargaData['harga'])) {
-                        $harga = ProdukHargaBulanan::create([
+                        ProdukHargaBulanan::create([
                             'produk_paket_id' => $produk->id_produk,
                             'bulan' => $hargaData['bulan'],
                             'tahun' => $hargaData['tahun'],
@@ -80,6 +97,17 @@ class ProdukPaketService
                             'is_active' => $hargaData['is_active'] ?? true,
                         ]);
                     }
+                }
+            }
+
+            foreach ($keberangkatanData as $k) {
+                if (!empty($k['bulan']) && !empty($k['tahun'])) {
+                    ProdukKeberangkatan::create([
+                        'produk_paket_id' => $produk->id_produk,
+                        'bulan' => $k['bulan'],
+                        'tahun' => $k['tahun'],
+                        'is_active' => $k['is_active'] ?? true,
+                    ]);
                 }
             }
 
@@ -114,8 +142,12 @@ class ProdukPaketService
             $totalDurasi += (int) ($data['durasi_tour'] ?? 0);
             $data['durasi_hari'] = $totalDurasi;
 
+            $keberangkatanData = $data['keberangkatan'] ?? [];
+            unset($data['keberangkatan']);
+
             $produk->update($data);
 
+            // ============ Harga bulanan ============
             if (isset($data['harga_bulanan'])) {
                 $idsToKeep = [];
                 foreach ($data['harga_bulanan'] as $hargaData) {
@@ -125,7 +157,6 @@ class ProdukPaketService
                 }
 
                 if (!empty($idsToKeep)) {
-                    // Hapus flyer dari harga yang akan dihapus
                     $toDelete = $produk->hargaBulanan()->whereNotIn('id', $idsToKeep)->get();
                     foreach ($toDelete as $harga) {
                         if ($harga->flyer && Storage::disk('public')->exists($harga->flyer)) {
@@ -134,7 +165,6 @@ class ProdukPaketService
                     }
                     $produk->hargaBulanan()->whereNotIn('id', $idsToKeep)->delete();
                 } else {
-                    // Hapus semua flyer
                     foreach ($produk->hargaBulanan as $harga) {
                         if ($harga->flyer && Storage::disk('public')->exists($harga->flyer)) {
                             Storage::disk('public')->delete($harga->flyer);
@@ -146,7 +176,6 @@ class ProdukPaketService
                 foreach ($data['harga_bulanan'] as $hargaData) {
                     if (!empty($hargaData['bulan']) && !empty($hargaData['tahun']) && isset($hargaData['harga'])) {
                         if (!empty($hargaData['id'])) {
-                            // Update existing - flyer sudah ditangani di controller
                             ProdukHargaBulanan::where('id', $hargaData['id'])->update([
                                 'bulan' => $hargaData['bulan'],
                                 'tahun' => $hargaData['tahun'],
@@ -155,7 +184,6 @@ class ProdukPaketService
                                 'is_active' => $hargaData['is_active'] ?? true,
                             ]);
                         } else {
-                            // Create new
                             ProdukHargaBulanan::create([
                                 'produk_paket_id' => $produk->id_produk,
                                 'bulan' => $hargaData['bulan'],
@@ -163,6 +191,41 @@ class ProdukPaketService
                                 'harga' => (int) $hargaData['harga'],
                                 'flyer' => $hargaData['flyer'] ?? null,
                                 'is_active' => $hargaData['is_active'] ?? true,
+                            ]);
+                        }
+                    }
+                }
+            }
+
+            // ============ Keberangkatan (multiple) ============
+            if (isset($data['keberangkatan'])) {
+                $keepIds = [];
+                foreach ($keberangkatanData as $k) {
+                    if (!empty($k['id'])) {
+                        $keepIds[] = $k['id'];
+                    }
+                }
+
+                if (!empty($keepIds)) {
+                    $produk->keberangkatan()->whereNotIn('id', $keepIds)->delete();
+                } else {
+                    $produk->keberangkatan()->delete();
+                }
+
+                foreach ($keberangkatanData as $k) {
+                    if (!empty($k['bulan']) && !empty($k['tahun'])) {
+                        if (!empty($k['id'])) {
+                            ProdukKeberangkatan::where('id', $k['id'])->update([
+                                'bulan' => $k['bulan'],
+                                'tahun' => $k['tahun'],
+                                'is_active' => $k['is_active'] ?? true,
+                            ]);
+                        } else {
+                            ProdukKeberangkatan::create([
+                                'produk_paket_id' => $produk->id_produk,
+                                'bulan' => $k['bulan'],
+                                'tahun' => $k['tahun'],
+                                'is_active' => $k['is_active'] ?? true,
                             ]);
                         }
                     }
@@ -179,7 +242,6 @@ class ProdukPaketService
             $produk = $this->getById($id);
             $nama = $produk->nama_produk;
 
-            // Hapus flyer dari semua harga bulanan
             foreach ($produk->hargaBulanan as $harga) {
                 if ($harga->flyer && Storage::disk('public')->exists($harga->flyer)) {
                     Storage::disk('public')->delete($harga->flyer);
@@ -187,7 +249,9 @@ class ProdukPaketService
             }
 
             $produk->hargaBulanan()->delete();
+            $produk->keberangkatan()->delete();
             $produk->delete();
+
             return $nama;
         });
     }

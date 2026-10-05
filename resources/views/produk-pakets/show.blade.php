@@ -127,6 +127,143 @@
                     </div>
                 </div>
 
+                <!-- Keberangkatan (Multiple) dengan Aksi -->
+                <div class="mt-6 bg-gray-50 rounded-xl p-5 border border-gray-100">
+                    <div class="flex flex-wrap items-center justify-between mb-4">
+                        <h6 class="text-sm font-semibold text-gray-700 flex items-center">
+                            <i class="fas fa-plane-departure text-yellow-500 mr-2"></i> Bulan Keberangkatan
+                            <span class="ml-2 text-xs bg-purple-100 text-purple-800 px-2 py-0.5 rounded-full">
+                                {{ $produk->keberangkatan->count() }} data
+                            </span>
+                        </h6>
+                        <button type="button" onclick="toggleFormTambahKeberangkatan()"
+                            class="inline-flex items-center px-3 py-1.5 bg-yellow-500 text-white text-xs rounded-lg hover:bg-yellow-600 transition">
+                            <i class="fas fa-plus mr-1"></i> Tambah Keberangkatan
+                        </button>
+                    </div>
+
+                    <!-- Form Tambah Keberangkatan -->
+                    <div id="formTambahKeberangkatan" class="hidden mb-4 p-4 bg-white rounded-lg border border-gray-200">
+                        <form action="{{ route('master.produk.keberangkatan.store', $produk->id_produk) }}" method="POST"
+                            id="formTambahKeb">
+                            @csrf
+                            <div class="grid grid-cols-1 md:grid-cols-4 gap-3">
+                                <div>
+                                    <label class="block text-xs font-medium text-gray-600 mb-1">Bulan <span
+                                            class="text-red-500">*</span></label>
+                                    <select name="bulan"
+                                        class="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-yellow-500"
+                                        required>
+                                        <option value="">Pilih Bulan</option>
+                                        @for ($b = 1; $b <= 12; $b++)
+                                            <option value="{{ $b }}">
+                                                {{ \Carbon\Carbon::create()->month($b)->translatedFormat('F') }}
+                                            </option>
+                                        @endfor
+                                    </select>
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-medium text-gray-600 mb-1">Tahun <span
+                                            class="text-red-500">*</span></label>
+                                    <select name="tahun"
+                                        class="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-yellow-500"
+                                        required>
+                                        <option value="">Pilih Tahun</option>
+                                        @for ($y = date('Y'); $y <= date('Y') + 5; $y++)
+                                            <option value="{{ $y }}">{{ $y }}</option>
+                                        @endfor
+                                    </select>
+                                </div>
+                                <div class="flex items-end">
+                                    <label class="flex items-center gap-1 text-xs">
+                                        <input type="checkbox" name="is_active" value="1" checked>
+                                        Aktif
+                                    </label>
+                                </div>
+                                <div class="flex items-end gap-2">
+                                    <button type="submit"
+                                        class="px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition text-sm">
+                                        <i class="fas fa-save mr-1"></i> Simpan
+                                    </button>
+                                    <button type="button" onclick="toggleFormTambahKeberangkatan()"
+                                        class="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition text-sm">
+                                        <i class="fas fa-times"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+
+                    <!-- Tabel Keberangkatan -->
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-sm">
+                            <thead>
+                                <tr class="border-b border-gray-200">
+                                    <th class="px-3 py-2 text-left text-xs font-semibold text-gray-500 uppercase">No
+                                    </th>
+                                    <th class="px-3 py-2 text-left text-xs font-semibold text-gray-500 uppercase">Bulan
+                                    </th>
+                                    <th class="px-3 py-2 text-left text-xs font-semibold text-gray-500 uppercase">Tahun
+                                    </th>
+                                    <th class="px-3 py-2 text-center text-xs font-semibold text-gray-500 uppercase">
+                                        Status
+                                    </th>
+                                    <th class="px-3 py-2 text-center text-xs font-semibold text-gray-500 uppercase">
+                                        Aksi
+                                    </th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-gray-100" id="keberangkatanTable">
+                                @forelse($produk->keberangkatan->sortBy(['tahun', 'bulan']) as $index => $k)
+                                    <tr class="hover:bg-gray-50 transition-colors"
+                                        id="keberangkatan-row-{{ $k->id }}">
+                                        <td class="px-3 py-2 text-gray-600">{{ $index + 1 }}</td>
+                                        <td class="px-3 py-2 font-medium text-gray-700">{{ $k->bulan_formatted }}</td>
+                                        <td class="px-3 py-2 text-gray-600">{{ $k->tahun }}</td>
+                                        <td class="px-3 py-2 text-center">
+                                            <button onclick="toggleKeberangkatan({{ $k->id }})"
+                                                class="status-badge-keb-{{ $k->id }} transition-all duration-200 cursor-pointer">
+                                                <span
+                                                    class="px-2 py-1 rounded-full text-xs font-medium
+                                                    {{ $k->is_active ? 'bg-purple-100 text-purple-700 hover:bg-purple-200' : 'bg-gray-100 text-gray-500 hover:bg-gray-200' }}">
+                                                    {{ $k->is_active ? 'Aktif' : 'Nonaktif' }}
+                                                </span>
+                                            </button>
+                                            <form id="toggle-keb-form-{{ $k->id }}"
+                                                action="{{ route('master.produk.keberangkatan.toggle', $k->id) }}"
+                                                method="POST" class="hidden">
+                                                @csrf
+                                                @method('PATCH')
+                                            </form>
+                                        </td>
+                                        <td class="px-3 py-2 text-center">
+                                            <div class="flex items-center justify-center gap-1">
+                                                <button type="button"
+                                                    onclick="confirmDeleteKeberangkatan({{ $k->id }})"
+                                                    class="p-1.5 text-red-500 hover:bg-red-50 rounded-lg transition">
+                                                    <i class="fas fa-trash text-xs"></i>
+                                                </button>
+                                                <form id="delete-keb-form-{{ $k->id }}"
+                                                    action="{{ route('master.produk.keberangkatan.destroy', $k->id) }}"
+                                                    method="POST" class="hidden">
+                                                    @csrf
+                                                    @method('DELETE')
+                                                </form>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                @empty
+                                    <tr>
+                                        <td colspan="5" class="px-3 py-4 text-center text-gray-400 text-sm">
+                                            Belum ada data keberangkatan
+                                        </td>
+                                    </tr>
+                                @endforelse
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
                 <!-- Harga Bulanan dengan Aksi dan Flyer -->
                 <div class="mt-6 bg-gray-50 rounded-xl p-5 border border-gray-100">
                     <div class="flex flex-wrap items-center justify-between mb-4">
@@ -144,8 +281,8 @@
 
                     <!-- Form Tambah Harga -->
                     <div id="formTambahHarga" class="hidden mb-4 p-4 bg-white rounded-lg border border-gray-200">
-                        <form action="{{ route('master.produk.harga-bulanan.store', $produk->id_produk) }}" method="POST"
-                            enctype="multipart/form-data" id="formTambah">
+                        <form action="{{ route('master.produk.harga-bulanan.store', $produk->id_produk) }}"
+                            method="POST" enctype="multipart/form-data" id="formTambah">
                             @csrf
                             <div class="grid grid-cols-1 md:grid-cols-5 gap-3">
                                 <div>
@@ -458,16 +595,6 @@
                             <label class="block text-sm font-medium text-gray-700 mb-1">
                                 Flyer
                             </label>
-                            @php
-                                $currentHarga = $produk->hargaBulanan->firstWhere('id', old('edit_id'));
-                            @endphp
-                            @if (isset($currentHarga) && $currentHarga && $currentHarga->flyer_url)
-                                <div class="mb-2 p-2 bg-gray-50 rounded-lg border border-gray-200">
-                                    <p class="text-xs text-gray-500 mb-1">Flyer saat ini:</p>
-                                    <img src="{{ $currentHarga->flyer_url }}" alt="Flyer"
-                                        class="max-h-32 rounded-lg border border-gray-200">
-                                </div>
-                            @endif
                             <input type="file" id="edit_flyer" name="flyer" accept="image/*"
                                 class="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-yellow-500 file:mr-2 file:py-1 file:px-3 file:rounded-lg file:border-0 file:text-sm file:bg-yellow-50 file:text-yellow-700 hover:file:bg-yellow-100">
                             <p class="text-xs text-gray-400 mt-1">PNG, JPG, JPEG, SVG (max 2MB). Kosongkan jika tidak ingin
@@ -499,12 +626,18 @@
 
 @push('scripts')
     <script>
+        // ============================================
+        // FORMAT RUPIAH
+        // ============================================
         function formatRupiah(element) {
             let value = element.value.replace(/[^,\d]/g, '');
             value = value.replace(/\B(?=(\d{3})+(?!\d))/g, '.');
             element.value = value;
         }
 
+        // ============================================
+        // HARGA BULANAN
+        // ============================================
         function toggleFormTambah() {
             const form = document.getElementById('formTambahHarga');
             form.classList.toggle('hidden');
@@ -548,26 +681,16 @@
             }
         }
 
-        // ============================================
-        // EDIT HARGA BULANAN
-        // ============================================
-
         let currentEditId = null;
 
         function openEditModal(id) {
             currentEditId = id;
 
             const row = document.getElementById('harga-row-' + id);
-            if (!row) {
-                console.error('Row not found for id:', id);
-                return;
-            }
+            if (!row) return;
 
             const cells = row.querySelectorAll('td');
-            if (cells.length < 6) {
-                console.error('Invalid row structure');
-                return;
-            }
+            if (cells.length < 6) return;
 
             const bulanText = cells[1].textContent.trim();
             const tahunText = cells[2].textContent.trim();
@@ -579,7 +702,6 @@
             document.getElementById('edit_harga').value = parseInt(hargaText || 0).toLocaleString('id-ID');
             document.getElementById('edit_is_active').checked = statusText === 'Aktif';
 
-            // Set action form dengan ID yang benar
             const form = document.getElementById('editHargaForm');
             const updateUrl = `{{ route('master.produk.harga-bulanan.update', ['hargaId' => '__ID__']) }}`.replace(
                 '__ID__', id);
@@ -613,6 +735,55 @@
             return bulanMap[text.trim()] || '';
         }
 
+        // ============================================
+        // KEBERANGKATAN (show page)
+        // ============================================
+        function toggleFormTambahKeberangkatan() {
+            const form = document.getElementById('formTambahKeberangkatan');
+            form.classList.toggle('hidden');
+        }
+
+        function confirmDeleteKeberangkatan(id) {
+            if (confirm('Yakin ingin menghapus bulan keberangkatan ini?')) {
+                document.getElementById('delete-keb-form-' + id).submit();
+            }
+        }
+
+        function toggleKeberangkatan(id) {
+            if (!confirm('Ubah status keberangkatan ini?')) return;
+
+            const form = document.getElementById('toggle-keb-form-' + id);
+            const formData = new FormData(form);
+
+            fetch(form.action, {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                        'Accept': 'application/json',
+                    },
+                    body: formData
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        const badgeContainer = document.querySelector(`.status-badge-keb-${id}`);
+                        if (badgeContainer) {
+                            badgeContainer.innerHTML = data.badge;
+                        }
+                        showToast('success', data.message);
+                    } else {
+                        showToast('error', data.message || 'Gagal mengubah status');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    showToast('error', 'Terjadi kesalahan saat mengubah status');
+                });
+        }
+
+        // ============================================
+        // TOAST
+        // ============================================
         function showToast(type, message) {
             let toastContainer = document.getElementById('toast-container');
             if (!toastContainer) {
@@ -642,10 +813,10 @@
         }
 
         // ============================================
-        // PERBAIKAN: Bersihkan format sebelum submit
+        // DOM READY
         // ============================================
         document.addEventListener('DOMContentLoaded', function() {
-            // Form Edit
+            // Form Edit Harga - bersihkan format
             const editForm = document.getElementById('editHargaForm');
             if (editForm) {
                 editForm.addEventListener('submit', function(e) {
@@ -656,7 +827,7 @@
                 });
             }
 
-            // Form Tambah
+            // Form Tambah Harga - bersihkan format
             const tambahForm = document.getElementById('formTambah');
             if (tambahForm) {
                 tambahForm.addEventListener('submit', function(e) {

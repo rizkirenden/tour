@@ -33,12 +33,27 @@
         </div>
 
         <div class="p-6">
-            <div class="flex gap-3 mb-4">
+            <div class="flex gap-3 mb-4 flex-wrap">
                 <div class="relative flex-1 max-w-xs">
                     <i class="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm"></i>
                     <input type="text" id="search" placeholder="Cari produk..."
                         class="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500 text-sm">
                 </div>
+                <select id="filter_bulan"
+                    class="px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500 text-sm">
+                    <option value="">Semua Bulan</option>
+                    @for ($b = 1; $b <= 12; $b++)
+                        <option value="{{ $b }}">{{ \Carbon\Carbon::create()->month($b)->translatedFormat('F') }}
+                        </option>
+                    @endfor
+                </select>
+                <select id="filter_tahun"
+                    class="px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500 text-sm">
+                    <option value="">Semua Tahun</option>
+                    @for ($y = date('Y'); $y <= date('Y') + 5; $y++)
+                        <option value="{{ $y }}">{{ $y }}</option>
+                    @endfor
+                </select>
                 <button onclick="applyFilter()"
                     class="px-4 py-2 bg-yellow-500 text-white rounded-lg hover:bg-yellow-600 transition text-sm font-medium">
                     <i class="fas fa-search mr-2"></i> Cari
@@ -60,13 +75,18 @@
     <script>
         function applyFilter() {
             const search = document.getElementById('search').value;
-            fetch(`{{ route('master.produk.index') }}?search=${search}&ajax=true`)
+            const bulan = document.getElementById('filter_bulan').value;
+            const tahun = document.getElementById('filter_tahun').value;
+            fetch(
+                    `{{ route('master.produk.index') }}?search=${search}&bulan_keberangkatan=${bulan}&tahun_keberangkatan=${tahun}&ajax=true`)
                 .then(response => response.text())
                 .then(html => document.getElementById('table-container').innerHTML = html);
         }
 
         function resetFilter() {
             document.getElementById('search').value = '';
+            document.getElementById('filter_bulan').value = '';
+            document.getElementById('filter_tahun').value = '';
             applyFilter();
         }
 
@@ -75,5 +95,8 @@
             clearTimeout(timeout);
             timeout = setTimeout(applyFilter, 400);
         });
+
+        document.getElementById('filter_bulan').addEventListener('change', applyFilter);
+        document.getElementById('filter_tahun').addEventListener('change', applyFilter);
     </script>
 @endpush

@@ -8,7 +8,9 @@
                 <th class="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Kategori
                 </th>
                 <th class="px-4 py-3 text-center text-xs font-semibold text-gray-500 uppercase tracking-wider">
-                    Harga/Bulan</th>
+                    Keberangkatan</th>
+                <th class="px-4 py-3 text-center text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                    Harga Per Bulan</th>
                 <th class="px-4 py-3 text-center text-xs font-semibold text-gray-500 uppercase tracking-wider">Durasi
                 </th>
                 <th class="px-4 py-3 text-center text-xs font-semibold text-gray-500 uppercase tracking-wider">Umroh Plus
@@ -34,15 +36,26 @@
                         <span class="text-sm text-gray-600">{{ $item->kategori ?? '-' }}</span>
                     </td>
                     <td class="px-4 py-3 text-center">
+                        @if ($item->keberangkatan->count() > 0)
+                            <div class="flex flex-wrap gap-1 justify-center">
+                                @foreach ($item->keberangkatan->sortBy(['tahun', 'bulan']) as $k)
+                                    <span
+                                        class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium {{ $k->is_active ? 'bg-purple-100 text-purple-700' : 'bg-gray-100 text-gray-500' }}">
+                                        {{ $k->bulan_formatted }} {{ $k->tahun }}
+                                    </span>
+                                @endforeach
+                            </div>
+                        @else
+                            <span class="text-xs text-gray-400">-</span>
+                        @endif
+                    </td>
+                    <td class="px-4 py-3 text-center">
                         @if ($item->hargaBulanan->count() > 0)
                             <span
                                 class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-700">
                                 <i class="fas fa-calendar-alt mr-1"></i>
                                 {{ $item->hargaBulanan->count() }}
                             </span>
-                            <div class="text-xs text-gray-400 mt-1">
-                                {{ $item->hargaBulanan->first()->harga_formatted ?? '' }}
-                            </div>
                         @else
                             <span class="text-xs text-gray-400">-</span>
                         @endif
@@ -92,7 +105,7 @@
                 </tr>
             @empty
                 <tr>
-                    <td colspan="8" class="px-4 py-12 text-center">
+                    <td colspan="9" class="px-4 py-12 text-center">
                         <div class="flex flex-col items-center">
                             <div class="w-16 h-16 bg-gray-100 rounded-2xl flex items-center justify-center mb-3">
                                 <i class="fas fa-inbox text-gray-300 text-3xl"></i>

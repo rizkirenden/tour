@@ -23,7 +23,6 @@ class ProdukPaket extends Model
         'durasi_madinah',
         'durasi_tour',
         'durasi_hari',
-        // FLYER DIHAPUS DARI FILLABLE
         'kategori',
         'is_active',
     ];
@@ -47,6 +46,14 @@ class ProdukPaket extends Model
     public function hargaBulanan()
     {
         return $this->hasMany(ProdukHargaBulanan::class, 'produk_paket_id', 'id_produk');
+    }
+
+    /**
+     * Relasi keberangkatan (multiple)
+     */
+    public function keberangkatan()
+    {
+        return $this->hasMany(ProdukKeberangkatan::class, 'produk_paket_id', 'id_produk');
     }
 
     public function getHargaByBulanTahun($bulan, $tahun)
@@ -161,6 +168,32 @@ class ProdukPaket extends Model
         return $this->include_tur
             ? '<span class="px-2 py-1 text-xs font-medium rounded-full bg-blue-100 text-blue-700">Include Tur</span>'
             : '<span class="px-2 py-1 text-xs font-medium rounded-full bg-gray-100 text-gray-700">Tanpa Tur</span>';
+    }
+
+    /**
+     * Daftar keberangkatan formatted (string)
+     */
+    public function getKeberangkatanListAttribute()
+    {
+        $list = $this->keberangkatan->sortBy(['tahun', 'bulan'])
+            ->map(fn($k) => $k->keberangkatan_formatted)
+            ->toArray();
+
+        return !empty($list) ? implode(', ', $list) : '-';
+    }
+
+    /**
+     * Badge daftar keberangkatan
+     */
+    public function getKeberangkatanBadgesAttribute()
+    {
+        if ($this->keberangkatan->isEmpty()) {
+            return '<span class="text-xs text-gray-400">-</span>';
+        }
+
+        return $this->keberangkatan->sortBy(['tahun', 'bulan'])
+            ->map(fn($k) => $k->keberangkatan_badge)
+            ->implode(' ');
     }
 
     public function scopeActive($query)

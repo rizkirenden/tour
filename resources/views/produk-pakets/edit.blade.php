@@ -79,6 +79,120 @@
                         </div>
                     </div>
 
+                    <!-- Keberangkatan (Multiple) -->
+                    <div class="border-b border-gray-200 pb-4">
+                        <h6 class="text-sm font-semibold text-gray-700 mb-4 flex items-center">
+                            <i class="fas fa-plane-departure text-yellow-500 mr-2"></i> Bulan Keberangkatan
+                            <span class="ml-2 text-xs text-gray-400">(bisa lebih dari 1)</span>
+                            <button type="button" onclick="addKeberangkatan()"
+                                class="ml-auto text-xs bg-yellow-500 text-white px-3 py-1 rounded-lg hover:bg-yellow-600 transition">
+                                <i class="fas fa-plus mr-1"></i> Tambah
+                            </button>
+                        </h6>
+
+                        <div id="keberangkatanList">
+                            @php $keberangkatanIndex = 0; @endphp
+                            @forelse ($produk->keberangkatan->sortBy(['tahun', 'bulan']) as $k)
+                                <div
+                                    class="keberangkatan-row grid grid-cols-1 md:grid-cols-4 gap-3 mb-2 items-end bg-gray-50 p-3 rounded-lg border border-gray-200">
+                                    <input type="hidden" name="keberangkatan[{{ $keberangkatanIndex }}][id]"
+                                        value="{{ $k->id }}">
+                                    <div>
+                                        <label class="block text-xs font-medium text-gray-600 mb-1">Bulan <span
+                                                class="text-red-500">*</span></label>
+                                        <select name="keberangkatan[{{ $keberangkatanIndex }}][bulan]"
+                                            class="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500"
+                                            required>
+                                            <option value="">Pilih Bulan</option>
+                                            @for ($b = 1; $b <= 12; $b++)
+                                                <option value="{{ $b }}"
+                                                    {{ $k->bulan == $b ? 'selected' : '' }}>
+                                                    {{ \Carbon\Carbon::create()->month($b)->translatedFormat('F') }}
+                                                </option>
+                                            @endfor
+                                        </select>
+                                    </div>
+                                    <div>
+                                        <label class="block text-xs font-medium text-gray-600 mb-1">Tahun <span
+                                                class="text-red-500">*</span></label>
+                                        <select name="keberangkatan[{{ $keberangkatanIndex }}][tahun]"
+                                            class="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500"
+                                            required>
+                                            <option value="">Pilih Tahun</option>
+                                            @for ($y = date('Y'); $y <= date('Y') + 5; $y++)
+                                                <option value="{{ $y }}"
+                                                    {{ $k->tahun == $y ? 'selected' : '' }}>{{ $y }}</option>
+                                            @endfor
+                                        </select>
+                                    </div>
+                                    <div class="flex items-center gap-2">
+                                        <label class="flex items-center gap-1 text-xs">
+                                            <input type="checkbox"
+                                                name="keberangkatan[{{ $keberangkatanIndex }}][is_active]" value="1"
+                                                {{ $k->is_active ? 'checked' : '' }}>
+                                            Aktif
+                                        </label>
+                                        <button type="button" onclick="removeKeberangkatanRow(this)"
+                                            class="text-red-500 hover:text-red-700 text-sm ml-auto">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                                @php $keberangkatanIndex++; @endphp
+                            @empty
+                                <div
+                                    class="keberangkatan-row grid grid-cols-1 md:grid-cols-4 gap-3 mb-2 items-end bg-gray-50 p-3 rounded-lg border border-gray-200">
+                                    <div>
+                                        <label class="block text-xs font-medium text-gray-600 mb-1">Bulan <span
+                                                class="text-red-500">*</span></label>
+                                        <select name="keberangkatan[0][bulan]"
+                                            class="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500"
+                                            required>
+                                            <option value="">Pilih Bulan</option>
+                                            @for ($b = 1; $b <= 12; $b++)
+                                                <option value="{{ $b }}">
+                                                    {{ \Carbon\Carbon::create()->month($b)->translatedFormat('F') }}
+                                                </option>
+                                            @endfor
+                                        </select>
+                                    </div>
+                                    <div>
+                                        <label class="block text-xs font-medium text-gray-600 mb-1">Tahun <span
+                                                class="text-red-500">*</span></label>
+                                        <select name="keberangkatan[0][tahun]"
+                                            class="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500"
+                                            required>
+                                            <option value="">Pilih Tahun</option>
+                                            @for ($y = date('Y'); $y <= date('Y') + 5; $y++)
+                                                <option value="{{ $y }}">{{ $y }}</option>
+                                            @endfor
+                                        </select>
+                                    </div>
+                                    <div class="flex items-center gap-2">
+                                        <label class="flex items-center gap-1 text-xs">
+                                            <input type="checkbox" name="keberangkatan[0][is_active]" value="1"
+                                                checked>
+                                            Aktif
+                                        </label>
+                                        <button type="button" onclick="removeKeberangkatanRow(this)"
+                                            class="text-red-500 hover:text-red-700 text-sm ml-auto">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                                @php $keberangkatanIndex = 1; @endphp
+                            @endforelse
+                        </div>
+
+                        <p class="text-xs text-gray-400 mt-2">
+                            <i class="fas fa-info-circle mr-1"></i>
+                            Tambahkan bulan-bulan keberangkatan yang tersedia untuk produk ini
+                        </p>
+                        @error('keberangkatan')
+                            <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+                        @enderror
+                    </div>
+
                     <!-- Harga Bulanan (WAJIB) -->
                     <div class="border-b border-gray-200 pb-4">
                         <h6 class="text-sm font-semibold text-gray-700 mb-4 flex items-center">
@@ -141,8 +255,10 @@
                                         <label class="block text-xs font-medium text-gray-600 mb-1">Flyer</label>
                                         @if ($harga->flyer_url)
                                             <div class="mb-1 p-1 bg-white rounded border border-gray-200">
-                                                <img src="{{ $harga->flyer_url }}" alt="Flyer" class="max-h-12 rounded">
-                                                <p class="text-xs text-gray-400 truncate">{{ basename($harga->flyer) }}</p>
+                                                <img src="{{ $harga->flyer_url }}" alt="Flyer"
+                                                    class="max-h-12 rounded">
+                                                <p class="text-xs text-gray-400 truncate">{{ basename($harga->flyer) }}
+                                                </p>
                                             </div>
                                         @endif
                                         <input type="file" name="harga_bulanan[{{ $editIndex }}][flyer]"
@@ -231,7 +347,6 @@
                             </div>
                         </div>
 
-                        <!-- Durasi Umroh Plus (Auto dari Paket) -->
                         <div class="mt-4">
                             <label class="block text-sm font-medium text-gray-700 mb-1.5">
                                 Durasi Umroh Plus <span class="text-gray-400 text-xs">(otomatis dari paket)</span>
@@ -332,7 +447,6 @@
                             @enderror
                         </div>
 
-                        <!-- Informasi Umroh Plus yang dipilih -->
                         <div id="paketTourInfo"
                             class="mt-3 bg-blue-50 rounded-lg p-3 border border-blue-200
                             {{ $produk->paket_tour_id ? '' : 'hidden' }}">
@@ -379,83 +493,69 @@
 @push('scripts')
     <script>
         let hargaIndex = {{ $produk->hargaBulanan->count() }};
+        let keberangkatanIndex = {{ $produk->keberangkatan->count() > 0 ? $produk->keberangkatan->count() : 1 }};
 
-        // Format Rupiah
         function formatRupiah(element) {
             let value = element.value.replace(/[^,\d]/g, '');
             value = value.replace(/\B(?=(\d{3})+(?!\d))/g, '.');
             element.value = value;
         }
 
-        // Toggle Umroh Plus Section
-        function togglePaketTour() {
-            const includeTurSelect = document.getElementById('include_tur');
-            const paketTourSection = document.getElementById('paketTourSection');
-            const paketTourSelect = document.getElementById('paket_tour_id');
-
-            if (includeTurSelect.value === '1') {
-                paketTourSection.style.display = 'block';
-                if (paketTourSelect.value) {
-                    loadPaketTourInfo(paketTourSelect.value);
-                }
-            } else {
-                paketTourSection.style.display = 'none';
-                if (paketTourSelect) {
-                    paketTourSelect.value = '';
-                }
-                document.getElementById('paketTourInfo').classList.add('hidden');
-                document.getElementById('durasi_tour').value = 0;
-                calculateTotalDurasi();
-            }
+        function addKeberangkatan() {
+            const container = document.getElementById('keberangkatanList');
+            const row = document.createElement('div');
+            row.className =
+                'keberangkatan-row grid grid-cols-1 md:grid-cols-4 gap-3 mb-2 items-end bg-gray-50 p-3 rounded-lg border border-gray-200';
+            row.innerHTML = `
+                <div>
+                    <label class="block text-xs font-medium text-gray-600 mb-1">Bulan <span class="text-red-500">*</span></label>
+                    <select name="keberangkatan[${keberangkatanIndex}][bulan]"
+                        class="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500" required>
+                        <option value="">Pilih Bulan</option>
+                        @for ($b = 1; $b <= 12; $b++)
+                            <option value="{{ $b }}">{{ \Carbon\Carbon::create()->month($b)->translatedFormat('F') }}</option>
+                        @endfor
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-xs font-medium text-gray-600 mb-1">Tahun <span class="text-red-500">*</span></label>
+                    <select name="keberangkatan[${keberangkatanIndex}][tahun]"
+                        class="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500" required>
+                        <option value="">Pilih Tahun</option>
+                        @for ($y = date('Y'); $y <= date('Y') + 5; $y++)
+                            <option value="{{ $y }}">{{ $y }}</option>
+                        @endfor
+                    </select>
+                </div>
+                <div class="flex items-center gap-2">
+                    <label class="flex items-center gap-1 text-xs">
+                        <input type="checkbox" name="keberangkatan[${keberangkatanIndex}][is_active]" value="1" checked>
+                        Aktif
+                    </label>
+                    <button type="button" onclick="removeKeberangkatanRow(this)"
+                        class="text-red-500 hover:text-red-700 text-sm ml-auto">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                </div>
+            `;
+            container.appendChild(row);
+            keberangkatanIndex++;
         }
 
-        // Load Umroh Plus Info via AJAX
-        function loadPaketTourInfo(tourId) {
-            const infoDiv = document.getElementById('paketTourInfo');
-            const durasiTourInput = document.getElementById('durasi_tour');
+        function removeKeberangkatanRow(button) {
+            const row = button.closest('.keberangkatan-row');
+            const totalRows = document.querySelectorAll('.keberangkatan-row').length;
 
-            if (!tourId) {
-                infoDiv.classList.add('hidden');
-                durasiTourInput.value = 0;
-                calculateTotalDurasi();
+            if (totalRows <= 1) {
+                alert('Minimal harus ada 1 data keberangkatan!');
                 return;
             }
 
-            infoDiv.classList.remove('hidden');
-            document.getElementById('info_kota').textContent = 'Memuat...';
-            document.getElementById('info_negara').textContent = 'Memuat...';
-            document.getElementById('info_durasi').textContent = 'Memuat...';
-
-            fetch(`/master/get-paket-tour-info/${tourId}`)
-                .then(response => response.json())
-                .then(data => {
-                    document.getElementById('info_kota').textContent = data.kota_tujuan || '-';
-                    document.getElementById('info_negara').textContent = data.negara || '-';
-                    document.getElementById('info_durasi').textContent = data.durasi_hari + ' Hari';
-
-                    durasiTourInput.value = data.durasi_hari || 0;
-                    calculateTotalDurasi();
-                })
-                .catch(error => {
-                    console.error('Error:', error);
-                    document.getElementById('info_kota').textContent = 'Error';
-                    document.getElementById('info_negara').textContent = 'Error';
-                    document.getElementById('info_durasi').textContent = 'Error';
-                });
+            if (confirm('Hapus bulan keberangkatan ini?')) {
+                row.remove();
+            }
         }
 
-        // Calculate Total Durasi
-        function calculateTotalDurasi() {
-            const durasiPerjalanan = parseFloat(document.getElementById('durasi_perjalanan').value) || 0;
-            const durasiMekkah = parseFloat(document.getElementById('durasi_mekkah').value) || 0;
-            const durasiMadinah = parseFloat(document.getElementById('durasi_madinah').value) || 0;
-            const durasiTour = parseFloat(document.getElementById('durasi_tour').value) || 0;
-
-            const total = durasiPerjalanan + durasiMekkah + durasiMadinah + durasiTour;
-            document.getElementById('durasi_hari').value = Math.round(total);
-        }
-
-        // Harga Bulanan Functions
         function addHargaBulanan() {
             const container = document.getElementById('hargaBulananList');
             const row = document.createElement('div');
@@ -524,7 +624,71 @@
             }
         }
 
-        // Form submit - clean harga
+        function togglePaketTour() {
+            const includeTurSelect = document.getElementById('include_tur');
+            const paketTourSection = document.getElementById('paketTourSection');
+            const paketTourSelect = document.getElementById('paket_tour_id');
+
+            if (includeTurSelect.value === '1') {
+                paketTourSection.style.display = 'block';
+                if (paketTourSelect.value) {
+                    loadPaketTourInfo(paketTourSelect.value);
+                }
+            } else {
+                paketTourSection.style.display = 'none';
+                if (paketTourSelect) {
+                    paketTourSelect.value = '';
+                }
+                document.getElementById('paketTourInfo').classList.add('hidden');
+                document.getElementById('durasi_tour').value = 0;
+                calculateTotalDurasi();
+            }
+        }
+
+        function loadPaketTourInfo(tourId) {
+            const infoDiv = document.getElementById('paketTourInfo');
+            const durasiTourInput = document.getElementById('durasi_tour');
+
+            if (!tourId) {
+                infoDiv.classList.add('hidden');
+                durasiTourInput.value = 0;
+                calculateTotalDurasi();
+                return;
+            }
+
+            infoDiv.classList.remove('hidden');
+            document.getElementById('info_kota').textContent = 'Memuat...';
+            document.getElementById('info_negara').textContent = 'Memuat...';
+            document.getElementById('info_durasi').textContent = 'Memuat...';
+
+            fetch(`/master/get-paket-tour-info/${tourId}`)
+                .then(response => response.json())
+                .then(data => {
+                    document.getElementById('info_kota').textContent = data.kota_tujuan || '-';
+                    document.getElementById('info_negara').textContent = data.negara || '-';
+                    document.getElementById('info_durasi').textContent = data.durasi_hari + ' Hari';
+
+                    durasiTourInput.value = data.durasi_hari || 0;
+                    calculateTotalDurasi();
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    document.getElementById('info_kota').textContent = 'Error';
+                    document.getElementById('info_negara').textContent = 'Error';
+                    document.getElementById('info_durasi').textContent = 'Error';
+                });
+        }
+
+        function calculateTotalDurasi() {
+            const durasiPerjalanan = parseFloat(document.getElementById('durasi_perjalanan').value) || 0;
+            const durasiMekkah = parseFloat(document.getElementById('durasi_mekkah').value) || 0;
+            const durasiMadinah = parseFloat(document.getElementById('durasi_madinah').value) || 0;
+            const durasiTour = parseFloat(document.getElementById('durasi_tour').value) || 0;
+
+            const total = durasiPerjalanan + durasiMekkah + durasiMadinah + durasiTour;
+            document.getElementById('durasi_hari').value = Math.round(total);
+        }
+
         document.addEventListener('DOMContentLoaded', function() {
             const form = document.getElementById('produkForm');
             if (form) {

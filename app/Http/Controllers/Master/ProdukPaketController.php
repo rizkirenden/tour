@@ -20,7 +20,7 @@ class ProdukPaketController extends Controller
 
     public function index(Request $request)
     {
-        $filters = $request->only(['search']);
+        $filters = $request->only(['search', 'bulan_keberangkatan', 'tahun_keberangkatan']);
         $data = $this->service->getAll($filters);
 
         if ($request->ajax()) {
@@ -48,6 +48,13 @@ class ProdukPaketController extends Controller
             'durasi_madinah' => 'nullable|integer|min:0',
             'kategori' => 'nullable|string|max:50',
             'is_active' => 'nullable|boolean',
+
+            // Keberangkatan (multiple)
+            'keberangkatan' => 'nullable|array',
+            'keberangkatan.*.bulan' => 'required_with:keberangkatan|integer|between:1,12',
+            'keberangkatan.*.tahun' => 'required_with:keberangkatan|integer|min:2024',
+            'keberangkatan.*.is_active' => 'nullable|boolean',
+
             'harga_bulanan' => 'required|array|min:1',
             'harga_bulanan.*.bulan' => 'required|integer|between:1,12',
             'harga_bulanan.*.tahun' => 'required|integer|min:2024',
@@ -62,8 +69,6 @@ class ProdukPaketController extends Controller
         if (!$validated['include_tur']) {
             $validated['paket_tour_id'] = null;
         }
-
-        // FLYER DIHAPUS DARI SINI (pindah ke harga bulanan)
 
         $produk = $this->service->create($validated);
 
@@ -97,6 +102,14 @@ class ProdukPaketController extends Controller
             'durasi_madinah' => 'nullable|integer|min:0',
             'kategori' => 'nullable|string|max:50',
             'is_active' => 'nullable|boolean',
+
+            // Keberangkatan (multiple)
+            'keberangkatan' => 'nullable|array',
+            'keberangkatan.*.id' => 'nullable|exists:produk_keberangkatans,id',
+            'keberangkatan.*.bulan' => 'required_with:keberangkatan|integer|between:1,12',
+            'keberangkatan.*.tahun' => 'required_with:keberangkatan|integer|min:2024',
+            'keberangkatan.*.is_active' => 'nullable|boolean',
+
             'harga_bulanan' => 'required|array|min:1',
             'harga_bulanan.*.id' => 'nullable|exists:produk_harga_bulanan,id',
             'harga_bulanan.*.bulan' => 'required|integer|between:1,12',
@@ -113,8 +126,6 @@ class ProdukPaketController extends Controller
             $validated['paket_tour_id'] = null;
         }
 
-        // FLYER DIHAPUS DARI SINI (pindah ke harga bulanan)
-
         $produk = $this->service->update($id, $validated);
 
         return redirect()->route('master.produk.index')
@@ -125,7 +136,6 @@ class ProdukPaketController extends Controller
     {
         $produk = $this->service->getById($id);
 
-        // Hapus semua flyer dari harga bulanan
         foreach ($produk->hargaBulanan as $harga) {
             if ($harga->flyer && Storage::disk('public')->exists($harga->flyer)) {
                 Storage::disk('public')->delete($harga->flyer);
@@ -201,7 +211,6 @@ class ProdukPaketController extends Controller
             'is_active' => $request->boolean('is_active', true),
         ];
 
-        // Upload flyer
         if ($request->hasFile('flyer')) {
             $file = $request->file('flyer');
             $filename = time() . '_' . $file->getClientOriginalName();
@@ -245,9 +254,7 @@ class ProdukPaketController extends Controller
             'is_active' => $request->boolean('is_active', true),
         ];
 
-        // Upload flyer baru
         if ($request->hasFile('flyer')) {
-            // Hapus flyer lama
             if ($harga->flyer && Storage::disk('public')->exists($harga->flyer)) {
                 Storage::disk('public')->delete($harga->flyer);
             }
@@ -274,7 +281,6 @@ class ProdukPaketController extends Controller
                 ->with('error', 'Tidak dapat menghapus data terakhir! Minimal 1 data harga per bulan.');
         }
 
-        // Hapus flyer
         if ($harga->flyer && Storage::disk('public')->exists($harga->flyer)) {
             Storage::disk('public')->delete($harga->flyer);
         }
@@ -311,4 +317,83 @@ class ProdukPaketController extends Controller
             ], 500);
         }
     }
+
+    // ============================================
+    // KEBERANGKATAN METHODS (untuk show page)
+    // ============================================
+
+    public function storeKeberangkatan(Request $request, $produkId)
+    {
+        $request->validate([
+            'bulan' => 'required|integer|between:1,12',
+            'tahun' => 'required|integer|min:2024',
+            'is_active' => 'nullable|boolean',
+        ]);
+
+        $produk = $this->service->getById($produkId);
+
+        $exists = \App\Models\ProdukKeberangkatan::where('produk_paket_id', $produkId)
+            ->where('bulan', $request->bulan)
+            ->where('tahun', $request->tahun)
+            ->exists();
+
+        if ($exists) {
+            return redirect()->back()
+                ->with('error', 'Bulan keberangkatan ' . $request->bulan . '/' . $request->tahun . ' sudah ada!');
+        }
+
+        $keberangkatan = \App\Models\ProdukKeberangkatan::create([
+            'produk_paket_id' => $produkId,
+            'bulan' => $request->bulan,
+            'tahun' => $request->tahun,
+            'is_active' => $request->boolean('is_active', true),
+        ]);
+
+        return redirect()->back()
+            ->with('success', "Bulan keberangkatan " . $keberangkatan->keberangkatan_formatted . " berhasil ditambahkan!");
+    }
+
+    public function destroyKeberangkatan($keberangkatanId)
+    {
+        $keberangkatan = \App\Models\ProdukKeberangkatan::findOrFail($keberangkatanId);
+        $produk = $keberangkatan->produkPaket;
+
+        if ($produk->keberangkatan()->count() <= 1) {
+            return redirect()->back()
+                ->with('error', 'Tidak dapat menghapus data terakhir! Minimal 1 data keberangkatan.');
+        }
+
+        $label = $keberangkatan->keberangkatan_formatted;
+        $keberangkatan->delete();
+
+        return redirect()->back()
+            ->with('success', "Bulan keberangkatan {$label} berhasil dihapus!");
+    }
+
+    public function toggleKeberangkatan($keberangkatanId)
+    {
+        try {
+            $keberangkatan = \App\Models\ProdukKeberangkatan::findOrFail($keberangkatanId);
+            $keberangkatan->is_active = !$keberangkatan->is_active;
+            $keberangkatan->save();
+
+            $status = $keberangkatan->is_active ? 'diaktifkan' : 'dinonaktifkan';
+            $label = $keberangkatan->keberangkatan_formatted;
+
+            return response()->json([
+                'success' => true,
+                'message' => "Bulan keberangkatan {$label} berhasil {$status}!",
+                'is_active' => $keberangkatan->is_active,
+                'badge' => $keberangkatan->is_active
+                    ? '<span class="px-2 py-1 rounded-full text-xs font-medium bg-purple-100 text-purple-700">Aktif</span>'
+                    : '<span class="px-2 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-500">Nonaktif</span>'
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Gagal mengubah status: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
 }

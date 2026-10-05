@@ -1,51 +1,58 @@
 36.kopsurat yang berisikan logo, alamat, no-telp, email, tanda tangan direktur, syarat dan ketentuan, rekening pembayaran perusahaan. cap.
 37.lembar pertama invoice, lembara kedua syarat dan ketentuan, lembar terakhir lampiran pembayaran
-45.bagian layout pemasukan di atas, pengeluaran di bawah
+45.bagian layout pemasukan di atas, pengeluaran di bawah (Pendapatan)
 46.passport masuk di pendapatan di departure yang pakai pendampingan
 47.pendampingan, fee passport 650 masuk ke pengeluaran, 100 masuk ke pendapatan
 50.upgrade hotel per jamaah atau keluarga
+51.Pendapingan (pembuatan passport) - nama pendampingan (di hilangkan ganti dengan Ya-Tidak tinggal centang) - fee Pendamping (Pembayaran passport) - fee petugas (Pendapatan perusahaan)
+52.hilangkan harga default di bulan keberangkatan\
+53.Tambah di tabel depan pembuatan passport ya/tidak
+54.Taruh Bulan dan Tahun keberangkatan di PDF - Status Pembayaran di pindahkan ke kanan
+56.Pilih Jamaah - Ambil Dari Harga Perbulan
+57.Tambah Kuota untuk harga per bulan - flexibel
 ------------------------------------------------------------------------------------------------------------------------------------
-12.riwayat pembayaran data baru dari bawah - DONE
-6. pecah pendampingan & agent - DONE
-7. jamaah bayar pendampingan kalau pakai pendampingan, jika tidak pakai pendampingan jamaah tetap bayar. - DONE
-8. agent nama dengan fee saja - DONE
-9. pendampingan ada 3 nama pendampingan, fee asli pendampiungan, sama fee untuk yang mendampingi - DONE
 1. ada pembayaran langsung dengan uang real / cash - DONE
 2. Paket Tour diganti dengan Paket Umroh Plus - DONE
 3. harga paket tour tidak ada langsung mengambil harga dasar di produk paket - DONE
 4. total kan semua druasi perjanlaan dengan plus turki - DONE
+5. nilai inputan uang pakai koma - DONE
+6. pecah pendampingan & agent - DONE
+7. jamaah bayar pendampingan kalau pakai pendampingan, jika tidak pakai pendampingan jamaah tetap bayar. - DONE
+8. agent nama dengan fee saja - DONE
+9. pendampingan ada 3 nama pendampingan, fee asli pendampiungan, sama fee untuk yang mendampingi - DONE
+10.tagih di jamaah pendampingan - DONE
+11.fee agent tidak mengnaggu harga di departure hanya menampilkan beberapa orang yang dapat fee agent - DONE
+12.riwayat pembayaran data baru dari bawah - DONE
 13.no telp, alamt, kota asal, taruh di anggota keluarga - DONE
 14.pembayaran di keluarga create juga ke jamaah -DONE
+15.jika keluarga di bayar per orang di pembayaran jamaah per orang itu masukk ke invoice keluarga juga - DONE
+16.jangan langsung gabungkan di total bayar tapi rincikan tiap total pembayaran tiap tiap form di show, seperti Maskapai & Harga, Hotel & Tipe Kamar, Hotel Tour (Paket Tour), Daftar Jamaah (total seluruh pembayaran dari produk paket), Perlengkapan Departure, Jenis Transaksi - DONE
 17.Nama Kepala Keluarga * di ganti nama kelompok atau nama group - DONE
 18.Anggota #1 di ganti ke jamaah #1 - DONE
-10.tagih di jamaah pendampingan - DONE
-26.keluarga ganti ke kelompok semua - DONE
-38.keluara/kelompok di show keluarga - DONE
-27.buat reset kuota - DONE
-29.di produk paket, ubah paket tour ke paket umroh plus - DONE
-15.jika keluarga di bayar per orang di pembayaran jamaah per orang itu masukk ke invoice keluarga juga - DONE
-21.Tambah search di show jenis transaksi dan daftar jamaah - DONE
 19.di departure yang jamaah tampil yang mau berangkat di bulan itu saja, jangan mengambil semua jamaah di bulan lain dan tahun lain - DONE
-24.buat tiap kolom ada total harga nya - DONE
-5. nilai inputan uang pakai koma - DONE
-28.hilangkan harga per malam di paket produk untuk yang include hotel - DONE
 20.hilangkan harga tour di keberangkatan - DONE
-11.fee agent tidak mengnaggu harga di departure hanya menampilkan beberapa orang yang dapat fee agent - DONE
+21.Tambah search di show jenis transaksi dan daftar jamaah - DONE
 22.Perlengkapan Departure, Maskapai & Harga, Hotel & Tipe Kamar, Jenis Transaksi. pengeluaran kotor - DONE
 23.pendapatan dari seluruh jamaah di departure tersebut - DONE
+24.buat tiap kolom ada total harga nya - DONE
 25.cetak invoice tambah di riwayat pembayaran - DONE
+26.keluarga ganti ke kelompok semua - DONE
+27.buat reset kuota - DONE
+28.hilangkan harga per malam di paket produk untuk yang include hotel - DONE
+29.di produk paket, ubah paket tour ke paket umroh plus - DONE
 30.bisa upload multiple foto di flayer - DONE
 31.tambah bulan dan tahun di produk paket, karena tiap bulan beda beda harga nya - DONE
-49.multiple input harga paket -> DONE
-35.fee masih tertagih di keluarga - DONE
-34.fee agent di keluarga jamaah belum format rupiah - DONE
-33.muncul kan total pendampingan di create jamaah - DONE
 32.buat ketika ada fee passport akan terbuka inputannya - DONE
-48.pdf di keluarga _ DONE
-44.Jenis Transaksi, buat apakah sudah di terima jenis transaksi atau tidak samaa jaamaah - DONE
+33.muncul kan total pendampingan di create jamaah - DONE
+34.fee agent di keluarga jamaah belum format rupiah - DONE
+35.fee masih tertagih di keluarga - DONE
+38.keluara/kelompok di show keluarga - DONE
+40.biar tidak lusan biar saja masukan di daftar jamaah, tapi tanda merah merah yang belum daftar - DONE
+41.atur hotel paket toure bisa beberapa tipe kamar, total seluruh nya juga belum - DONE
 42.Jenis Transaksi bukan per jamaah/ tapi masukkan harga total, lalu bagi per jamaah berapa - DONE
 43.Perlengkapan Departure nanti sudah di terima, baru hitung harganya masukkan ke total - DONE
-41.atur hotel paket toure bisa beberapa tipe kamar, total seluruh nya juga belum - DONE
-40.biar tidak lusan biar saja masukan di daftar jamaah, tapi tanda merah merah yang belum daftar
-16.jangan langsung gabungkan di total bayar tapi rincikan tiap total pembayaran tiap tiap form di show, seperti Maskapai & Harga, Hotel & Tipe Kamar, Hotel Tour (Paket Tour), Daftar Jamaah (total seluruh pembayaran dari produk paket), Perlengkapan Departure, Jenis Transaksi - DONE
+44.Jenis Transaksi, buat apakah sudah di terima jenis transaksi atau tidak samaa jaamaah - DONE
+48.pdf di keluarga _ DONE
+49.multiple input harga paket -> DONE
+55.Tambah Bulan Keberangkatan Di PRoduk Paket - Harga perbulan tetap - DONE
 ------------------------------------------------------------------------------------------------------------------------------------
