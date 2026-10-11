@@ -6,6 +6,7 @@ use App\Models\Keluarga;
 use App\Models\Jamaah;
 use App\Models\ProdukPaket;
 use App\Models\ProdukHargaBulanan;
+use App\Models\ProdukKeberangkatan;
 use App\Models\KotaAsal;
 use App\Models\Diskon;
 use Illuminate\Support\Facades\DB;
@@ -15,7 +16,7 @@ class KeluargaService
 {
     public function getAll(array $filters = [])
     {
-        $query = Keluarga::with(['jamaahs']);
+        $query = Keluarga::with(['jamaahs', 'diskon']);
 
         if (!empty($filters['search'])) {
             $search = $filters['search'];
@@ -34,9 +35,12 @@ class KeluargaService
 
     public function getById($id)
     {
-        return Keluarga::with(['jamaahs'])->findOrFail($id);
+        return Keluarga::with(['jamaahs', 'diskon', 'produkKeberangkatan', 'produkHargaBulanan'])->findOrFail($id);
     }
 
+    // ==========================================
+    // CREATE
+    // ==========================================
     public function create(array $data)
     {
         return DB::transaction(function () use ($data) {
@@ -47,7 +51,45 @@ class KeluargaService
             $data['fee_agent'] = (int) ($data['fee_agent'] ?? 0);
             $data['total_dibayar'] = (int) ($data['total_dibayar'] ?? 0);
 
-            // Ambil data diskon dari ID (nilai diskon per orang)
+            // ==========================================
+            // AMBIL HARGA dari id_produk_harga_bulanan
+            // ==========================================
+            $hargaProduk = 0;
+            $hargaBulanan = null;
+            $idHargaBulanan = $data['id_produk_harga_bulanan'] ?? null;
+
+            if ($idHargaBulanan) {
+                $hargaBulanan = ProdukHargaBulanan::find($idHargaBulanan);
+                if ($hargaBulanan) {
+                    $hargaProduk = $hargaBulanan->harga;
+                    $data['bulan_harga'] = $hargaBulanan->bulan;
+                    $data['tahun_harga'] = $hargaBulanan->tahun;
+                }
+            } else {
+                $produkKeluarga = ProdukPaket::where('nama_produk', $data['produk_paket'])->first();
+                if ($produkKeluarga) {
+                    $harga = ProdukHargaBulanan::where('produk_paket_id', $produkKeluarga->id_produk)
+                        ->where('bulan', $data['bulan_keberangkatan'])
+                        ->where('tahun', $data['tahun_keberangkatan'])
+                        ->where('is_active', true)
+                        ->first();
+                    if ($harga) {
+                        $hargaProduk = $harga->harga;
+                        $hargaBulanan = $harga;
+                        $data['bulan_harga'] = $harga->bulan;
+                        $data['tahun_harga'] = $harga->tahun;
+                    }
+                }
+            }
+
+            // ==========================================
+            // VALIDASI KUOTA — SEBELUM CREATE
+            // Jumlah anggota keluarga yang akan ditambahkan
+            // ==========================================
+            $jumlahAnggota = count($data['jamaahs'] ?? []);
+            $this->validateKuota($idHargaBulanan, $jumlahAnggota);
+
+            // Ambil data diskon (nilai per orang)
             $nilaiDiskonPerOrang = 0;
             $diskonData = null;
             if (!empty($data['id_diskon'])) {
@@ -57,40 +99,14 @@ class KeluargaService
                 }
             }
 
-            // Ambil produk paket dari keluarga
-            $produkKeluarga = ProdukPaket::where('nama_produk', $data['produk_paket'])->first();
-            $hargaProduk = 0;
-            
-            if ($produkKeluarga) {
-                // Cari harga berdasarkan bulan dan tahun keberangkatan
-                $harga = ProdukHargaBulanan::where('produk_paket_id', $produkKeluarga->id_produk)
-                    ->where('bulan', $data['bulan_keberangkatan'])
-                    ->where('tahun', $data['tahun_keberangkatan'])
-                    ->where('is_active', true)
-                    ->first();
-                
-                if ($harga) {
-                    $hargaProduk = $harga->harga;
-                } else {
-                    // Jika tidak ada, ambil harga pertama yang aktif
-                    $hargaDefault = $produkKeluarga->hargaBulanan()->active()->first();
-                    if ($hargaDefault) {
-                        $hargaProduk = $hargaDefault->harga;
-                    }
-                }
-            }
-
-            // Hitung total tagihan (HANYA harga produk, fee agent tidak termasuk)
+            // Hitung total tagihan
             $totalTagihan = 0;
-            $jumlahAnggota = count($data['jamaahs'] ?? []);
-
             if (!empty($data['jamaahs']) && $jumlahAnggota > 0) {
                 foreach ($data['jamaahs'] as $jamaahData) {
                     $totalTagihan += $hargaProduk;
                 }
             }
 
-            // Total diskon = diskon per orang x jumlah anggota
             $totalDiskon = $nilaiDiskonPerOrang * $jumlahAnggota;
 
             $data['total_tagihan_sebelum_diskon'] = $totalTagihan;
@@ -98,34 +114,29 @@ class KeluargaService
             $data['total_diskon'] = $totalDiskon;
             $data['total_tagihan_setelah_diskon'] = $totalTagihan - $totalDiskon;
             $data['sisa_tagihan'] = $data['total_tagihan_setelah_diskon'] - $data['total_dibayar'];
-
-            // Tentukan status pembayaran
             $data['status_pembayaran'] = $this->determinePaymentStatus($data['total_dibayar'], $data['total_tagihan_setelah_diskon']);
 
-            // Create Keluarga
             $keluarga = Keluarga::create($data);
 
-            // Update kuota diskon jika digunakan
             if ($diskonData && $diskonData->is_available) {
                 $diskonData->increment('sudah_digunakan');
             }
 
-            // Create Jamaah anggota keluarga
+            // ==========================================
+            // CREATE JAMAAH ANGGOTA
+            // ==========================================
             if (!empty($data['jamaahs'])) {
                 $diskonPerOrang = $nilaiDiskonPerOrang;
+                $produkKeluarga = ProdukPaket::where('nama_produk', $data['produk_paket'])->first();
 
                 foreach ($data['jamaahs'] as $index => $jamaahData) {
                     $jamaahData['id_keluarga'] = $keluarga->id_keluarga;
                     $jamaahData['is_kepala_keluarga'] = $jamaahData['is_kepala_keluarga'] ?? false;
                     $jamaahData['produk_paket'] = $data['produk_paket'];
-                    
-                    // ==========================================
-                    // SET FEE AGENT DARI KELUARGA
-                    // ==========================================
+
                     $jamaahData['fee_agent'] = (int) ($data['fee_agent'] ?? 0);
                     $jamaahData['agent_name'] = $data['agent'] ?? null;
 
-                    // Pendampingan per jamaah
                     $jamaahData['pendampingan_nama'] = $jamaahData['pendampingan_nama'] ?? null;
                     $jamaahData['pendampingan_fee'] = (int) ($jamaahData['pendampingan_fee'] ?? 0);
                     $jamaahData['pendampingan_fee_petugas'] = (int) ($jamaahData['pendampingan_fee_petugas'] ?? 0);
@@ -135,10 +146,21 @@ class KeluargaService
                     $kodeProduk = $produkKeluarga ? 'PKT' : 'PKT';
                     $jamaahData['id_keberangkatan'] = $this->generateIdKeberangkatan($kodeProduk, $index);
 
-                    $jamaahData['bulan_keberangkatan'] = $jamaahData['bulan_keberangkatan'] ?? $keluarga->bulan_keberangkatan;
-                    $jamaahData['tahun_keberangkatan'] = $jamaahData['tahun_keberangkatan'] ?? $keluarga->tahun_keberangkatan;
+                    $jamaahData['bulan_keberangkatan'] = $data['bulan_keberangkatan'];
+                    $jamaahData['tahun_keberangkatan'] = $data['tahun_keberangkatan'];
 
-                    // Tagihan per jamaah = harga produk (tanpa fee agent)
+                    if (!empty($data['bulan_harga'])) {
+                        $jamaahData['bulan_harga'] = $data['bulan_harga'];
+                        $jamaahData['tahun_harga'] = $data['tahun_harga'];
+                    }
+
+                    if (!empty($data['id_produk_keberangkatan'])) {
+                        $jamaahData['id_produk_keberangkatan'] = $data['id_produk_keberangkatan'];
+                    }
+                    if (!empty($data['id_produk_harga_bulanan'])) {
+                        $jamaahData['id_produk_harga_bulanan'] = $data['id_produk_harga_bulanan'];
+                    }
+
                     $totalTagihanJamaah = $hargaProduk;
                     $diskonJamaah = $diskonPerOrang;
 
@@ -150,7 +172,22 @@ class KeluargaService
                     $jamaahData['sisa_tagihan'] = $jamaahData['total_tagihan_setelah_diskon'];
                     $jamaahData['status_pembayaran'] = 'Belum Bayar';
 
-                    Jamaah::create($jamaahData);
+                    $jamaah = Jamaah::create($jamaahData);
+
+                    // Simpan pivot keberangkatan
+                    if (!empty($data['id_produk_keberangkatan'])) {
+                        $keberangkatan = ProdukKeberangkatan::find($data['id_produk_keberangkatan']);
+                        if ($keberangkatan) {
+                            $jamaah->keberangkatan()->attach($keberangkatan->id, [
+                                'id_produk_harga_bulanan' => $idHargaBulanan,
+                                'bulan_keberangkatan' => $keberangkatan->bulan,
+                                'tahun_keberangkatan' => $keberangkatan->tahun,
+                                'bulan_harga' => $hargaBulanan->bulan ?? $keberangkatan->bulan,
+                                'tahun_harga' => $hargaBulanan->tahun ?? $keberangkatan->tahun,
+                                'harga' => $hargaProduk,
+                            ]);
+                        }
+                    }
                 }
             }
 
@@ -158,12 +195,65 @@ class KeluargaService
         });
     }
 
+    // ==========================================
+    // UPDATE
+    // ==========================================
     public function update($id, array $data)
     {
         return DB::transaction(function () use ($id, $data) {
             $keluarga = $this->getById($id);
 
-            // Ambil data diskon baru (nilai per orang)
+            $hargaProduk = 0;
+            $hargaBulanan = null;
+            $idHargaBulanan = $data['id_produk_harga_bulanan'] ?? null;
+
+            if ($idHargaBulanan) {
+                $hargaBulanan = ProdukHargaBulanan::find($idHargaBulanan);
+                if ($hargaBulanan) {
+                    $hargaProduk = $hargaBulanan->harga;
+                    $data['bulan_harga'] = $hargaBulanan->bulan;
+                    $data['tahun_harga'] = $hargaBulanan->tahun;
+                }
+            } else {
+                $produkKeluarga = ProdukPaket::where('nama_produk', $data['produk_paket'])->first();
+                if ($produkKeluarga) {
+                    $harga = ProdukHargaBulanan::where('produk_paket_id', $produkKeluarga->id_produk)
+                        ->where('bulan', $data['bulan_keberangkatan'])
+                        ->where('tahun', $data['tahun_keberangkatan'])
+                        ->where('is_active', true)
+                        ->first();
+                    if ($harga) {
+                        $hargaProduk = $harga->harga;
+                        $hargaBulanan = $harga;
+                        $data['bulan_harga'] = $harga->bulan;
+                        $data['tahun_harga'] = $harga->tahun;
+                    }
+                }
+            }
+
+            // ==========================================
+            // VALIDASI KUOTA — UPDATE
+            // Hanya hitung jamaah BARU (yang belum ada id_jamaah)
+            // Exclude jamaah existing dari keluarga ini yang sudah pakai harga ini
+            // ==========================================
+            $jamaahBaru = 0;
+            if (!empty($data['jamaahs'])) {
+                foreach ($data['jamaahs'] as $j) {
+                    if (empty($j['id_jamaah'])) {
+                        $jamaahBaru++;
+                    }
+                }
+            }
+
+            // Exclude semua jamaah yang saat ini ada di keluarga ini (mereka sudah "memakai" slot)
+            // dari perhitungan
+            $excludeJamaahIds = $keluarga->jamaahs->pluck('id_jamaah')->toArray();
+
+            if ($jamaahBaru > 0) {
+                $this->validateKuota($idHargaBulanan, $jamaahBaru, $excludeJamaahIds);
+            }
+
+            // Ambil data diskon baru
             $nilaiDiskonPerOrang = 0;
             $diskonData = null;
             if (!empty($data['id_diskon'])) {
@@ -173,40 +263,16 @@ class KeluargaService
                 }
             }
 
-            // Ambil produk paket
-            $produkKeluarga = ProdukPaket::where('nama_produk', $data['produk_paket'])->first();
-            $hargaProduk = 0;
-            
-            if ($produkKeluarga) {
-                $harga = ProdukHargaBulanan::where('produk_paket_id', $produkKeluarga->id_produk)
-                    ->where('bulan', $data['bulan_keberangkatan'])
-                    ->where('tahun', $data['tahun_keberangkatan'])
-                    ->where('is_active', true)
-                    ->first();
-                
-                if ($harga) {
-                    $hargaProduk = $harga->harga;
-                } else {
-                    $hargaDefault = $produkKeluarga->hargaBulanan()->active()->first();
-                    if ($hargaDefault) {
-                        $hargaProduk = $hargaDefault->harga;
-                    }
-                }
-            }
-
-            // Update data keluarga
             $data['fee_agent'] = (int) ($data['fee_agent'] ?? 0);
             $data['nilai_diskon'] = $nilaiDiskonPerOrang;
             $keluarga->update($data);
 
-            // Update kuota diskon
             if ($keluarga->id_diskon && $keluarga->id_diskon != ($data['id_diskon'] ?? null)) {
                 $oldDiskon = Diskon::find($keluarga->id_diskon);
                 if ($oldDiskon) {
                     $oldDiskon->decrement('sudah_digunakan');
                 }
             }
-
             if ($diskonData && $diskonData->is_available && $keluarga->id_diskon != ($data['id_diskon'] ?? null)) {
                 $diskonData->increment('sudah_digunakan');
             }
@@ -216,35 +282,42 @@ class KeluargaService
                 $existingIds = collect($data['jamaahs'])->pluck('id_jamaah')->filter()->toArray();
                 $keluarga->jamaahs()->whereNotIn('id_jamaah', $existingIds)->delete();
 
-                $jumlahAnggota = count($data['jamaahs']);
                 $diskonPerOrang = $nilaiDiskonPerOrang;
+                $produkKeluarga = ProdukPaket::where('nama_produk', $data['produk_paket'])->first();
 
                 foreach ($data['jamaahs'] as $index => $jamaahData) {
                     $jamaahData['id_keluarga'] = $keluarga->id_keluarga;
                     $jamaahData['produk_paket'] = $data['produk_paket'];
                     $jamaahData['nilai_diskon'] = $diskonPerOrang;
-                    
-                    // ==========================================
-                    // SET FEE AGENT DARI KELUARGA
-                    // ==========================================
                     $jamaahData['fee_agent'] = (int) ($data['fee_agent'] ?? 0);
                     $jamaahData['agent_name'] = $data['agent'] ?? null;
 
-                    // Pendampingan per jamaah
                     $jamaahData['pendampingan_nama'] = $jamaahData['pendampingan_nama'] ?? null;
                     $jamaahData['pendampingan_fee'] = (int) ($jamaahData['pendampingan_fee'] ?? 0);
                     $jamaahData['pendampingan_fee_petugas'] = (int) ($jamaahData['pendampingan_fee_petugas'] ?? 0);
 
                     $jamaahData = $this->handleFileUploads($jamaahData, $index, $jamaahData['id_jamaah'] ?? null);
 
+                    $jamaahData['bulan_keberangkatan'] = $data['bulan_keberangkatan'];
+                    $jamaahData['tahun_keberangkatan'] = $data['tahun_keberangkatan'];
+
+                    if (!empty($data['bulan_harga'])) {
+                        $jamaahData['bulan_harga'] = $data['bulan_harga'];
+                        $jamaahData['tahun_harga'] = $data['tahun_harga'];
+                    }
+
+                    if (!empty($data['id_produk_keberangkatan'])) {
+                        $jamaahData['id_produk_keberangkatan'] = $data['id_produk_keberangkatan'];
+                    }
+                    if (!empty($data['id_produk_harga_bulanan'])) {
+                        $jamaahData['id_produk_harga_bulanan'] = $data['id_produk_harga_bulanan'];
+                    }
+
                     if (empty($jamaahData['id_jamaah'])) {
+                        // Create baru
                         $kodeProduk = $produkKeluarga ? 'PKT' : 'PKT';
                         $jamaahData['id_keberangkatan'] = $this->generateIdKeberangkatan($kodeProduk, $index);
 
-                        $jamaahData['bulan_keberangkatan'] = $jamaahData['bulan_keberangkatan'] ?? $keluarga->bulan_keberangkatan;
-                        $jamaahData['tahun_keberangkatan'] = $jamaahData['tahun_keberangkatan'] ?? $keluarga->tahun_keberangkatan;
-
-                        // Tagihan per jamaah = harga produk (tanpa fee agent)
                         $totalTagihanJamaah = $hargaProduk;
                         $diskonJamaah = $diskonPerOrang;
 
@@ -255,8 +328,23 @@ class KeluargaService
                         $jamaahData['sisa_tagihan'] = $jamaahData['total_tagihan_setelah_diskon'];
                         $jamaahData['status_pembayaran'] = 'Belum Bayar';
 
-                        Jamaah::create($jamaahData);
+                        $jamaah = Jamaah::create($jamaahData);
+
+                        if (!empty($data['id_produk_keberangkatan'])) {
+                            $keberangkatan = ProdukKeberangkatan::find($data['id_produk_keberangkatan']);
+                            if ($keberangkatan) {
+                                $jamaah->keberangkatan()->attach($keberangkatan->id, [
+                                    'id_produk_harga_bulanan' => $idHargaBulanan,
+                                    'bulan_keberangkatan' => $keberangkatan->bulan,
+                                    'tahun_keberangkatan' => $keberangkatan->tahun,
+                                    'bulan_harga' => $hargaBulanan->bulan ?? $keberangkatan->bulan,
+                                    'tahun_harga' => $hargaBulanan->tahun ?? $keberangkatan->tahun,
+                                    'harga' => $hargaProduk,
+                                ]);
+                            }
+                        }
                     } else {
+                        // Update existing
                         $jamaah = Jamaah::find($jamaahData['id_jamaah']);
                         if ($jamaah) {
                             unset($jamaahData['total_tagihan_sebelum_diskon']);
@@ -266,18 +354,83 @@ class KeluargaService
                             unset($jamaahData['status_pembayaran']);
 
                             $jamaah->update($jamaahData);
+
+                            if (!empty($data['id_produk_keberangkatan'])) {
+                                $keberangkatan = ProdukKeberangkatan::find($data['id_produk_keberangkatan']);
+                                if ($keberangkatan) {
+                                    $jamaah->keberangkatan()->sync([
+                                        $keberangkatan->id => [
+                                            'id_produk_harga_bulanan' => $idHargaBulanan,
+                                            'bulan_keberangkatan' => $keberangkatan->bulan,
+                                            'tahun_keberangkatan' => $keberangkatan->tahun,
+                                            'bulan_harga' => $hargaBulanan->bulan ?? $keberangkatan->bulan,
+                                            'tahun_harga' => $hargaBulanan->tahun ?? $keberangkatan->tahun,
+                                            'harga' => $hargaProduk,
+                                        ],
+                                    ]);
+                                }
+                            }
                         }
                     }
                 }
             }
 
-            // Recalculate total tagihan keluarga
             $this->recalculateKeluarga($keluarga->id_keluarga);
-
             return $keluarga->fresh();
         });
     }
 
+    // ==========================================
+    // VALIDASI KUOTA (INTERNAL)
+    // ==========================================
+    private function validateKuota($idHargaBulanan, $jumlahOrang, $excludeJamaahIds = [])
+    {
+        if (!$idHargaBulanan) {
+            return;
+        }
+
+        $hargaBulanan = ProdukHargaBulanan::find($idHargaBulanan);
+        if (!$hargaBulanan) {
+            return;
+        }
+
+        // Kuota 0 = tidak terbatas
+        if ($hargaBulanan->kuota <= 0) {
+            return;
+        }
+
+        // Hitung terpakai
+        $query = DB::table('jamaah_keberangkatans')
+            ->where('id_produk_harga_bulanan', $idHargaBulanan);
+
+        if (!empty($excludeJamaahIds)) {
+            $query->whereNotIn('id_jamaah', $excludeJamaahIds);
+        }
+
+        $terpakai = $query->count();
+        $sisa = max(0, $hargaBulanan->kuota - $terpakai);
+
+        $label = $hargaBulanan->bulan_formatted . ' ' . $hargaBulanan->tahun;
+
+        if ($sisa <= 0) {
+            throw new \Exception(
+                "Kuota untuk harga {$label} sudah PENUH ({$terpakai}/{$hargaBulanan->kuota} orang). " .
+                "Silakan pilih bulan/tahun harga lain atau tambah kuota terlebih dahulu."
+            );
+        }
+
+        if ($jumlahOrang > $sisa) {
+            throw new \Exception(
+                "Kuota tidak mencukupi untuk harga {$label}. " .
+                "Sisa kuota: {$sisa} orang, jumlah anggota yang akan ditambahkan: {$jumlahOrang} orang. " .
+                "Silakan kurangi jumlah anggota atau pilih bulan/tahun harga lain."
+            );
+        }
+    }
+
+    // ==========================================
+    // HANDLE FILE UPLOADS
+    // ==========================================
     private function handleFileUploads(array $jamaahData, $index, $idJamaah = null)
     {
         $fileFields = [
@@ -301,6 +454,9 @@ class KeluargaService
         return $jamaahData;
     }
 
+    // ==========================================
+    // DELETE
+    // ==========================================
     public function delete($id)
     {
         return DB::transaction(function () use ($id) {
@@ -321,6 +477,9 @@ class KeluargaService
         });
     }
 
+    // ==========================================
+    // RECALCULATE
+    // ==========================================
     public function recalculateKeluarga($keluargaId)
     {
         $keluarga = $this->getById($keluargaId);
@@ -363,6 +522,9 @@ class KeluargaService
         return "{$kodeProduk}-{$year}{$month}-{$number}";
     }
 
+    // ==========================================
+    // OPTIONS
+    // ==========================================
     public function getProdukPakets()
     {
         return ProdukPaket::orderBy('nama_produk')->get();
@@ -392,5 +554,87 @@ class KeluargaService
     public function getDiskons()
     {
         return Diskon::available()->orderBy('nama_diskon')->get();
+    }
+
+    // ==========================================
+    // GET KEBERANGKATAN BY PRODUK (dengan kuota realtime)
+    // ==========================================
+    public function getKeberangkatanByProduk($namaProduk)
+    {
+        $produk = ProdukPaket::where('nama_produk', $namaProduk)->first();
+        if (!$produk) {
+            return [
+                'keberangkatan' => [],
+                'harga_bulanan' => [],
+            ];
+        }
+
+        // Ambil semua harga bulanan + hitung terpakai
+        $hargaBulanan = ProdukHargaBulanan::where('produk_paket_id', $produk->id_produk)
+            ->where('is_active', true)
+            ->orderBy('tahun')
+            ->orderBy('bulan')
+            ->get()
+            ->map(function ($h) {
+                $terpakai = DB::table('jamaah_keberangkatans')
+                    ->where('id_produk_harga_bulanan', $h->id)
+                    ->count();
+
+                $isFull = $h->kuota > 0 && $terpakai >= $h->kuota;
+                $sisa = $h->kuota > 0 ? max(0, $h->kuota - $terpakai) : -1;
+
+                if ($h->kuota <= 0) {
+                    $kuotaFormatted = 'Tidak Terbatas';
+                } elseif ($isFull) {
+                    $kuotaFormatted = 'PENUH (' . $h->kuota . ')';
+                } else {
+                    $kuotaFormatted = 'Sisa ' . $sisa . '/' . $h->kuota;
+                }
+
+                return [
+                    'id'              => $h->id,
+                    'bulan'           => $h->bulan,
+                    'tahun'           => $h->tahun,
+                    'bulan_formatted' => $h->bulan_formatted,
+                    'harga'           => $h->harga,
+                    'harga_formatted' => 'Rp ' . number_format($h->harga, 0, ',', '.'),
+                    'kuota'           => $h->kuota ?? 0,
+                    'kuota_terpakai'  => $terpakai,
+                    'kuota_sisa'      => $sisa,
+                    'is_full'         => $isFull,
+                    'kuota_formatted' => $kuotaFormatted,
+                ];
+            })->values()->toArray();
+
+        // Ambil semua keberangkatan
+        $keberangkatan = ProdukKeberangkatan::where('produk_paket_id', $produk->id_produk)
+            ->where('is_active', true)
+            ->orderBy('tahun')
+            ->orderBy('bulan')
+            ->get()
+            ->map(function ($k) use ($hargaBulanan) {
+                $hargaDefault = collect($hargaBulanan)->first(function ($h) use ($k) {
+                    return $h['bulan'] == $k->bulan && $h['tahun'] == $k->tahun;
+                });
+
+                return [
+                    'id' => $k->id,
+                    'bulan' => $k->bulan,
+                    'tahun' => $k->tahun,
+                    'bulan_formatted' => $k->bulan_formatted,
+                    'keberangkatan_formatted' => $k->keberangkatan_formatted,
+                    'harga_default' => $hargaDefault ? $hargaDefault['harga'] : 0,
+                    'harga_default_formatted' => $hargaDefault ? $hargaDefault['harga_formatted'] : 'Rp 0',
+                    'id_harga_default' => $hargaDefault ? $hargaDefault['id'] : null,
+                    'kuota_default' => $hargaDefault ? ($hargaDefault['kuota'] ?? 0) : 0,
+                    'kuota_default_formatted' => $hargaDefault ? $hargaDefault['kuota_formatted'] : 'Tidak Terbatas',
+                    'kuota_default_is_full' => $hargaDefault ? $hargaDefault['is_full'] : false,
+                ];
+            })->values()->toArray();
+
+        return [
+            'keberangkatan' => $keberangkatan,
+            'harga_bulanan' => $hargaBulanan,
+        ];
     }
 }

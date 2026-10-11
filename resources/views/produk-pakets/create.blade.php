@@ -92,7 +92,7 @@
                                             <label class="block text-xs font-medium text-gray-600 mb-1">Bulan <span
                                                     class="text-red-500">*</span></label>
                                             <select name="keberangkatan[{{ $index }}][bulan]"
-                                                class="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500"
+                                                class="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-yellow-500"
                                                 required>
                                                 <option value="">Pilih Bulan</option>
                                                 @for ($b = 1; $b <= 12; $b++)
@@ -107,7 +107,7 @@
                                             <label class="block text-xs font-medium text-gray-600 mb-1">Tahun <span
                                                     class="text-red-500">*</span></label>
                                             <select name="keberangkatan[{{ $index }}][tahun]"
-                                                class="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500"
+                                                class="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-yellow-500"
                                                 required>
                                                 <option value="">Pilih Tahun</option>
                                                 @for ($y = date('Y'); $y <= date('Y') + 5; $y++)
@@ -132,14 +132,13 @@
                                     </div>
                                 @endforeach
                             @else
-                                <!-- Default 1 row -->
                                 <div
                                     class="keberangkatan-row grid grid-cols-1 md:grid-cols-4 gap-3 mb-2 items-end bg-gray-50 p-3 rounded-lg border border-gray-200">
                                     <div>
                                         <label class="block text-xs font-medium text-gray-600 mb-1">Bulan <span
                                                 class="text-red-500">*</span></label>
                                         <select name="keberangkatan[0][bulan]"
-                                            class="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500"
+                                            class="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-yellow-500"
                                             required>
                                             <option value="">Pilih Bulan</option>
                                             @for ($b = 1; $b <= 12; $b++)
@@ -153,7 +152,7 @@
                                         <label class="block text-xs font-medium text-gray-600 mb-1">Tahun <span
                                                 class="text-red-500">*</span></label>
                                         <select name="keberangkatan[0][tahun]"
-                                            class="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500"
+                                            class="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-yellow-500"
                                             required>
                                             <option value="">Pilih Tahun</option>
                                             @for ($y = date('Y'); $y <= date('Y') + 5; $y++)
@@ -201,14 +200,14 @@
                             @if (old('harga_bulanan'))
                                 @foreach (old('harga_bulanan') as $index => $harga)
                                     <div
-                                        class="harga-row grid grid-cols-1 md:grid-cols-5 gap-3 mb-2 items-end bg-gray-50 p-3 rounded-lg border border-gray-200">
+                                        class="harga-row grid grid-cols-1 md:grid-cols-6 gap-3 mb-2 items-end bg-gray-50 p-3 rounded-lg border border-gray-200">
                                         <input type="hidden" name="harga_bulanan[{{ $index }}][id]"
                                             value="{{ $harga['id'] ?? '' }}">
                                         <div>
                                             <label class="block text-xs font-medium text-gray-600 mb-1">Bulan <span
                                                     class="text-red-500">*</span></label>
                                             <select name="harga_bulanan[{{ $index }}][bulan]"
-                                                class="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500"
+                                                class="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-yellow-500"
                                                 required>
                                                 <option value="">Pilih Bulan</option>
                                                 @for ($b = 1; $b <= 12; $b++)
@@ -223,14 +222,13 @@
                                             <label class="block text-xs font-medium text-gray-600 mb-1">Tahun <span
                                                     class="text-red-500">*</span></label>
                                             <select name="harga_bulanan[{{ $index }}][tahun]"
-                                                class="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500"
+                                                class="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-yellow-500"
                                                 required>
                                                 <option value="">Pilih Tahun</option>
                                                 @for ($y = date('Y'); $y <= date('Y') + 5; $y++)
                                                     <option value="{{ $y }}"
                                                         {{ ($harga['tahun'] ?? '') == $y ? 'selected' : '' }}>
-                                                        {{ $y }}
-                                                    </option>
+                                                        {{ $y }}</option>
                                                 @endfor
                                             </select>
                                         </div>
@@ -240,8 +238,16 @@
                                             <input type="text" name="harga_bulanan[{{ $index }}][harga]"
                                                 value="{{ isset($harga['harga']) ? number_format($harga['harga'], 0, ',', '.') : '' }}"
                                                 oninput="formatRupiah(this)"
-                                                class="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500"
+                                                class="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-yellow-500"
                                                 placeholder="0" required>
+                                        </div>
+                                        <div>
+                                            <label class="block text-xs font-medium text-gray-600 mb-1">Kuota <span
+                                                    class="text-gray-400 text-xs">(0 = ∞)</span></label>
+                                            <input type="number" name="harga_bulanan[{{ $index }}][kuota]"
+                                                value="{{ $harga['kuota'] ?? 0 }}" min="0"
+                                                class="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-yellow-500"
+                                                placeholder="0">
                                         </div>
                                         <div>
                                             <label class="block text-xs font-medium text-gray-600 mb-1">Flyer</label>
@@ -265,14 +271,13 @@
                                     </div>
                                 @endforeach
                             @else
-                                <!-- Default 1 row -->
                                 <div
-                                    class="harga-row grid grid-cols-1 md:grid-cols-5 gap-3 mb-2 items-end bg-gray-50 p-3 rounded-lg border border-gray-200">
+                                    class="harga-row grid grid-cols-1 md:grid-cols-6 gap-3 mb-2 items-end bg-gray-50 p-3 rounded-lg border border-gray-200">
                                     <div>
                                         <label class="block text-xs font-medium text-gray-600 mb-1">Bulan <span
                                                 class="text-red-500">*</span></label>
                                         <select name="harga_bulanan[0][bulan]"
-                                            class="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500"
+                                            class="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-yellow-500"
                                             required>
                                             <option value="">Pilih Bulan</option>
                                             @for ($b = 1; $b <= 12; $b++)
@@ -286,7 +291,7 @@
                                         <label class="block text-xs font-medium text-gray-600 mb-1">Tahun <span
                                                 class="text-red-500">*</span></label>
                                         <select name="harga_bulanan[0][tahun]"
-                                            class="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500"
+                                            class="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-yellow-500"
                                             required>
                                             <option value="">Pilih Tahun</option>
                                             @for ($y = date('Y'); $y <= date('Y') + 5; $y++)
@@ -298,8 +303,16 @@
                                         <label class="block text-xs font-medium text-gray-600 mb-1">Harga (Rp) <span
                                                 class="text-red-500">*</span></label>
                                         <input type="text" name="harga_bulanan[0][harga]" oninput="formatRupiah(this)"
-                                            class="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500"
+                                            class="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-yellow-500"
                                             placeholder="0" required>
+                                    </div>
+                                    <div>
+                                        <label class="block text-xs font-medium text-gray-600 mb-1">Kuota <span
+                                                class="text-gray-400 text-xs">(0 = ∞)</span></label>
+                                        <input type="number" name="harga_bulanan[0][kuota]" value="0"
+                                            min="0"
+                                            class="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-yellow-500"
+                                            placeholder="0">
                                     </div>
                                     <div>
                                         <label class="block text-xs font-medium text-gray-600 mb-1">Flyer</label>
@@ -385,7 +398,6 @@
                             </div>
                         </div>
 
-                        <!-- Durasi Umroh Plus (Auto dari Paket) -->
                         <div class="mt-4">
                             <label class="block text-sm font-medium text-gray-700 mb-1.5">
                                 Durasi Umroh Plus <span class="text-gray-400 text-xs">(otomatis dari paket)</span>
@@ -481,7 +493,6 @@
                             @enderror
                         </div>
 
-                        <!-- Informasi Umroh Plus yang dipilih -->
                         <div id="paketTourInfo" class="mt-3 bg-blue-50 rounded-lg p-3 border border-blue-200 hidden">
                             <div class="grid grid-cols-2 md:grid-cols-3 gap-2 text-sm">
                                 <div>
@@ -537,7 +548,7 @@
                 <div>
                     <label class="block text-xs font-medium text-gray-600 mb-1">Bulan <span class="text-red-500">*</span></label>
                     <select name="keberangkatan[${keberangkatanIndex}][bulan]"
-                        class="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500" required>
+                        class="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-yellow-500" required>
                         <option value="">Pilih Bulan</option>
                         @for ($b = 1; $b <= 12; $b++)
                             <option value="{{ $b }}">{{ \Carbon\Carbon::create()->month($b)->translatedFormat('F') }}</option>
@@ -547,7 +558,7 @@
                 <div>
                     <label class="block text-xs font-medium text-gray-600 mb-1">Tahun <span class="text-red-500">*</span></label>
                     <select name="keberangkatan[${keberangkatanIndex}][tahun]"
-                        class="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500" required>
+                        class="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-yellow-500" required>
                         <option value="">Pilih Tahun</option>
                         @for ($y = date('Y'); $y <= date('Y') + 5; $y++)
                             <option value="{{ $y }}">{{ $y }}</option>
@@ -587,12 +598,12 @@
             const container = document.getElementById('hargaBulananList');
             const row = document.createElement('div');
             row.className =
-                'harga-row grid grid-cols-1 md:grid-cols-5 gap-3 mb-2 items-end bg-gray-50 p-3 rounded-lg border border-gray-200';
+                'harga-row grid grid-cols-1 md:grid-cols-6 gap-3 mb-2 items-end bg-gray-50 p-3 rounded-lg border border-gray-200';
             row.innerHTML = `
                 <div>
                     <label class="block text-xs font-medium text-gray-600 mb-1">Bulan <span class="text-red-500">*</span></label>
                     <select name="harga_bulanan[${hargaIndex}][bulan]"
-                        class="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500" required>
+                        class="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-yellow-500" required>
                         <option value="">Pilih Bulan</option>
                         @for ($b = 1; $b <= 12; $b++)
                             <option value="{{ $b }}">{{ \Carbon\Carbon::create()->month($b)->translatedFormat('F') }}</option>
@@ -602,7 +613,7 @@
                 <div>
                     <label class="block text-xs font-medium text-gray-600 mb-1">Tahun <span class="text-red-500">*</span></label>
                     <select name="harga_bulanan[${hargaIndex}][tahun]"
-                        class="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500" required>
+                        class="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-yellow-500" required>
                         <option value="">Pilih Tahun</option>
                         @for ($y = date('Y'); $y <= date('Y') + 5; $y++)
                             <option value="{{ $y }}">{{ $y }}</option>
@@ -613,8 +624,14 @@
                     <label class="block text-xs font-medium text-gray-600 mb-1">Harga (Rp) <span class="text-red-500">*</span></label>
                     <input type="text" name="harga_bulanan[${hargaIndex}][harga]"
                         oninput="formatRupiah(this)"
-                        class="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500"
+                        class="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-yellow-500"
                         placeholder="0" required>
+                </div>
+                <div>
+                    <label class="block text-xs font-medium text-gray-600 mb-1">Kuota <span class="text-gray-400 text-xs">(0 = ∞)</span></label>
+                    <input type="number" name="harga_bulanan[${hargaIndex}][kuota]" value="0" min="0"
+                        class="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-yellow-500"
+                        placeholder="0">
                 </div>
                 <div>
                     <label class="block text-xs font-medium text-gray-600 mb-1">Flyer</label>

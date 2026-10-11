@@ -76,12 +76,15 @@
                                 {{ $departure->tanggal_kepulangan->format('d F Y') }}
                             </p>
                             @if ($departure->bulan_keberangkatan)
-                                <p class="text-gray-500 text-sm">
-                                    <i class="fas fa-calendar mr-1"></i>
-                                    Bulan Keberangkatan:
-                                    {{ date('F', mktime(0, 0, 0, $departure->bulan_keberangkatan, 1)) }}
-                                    {{ $departure->tahun_keberangkatan }}
-                                </p>
+                                <div
+                                    class="mt-2 inline-flex items-center gap-2 px-3 py-1.5 bg-blue-50 border border-blue-200 rounded-lg">
+                                    <i class="fas fa-filter text-blue-500"></i>
+                                    <span class="text-xs text-blue-700">
+                                        <strong>Filter Jamaah:</strong>
+                                        {{ date('F', mktime(0, 0, 0, $departure->bulan_keberangkatan, 1)) }}
+                                        {{ $departure->tahun_keberangkatan }}
+                                    </span>
+                                </div>
                             @endif
                         </div>
                         <div class="text-right">
@@ -1762,6 +1765,29 @@
                 @csrf
                 @method('PUT')
 
+                {{-- Info Filter Bulan/Tahun --}}
+                @if ($departure->bulan_keberangkatan && $departure->tahun_keberangkatan)
+                    <div class="mb-4 bg-blue-50 border border-blue-200 rounded-xl p-3">
+                        <div class="flex items-start gap-2">
+                            <i class="fas fa-filter text-blue-500 mt-0.5"></i>
+                            <div class="flex-1">
+                                <p class="text-sm font-medium text-blue-800">
+                                    Jamaah ditampilkan berdasarkan filter keberangkatan:
+                                </p>
+                                <p class="text-xs text-blue-600 mt-0.5">
+                                    <i class="fas fa-calendar-alt mr-1"></i>
+                                    Bulan:
+                                    <strong>{{ date('F', mktime(0, 0, 0, $departure->bulan_keberangkatan, 1)) }}</strong>
+                                    · Tahun: <strong>{{ $departure->tahun_keberangkatan }}</strong>
+                                </p>
+                                <p class="text-xs text-blue-500 mt-1">
+                                    Hanya jamaah dengan bulan/tahun keberangkatan yang sama yang ditampilkan.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                @endif
+
                 <div class="mb-4">
                     <div class="relative">
                         <i class="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm"></i>
@@ -1808,12 +1834,43 @@
                                 $badgeClass = 'bg-red-100 text-red-700';
                                 $badgeText = 'BELUM LUNAS';
                             }
+
+                            // Ambil info keberangkatan jamaah untuk ditampilkan
+                            $bulanNama = [
+                                1 => 'Jan',
+                                2 => 'Feb',
+                                3 => 'Mar',
+                                4 => 'Apr',
+                                5 => 'Mei',
+                                6 => 'Jun',
+                                7 => 'Jul',
+                                8 => 'Agu',
+                                9 => 'Sep',
+                                10 => 'Okt',
+                                11 => 'Nov',
+                                12 => 'Des',
+                            ];
+
+                            $jamaahKeberangkatanInfo = '';
+                            if ($jamaah->keberangkatan && $jamaah->keberangkatan->count() > 0) {
+                                $jamaahKeberangkatanInfo = $jamaah->keberangkatan
+                                    ->map(function ($k) use ($bulanNama) {
+                                        return $bulanNama[$k->pivot->bulan_keberangkatan] .
+                                            ' ' .
+                                            $k->pivot->tahun_keberangkatan;
+                                    })
+                                    ->implode(', ');
+                            } elseif ($jamaah->bulan_keberangkatan && $jamaah->tahun_keberangkatan) {
+                                $jamaahKeberangkatanInfo =
+                                    $bulanNama[$jamaah->bulan_keberangkatan] . ' ' . $jamaah->tahun_keberangkatan;
+                            }
                         @endphp
                         <label
                             class="jamaah-modal-item relative flex items-center p-2 {{ $borderClass }} {{ $bgClass }} rounded-lg hover:shadow-md transition cursor-pointer"
                             data-name="{{ strtolower($jamaah->nama_lengkap) }}"
                             data-produk="{{ strtolower($jamaah->produk_paket) }}"
-                            data-status="{{ strtolower($jamaah->status_pembayaran) }}">
+                            data-status="{{ strtolower($jamaah->status_pembayaran) }}"
+                            title="Keberangkatan: {{ $jamaahKeberangkatanInfo ?: '-' }}">
 
                             <span
                                 class="absolute -top-1.5 -right-1.5 text-[10px] font-bold px-1.5 py-0.5 rounded-full {{ $badgeClass }} shadow-sm">
@@ -1826,6 +1883,11 @@
                             <div class="ml-2 overflow-hidden flex-1">
                                 <p class="text-sm font-medium text-gray-700 truncate">{{ $jamaah->nama_lengkap }}</p>
                                 <p class="text-xs text-gray-400 truncate">{{ $jamaah->produk_paket }}</p>
+                                @if ($jamaahKeberangkatanInfo)
+                                    <p class="text-[10px] text-blue-500 truncate">
+                                        <i class="fas fa-plane mr-0.5"></i> {{ $jamaahKeberangkatanInfo }}
+                                    </p>
+                                @endif
                                 <p class="text-xs mt-0.5">
                                     <span
                                         class="px-1.5 py-0.5 rounded-full text-xs font-medium
@@ -1842,9 +1904,26 @@
                             </div>
                         </label>
                     @empty
-                        <p class="text-sm text-gray-400 col-span-3 text-center py-4">
-                            Tidak ada jamaah yang tersedia untuk bulan/tahun keberangkatan ini.
-                        </p>
+                        <div class="col-span-3 text-center py-8">
+                            <div class="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-3">
+                                <i class="fas fa-users text-gray-300 text-2xl"></i>
+                            </div>
+                            <p class="text-gray-500 font-medium">
+                                Tidak ada jamaah yang tersedia
+                            </p>
+                            @if ($departure->bulan_keberangkatan && $departure->tahun_keberangkatan)
+                                <p class="text-gray-400 text-xs mt-1">
+                                    Tidak ada jamaah dengan keberangkatan
+                                    <strong>{{ date('F', mktime(0, 0, 0, $departure->bulan_keberangkatan, 1)) }}
+                                        {{ $departure->tahun_keberangkatan }}</strong>
+                                    yang belum terdaftar di departure lain.
+                                </p>
+                            @else
+                                <p class="text-gray-400 text-xs mt-1">
+                                    Silakan atur bulan/tahun keberangkatan pada departure terlebih dahulu.
+                                </p>
+                            @endif
+                        </div>
                     @endforelse
                 </div>
 
@@ -2577,7 +2656,7 @@
                             const kamarCheckbox = kamarItem.querySelector('.kamar-checkbox');
                             if (kamarCheckbox && kamarCheckbox.checked) {
                                 const jumlah = parseInt(kamarItem.querySelector('.kamar-jumlah').value) ||
-                                0;
+                                    0;
                                 const hargaInput = kamarItem.querySelector('.kamar-harga');
                                 let harga = 0;
                                 if (hargaInput) {
@@ -2586,7 +2665,7 @@
                                     harga = parseInt(rawValue) || 0;
                                 }
                                 const durasi = parseInt(kamarItem.querySelector('.kamar-durasi').value) ||
-                                1;
+                                    1;
                                 grandTotal += jumlah * harga * durasi;
                             }
                         });
@@ -2802,7 +2881,7 @@
                 .then(data => {
                     content.innerHTML = data.html;
                     document.getElementById('perlengkapanDetailTitle').textContent = 'Detail: ' + data
-                    .nama_perlengkapan;
+                        .nama_perlengkapan;
                 })
                 .catch(error => {
                     console.error('Error:', error);

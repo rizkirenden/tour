@@ -81,6 +81,7 @@ class DepartureController extends Controller
         $departure = $this->service->getById($id);
         $maskapaiOptions = $this->service->getMaskapaiOptions();
         $hotelOptions = $this->service->getHotelOptions();
+        // ✅ Sudah terfilter berdasarkan bulan/tahun keberangkatan departure
         $jamaahs = $this->service->getAllJamaahsForSelection($id);
         $perlengkapanOptions = $this->service->getPerlengkapanOptionsForDeparture($id);
         $jenisTransaksiOptions = $this->service->getAvailableJenisTransaksi($id);
@@ -345,9 +346,6 @@ class DepartureController extends Controller
         ]);
     }
 
-    /**
-     * Get kamars untuk hotel tour (dengan pola yang sama seperti Hotel & Tipe Kamar)
-     */
     public function getKamarsByHotelForTour($idHotel, $departureId)
     {
         $hotel = Hotel::find($idHotel);
@@ -359,7 +357,6 @@ class DepartureController extends Controller
             ]);
         }
 
-        // Ambil data existing dari DeparturePaketTourHotel
         $existingItems = DeparturePaketTourHotel::where('id_departure', $departureId)
             ->where('id_hotel', $idHotel)
             ->get();
@@ -491,7 +488,6 @@ class DepartureController extends Controller
                 ? '<span class="text-green-600 text-xs">Sudah Diterima</span>'
                 : '<span class="text-yellow-600 text-xs">Belum Diterima</span>';
 
-            // ✅ PERBAIKAN: Route dengan 2 parameter yang benar
             $route = route('transaksional.departure.update-perlengkapan-status-jamaah', [
                 'departurePerlengkapanId' => $departurePerlengkapanId,
                 'jamaahId' => $item->id_jamaah,
@@ -794,79 +790,73 @@ class DepartureController extends Controller
         return response()->json($hotels);
     }
 
-    /**
- * Toggle status terima jenis transaksi per jamaah
- */
-public function updateJenisTransaksiStatusJamaah(Request $request, $departureJenisTransaksiId, $jamaahId)
-{
-    $validated = $request->validate([
-        'status_terima' => 'required|in:Belum Diterima,Sudah Diterima',
-    ]);
-
-    $this->service->updateJenisTransaksiStatusJamaah(
-        $departureJenisTransaksiId,
-        $jamaahId,
-        $validated['status_terima']
-    );
-
-    return redirect()->back()
-        ->with('success', 'Status penerimaan jenis transaksi berhasil diperbarui!');
-}
-
-/**
- * Get detail jenis transaksi untuk modal AJAX
- */
-public function getJenisTransaksiDetail($departureJenisTransaksiId)
-{
-    $departureJenisTransaksi = $this->service->getJenisTransaksiDetail($departureJenisTransaksiId);
-
-    $jamaahs = $departureJenisTransaksi->departureJenisTransaksiJamaahs;
-    $total = $jamaahs->count();
-    $sudahTerima = $jamaahs->where('status_terima', 'Sudah Diterima')->count();
-    $belumTerima = $total - $sudahTerima;
-    $csrfToken = csrf_token();
-    $departureJenisTransaksiId = $departureJenisTransaksi->id;
-
-    $html = '<div class="mb-4">
-        <div class="flex items-center justify-between">
-            <div>
-                <p class="text-sm font-semibold text-gray-800">' . $departureJenisTransaksi->jenisTransaksi->nama . '</p>
-                <p class="text-xs text-gray-400">Total: ' . $departureJenisTransaksi->total_harga_formatted . ' · Rp ' . number_format($departureJenisTransaksi->harga_satuan, 0, ',', '.') . ' / jamaah</p>
-            </div>
-            <div class="text-right">
-                <p class="text-sm font-bold text-purple-600">' . $departureJenisTransaksi->total_harga_formatted . '</p>
-                <p class="text-xs text-gray-400">Total Harga</p>
-            </div>
-        </div>
-        <div class="mt-2 flex items-center gap-4 text-sm">
-            <span class="text-green-600"><i class="fas fa-check-circle mr-1"></i> ' . $sudahTerima . ' Sudah Diterima</span>
-            <span class="text-yellow-600"><i class="fas fa-clock mr-1"></i> ' . $belumTerima . ' Belum Diterima</span>
-            <span class="text-gray-500">Total: ' . $total . ' jamaah</span>
-        </div>
-        <div class="w-full bg-gray-200 rounded-full h-2 mt-2">
-            <div class="h-2 rounded-full ' . ($sudahTerima == $total ? 'bg-green-500' : 'bg-yellow-500') . '"
-                style="width: ' . ($total > 0 ? round(($sudahTerima / $total) * 100) : 0) . '%"></div>
-        </div>
-    </div>
-    <div class="border-t border-gray-200 pt-4">
-        <p class="text-xs font-medium text-gray-500 mb-3">Daftar Jamaah:</p>
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-2">';
-
-    foreach ($jamaahs as $item) {
-        $statusClass = $item->status_terima == 'Sudah Diterima' ? 'bg-green-50 border-green-200' : 'bg-yellow-50 border-yellow-200';
-        $statusIcon = $item->status_terima == 'Sudah Diterima'
-            ? '<span class="text-green-500"><i class="fas fa-check-circle"></i></span>'
-            : '<span class="text-yellow-500"><i class="fas fa-clock"></i></span>';
-        $statusText = $item->status_terima == 'Sudah Diterima'
-            ? '<span class="text-green-600 text-xs">Sudah Diterima</span>'
-            : '<span class="text-yellow-600 text-xs">Belum Diterima</span>';
-
-        $route = route('transaksional.departure.update-jenis-transaksi-status-jamaah', [
-            'departureJenisTransaksiId' => $departureJenisTransaksiId,
-            'jamaahId' => $item->id_jamaah,
+    public function updateJenisTransaksiStatusJamaah(Request $request, $departureJenisTransaksiId, $jamaahId)
+    {
+        $validated = $request->validate([
+            'status_terima' => 'required|in:Belum Diterima,Sudah Diterima',
         ]);
 
-        $html .= '
+        $this->service->updateJenisTransaksiStatusJamaah(
+            $departureJenisTransaksiId,
+            $jamaahId,
+            $validated['status_terima']
+        );
+
+        return redirect()->back()
+            ->with('success', 'Status penerimaan jenis transaksi berhasil diperbarui!');
+    }
+
+    public function getJenisTransaksiDetail($departureJenisTransaksiId)
+    {
+        $departureJenisTransaksi = $this->service->getJenisTransaksiDetail($departureJenisTransaksiId);
+
+        $jamaahs = $departureJenisTransaksi->departureJenisTransaksiJamaahs;
+        $total = $jamaahs->count();
+        $sudahTerima = $jamaahs->where('status_terima', 'Sudah Diterima')->count();
+        $belumTerima = $total - $sudahTerima;
+        $csrfToken = csrf_token();
+        $departureJenisTransaksiId = $departureJenisTransaksi->id;
+
+        $html = '<div class="mb-4">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-sm font-semibold text-gray-800">' . $departureJenisTransaksi->jenisTransaksi->nama . '</p>
+                    <p class="text-xs text-gray-400">Total: ' . $departureJenisTransaksi->total_harga_formatted . ' · Rp ' . number_format($departureJenisTransaksi->harga_satuan, 0, ',', '.') . ' / jamaah</p>
+                </div>
+                <div class="text-right">
+                    <p class="text-sm font-bold text-purple-600">' . $departureJenisTransaksi->total_harga_formatted . '</p>
+                    <p class="text-xs text-gray-400">Total Harga</p>
+                </div>
+            </div>
+            <div class="mt-2 flex items-center gap-4 text-sm">
+                <span class="text-green-600"><i class="fas fa-check-circle mr-1"></i> ' . $sudahTerima . ' Sudah Diterima</span>
+                <span class="text-yellow-600"><i class="fas fa-clock mr-1"></i> ' . $belumTerima . ' Belum Diterima</span>
+                <span class="text-gray-500">Total: ' . $total . ' jamaah</span>
+            </div>
+            <div class="w-full bg-gray-200 rounded-full h-2 mt-2">
+                <div class="h-2 rounded-full ' . ($sudahTerima == $total ? 'bg-green-500' : 'bg-yellow-500') . '"
+                    style="width: ' . ($total > 0 ? round(($sudahTerima / $total) * 100) : 0) . '%"></div>
+            </div>
+        </div>
+        <div class="border-t border-gray-200 pt-4">
+            <p class="text-xs font-medium text-gray-500 mb-3">Daftar Jamaah:</p>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-2">';
+
+        foreach ($jamaahs as $item) {
+            $statusClass = $item->status_terima == 'Sudah Diterima' ? 'bg-green-50 border-green-200' : 'bg-yellow-50 border-yellow-200';
+            $statusIcon = $item->status_terima == 'Sudah Diterima'
+                ? '<span class="text-green-500"><i class="fas fa-check-circle"></i></span>'
+                : '<span class="text-yellow-500"><i class="fas fa-clock"></i></span>';
+            $statusText = $item->status_terima == 'Sudah Diterima'
+                ? '<span class="text-green-600 text-xs">Sudah Diterima</span>'
+                : '<span class="text-yellow-600 text-xs">Belum Diterima</span>';
+
+            $route = route('transaksional.departure.update-jenis-transaksi-status-jamaah', [
+                'departureJenisTransaksiId' => $departureJenisTransaksiId,
+                'jamaahId' => $item->id_jamaah,
+            ]);
+
+            $html .= '
         <div class="flex items-center justify-between p-2 rounded-lg border ' . $statusClass . '">
             <div class="flex items-center gap-2">
                 ' . $statusIcon . '
@@ -888,15 +878,15 @@ public function getJenisTransaksiDetail($departureJenisTransaksiId)
                 </form>
             </div>
         </div>';
-    }
+        }
 
-    $html .= '
+        $html .= '
         </div>
     </div>';
 
-    return response()->json([
-        'html' => $html,
-        'nama_jenis_transaksi' => $departureJenisTransaksi->jenisTransaksi->nama
-    ]);
-}
+        return response()->json([
+            'html' => $html,
+            'nama_jenis_transaksi' => $departureJenisTransaksi->jenisTransaksi->nama
+        ]);
+    }
 }

@@ -144,8 +144,7 @@
 
                     <!-- Form Tambah Keberangkatan -->
                     <div id="formTambahKeberangkatan" class="hidden mb-4 p-4 bg-white rounded-lg border border-gray-200">
-                        <form action="{{ route('master.produk.keberangkatan.store', $produk->id_produk) }}" method="POST"
-                            id="formTambahKeb">
+                        <form action="{{ route('master.produk.keberangkatan.store', $produk->id_produk) }}" method="POST">
                             @csrf
                             <div class="grid grid-cols-1 md:grid-cols-4 gap-3">
                                 <div>
@@ -157,8 +156,7 @@
                                         <option value="">Pilih Bulan</option>
                                         @for ($b = 1; $b <= 12; $b++)
                                             <option value="{{ $b }}">
-                                                {{ \Carbon\Carbon::create()->month($b)->translatedFormat('F') }}
-                                            </option>
+                                                {{ \Carbon\Carbon::create()->month($b)->translatedFormat('F') }}</option>
                                         @endfor
                                     </select>
                                 </div>
@@ -199,17 +197,14 @@
                         <table class="w-full text-sm">
                             <thead>
                                 <tr class="border-b border-gray-200">
-                                    <th class="px-3 py-2 text-left text-xs font-semibold text-gray-500 uppercase">No
-                                    </th>
+                                    <th class="px-3 py-2 text-left text-xs font-semibold text-gray-500 uppercase">No</th>
                                     <th class="px-3 py-2 text-left text-xs font-semibold text-gray-500 uppercase">Bulan
                                     </th>
                                     <th class="px-3 py-2 text-left text-xs font-semibold text-gray-500 uppercase">Tahun
                                     </th>
-                                    <th class="px-3 py-2 text-center text-xs font-semibold text-gray-500 uppercase">
-                                        Status
+                                    <th class="px-3 py-2 text-center text-xs font-semibold text-gray-500 uppercase">Status
                                     </th>
-                                    <th class="px-3 py-2 text-center text-xs font-semibold text-gray-500 uppercase">
-                                        Aksi
+                                    <th class="px-3 py-2 text-center text-xs font-semibold text-gray-500 uppercase">Aksi
                                     </th>
                                 </tr>
                             </thead>
@@ -284,7 +279,7 @@
                         <form action="{{ route('master.produk.harga-bulanan.store', $produk->id_produk) }}"
                             method="POST" enctype="multipart/form-data" id="formTambah">
                             @csrf
-                            <div class="grid grid-cols-1 md:grid-cols-5 gap-3">
+                            <div class="grid grid-cols-1 md:grid-cols-6 gap-3">
                                 <div>
                                     <label class="block text-xs font-medium text-gray-600 mb-1">Bulan <span
                                             class="text-red-500">*</span></label>
@@ -316,6 +311,13 @@
                                     <input type="text" name="harga" id="tambah_harga" oninput="formatRupiah(this)"
                                         class="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-yellow-500"
                                         placeholder="0" required>
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-medium text-gray-600 mb-1">Kuota <span
+                                            class="text-gray-400 text-xs">(0 = ∞)</span></label>
+                                    <input type="number" name="kuota" value="0" min="0"
+                                        class="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-yellow-500"
+                                        placeholder="0">
                                 </div>
                                 <div>
                                     <label class="block text-xs font-medium text-gray-600 mb-1">Flyer</label>
@@ -353,6 +355,8 @@
                                     </th>
                                     <th class="px-3 py-2 text-right text-xs font-semibold text-gray-500 uppercase">Harga
                                     </th>
+                                    <th class="px-3 py-2 text-center text-xs font-semibold text-gray-500 uppercase">Kuota
+                                    </th>
                                     <th class="px-3 py-2 text-center text-xs font-semibold text-gray-500 uppercase">Flyer
                                     </th>
                                     <th class="px-3 py-2 text-center text-xs font-semibold text-gray-500 uppercase">Status
@@ -369,6 +373,9 @@
                                         <td class="px-3 py-2 text-gray-600">{{ $harga->tahun }}</td>
                                         <td class="px-3 py-2 text-right font-bold text-yellow-600">
                                             {{ $harga->harga_formatted }}
+                                        </td>
+                                        <td class="px-3 py-2 text-center">
+                                            {!! $harga->kuota_badge !!}
                                         </td>
                                         <td class="px-3 py-2 text-center">
                                             @if ($harga->flyer_url)
@@ -418,7 +425,7 @@
                                     </tr>
                                 @empty
                                     <tr>
-                                        <td colspan="7" class="px-3 py-4 text-center text-gray-400 text-sm">
+                                        <td colspan="8" class="px-3 py-4 text-center text-gray-400 text-sm">
                                             Belum ada data harga bulanan
                                         </td>
                                     </tr>
@@ -580,15 +587,29 @@
                                 </select>
                             </div>
                         </div>
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">
-                                Harga (Rp) <span class="text-red-500">*</span>
-                            </label>
-                            <div class="relative">
-                                <span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm">Rp</span>
-                                <input type="text" id="edit_harga" name="harga" oninput="formatRupiah(this)"
-                                    class="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500 transition"
-                                    placeholder="0" required>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">
+                                    Harga (Rp) <span class="text-red-500">*</span>
+                                </label>
+                                <div class="relative">
+                                    <span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm">Rp</span>
+                                    <input type="text" id="edit_harga" name="harga" oninput="formatRupiah(this)"
+                                        class="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500 transition"
+                                        placeholder="0" required>
+                                </div>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">
+                                    Kuota <span class="text-gray-400 text-xs">(0 = Tidak Terbatas)</span>
+                                </label>
+                                <div class="relative">
+                                    <input type="number" id="edit_kuota" name="kuota" min="0"
+                                        class="w-full px-4 py-2 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500 transition"
+                                        placeholder="0">
+                                    <span
+                                        class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm">Orang</span>
+                                </div>
                             </div>
                         </div>
                         <div>
@@ -695,11 +716,17 @@
             const bulanText = cells[1].textContent.trim();
             const tahunText = cells[2].textContent.trim();
             const hargaText = cells[3].textContent.trim().replace('Rp ', '').replace(/\./g, '');
-            const statusText = cells[5].querySelector('span')?.textContent.trim() || 'Nonaktif';
+            const kuotaText = cells[4].textContent.trim().replace(' Orang', '').replace(/\./g, '');
+            const statusText = cells[6].querySelector('span')?.textContent.trim() || 'Nonaktif';
 
             document.getElementById('edit_bulan').value = getBulanFromText(bulanText);
             document.getElementById('edit_tahun').value = tahunText;
             document.getElementById('edit_harga').value = parseInt(hargaText || 0).toLocaleString('id-ID');
+
+            // Isi kuota
+            const kuotaVal = kuotaText === 'Tidak Terbatas' ? 0 : parseInt(kuotaText || 0);
+            document.getElementById('edit_kuota').value = kuotaVal;
+
             document.getElementById('edit_is_active').checked = statusText === 'Aktif';
 
             const form = document.getElementById('editHargaForm');
@@ -736,7 +763,7 @@
         }
 
         // ============================================
-        // KEBERANGKATAN (show page)
+        // KEBERANGKATAN
         // ============================================
         function toggleFormTambahKeberangkatan() {
             const form = document.getElementById('formTambahKeberangkatan');
@@ -816,7 +843,6 @@
         // DOM READY
         // ============================================
         document.addEventListener('DOMContentLoaded', function() {
-            // Form Edit Harga - bersihkan format
             const editForm = document.getElementById('editHargaForm');
             if (editForm) {
                 editForm.addEventListener('submit', function(e) {
@@ -827,7 +853,6 @@
                 });
             }
 
-            // Form Tambah Harga - bersihkan format
             const tambahForm = document.getElementById('formTambah');
             if (tambahForm) {
                 tambahForm.addEventListener('submit', function(e) {
@@ -838,7 +863,6 @@
                 });
             }
 
-            // Modal click outside
             const modal = document.getElementById('editHargaModal');
             if (modal) {
                 modal.addEventListener('click', function(e) {

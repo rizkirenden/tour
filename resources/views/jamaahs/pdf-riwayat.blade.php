@@ -13,126 +13,106 @@
         }
 
         body {
-            font-family: 'Arial', sans-serif;
-            font-size: 11px;
+            font-family: 'Arial', 'Helvetica', sans-serif;
+            font-size: 12px;
             color: #333;
-            padding: 12px;
+            padding: 15px;
             background: #fff;
         }
 
         /* ==========================================
-           HEADER
+           HEADER DENGAN LOGO KIRI + INFO (SEJAJAR)
            ========================================== */
         .header {
-            text-align: center;
-            border-bottom: 3px double #D4A017;
+            width: 100%;
+            margin-bottom: 15px;
             padding-bottom: 10px;
-            margin-bottom: 14px;
+            border-bottom: 3px double #D4A017;
         }
 
-        .header .logo-container {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 10px;
-            margin-bottom: 2px;
+        .header-container {
+            width: 100%;
+            overflow: hidden;
         }
 
-        .header .logo-img {
-            max-height: 40px;
-            width: auto;
+        .header-logo-left {
+            float: left;
+            width: 90px;
+            margin-right: 15px;
+            padding-top: 37px;
         }
 
-        .header .logo-text {
-            font-size: 22px;
-            font-weight: bold;
-            color: #D4A017;
-        }
-
-        .header .subtitle {
-            font-size: 12px;
-            color: #666;
-            margin-top: 2px;
-        }
-
-        .header .company-info {
-            font-size: 9px;
-            color: #555;
-            margin-top: 3px;
-            line-height: 1.5;
-        }
-
-        .header .line {
-            width: 80px;
-            height: 2px;
-            background: #D4A017;
-            margin: 5px auto 0;
-        }
-
-        /* ==========================================
-           HALAMAN LOGO - FULL PAGE
-           ========================================== */
-        .logo-page {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            height: 100vh;
-            text-align: center;
-            padding: 20px;
-        }
-
-        .logo-page .logo-big {
-            max-height: 300px;
-            max-width: 300px;
+        .header-logo-left .logo-img {
+            max-height: 85px;
+            max-width: 90px;
             width: auto;
             height: auto;
-            margin-bottom: 30px;
             object-fit: contain;
+            display: block;
         }
 
-        .logo-page .company-name-big {
-            font-size: 36px;
+        .header-content {
+            margin-left: 105px;
+            text-align: left;
+        }
+
+        .header-content .company-name {
+            font-size: 22px;
             font-weight: bold;
-            color: #D4A017;
-            letter-spacing: 3px;
-            margin-bottom: 10px;
+            color: #1a1a1a;
+            letter-spacing: 0.5px;
+            margin-bottom: 6px;
+            line-height: 1.2;
         }
 
-        .logo-page .company-address-big {
-            font-size: 14px;
-            color: #555;
-            line-height: 1.8;
+        .header-detail-table {
+            width: 100%;
+            border-collapse: collapse;
         }
 
-        .logo-page .company-phone-big {
-            font-size: 13px;
-            color: #666;
-            margin-top: 5px;
+        .header-detail-table td {
+            padding: 1px 0;
+            font-size: 10px;
+            color: #333;
+            line-height: 1.5;
+            vertical-align: top;
+            text-align: left;
+            white-space: nowrap;
         }
 
-        .logo-page .separator-line {
-            width: 100px;
+        .header-detail-table td.detail-label {
+            width: 60px;
+            font-weight: bold;
+            color: #000;
+            padding-right: 4px;
+        }
+
+        .header-detail-table td.detail-value {
+            color: #333;
+        }
+
+        .header-line {
+            width: 100%;
             height: 3px;
             background: #D4A017;
-            margin: 15px auto;
+            margin-top: 8px;
+            clear: both;
         }
 
         /* ==========================================
-           TABLES
+           INFO TABLE
            ========================================== */
-        .info-table,
-        .summary-table {
+        .info-table {
             width: 100%;
             border-collapse: collapse;
-            margin-bottom: 14px;
+            margin-bottom: 18px;
             border: 1px solid #e9ecef;
-            border-radius: 6px;
+            border-radius: 8px;
             overflow: hidden;
         }
 
         .info-table td {
-            padding: 8px 12px;
+            padding: 10px 14px;
             border-bottom: 1px solid #f0f0f0;
             vertical-align: middle;
         }
@@ -142,133 +122,44 @@
         }
 
         .info-table .label {
-            width: 130px;
+            width: 140px;
             font-weight: 600;
             color: #666;
-            font-size: 10px;
+            font-size: 11px;
             background: #f8f9fa;
+            letter-spacing: 0.3px;
         }
 
         .info-table .value {
             color: #333;
             font-weight: 500;
-            font-size: 11px;
+            font-size: 12px;
         }
 
-        /* ==========================================
-           SUMMARY TABLE
-           ========================================== */
-        .summary-table td {
-            padding: 10px 12px;
-            text-align: center;
-            border-right: 1px solid #e9ecef;
-            width: 33.33%;
-        }
-
-        .summary-table td:last-child {
-            border-right: none;
-        }
-
-        .summary-table .label {
-            font-size: 9px;
-            color: #888;
-            text-transform: uppercase;
-            font-weight: 600;
-            display: block;
-        }
-
-        .summary-table .value {
-            font-size: 18px;
+        .info-table .value strong {
             font-weight: 700;
-            display: block;
-            margin-top: 2px;
-        }
-
-        .summary-table .value.total {
-            color: #D4A017;
-        }
-
-        .summary-table .value.dibayar {
-            color: #28a745;
-        }
-
-        .summary-table .value.sisa {
-            color: #dc3545;
         }
 
         /* ==========================================
-           RIWAYAT TABLE
+           KEBERANGKATAN BADGES
            ========================================== */
-        .table-wrapper {
-            border: 1px solid #e9ecef;
-            border-radius: 6px;
-            overflow: hidden;
-            margin-bottom: 14px;
-        }
-
-        .table-wrapper .table-header {
-            background: #D4A017;
-            padding: 6px 14px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .table-wrapper .table-header h3 {
-            color: #fff;
-            font-size: 11px;
-            font-weight: 600;
-            margin: 0;
-        }
-
-        .table-wrapper .table-header .count {
-            background: rgba(255, 255, 255, 0.2);
-            color: #fff;
-            padding: 2px 10px;
-            border-radius: 20px;
-            font-size: 9px;
-        }
-
-        table.riwayat {
-            width: 100%;
-            border-collapse: collapse;
-        }
-
-        table.riwayat thead {
-            background: #f8f9fa;
-        }
-
-        table.riwayat th {
-            padding: 6px 8px;
-            text-align: left;
-            font-size: 8px;
-            text-transform: uppercase;
-            color: #666;
-            font-weight: 700;
-            border-bottom: 2px solid #e9ecef;
-        }
-
-        table.riwayat td {
-            padding: 6px 8px;
-            border-bottom: 1px solid #f0f0f0;
-            vertical-align: middle;
-            font-size: 9px;
-        }
-
-        table.riwayat tbody tr:last-child td {
-            border-bottom: none;
-        }
-
-        /* ==========================================
-           BADGES
-           ========================================== */
-        .badge-status,
-        .badge-jenis,
-        .badge-metode {
+        .keb-badge {
             display: inline-block;
-            padding: 2px 10px;
+            padding: 3px 12px;
             border-radius: 20px;
-            font-size: 8px;
+            font-size: 10px;
+            font-weight: 600;
+            background: #dbeafe;
+            color: #1e40af;
+            margin-right: 4px;
+            margin-bottom: 2px;
+        }
+
+        .badge-status {
+            display: inline-block;
+            padding: 3px 16px;
+            border-radius: 20px;
+            font-size: 11px;
             font-weight: 600;
         }
 
@@ -292,272 +183,127 @@
             color: #721c24;
         }
 
-        .badge-dp-trans {
-            background: #fff3cd;
-            color: #856404;
-        }
-
-        .badge-lunas-trans {
-            background: #d4edda;
-            color: #155724;
-        }
-
-        .badge-angsur-trans {
-            background: #cce5ff;
-            color: #004085;
-        }
-
-        .badge-bank {
-            background: #dbeafe;
-            color: #1e40af;
-        }
-
-        .badge-ewallet {
-            background: #fae8ff;
-            color: #6b21a8;
-        }
-
         /* ==========================================
-           FOOTER TABLE
+           SUMMARY - TABEL HORIZONTAL 3 KOLOM
            ========================================== */
-        .table-footer {
-            background: #f8f9fa;
-            padding: 6px 14px;
-            display: flex;
-            justify-content: flex-end;
-            align-items: center;
-            border-top: 2px solid #D4A017;
-        }
-
-        .table-footer .total-label {
-            font-weight: 600;
-            color: #555;
-            font-size: 10px;
-            margin-right: 20px;
-        }
-
-        .table-footer .total-amount {
-            font-weight: 700;
-            color: #28a745;
-            font-size: 14px;
-        }
-
-        /* ==========================================
-           SYARAT DAN KETENTUAN
-           ========================================== */
-        .syarat-wrapper {
-            border: 1px solid #e9ecef;
-            border-radius: 6px;
-            overflow: hidden;
-            margin-bottom: 14px;
-        }
-
-        .syarat-wrapper .syarat-header {
-            background: #2c3e50;
-            padding: 6px 14px;
-        }
-
-        .syarat-wrapper .syarat-header h3 {
-            color: #fff;
-            font-size: 10px;
-            font-weight: 600;
-            margin: 0;
-        }
-
-        .syarat-content {
-            padding: 10px 14px;
-            background: #fafafa;
-        }
-
-        .syarat-content ol {
-            padding-left: 18px;
-            margin: 0;
-            font-size: 8px;
-            line-height: 1.6;
-            color: #444;
-        }
-
-        .syarat-content ol li {
-            margin-bottom: 1px;
-        }
-
-        .syarat-content ul {
-            padding-left: 18px;
-            margin: 1px 0 0 0;
-            list-style-type: disc;
-            font-size: 8px;
-            color: #444;
-        }
-
-        /* ==========================================
-           LAMPIRAN BUKTI
-           ========================================== */
-        .page-break {
-            page-break-after: always;
-        }
-
-        .lampiran-header {
-            text-align: center;
-            padding: 12px 0 10px;
-            border-bottom: 2px solid #D4A017;
-            margin-bottom: 14px;
-        }
-
-        .lampiran-header h2 {
-            color: #D4A017;
-            font-size: 16px;
-            font-weight: 700;
-        }
-
-        .lampiran-header p {
-            color: #888;
-            font-size: 10px;
-            margin-top: 2px;
-        }
-
-        .lampiran-grid {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 12px;
-        }
-
-        .lampiran-item {
-            background: #fff;
+        .summary-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 18px;
             border: 1px solid #e9ecef;
             border-radius: 8px;
-            padding: 10px;
+            overflow: hidden;
+        }
+
+        .summary-table td {
+            padding: 14px 16px;
             text-align: center;
+            border-right: 1px solid #e9ecef;
+            vertical-align: middle;
+            width: 33.33%;
         }
 
-        .lampiran-item .lampiran-info {
-            font-size: 8px;
-            color: #666;
-            margin-bottom: 4px;
+        .summary-table td:last-child {
+            border-right: none;
         }
 
-        .lampiran-item .lampiran-info strong {
-            color: #333;
-        }
-
-        .lampiran-item .lampiran-image {
-            margin: 4px 0;
-        }
-
-        .lampiran-item .lampiran-image img {
-            max-width: 100%;
-            max-height: 120px;
-            border-radius: 4px;
-            border: 1px solid #eee;
-            object-fit: contain;
-        }
-
-        .lampiran-item .lampiran-file {
-            padding: 10px;
-            background: #f8f9fa;
-            border-radius: 4px;
-        }
-
-        .lampiran-item .lampiran-file .icon {
-            font-size: 24px;
+        .summary-table .label {
+            font-size: 10px;
+            color: #888;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            font-weight: 600;
             display: block;
         }
 
-        .lampiran-item .lampiran-file .filename {
-            font-size: 8px;
-            color: #666;
-            margin-top: 2px;
-        }
-
-        .lampiran-item .lampiran-amount {
-            font-size: 12px;
+        .summary-table .value {
+            font-size: 20px;
             font-weight: 700;
+            margin-top: 3px;
+            display: block;
+        }
+
+        .summary-table .value.total {
+            color: #D4A017;
+        }
+
+        .summary-table .value.dibayar {
             color: #28a745;
-            margin-top: 4px;
         }
 
-        .lampiran-item .lampiran-keterangan {
-            font-size: 8px;
-            color: #888;
-            margin-top: 2px;
-        }
-
-        .lampiran-item .lampiran-date {
-            font-size: 7px;
-            color: #999;
+        .summary-table .value.sisa {
+            color: #dc3545;
         }
 
         /* ==========================================
-           FOOTER - PAGE
+           TABLE RIWAYAT - MODERN
            ========================================== */
-        .footer-table {
+        .table-wrapper {
+            border: 1px solid #e9ecef;
+            border-radius: 8px;
+            overflow: hidden;
+            margin-bottom: 18px;
+        }
+
+        .table-wrapper .table-header {
+            background: #D4A017;
+            padding: 10px 16px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .table-wrapper .table-header h3 {
+            color: #fff;
+            font-size: 12px;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+            margin: 0;
+        }
+
+        .table-wrapper .table-header .count {
+            background: rgba(255, 255, 255, 0.2);
+            color: #fff;
+            padding: 2px 12px;
+            border-radius: 20px;
+            font-size: 10px;
+        }
+
+        table.riwayat {
             width: 100%;
             border-collapse: collapse;
-            border-top: 2px solid #D4A017;
-            margin-top: 8px;
-            font-size: 8px;
-            color: #666;
         }
 
-        .footer-table td {
-            padding: 6px 10px;
-            vertical-align: middle;
+        table.riwayat thead {
+            background: #f8f9fa;
         }
 
-        .footer-table .footer-left {
+        table.riwayat th {
+            padding: 8px 10px;
             text-align: left;
-            font-weight: 600;
-            color: #D4A017;
-            font-size: 10px;
-            width: 30%;
-        }
-
-        .footer-table .footer-left .company {
-            color: #D4A017;
-            font-weight: 700;
-        }
-
-        .footer-table .footer-left .separator {
-            color: #ddd;
-            margin: 0 4px;
-        }
-
-        .footer-table .footer-left .printed-by {
+            font-size: 9px;
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
             color: #666;
-            font-weight: 400;
-            font-size: 9px;
+            font-weight: 700;
+            border-bottom: 2px solid #e9ecef;
         }
 
-        .footer-table .footer-center {
-            text-align: center;
-            width: 30%;
-            color: #bbb;
-            font-size: 7px;
+        table.riwayat td {
+            padding: 8px 10px;
+            border-bottom: 1px solid #f0f0f0;
+            vertical-align: middle;
+            font-size: 10px;
         }
 
-        .footer-table .footer-right {
-            text-align: right;
-            width: 40%;
+        table.riwayat tbody tr:last-child td {
+            border-bottom: none;
         }
 
-        .footer-table .footer-right .date {
-            color: #555;
-            font-weight: 500;
-            font-size: 9px;
+        table.riwayat tbody tr:hover {
+            background: #f8f9fa;
         }
 
-        .footer-table .footer-right .separator {
-            color: #ddd;
-            margin: 0 4px;
-        }
-
-        .footer-table .footer-right .note {
-            color: #bbb;
-            font-size: 7px;
-        }
-
-        /* ==========================================
-           UTILITY
-           ========================================== */
         .text-center {
             text-align: center;
         }
@@ -574,12 +320,363 @@
             color: #999;
         }
 
+        .badge-jenis {
+            padding: 2px 10px;
+            border-radius: 20px;
+            font-size: 8px;
+            font-weight: 600;
+            display: inline-block;
+        }
+
+        .badge-dp-trans {
+            background: #fff3cd;
+            color: #856404;
+        }
+
+        .badge-lunas-trans {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .badge-angsur-trans {
+            background: #cce5ff;
+            color: #004085;
+        }
+
+        .table-footer {
+            background: #f8f9fa;
+            padding: 8px 16px;
+            display: flex;
+            justify-content: flex-end;
+            align-items: center;
+            border-top: 2px solid #D4A017;
+        }
+
+        .table-footer .total-label {
+            font-weight: 600;
+            color: #555;
+            font-size: 11px;
+            margin-right: 30px;
+        }
+
+        .table-footer .total-amount {
+            font-weight: 700;
+            color: #28a745;
+            font-size: 15px;
+        }
+
+        /* ==========================================
+           SYARAT DAN KETENTUAN
+           ========================================== */
+        .syarat-wrapper {
+            border: 1px solid #e9ecef;
+            border-radius: 8px;
+            overflow: hidden;
+            margin-bottom: 18px;
+        }
+
+        .syarat-wrapper .syarat-header {
+            background: #2c3e50;
+            padding: 8px 16px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .syarat-wrapper .syarat-header h3 {
+            color: #fff;
+            font-size: 11px;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+            margin: 0;
+        }
+
+        .syarat-content {
+            padding: 14px 16px;
+            background: #fafafa;
+        }
+
+        .syarat-content ol {
+            padding-left: 20px;
+            margin: 0;
+            font-size: 9px;
+            line-height: 1.8;
+            color: #444;
+        }
+
+        .syarat-content ol li {
+            margin-bottom: 2px;
+        }
+
+        .syarat-content ul {
+            padding-left: 20px;
+            margin: 2px 0 0 0;
+            list-style-type: disc;
+            font-size: 9px;
+            color: #444;
+        }
+
+        .syarat-content ul li {
+            margin-bottom: 1px;
+        }
+
+        /* ==========================================
+           FOOTER
+           ========================================== */
+        .footer-table {
+            width: 100%;
+            border-collapse: collapse;
+            border-top: 2px solid #D4A017;
+            margin-top: 10px;
+            font-size: 9px;
+            color: #666;
+        }
+
+        .footer-table td {
+            padding: 8px 10px;
+            vertical-align: middle;
+        }
+
+        .footer-table .footer-left {
+            text-align: left;
+            font-weight: 600;
+            color: #D4A017;
+            font-size: 11px;
+            width: 30%;
+        }
+
+        .footer-table .footer-left .company {
+            color: #D4A017;
+            font-weight: 700;
+        }
+
+        .footer-table .footer-left .separator {
+            color: #ddd;
+            font-size: 14px;
+            font-weight: 300;
+            margin: 0 6px;
+        }
+
+        .footer-table .footer-left .printed-by {
+            color: #666;
+            font-weight: 400;
+            font-size: 9px;
+        }
+
+        .footer-table .footer-center {
+            text-align: center;
+            width: 30%;
+            color: #bbb;
+            font-size: 8px;
+        }
+
+        .footer-table .footer-right {
+            text-align: right;
+            width: 40%;
+        }
+
+        .footer-table .footer-right .date {
+            color: #555;
+            font-weight: 500;
+            font-size: 10px;
+        }
+
+        .footer-table .footer-right .separator {
+            color: #ddd;
+            font-size: 14px;
+            font-weight: 300;
+            margin: 0 6px;
+        }
+
+        .footer-table .footer-right .note {
+            color: #bbb;
+            font-size: 8px;
+        }
+
+        /* ==========================================
+           LAMPIRAN BUKTI
+           ========================================== */
+        .page-break {
+            page-break-after: always;
+        }
+
+        .lampiran-header {
+            text-align: center;
+            padding: 15px 0 12px;
+            border-bottom: 2px solid #D4A017;
+            margin-bottom: 18px;
+        }
+
+        .lampiran-header h2 {
+            color: #D4A017;
+            font-size: 18px;
+            font-weight: 700;
+        }
+
+        .lampiran-header p {
+            color: #888;
+            font-size: 11px;
+            margin-top: 3px;
+        }
+
+        .lampiran-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+        }
+
+        .lampiran-item {
+            background: #fff;
+            border: 1px solid #e9ecef;
+            border-radius: 10px;
+            padding: 12px;
+            text-align: center;
+        }
+
+        .lampiran-item .lampiran-info {
+            font-size: 9px;
+            color: #666;
+            margin-bottom: 6px;
+        }
+
+        .lampiran-item .lampiran-info strong {
+            color: #333;
+        }
+
+        .lampiran-item .lampiran-info .lampiran-date {
+            color: #999;
+            font-size: 8px;
+        }
+
+        .lampiran-item .lampiran-image {
+            margin: 6px 0;
+        }
+
+        .lampiran-item .lampiran-image img {
+            max-width: 100%;
+            max-height: 130px;
+            border-radius: 6px;
+            border: 1px solid #eee;
+        }
+
+        .lampiran-item .lampiran-file {
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 6px;
+        }
+
+        .lampiran-item .lampiran-file .icon {
+            font-size: 32px;
+            display: block;
+        }
+
+        .lampiran-item .lampiran-file .filename {
+            font-size: 9px;
+            color: #666;
+            margin-top: 3px;
+        }
+
+        .lampiran-item .lampiran-amount {
+            font-size: 13px;
+            font-weight: 700;
+            color: #28a745;
+            margin-top: 6px;
+        }
+
+        .lampiran-item .lampiran-keterangan {
+            font-size: 8px;
+            color: #888;
+            margin-top: 2px;
+        }
+
+        /* ==========================================
+           TTD & CAP
+           ========================================== */
+        .ttd-cap-wrapper {
+            width: 100%;
+            margin-top: 30px;
+            margin-bottom: 20px;
+            page-break-inside: avoid;
+        }
+
+        .ttd-cap-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .ttd-cap-spacer {
+            width: 55%;
+        }
+
+        .ttd-cap-content {
+            width: 45%;
+            text-align: center;
+            vertical-align: top;
+        }
+
+        .ttd-cap-location {
+            font-size: 11px;
+            color: #333;
+            margin-bottom: 4px;
+        }
+
+        .ttd-cap-company {
+            font-size: 11px;
+            font-weight: bold;
+            color: #1a1a1a;
+            margin-bottom: 10px;
+        }
+
+        .ttd-cap-signature-area {
+            position: relative;
+            height: 110px;
+            width: 100%;
+            margin-bottom: 8px;
+        }
+
+        /* TTD di TENGAH */
+        .ttd-cap-signature-area .ttd-image {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            max-height: 90px;
+            max-width: 150px;
+            z-index: 2;
+        }
+
+        /* Cap geser kanan, overlap ~30% dengan TTD */
+        .ttd-cap-signature-area .cap-image {
+            position: absolute;
+            top: 55%;
+            left: 60%;
+            transform: translate(-50%, -50%);
+            max-height: 100px;
+            max-width: 100px;
+            opacity: 0.85;
+            z-index: 1;
+        }
+
+        .ttd-cap-name {
+            font-size: 11px;
+            color: #1a1a1a;
+            border-top: 1px solid #333;
+            padding-top: 4px;
+            margin-top: 4px;
+        }
+
+        .ttd-cap-jabatan {
+            font-size: 10px;
+            color: #666;
+            margin-top: 2px;
+        }
+
         /* ==========================================
            PAGE MARGIN
            ========================================== */
         @page {
-            margin: 10px;
-            margin-bottom: 40px;
+            margin: 12px;
+            margin-bottom: 45px;
         }
 
         .footer-table {
@@ -597,73 +694,84 @@
 <body>
 
     <!-- ==========================================
-    HALAMAN 1: LOGO FULL PAGE
-    ========================================== -->
+         LEMBAR 1: INVOICE
+         ========================================== -->
+
+    <!-- HEADER DENGAN LOGO KIRI + INFO -->
+    <div class="header">
+        <div class="header-container">
+
+            {{-- LOGO DI KIRI --}}
+            <div class="header-logo-left">
+                @if (!empty($logoBase64))
+                    <img src="{{ $logoBase64 }}" alt="Logo" class="logo-img">
+                @else
+                    <div style="font-size:50px; color:#D4A017; font-weight:bold;">🏛️</div>
+                @endif
+            </div>
+
+            {{-- INFO PERUSAHAAN --}}
+            <div class="header-content">
+                <div class="company-name">PT. BERKAH ARRUM HARAMAIN</div>
+
+                <table class="header-detail-table">
+                    <tr>
+                        <td class="detail-label">Alamat</td>
+                        <td class="detail-value">: Jl. Munif Rahman 2. No. 33. Kota Palu, Sulawesi Tengah, Indonesia
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="detail-label">Telepon</td>
+                        <td class="detail-value">: 082237100071 - 082215127565</td>
+                    </tr>
+                    <tr>
+                        <td class="detail-label">Email</td>
+                        <td class="detail-value">: arrumtourpalu@gmail.com</td>
+                    </tr>
+                </table>
+            </div>
+
+        </div>
+
+        <div class="header-line"></div>
+    </div>
+
+    <!-- INFO JAMAAH -->
     @php
-        $logoPath = public_path('assets/logo.PNG');
-        $logoBase64 = '';
-        $logoExists = false;
-        if (file_exists($logoPath) && filesize($logoPath) < 200000) {
-            $logoData = file_get_contents($logoPath);
-            $logoBase64 = 'data:image/png;base64,' . base64_encode($logoData);
-            $logoExists = true;
-        }
+        $bulanNama = [
+            1 => 'Januari',
+            2 => 'Februari',
+            3 => 'Maret',
+            4 => 'April',
+            5 => 'Mei',
+            6 => 'Juni',
+            7 => 'Juli',
+            8 => 'Agustus',
+            9 => 'September',
+            10 => 'Oktober',
+            11 => 'November',
+            12 => 'Desember',
+        ];
+
+        $statusColors = [
+            'Belum Bayar' => 'badge-belum',
+            'DP' => 'badge-dp',
+            'Setoran' => 'badge-setoran',
+            'Lunas' => 'badge-lunas',
+        ];
+
+        $keberangkatanSorted = $jamaah->keberangkatan->sortBy([
+            'pivot.tahun_keberangkatan',
+            'pivot.bulan_keberangkatan',
+        ]);
     @endphp
 
-    <div class="logo-page">
-        @if ($logoExists && $logoBase64)
-            <img src="{{ $logoBase64 }}" alt="Logo PT. BERKAH ARRUM HARAMAIN" class="logo-big">
-        @else
-            <div style="font-size:60px; color:#D4A017; font-weight:bold; margin-bottom:30px;">🏛️</div>
-        @endif
-        <div class="company-name-big">PT. BERKAH ARRUM HARAMAIN</div>
-        <div class="separator-line"></div>
-        <div class="company-address-big">
-            Jl. Munif Rahman 2, No. 33, Kota Palu<br>
-            Sulawesi Tengah, Indonesia
-        </div>
-        <div class="company-phone-big">
-            Telp: 082237100071 - 082215127565<br>
-            Email: arrumtourpalu@gmail.com
-        </div>
-        <div style="margin-top:20px; font-size:12px; color:#999;">
-            Dokumen Resmi - Riwayat Pembayaran Jamaah
-        </div>
-    </div>
-
-    <!-- ==========================================
-    PAGE BREAK - HALAMAN BERIKUTNYA
-    ========================================== -->
-    <div class="page-break"></div>
-
-    <!-- ==========================================
-    HEADER DENGAN LOGO KECIL
-    ========================================== -->
-    <div class="header">
-        <div class="logo-container">
-            @if ($logoBase64)
-                <img src="{{ $logoBase64 }}" alt="Logo PT. BERKAH ARRUM HARAMAIN" class="logo-img">
-            @endif
-            <div class="logo-text">PT. BERKAH ARRUM HARAMAIN</div>
-        </div>
-        <div class="subtitle">Riwayat Pembayaran Jamaah</div>
-        <div class="company-info">
-            Jl. Munif Rahman 2, No. 33, Kota Palu | Sulawesi Tengah, Indonesia
-            <br>
-            Telp: 082237100071 - 082215127565 | Email: arrumtourpalu@gmail.com
-        </div>
-        <div class="line"></div>
-    </div>
-
-    <!-- ==========================================
-    INFO JAMAHAH
-    ========================================== -->
     <table class="info-table">
         <tr>
             <td class="label">Nama Lengkap</td>
             <td class="value"><strong>{{ $jamaah->nama_lengkap }}</strong></td>
             <td class="label">ID Keberangkatan</td>
-            <td class="value">{{ $jamaah->id_keberangkatan ?? '-' }}</td>
+            <td class="value"><strong>{{ $jamaah->id_keberangkatan ?? '-' }}</strong></td>
         </tr>
         <tr>
             <td class="label">Produk Paket</td>
@@ -672,31 +780,42 @@
             <td class="value">{{ $jamaah->kota_asal ?? '-' }}</td>
         </tr>
         <tr>
-            <td class="label">Status Pembayaran</td>
+            <td class="label">Bulan Keberangkatan</td>
             <td class="value" colspan="3">
-                @php
-                    $statusColors = [
-                        'Belum Bayar' => 'badge-belum',
-                        'DP' => 'badge-dp',
-                        'Setoran' => 'badge-setoran',
-                        'Lunas' => 'badge-lunas',
-                    ];
-                @endphp
+                @forelse ($keberangkatanSorted as $keb)
+                    <span class="keb-badge">
+                        {{ $bulanNama[$keb->pivot->bulan_keberangkatan] ?? '-' }}
+                        {{ $keb->pivot->tahun_keberangkatan ?? '-' }}
+                    </span>
+                @empty
+                    @if ($jamaah->bulan_keberangkatan && $jamaah->tahun_keberangkatan)
+                        <span class="keb-badge">
+                            {{ $bulanNama[$jamaah->bulan_keberangkatan] ?? '-' }}
+                            {{ $jamaah->tahun_keberangkatan }}
+                        </span>
+                    @else
+                        <span class="text-muted">-</span>
+                    @endif
+                @endforelse
+            </td>
+        </tr>
+        <tr>
+            <td class="label">Status Pembayaran</td>
+            <td class="value">
                 <span class="badge-status {{ $statusColors[$jamaah->status_pembayaran] ?? 'badge-belum' }}">
                     {{ $jamaah->status_pembayaran }}
                 </span>
-                @if ($jamaah->catatan_tambahan)
-                    <span style="margin-left:8px; font-size:9px; color:#888;">
-                        <i>Catatan: {{ $jamaah->catatan_tambahan }}</i>
-                    </span>
-                @endif
+            </td>
+            <td class="label">Catatan</td>
+            <td class="value">
+                <span style="font-size:11px; color:#888;">
+                    <i>{{ $jamaah->catatan_tambahan ?? '-' }}</i>
+                </span>
             </td>
         </tr>
     </table>
 
-    <!-- ==========================================
-    SUMMARY
-    ========================================== -->
+    <!-- SUMMARY -->
     <table class="summary-table">
         <tr>
             <td>
@@ -715,9 +834,7 @@
         </tr>
     </table>
 
-    <!-- ==========================================
-    TABLE RIWAYAT PEMBAYARAN
-    ========================================== -->
+    <!-- TABLE RIWAYAT PEMBAYARAN -->
     <div class="table-wrapper">
         <div class="table-header">
             <h3>Riwayat Pembayaran</h3>
@@ -727,12 +844,12 @@
         <table class="riwayat">
             <thead>
                 <tr>
-                    <th style="width:5%;">#</th>
-                    <th style="width:15%;">Tanggal</th>
-                    <th style="width:20%;">Metode</th>
-                    <th style="width:15%;">Jenis</th>
-                    <th style="width:20%;text-align:right;">Jumlah</th>
-                    <th style="width:25%;">Keterangan</th>
+                    <th style="width: 5%;">#</th>
+                    <th style="width: 15%;">Tanggal</th>
+                    <th style="width: 22%;">Metode</th>
+                    <th style="width: 15%;">Jenis</th>
+                    <th style="width: 20%; text-align: right;">Jumlah</th>
+                    <th style="width: 23%;">Keterangan</th>
                 </tr>
             </thead>
             <tbody>
@@ -777,7 +894,7 @@
                     </tr>
                 @empty
                     <tr>
-                        <td colspan="6" class="text-center text-muted" style="padding:15px;">
+                        <td colspan="6" class="text-center text-muted" style="padding: 20px;">
                             Belum ada riwayat pembayaran
                         </td>
                     </tr>
@@ -792,8 +909,50 @@
     </div>
 
     <!-- ==========================================
-    LAMPIRAN BUKTI PEMBAYARAN (HALAMAN BARU)
-    ========================================== -->
+         LEMBAR 2: SYARAT DAN KETENTUAN
+         ========================================== -->
+    <div class="page-break"></div>
+
+    <div class="syarat-wrapper">
+        <div class="syarat-header">
+            <h3>SYARAT DAN KETENTUAN</h3>
+        </div>
+        <div class="syarat-content">
+            <ol>
+                <li>Jamaah wajib melakukan pembayaran sesuai nominal dan tanggal jatuh tempo yang tertera pada invoice.
+                </li>
+                <li>Pembayaran dianggap sah setelah dana diterima di rekening resmi perusahaan.</li>
+                <li>DP yang telah dibayarkan bersifat mengikat dan menjadi bagian dari total biaya paket.</li>
+                <li>DP tidak dapat dikembalikan (non-refundable), kecuali dalam kondisi tertentu sesuai kebijakan
+                    perusahaan.</li>
+                <li>Pelunasan biaya umroh wajib dilakukan maksimal 45 hari sebelum tanggal keberangkatan.</li>
+                <li>Pembatalan yang dilakukan oleh jamaah akan dikenakan biaya pembatalan dengan ketentuan:
+                    <ul>
+                        <li>≥ 30 hari sebelum keberangkatan: potongan 25%.</li>
+                        <li>15–29 hari sebelum keberangkatan: potongan 35%.</li>
+                        <li>&lt; 14 hari sebelum keberangkatan: tidak ada pengembalian dana 100%.</li>
+                    </ul>
+                </li>
+                <li>Pihak travel berhak membatalkan keberangkatan jika terjadi kondisi tertentu (misalnya kuota tidak
+                    terpenuhi atau kebijakan pemerintah).</li>
+                <li>Dana jamaah akan dikembalikan atau dialihkan ke jadwal berikutnya sesuai kesepakatan.</li>
+                <li>Perubahan jadwal oleh jamaah dapat dilakukan sesuai ketersediaan (jika ada).</li>
+                <li>Perubahan dari pihak travel akan diinformasikan kepada jamaah secepatnya.</li>
+                <li>Jamaah wajib melengkapi dokumen (paspor, vaksin, dll) sesuai ketentuan yang berlaku.</li>
+                <li>Keterlambatan atau ketidaklengkapannya dokumen menjadi tanggung jawab jamaah.</li>
+                <li>Keadaan di luar kendali (bencana alam, wabah, kebijakan pemerintah, dll) yang menyebabkan perubahan
+                    jadwal atau pembatalan tidak menjadi tanggung jawab penuh pihak travel.</li>
+                <li>Jamaah wajib mengikuti aturan perjalanan, termasuk ketentuan maskapai, imigrasi, dan aturan di Arab
+                    Saudi.</li>
+                <li>Segala pelanggaran menjadi tanggung jawab pribadi jamaah.</li>
+                <li>Hal-hal yang belum diatur akan diselesaikan secara musyawarah dan kesepakatan bersama.</li>
+            </ol>
+        </div>
+    </div>
+
+    <!-- ==========================================
+         LEMBAR 3: LAMPIRAN BUKTI PEMBAYARAN
+         ========================================== -->
     @php
         $transaksiDenganBukti = $transaksis->filter(function ($t) {
             return ($t->bukti_exists ?? false) && !empty($t->bukti_base64);
@@ -842,13 +1001,13 @@
                         <div class="lampiran-file">
                             <span class="icon">📄 PDF</span>
                             <div class="filename">{{ Str::limit($buktiName, 25) }}</div>
-                            <div style="font-size: 7px; color: #999; margin-top: 2px;">File PDF</div>
+                            <div style="font-size: 8px; color: #999; margin-top: 3px;">File PDF</div>
                         </div>
                     @else
                         <div class="lampiran-file">
                             <span class="icon">📎 FILE</span>
                             <div class="filename">{{ Str::limit($buktiName, 25) }}</div>
-                            <div style="font-size: 7px; color: #999; margin-top: 2px;">File</div>
+                            <div style="font-size: 8px; color: #999; margin-top: 3px;">File</div>
                         </div>
                     @endif
 
@@ -862,61 +1021,54 @@
     @endif
 
     <!-- ==========================================
-    SYARAT DAN KETENTUAN (HALAMAN BARU)
-    ========================================== -->
-    <div class="page-break"></div>
+         TANDA TANGAN & CAP PERUSAHAAN
+         ========================================== -->
+    @if (!empty($ttdBase64) || !empty($capBase64))
+        <div class="ttd-cap-wrapper">
+            <table class="ttd-cap-table">
+                <tr>
+                    <td class="ttd-cap-spacer"></td>
+                    <td class="ttd-cap-content">
+                        <div class="ttd-cap-location">
+                            Palu, {{ $tanggal_cetak ? date('d F Y', strtotime($tanggal_cetak)) : date('d F Y') }}
+                        </div>
+                        <div class="ttd-cap-company">PT. BERKAH ARRUM HARAMAIN</div>
 
-    <div class="syarat-wrapper">
-        <div class="syarat-header">
-            <h3>SYARAT DAN KETENTUAN</h3>
-        </div>
-        <div class="syarat-content">
-            <ol>
-                <li>Jamaah wajib melakukan pembayaran sesuai nominal dan tanggal jatuh tempo yang tertera pada invoice.
-                </li>
-                <li>Pembayaran dianggap sah setelah dana diterima di rekening resmi perusahaan.</li>
-                <li>DP yang telah dibayarkan bersifat mengikat dan menjadi bagian dari total biaya paket.</li>
-                <li>DP tidak dapat dikembalikan (non-refundable), kecuali dalam kondisi tertentu sesuai kebijakan
-                    perusahaan.</li>
-                <li>Pelunasan biaya umroh wajib dilakukan maksimal 45 hari sebelum tanggal keberangkatan.</li>
-                <li>Pembatalan yang dilakukan oleh jamaah akan dikenakan biaya pembatalan dengan ketentuan:
-                    <ul>
-                        <li>≥ 30 hari sebelum keberangkatan: potongan 25%.</li>
-                        <li>15–29 hari sebelum keberangkatan: potongan 35%.</li>
-                        <li>&lt; 14 hari sebelum keberangkatan: tidak ada pengembalian dana 100%.</li>
-                    </ul>
-                </li>
-                <li>Pihak travel berhak membatalkan keberangkatan jika terjadi kondisi tertentu.</li>
-                <li>Dana jamaah akan dikembalikan atau dialihkan ke jadwal berikutnya sesuai kesepakatan.</li>
-                <li>Perubahan jadwal oleh jamaah dapat dilakukan sesuai ketersediaan.</li>
-                <li>Perubahan dari pihak travel akan diinformasikan kepada jamaah secepatnya.</li>
-                <li>Jamaah wajib melengkapi dokumen (paspor, vaksin, dll) sesuai ketentuan.</li>
-                <li>Keterlambatan atau ketidaklengkapannya dokumen menjadi tanggung jawab jamaah.</li>
-                <li>Keadaan di luar kendali (bencana alam, wabah, kebijakan pemerintah, dll) yang menyebabkan perubahan
-                    jadwal atau pembatalan tidak menjadi tanggung jawab penuh pihak travel.</li>
-                <li>Jamaah wajib mengikuti aturan perjalanan, termasuk ketentuan maskapai, imigrasi, dan aturan di Arab
-                    Saudi.</li>
-                <li>Segala pelanggaran menjadi tanggung jawab pribadi jamaah.</li>
-                <li>Hal-hal yang belum diatur akan diselesaikan secara musyawarah dan kesepakatan bersama.</li>
-            </ol>
-        </div>
-    </div>
+                        <div class="ttd-cap-signature-area">
+                            @if (!empty($capBase64))
+                                <img src="{{ $capBase64 }}" alt="Cap" class="cap-image">
+                            @endif
+                            @if (!empty($ttdBase64))
+                                <img src="{{ $ttdBase64 }}" alt="TTD" class="ttd-image">
+                            @endif
+                        </div>
 
-    <!-- ==========================================
-    FOOTER
-    ========================================== -->
+                        <div class="ttd-cap-name">
+                            <strong>{{ $ttdNama ?? '(...................................)' }}</strong>
+                        </div>
+                        <div class="ttd-cap-jabatan">
+                            {{ $ttdJabatan ?? 'Direktur' }}
+                        </div>
+                    </td>
+                </tr>
+            </table>
+        </div>
+    @endif
+
+    <!-- FOOTER -->
     <table class="footer-table">
         <tr>
             <td class="footer-left">
                 <span class="company">PT. BERKAH ARRUM HARAMAIN</span>
                 <span class="separator">|</span>
-                <span class="printed-by">Dicetak oleh: {{ $dicetak_oleh ?? (auth()->user()->name ?? 'System') }}</span>
+                <span class="printed-by">Dicetak oleh:
+                    {{ $dicetak_oleh ?? (auth()->user()->name ?? 'System') }}</span>
             </td>
             <td class="footer-center"></td>
             <td class="footer-right">
                 <span class="date">{{ $tanggal_cetak ?? date('d/m/Y H:i') }}</span>
                 <span class="separator">|</span>
-                <span class="note">Dokumen sah</span>
+                <span class="note">Dokumen sah sebagai bukti</span>
             </td>
         </tr>
     </table>

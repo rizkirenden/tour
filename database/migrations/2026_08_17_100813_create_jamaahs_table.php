@@ -41,6 +41,8 @@ return new class extends Migration
             $table->string('kota_asal', 50)->nullable();
             $table->string('pulau', 20)->nullable();
             $table->string('bandara_keberangkatan', 50)->nullable();
+             $table->integer('bulan_harga')->nullable();
+            $table->integer('tahun_harga')->nullable();
             $table->integer('bulan_keberangkatan')->nullable();
             $table->integer('tahun_keberangkatan')->nullable();
 

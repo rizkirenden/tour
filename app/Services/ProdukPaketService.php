@@ -57,7 +57,7 @@ class ProdukPaketService
     {
         return DB::transaction(function () use ($data) {
             $data['include_tur'] = $data['include_tur'] ?? false;
-            $data['is_active'] = $data['is_active'] ?? true;
+            $data['is_active']   = $data['is_active'] ?? true;
 
             if (!$data['include_tur']) {
                 $data['paket_tour_id'] = null;
@@ -85,28 +85,31 @@ class ProdukPaketService
 
             $produk = ProdukPaket::create($data);
 
+            // ============ Harga Bulanan ============
             if (!empty($data['harga_bulanan'])) {
                 foreach ($data['harga_bulanan'] as $hargaData) {
                     if (!empty($hargaData['bulan']) && !empty($hargaData['tahun']) && isset($hargaData['harga'])) {
                         ProdukHargaBulanan::create([
                             'produk_paket_id' => $produk->id_produk,
-                            'bulan' => $hargaData['bulan'],
-                            'tahun' => $hargaData['tahun'],
-                            'harga' => (int) $hargaData['harga'],
-                            'flyer' => $hargaData['flyer'] ?? null,
-                            'is_active' => $hargaData['is_active'] ?? true,
+                            'bulan'           => $hargaData['bulan'],
+                            'tahun'           => $hargaData['tahun'],
+                            'harga'           => (int) $hargaData['harga'],
+                            'kuota'           => (int) ($hargaData['kuota'] ?? 0),   // <-- KUOTA
+                            'flyer'           => $hargaData['flyer'] ?? null,
+                            'is_active'       => $hargaData['is_active'] ?? true,
                         ]);
                     }
                 }
             }
 
+            // ============ Keberangkatan ============
             foreach ($keberangkatanData as $k) {
                 if (!empty($k['bulan']) && !empty($k['tahun'])) {
                     ProdukKeberangkatan::create([
                         'produk_paket_id' => $produk->id_produk,
-                        'bulan' => $k['bulan'],
-                        'tahun' => $k['tahun'],
-                        'is_active' => $k['is_active'] ?? true,
+                        'bulan'           => $k['bulan'],
+                        'tahun'           => $k['tahun'],
+                        'is_active'       => $k['is_active'] ?? true,
                     ]);
                 }
             }
@@ -121,7 +124,7 @@ class ProdukPaketService
             $produk = $this->getById($id);
 
             $data['include_tur'] = $data['include_tur'] ?? false;
-            $data['is_active'] = $data['is_active'] ?? true;
+            $data['is_active']   = $data['is_active'] ?? true;
 
             if (!$data['include_tur']) {
                 $data['paket_tour_id'] = null;
@@ -177,27 +180,29 @@ class ProdukPaketService
                     if (!empty($hargaData['bulan']) && !empty($hargaData['tahun']) && isset($hargaData['harga'])) {
                         if (!empty($hargaData['id'])) {
                             ProdukHargaBulanan::where('id', $hargaData['id'])->update([
-                                'bulan' => $hargaData['bulan'],
-                                'tahun' => $hargaData['tahun'],
-                                'harga' => (int) $hargaData['harga'],
-                                'flyer' => $hargaData['flyer'] ?? null,
+                                'bulan'     => $hargaData['bulan'],
+                                'tahun'     => $hargaData['tahun'],
+                                'harga'     => (int) $hargaData['harga'],
+                                'kuota'     => (int) ($hargaData['kuota'] ?? 0),   // <-- KUOTA
+                                'flyer'     => $hargaData['flyer'] ?? null,
                                 'is_active' => $hargaData['is_active'] ?? true,
                             ]);
                         } else {
                             ProdukHargaBulanan::create([
                                 'produk_paket_id' => $produk->id_produk,
-                                'bulan' => $hargaData['bulan'],
-                                'tahun' => $hargaData['tahun'],
-                                'harga' => (int) $hargaData['harga'],
-                                'flyer' => $hargaData['flyer'] ?? null,
-                                'is_active' => $hargaData['is_active'] ?? true,
+                                'bulan'           => $hargaData['bulan'],
+                                'tahun'           => $hargaData['tahun'],
+                                'harga'           => (int) $hargaData['harga'],
+                                'kuota'           => (int) ($hargaData['kuota'] ?? 0),   // <-- KUOTA
+                                'flyer'           => $hargaData['flyer'] ?? null,
+                                'is_active'       => $hargaData['is_active'] ?? true,
                             ]);
                         }
                     }
                 }
             }
 
-            // ============ Keberangkatan (multiple) ============
+            // ============ Keberangkatan ============
             if (isset($data['keberangkatan'])) {
                 $keepIds = [];
                 foreach ($keberangkatanData as $k) {
@@ -216,16 +221,16 @@ class ProdukPaketService
                     if (!empty($k['bulan']) && !empty($k['tahun'])) {
                         if (!empty($k['id'])) {
                             ProdukKeberangkatan::where('id', $k['id'])->update([
-                                'bulan' => $k['bulan'],
-                                'tahun' => $k['tahun'],
+                                'bulan'     => $k['bulan'],
+                                'tahun'     => $k['tahun'],
                                 'is_active' => $k['is_active'] ?? true,
                             ]);
                         } else {
                             ProdukKeberangkatan::create([
                                 'produk_paket_id' => $produk->id_produk,
-                                'bulan' => $k['bulan'],
-                                'tahun' => $k['tahun'],
-                                'is_active' => $k['is_active'] ?? true,
+                                'bulan'           => $k['bulan'],
+                                'tahun'           => $k['tahun'],
+                                'is_active'       => $k['is_active'] ?? true,
                             ]);
                         }
                     }
@@ -264,8 +269,8 @@ class ProdukPaketService
             $produk->save();
 
             return [
-                'nama' => $produk->nama_produk,
-                'status' => $produk->is_active ? 'diaktifkan' : 'dinonaktifkan',
+                'nama'      => $produk->nama_produk,
+                'status'    => $produk->is_active ? 'diaktifkan' : 'dinonaktifkan',
                 'is_active' => $produk->is_active
             ];
         });
@@ -279,10 +284,10 @@ class ProdukPaketService
         }
 
         return [
-            'durasi_hari' => $paketTour->durasi_hari ?? 0,
-            'kota_tujuan' => $paketTour->kota_tujuan,
-            'negara' => $paketTour->negara,
-            'deskripsi' => $paketTour->deskripsi,
+            'durasi_hari'       => $paketTour->durasi_hari ?? 0,
+            'kota_tujuan'       => $paketTour->kota_tujuan,
+            'negara'            => $paketTour->negara,
+            'deskripsi'         => $paketTour->deskripsi,
             'total_harga_hotel' => $paketTour->total_harga_hotel_formatted ?? 'Rp 0',
         ];
     }

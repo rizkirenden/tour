@@ -188,10 +188,6 @@
                                 <dd class="font-medium text-gray-700">{{ $jamaah->produk_paket }}</dd>
                             </div>
                             <div class="flex justify-between text-sm border-b border-gray-100 pb-2">
-                                <dt class="text-gray-500">Jenis Pendampingan</dt>
-                                <dd class="font-medium text-gray-700">{{ $jamaah->jenis_pendampingan ?? '-' }}</dd>
-                            </div>
-                            <div class="flex justify-between text-sm border-b border-gray-100 pb-2">
                                 <dt class="text-gray-500">Kota Asal</dt>
                                 <dd class="font-medium text-gray-700">{{ $jamaah->kota_asal ?? '-' }}</dd>
                             </div>
@@ -203,27 +199,97 @@
                                 <dt class="text-gray-500">Bandara Keberangkatan</dt>
                                 <dd class="font-medium text-gray-700">{{ $jamaah->bandara_keberangkatan ?? '-' }}</dd>
                             </div>
-                            <div class="flex justify-between text-sm">
-                                <dt class="text-gray-500">Bulan/Tahun Keberangkatan</dt>
-                                <dd class="font-medium text-gray-700">
-                                    @if ($jamaah->bulan_keberangkatan)
-                                        {{ date('F', mktime(0, 0, 0, $jamaah->bulan_keberangkatan, 1)) }}
-                                        {{ $jamaah->tahun_keberangkatan }}
-                                    @else
-                                        -
-                                    @endif
-                                </dd>
-                            </div>
                         </dl>
                     </div>
 
-                    <!-- Agent & Pendampingan -->
-                    <div class="bg-gray-50 rounded-xl p-5 border border-gray-100">
+                    <!-- Keberangkatan & Harga (Multiple) -->
+                    <div class="bg-gray-50 rounded-xl p-5 border border-gray-100 lg:col-span-2">
                         <h6 class="text-sm font-semibold text-gray-700 mb-4 flex items-center">
-                            <i class="fas fa-handshake text-yellow-500 mr-2"></i> Agent & Pendampingan
+                            <i class="fas fa-calendar-check text-yellow-500 mr-2"></i> Keberangkatan & Harga
                         </h6>
 
-                        <!-- Agent -->
+                        @php
+                            $bulanNama = [
+                                1 => 'Januari',
+                                2 => 'Februari',
+                                3 => 'Maret',
+                                4 => 'April',
+                                5 => 'Mei',
+                                6 => 'Juni',
+                                7 => 'Juli',
+                                8 => 'Agustus',
+                                9 => 'September',
+                                10 => 'Oktober',
+                                11 => 'November',
+                                12 => 'Desember',
+                            ];
+                        @endphp
+
+                        @if ($jamaah->keberangkatan->isEmpty())
+                            <p class="text-sm text-gray-400 text-center py-3">Tidak ada data keberangkatan</p>
+                        @else
+                            <div class="overflow-x-auto">
+                                <table class="w-full text-sm">
+                                    <thead>
+                                        <tr class="border-b border-gray-200">
+                                            <th class="px-3 py-2 text-left text-xs font-semibold text-gray-500 uppercase">
+                                                No</th>
+                                            <th class="px-3 py-2 text-left text-xs font-semibold text-gray-500 uppercase">
+                                                Bulan/Tahun Keberangkatan</th>
+                                            <th class="px-3 py-2 text-left text-xs font-semibold text-gray-500 uppercase">
+                                                Bulan/Tahun Harga</th>
+                                            <th class="px-3 py-2 text-right text-xs font-semibold text-gray-500 uppercase">
+                                                Harga</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @foreach ($jamaah->keberangkatan->sortBy(['pivot.tahun_keberangkatan', 'pivot.bulan_keberangkatan']) as $index => $keb)
+                                            <tr class="border-b border-gray-100 hover:bg-white">
+                                                <td class="px-3 py-2 text-gray-500">{{ $index + 1 }}</td>
+                                                <td class="px-3 py-2">
+                                                    <span
+                                                        class="inline-flex items-center gap-1 px-2 py-1 bg-blue-100 text-blue-700 rounded-lg text-xs font-medium">
+                                                        <i class="fas fa-plane text-[10px]"></i>
+                                                        {{ $bulanNama[$keb->pivot->bulan_keberangkatan] }}
+                                                        {{ $keb->pivot->tahun_keberangkatan }}
+                                                    </span>
+                                                </td>
+                                                <td class="px-3 py-2">
+                                                    @if ($keb->pivot->bulan_harga && $keb->pivot->tahun_harga)
+                                                        @if (
+                                                            $keb->pivot->bulan_harga != $keb->pivot->bulan_keberangkatan ||
+                                                                $keb->pivot->tahun_harga != $keb->pivot->tahun_keberangkatan)
+                                                            <span
+                                                                class="inline-flex items-center gap-1 px-2 py-1 bg-green-100 text-green-700 rounded-lg text-xs font-medium">
+                                                                <i class="fas fa-tag text-[10px]"></i>
+                                                                {{ $bulanNama[$keb->pivot->bulan_harga] }}
+                                                                {{ $keb->pivot->tahun_harga }}
+                                                            </span>
+                                                        @else
+                                                            <span class="text-xs text-gray-400 italic">Sama dengan
+                                                                keberangkatan</span>
+                                                        @endif
+                                                    @else
+                                                        <span class="text-xs text-gray-400 italic">-</span>
+                                                    @endif
+                                                </td>
+                                                <td class="px-3 py-2 text-right font-medium text-green-600">
+                                                    Rp {{ number_format($keb->pivot->harga, 0, ',', '.') }}
+                                                </td>
+                                            </tr>
+                                        @endforeach
+                                    </tbody>
+                                </table>
+                            </div>
+                        @endif
+                    </div>
+
+                    <!-- Agent & Pembuatan Passport -->
+                    <div class="bg-gray-50 rounded-xl p-5 border border-gray-100">
+                        <h6 class="text-sm font-semibold text-gray-700 mb-4 flex items-center">
+                            <i class="fas fa-handshake text-yellow-500 mr-2"></i> Agent & Pembuatan Passport
+                        </h6>
+
                         <div class="mb-3 pb-3 border-b border-gray-200">
                             <h6 class="text-xs font-semibold text-blue-600 mb-2 flex items-center">
                                 <i class="fas fa-user-tie mr-1"></i> Agent
@@ -240,40 +306,60 @@
                             </dl>
                         </div>
 
-                        <!-- Pendampingan -->
                         <div>
                             <h6 class="text-xs font-semibold text-green-600 mb-2 flex items-center">
-                                <i class="fas fa-users mr-1"></i> Pendampingan
+                                <i class="fas fa-passport mr-1"></i> Pembuatan Passport
                             </h6>
                             <dl class="space-y-2">
+                                @if (!empty($jamaah->pendampingan_nama))
+                                    <div class="flex justify-between text-sm">
+                                        <dt class="text-gray-500">
+                                            Nama Pembuat Passport
+                                            <span class="text-gray-400 text-xs">(Pembuatan passport)</span>
+                                        </dt>
+                                        <dd class="font-medium text-gray-700">{{ $jamaah->pendampingan_nama }}</dd>
+                                    </div>
+                                @endif
                                 <div class="flex justify-between text-sm">
-                                    <dt class="text-gray-500">Nama Pendamping</dt>
-                                    <dd class="font-medium text-gray-700">{{ $jamaah->pendampingan_nama_formatted }}</dd>
-                                </div>
-                                <div class="flex justify-between text-sm">
-                                    <dt class="text-gray-500">Fee Pendamping</dt>
+                                    <dt class="text-gray-500">
+                                        Biaya Pembuatan Passport
+                                        <span class="text-gray-400 text-xs">(Pembayaran passport)</span>
+                                    </dt>
                                     <dd class="font-medium text-green-600">{{ $jamaah->pendampingan_fee_formatted }}</dd>
                                 </div>
                                 <div class="flex justify-between text-sm">
-                                    <dt class="text-gray-500">Fee Petugas</dt>
+                                    <dt class="text-gray-500">
+                                        Fee Petugas
+                                        <span class="text-gray-400 text-xs">(Pendapatan perusahaan)</span>
+                                    </dt>
                                     <dd class="font-medium text-purple-600">
-                                        {{ $jamaah->pendampingan_fee_petugas_formatted }}</dd>
+                                        {{ $jamaah->pendampingan_fee_petugas_formatted }}
+                                    </dd>
+                                </div>
+                                <div class="flex justify-between text-sm pt-2 border-t border-gray-200">
+                                    <dt class="text-gray-600 font-medium">
+                                        Total Pembuatan Passport
+                                        <span class="text-gray-400 text-xs">(Biaya + Fee Petugas)</span>
+                                    </dt>
+                                    <dd class="font-bold text-blue-600">
+                                        Rp
+                                        {{ number_format(($jamaah->pendampingan_fee ?? 0) + ($jamaah->pendampingan_fee_petugas ?? 0), 0, ',', '.') }}
+                                    </dd>
                                 </div>
                             </dl>
                         </div>
 
-                        <!-- Informasi Catatan -->
                         <div class="mt-3 pt-3 border-t border-gray-200">
                             <p class="text-xs text-gray-400">
                                 <i class="fas fa-info-circle mr-1"></i>
-                                Fee Agent & Pendampingan adalah informasi tambahan dan <span
+                                Fee Agent & Pembuatan Passport adalah informasi tambahan dan <span
                                     class="text-red-500 font-medium">TIDAK</span> termasuk dalam total tagihan
                             </p>
                         </div>
                     </div>
 
                     <!-- Keuangan -->
-                    <div class="bg-gray-50 rounded-xl p-5 border border-gray-100 lg:col-span-2">
+                    <div class="bg-gray-50 rounded-xl p-5 border border-gray-100">
                         <h6 class="text-sm font-semibold text-gray-700 mb-4 flex items-center">
                             <i class="fas fa-money-bill-wave text-yellow-500 mr-2"></i> Keuangan
                         </h6>
@@ -322,117 +408,59 @@
                         </h6>
 
                         <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
-                            <!-- KTP/KK -->
-                            <div class="bg-white rounded-lg p-3 border border-gray-200 text-center">
-                                <p class="text-xs text-gray-500 mb-2">KTP / KK</p>
-                                @if ($jamaah->file_ktp_kk_url)
-                                    <a href="{{ $jamaah->file_ktp_kk_url }}" target="_blank"
-                                        class="inline-flex items-center justify-center w-24 h-24 bg-gray-100 rounded-lg mx-auto border border-gray-200 hover:shadow-lg transition">
-                                        @if ($jamaah->file_ktp_kk_type == 'pdf')
-                                            <i class="fas fa-file-pdf text-5xl text-red-500"></i>
-                                        @else
-                                            <img src="{{ $jamaah->file_ktp_kk_url }}" alt="KTP/KK"
-                                                class="w-24 h-24 object-cover rounded-lg">
-                                        @endif
-                                    </a>
-                                    <p class="text-xs text-gray-400 mt-2">
-                                        <a href="{{ $jamaah->file_ktp_kk_url }}" target="_blank"
-                                            class="text-blue-500 hover:text-blue-700">
-                                            <i class="fas fa-eye mr-1"></i> Lihat
-                                        </a>
-                                    </p>
-                                @else
-                                    <div
-                                        class="w-24 h-24 bg-gray-100 rounded-lg mx-auto flex items-center justify-center border border-gray-200">
-                                        <i class="fas fa-file text-4xl text-gray-300"></i>
-                                    </div>
-                                    <p class="text-xs text-gray-400 mt-2">Tidak ada file</p>
-                                @endif
-                            </div>
+                            @php
+                                $docs = [
+                                    [
+                                        'label' => 'KTP / KK',
+                                        'url' => $jamaah->file_ktp_kk_url,
+                                        'type' => $jamaah->file_ktp_kk_type,
+                                    ],
+                                    [
+                                        'label' => 'Vaksin',
+                                        'url' => $jamaah->file_vaksin_url,
+                                        'type' => $jamaah->file_vaksin_type,
+                                    ],
+                                    [
+                                        'label' => 'Visa',
+                                        'url' => $jamaah->file_visa_url,
+                                        'type' => $jamaah->file_visa_type,
+                                    ],
+                                    [
+                                        'label' => 'Passport',
+                                        'url' => $jamaah->file_paspor_url,
+                                        'type' => $jamaah->file_paspor_type,
+                                    ],
+                                ];
+                            @endphp
 
-                            <!-- Vaksin -->
-                            <div class="bg-white rounded-lg p-3 border border-gray-200 text-center">
-                                <p class="text-xs text-gray-500 mb-2">Vaksin</p>
-                                @if ($jamaah->file_vaksin_url)
-                                    <a href="{{ $jamaah->file_vaksin_url }}" target="_blank"
-                                        class="inline-flex items-center justify-center w-24 h-24 bg-gray-100 rounded-lg mx-auto border border-gray-200 hover:shadow-lg transition">
-                                        @if ($jamaah->file_vaksin_type == 'pdf')
-                                            <i class="fas fa-file-pdf text-5xl text-red-500"></i>
-                                        @else
-                                            <img src="{{ $jamaah->file_vaksin_url }}" alt="Vaksin"
-                                                class="w-24 h-24 object-cover rounded-lg">
-                                        @endif
-                                    </a>
-                                    <p class="text-xs text-gray-400 mt-2">
-                                        <a href="{{ $jamaah->file_vaksin_url }}" target="_blank"
-                                            class="text-blue-500 hover:text-blue-700">
-                                            <i class="fas fa-eye mr-1"></i> Lihat
+                            @foreach ($docs as $doc)
+                                <div class="bg-white rounded-lg p-3 border border-gray-200 text-center">
+                                    <p class="text-xs text-gray-500 mb-2">{{ $doc['label'] }}</p>
+                                    @if ($doc['url'])
+                                        <a href="{{ $doc['url'] }}" target="_blank"
+                                            class="inline-flex items-center justify-center w-24 h-24 bg-gray-100 rounded-lg mx-auto border border-gray-200 hover:shadow-lg transition">
+                                            @if ($doc['type'] == 'pdf')
+                                                <i class="fas fa-file-pdf text-5xl text-red-500"></i>
+                                            @else
+                                                <img src="{{ $doc['url'] }}" alt="{{ $doc['label'] }}"
+                                                    class="w-24 h-24 object-cover rounded-lg">
+                                            @endif
                                         </a>
-                                    </p>
-                                @else
-                                    <div
-                                        class="w-24 h-24 bg-gray-100 rounded-lg mx-auto flex items-center justify-center border border-gray-200">
-                                        <i class="fas fa-file text-4xl text-gray-300"></i>
-                                    </div>
-                                    <p class="text-xs text-gray-400 mt-2">Tidak ada file</p>
-                                @endif
-                            </div>
-
-                            <!-- Visa -->
-                            <div class="bg-white rounded-lg p-3 border border-gray-200 text-center">
-                                <p class="text-xs text-gray-500 mb-2">Visa</p>
-                                @if ($jamaah->file_visa_url)
-                                    <a href="{{ $jamaah->file_visa_url }}" target="_blank"
-                                        class="inline-flex items-center justify-center w-24 h-24 bg-gray-100 rounded-lg mx-auto border border-gray-200 hover:shadow-lg transition">
-                                        @if ($jamaah->file_visa_type == 'pdf')
-                                            <i class="fas fa-file-pdf text-5xl text-red-500"></i>
-                                        @else
-                                            <img src="{{ $jamaah->file_visa_url }}" alt="Visa"
-                                                class="w-24 h-24 object-cover rounded-lg">
-                                        @endif
-                                    </a>
-                                    <p class="text-xs text-gray-400 mt-2">
-                                        <a href="{{ $jamaah->file_visa_url }}" target="_blank"
-                                            class="text-blue-500 hover:text-blue-700">
-                                            <i class="fas fa-eye mr-1"></i> Lihat
-                                        </a>
-                                    </p>
-                                @else
-                                    <div
-                                        class="w-24 h-24 bg-gray-100 rounded-lg mx-auto flex items-center justify-center border border-gray-200">
-                                        <i class="fas fa-file text-4xl text-gray-300"></i>
-                                    </div>
-                                    <p class="text-xs text-gray-400 mt-2">Tidak ada file</p>
-                                @endif
-                            </div>
-
-                            <!-- Passport -->
-                            <div class="bg-white rounded-lg p-3 border border-gray-200 text-center">
-                                <p class="text-xs text-gray-500 mb-2">Passport</p>
-                                @if ($jamaah->file_paspor_url)
-                                    <a href="{{ $jamaah->file_paspor_url }}" target="_blank"
-                                        class="inline-flex items-center justify-center w-24 h-24 bg-gray-100 rounded-lg mx-auto border border-gray-200 hover:shadow-lg transition">
-                                        @if ($jamaah->file_paspor_type == 'pdf')
-                                            <i class="fas fa-file-pdf text-5xl text-red-500"></i>
-                                        @else
-                                            <img src="{{ $jamaah->file_paspor_url }}" alt="Passport"
-                                                class="w-24 h-24 object-cover rounded-lg">
-                                        @endif
-                                    </a>
-                                    <p class="text-xs text-gray-400 mt-2">
-                                        <a href="{{ $jamaah->file_paspor_url }}" target="_blank"
-                                            class="text-blue-500 hover:text-blue-700">
-                                            <i class="fas fa-eye mr-1"></i> Lihat
-                                        </a>
-                                    </p>
-                                @else
-                                    <div
-                                        class="w-24 h-24 bg-gray-100 rounded-lg mx-auto flex items-center justify-center border border-gray-200">
-                                        <i class="fas fa-file text-4xl text-gray-300"></i>
-                                    </div>
-                                    <p class="text-xs text-gray-400 mt-2">Tidak ada file</p>
-                                @endif
-                            </div>
+                                        <p class="text-xs text-gray-400 mt-2">
+                                            <a href="{{ $doc['url'] }}" target="_blank"
+                                                class="text-blue-500 hover:text-blue-700">
+                                                <i class="fas fa-eye mr-1"></i> Lihat
+                                            </a>
+                                        </p>
+                                    @else
+                                        <div
+                                            class="w-24 h-24 bg-gray-100 rounded-lg mx-auto flex items-center justify-center border border-gray-200">
+                                            <i class="fas fa-file text-4xl text-gray-300"></i>
+                                        </div>
+                                        <p class="text-xs text-gray-400 mt-2">Tidak ada file</p>
+                                    @endif
+                                </div>
+                            @endforeach
                         </div>
                     </div>
 

@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Master;
 use App\Http\Controllers\Controller;
 use App\Models\PaketTour;
 use App\Models\ProdukHargaBulanan;
+use App\Models\ProdukKeberangkatan;
 use App\Services\ProdukPaketService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
@@ -39,32 +40,32 @@ class ProdukPaketController extends Controller
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'nama_produk' => 'required|string|max:100',
-            'deskripsi' => 'nullable|string',
-            'include_tur' => 'nullable|boolean',
-            'paket_tour_id' => 'nullable|exists:paket_tours,id_paket_tour',
+            'nama_produk'       => 'required|string|max:100',
+            'deskripsi'         => 'nullable|string',
+            'include_tur'       => 'nullable|boolean',
+            'paket_tour_id'     => 'nullable|exists:paket_tours,id_paket_tour',
             'durasi_perjalanan' => 'nullable|integer|min:0',
-            'durasi_mekkah' => 'nullable|integer|min:0',
-            'durasi_madinah' => 'nullable|integer|min:0',
-            'kategori' => 'nullable|string|max:50',
-            'is_active' => 'nullable|boolean',
+            'durasi_mekkah'     => 'nullable|integer|min:0',
+            'durasi_madinah'    => 'nullable|integer|min:0',
+            'kategori'          => 'nullable|string|max:50',
+            'is_active'         => 'nullable|boolean',
 
-            // Keberangkatan (multiple)
-            'keberangkatan' => 'nullable|array',
-            'keberangkatan.*.bulan' => 'required_with:keberangkatan|integer|between:1,12',
-            'keberangkatan.*.tahun' => 'required_with:keberangkatan|integer|min:2024',
-            'keberangkatan.*.is_active' => 'nullable|boolean',
+            'keberangkatan'                => 'nullable|array',
+            'keberangkatan.*.bulan'        => 'required_with:keberangkatan|integer|between:1,12',
+            'keberangkatan.*.tahun'        => 'required_with:keberangkatan|integer|min:2024',
+            'keberangkatan.*.is_active'    => 'nullable|boolean',
 
-            'harga_bulanan' => 'required|array|min:1',
-            'harga_bulanan.*.bulan' => 'required|integer|between:1,12',
-            'harga_bulanan.*.tahun' => 'required|integer|min:2024',
-            'harga_bulanan.*.harga' => 'required|integer|min:0',
-            'harga_bulanan.*.flyer' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
-            'harga_bulanan.*.is_active' => 'nullable|boolean',
+            'harga_bulanan'                => 'required|array|min:1',
+            'harga_bulanan.*.bulan'        => 'required|integer|between:1,12',
+            'harga_bulanan.*.tahun'        => 'required|integer|min:2024',
+            'harga_bulanan.*.harga'        => 'required|integer|min:0',
+            'harga_bulanan.*.kuota'        => 'nullable|integer|min:0',   // <-- KUOTA
+            'harga_bulanan.*.flyer'        => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
+            'harga_bulanan.*.is_active'    => 'nullable|boolean',
         ]);
 
         $validated['include_tur'] = $request->boolean('include_tur', false);
-        $validated['is_active'] = $request->boolean('is_active', true);
+        $validated['is_active']   = $request->boolean('is_active', true);
 
         if (!$validated['include_tur']) {
             $validated['paket_tour_id'] = null;
@@ -93,34 +94,34 @@ class ProdukPaketController extends Controller
     public function update(Request $request, $id)
     {
         $validated = $request->validate([
-            'nama_produk' => 'required|string|max:100',
-            'deskripsi' => 'nullable|string',
-            'include_tur' => 'nullable|boolean',
-            'paket_tour_id' => 'nullable|exists:paket_tours,id_paket_tour',
+            'nama_produk'       => 'required|string|max:100',
+            'deskripsi'         => 'nullable|string',
+            'include_tur'       => 'nullable|boolean',
+            'paket_tour_id'     => 'nullable|exists:paket_tours,id_paket_tour',
             'durasi_perjalanan' => 'nullable|integer|min:0',
-            'durasi_mekkah' => 'nullable|integer|min:0',
-            'durasi_madinah' => 'nullable|integer|min:0',
-            'kategori' => 'nullable|string|max:50',
-            'is_active' => 'nullable|boolean',
+            'durasi_mekkah'     => 'nullable|integer|min:0',
+            'durasi_madinah'    => 'nullable|integer|min:0',
+            'kategori'          => 'nullable|string|max:50',
+            'is_active'         => 'nullable|boolean',
 
-            // Keberangkatan (multiple)
-            'keberangkatan' => 'nullable|array',
-            'keberangkatan.*.id' => 'nullable|exists:produk_keberangkatans,id',
-            'keberangkatan.*.bulan' => 'required_with:keberangkatan|integer|between:1,12',
-            'keberangkatan.*.tahun' => 'required_with:keberangkatan|integer|min:2024',
-            'keberangkatan.*.is_active' => 'nullable|boolean',
+            'keberangkatan'                => 'nullable|array',
+            'keberangkatan.*.id'           => 'nullable|exists:produk_keberangkatans,id',
+            'keberangkatan.*.bulan'        => 'required_with:keberangkatan|integer|between:1,12',
+            'keberangkatan.*.tahun'        => 'required_with:keberangkatan|integer|min:2024',
+            'keberangkatan.*.is_active'    => 'nullable|boolean',
 
-            'harga_bulanan' => 'required|array|min:1',
-            'harga_bulanan.*.id' => 'nullable|exists:produk_harga_bulanan,id',
-            'harga_bulanan.*.bulan' => 'required|integer|between:1,12',
-            'harga_bulanan.*.tahun' => 'required|integer|min:2024',
-            'harga_bulanan.*.harga' => 'required|integer|min:0',
-            'harga_bulanan.*.flyer' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
-            'harga_bulanan.*.is_active' => 'nullable|boolean',
+            'harga_bulanan'                => 'required|array|min:1',
+            'harga_bulanan.*.id'           => 'nullable|exists:produk_harga_bulanan,id',
+            'harga_bulanan.*.bulan'        => 'required|integer|between:1,12',
+            'harga_bulanan.*.tahun'        => 'required|integer|min:2024',
+            'harga_bulanan.*.harga'        => 'required|integer|min:0',
+            'harga_bulanan.*.kuota'        => 'nullable|integer|min:0',   // <-- KUOTA
+            'harga_bulanan.*.flyer'        => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
+            'harga_bulanan.*.is_active'    => 'nullable|boolean',
         ]);
 
         $validated['include_tur'] = $request->boolean('include_tur', false);
-        $validated['is_active'] = $request->boolean('is_active', true);
+        $validated['is_active']   = $request->boolean('is_active', true);
 
         if (!$validated['include_tur']) {
             $validated['paket_tour_id'] = null;
@@ -169,11 +170,11 @@ class ProdukPaketController extends Controller
         }
 
         return response()->json([
-            'durasi_hari' => $paketTour->durasi_hari ?? 0,
-            'kota_tujuan' => $paketTour->kota_tujuan,
-            'negara' => $paketTour->negara,
-            'deskripsi' => $paketTour->deskripsi,
-            'total_harga_hotel' => $paketTour->total_harga_hotel_formatted ?? 'Rp 0',
+            'durasi_hari'        => $paketTour->durasi_hari ?? 0,
+            'kota_tujuan'        => $paketTour->kota_tujuan,
+            'negara'             => $paketTour->negara,
+            'deskripsi'          => $paketTour->deskripsi,
+            'total_harga_hotel'  => $paketTour->total_harga_hotel_formatted ?? 'Rp 0',
         ]);
     }
 
@@ -184,10 +185,11 @@ class ProdukPaketController extends Controller
     public function storeHargaBulanan(Request $request, $produkId)
     {
         $request->validate([
-            'bulan' => 'required|integer|between:1,12',
-            'tahun' => 'required|integer|min:2024',
-            'harga' => 'required|integer|min:0',
-            'flyer' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
+            'bulan'     => 'required|integer|between:1,12',
+            'tahun'     => 'required|integer|min:2024',
+            'harga'     => 'required|integer|min:0',
+            'kuota'     => 'nullable|integer|min:0',   // <-- KUOTA
+            'flyer'     => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
             'is_active' => 'nullable|boolean',
         ]);
 
@@ -205,10 +207,11 @@ class ProdukPaketController extends Controller
 
         $data = [
             'produk_paket_id' => $produkId,
-            'bulan' => $request->bulan,
-            'tahun' => $request->tahun,
-            'harga' => $request->harga,
-            'is_active' => $request->boolean('is_active', true),
+            'bulan'           => $request->bulan,
+            'tahun'           => $request->tahun,
+            'harga'           => $request->harga,
+            'kuota'           => $request->kuota ?? 0,   // <-- KUOTA
+            'is_active'       => $request->boolean('is_active', true),
         ];
 
         if ($request->hasFile('flyer')) {
@@ -227,10 +230,11 @@ class ProdukPaketController extends Controller
     public function updateHargaBulanan(Request $request, $hargaId)
     {
         $request->validate([
-            'bulan' => 'required|integer|between:1,12',
-            'tahun' => 'required|integer|min:2024',
-            'harga' => 'required|integer|min:0',
-            'flyer' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
+            'bulan'     => 'required|integer|between:1,12',
+            'tahun'     => 'required|integer|min:2024',
+            'harga'     => 'required|integer|min:0',
+            'kuota'     => 'nullable|integer|min:0',   // <-- KUOTA
+            'flyer'     => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
             'is_active' => 'nullable|boolean',
         ]);
 
@@ -248,9 +252,10 @@ class ProdukPaketController extends Controller
         }
 
         $data = [
-            'bulan' => $request->bulan,
-            'tahun' => $request->tahun,
-            'harga' => $request->harga,
+            'bulan'     => $request->bulan,
+            'tahun'     => $request->tahun,
+            'harga'     => $request->harga,
+            'kuota'     => $request->kuota ?? 0,   // <-- KUOTA
             'is_active' => $request->boolean('is_active', true),
         ];
 
@@ -303,10 +308,10 @@ class ProdukPaketController extends Controller
             $label = $harga->bulan_formatted . ' ' . $harga->tahun;
 
             return response()->json([
-                'success' => true,
-                'message' => "Harga untuk {$label} berhasil {$status}!",
+                'success'   => true,
+                'message'   => "Harga untuk {$label} berhasil {$status}!",
                 'is_active' => $harga->is_active,
-                'badge' => $harga->is_active
+                'badge'     => $harga->is_active
                     ? '<span class="px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-700">Aktif</span>'
                     : '<span class="px-2 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-500">Nonaktif</span>'
             ]);
@@ -319,20 +324,20 @@ class ProdukPaketController extends Controller
     }
 
     // ============================================
-    // KEBERANGKATAN METHODS (untuk show page)
+    // KEBERANGKATAN METHODS
     // ============================================
 
     public function storeKeberangkatan(Request $request, $produkId)
     {
         $request->validate([
-            'bulan' => 'required|integer|between:1,12',
-            'tahun' => 'required|integer|min:2024',
+            'bulan'     => 'required|integer|between:1,12',
+            'tahun'     => 'required|integer|min:2024',
             'is_active' => 'nullable|boolean',
         ]);
 
         $produk = $this->service->getById($produkId);
 
-        $exists = \App\Models\ProdukKeberangkatan::where('produk_paket_id', $produkId)
+        $exists = ProdukKeberangkatan::where('produk_paket_id', $produkId)
             ->where('bulan', $request->bulan)
             ->where('tahun', $request->tahun)
             ->exists();
@@ -342,11 +347,11 @@ class ProdukPaketController extends Controller
                 ->with('error', 'Bulan keberangkatan ' . $request->bulan . '/' . $request->tahun . ' sudah ada!');
         }
 
-        $keberangkatan = \App\Models\ProdukKeberangkatan::create([
+        $keberangkatan = ProdukKeberangkatan::create([
             'produk_paket_id' => $produkId,
-            'bulan' => $request->bulan,
-            'tahun' => $request->tahun,
-            'is_active' => $request->boolean('is_active', true),
+            'bulan'           => $request->bulan,
+            'tahun'           => $request->tahun,
+            'is_active'       => $request->boolean('is_active', true),
         ]);
 
         return redirect()->back()
@@ -355,7 +360,7 @@ class ProdukPaketController extends Controller
 
     public function destroyKeberangkatan($keberangkatanId)
     {
-        $keberangkatan = \App\Models\ProdukKeberangkatan::findOrFail($keberangkatanId);
+        $keberangkatan = ProdukKeberangkatan::findOrFail($keberangkatanId);
         $produk = $keberangkatan->produkPaket;
 
         if ($produk->keberangkatan()->count() <= 1) {
@@ -373,7 +378,7 @@ class ProdukPaketController extends Controller
     public function toggleKeberangkatan($keberangkatanId)
     {
         try {
-            $keberangkatan = \App\Models\ProdukKeberangkatan::findOrFail($keberangkatanId);
+            $keberangkatan = ProdukKeberangkatan::findOrFail($keberangkatanId);
             $keberangkatan->is_active = !$keberangkatan->is_active;
             $keberangkatan->save();
 
@@ -381,10 +386,10 @@ class ProdukPaketController extends Controller
             $label = $keberangkatan->keberangkatan_formatted;
 
             return response()->json([
-                'success' => true,
-                'message' => "Bulan keberangkatan {$label} berhasil {$status}!",
+                'success'   => true,
+                'message'   => "Bulan keberangkatan {$label} berhasil {$status}!",
                 'is_active' => $keberangkatan->is_active,
-                'badge' => $keberangkatan->is_active
+                'badge'     => $keberangkatan->is_active
                     ? '<span class="px-2 py-1 rounded-full text-xs font-medium bg-purple-100 text-purple-700">Aktif</span>'
                     : '<span class="px-2 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-500">Nonaktif</span>'
             ]);
@@ -395,5 +400,4 @@ class ProdukPaketController extends Controller
             ], 500);
         }
     }
-
 }

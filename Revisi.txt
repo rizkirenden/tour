@@ -1,15 +1,9 @@
-36.kopsurat yang berisikan logo, alamat, no-telp, email, tanda tangan direktur, syarat dan ketentuan, rekening pembayaran perusahaan. cap.
-37.lembar pertama invoice, lembara kedua syarat dan ketentuan, lembar terakhir lampiran pembayaran
 45.bagian layout pemasukan di atas, pengeluaran di bawah (Pendapatan)
 46.passport masuk di pendapatan di departure yang pakai pendampingan
 47.pendampingan, fee passport 650 masuk ke pengeluaran, 100 masuk ke pendapatan
 50.upgrade hotel per jamaah atau keluarga
-51.Pendapingan (pembuatan passport) - nama pendampingan (di hilangkan ganti dengan Ya-Tidak tinggal centang) - fee Pendamping (Pembayaran passport) - fee petugas (Pendapatan perusahaan)
-52.hilangkan harga default di bulan keberangkatan\
 53.Tambah di tabel depan pembuatan passport ya/tidak
-54.Taruh Bulan dan Tahun keberangkatan di PDF - Status Pembayaran di pindahkan ke kanan
-56.Pilih Jamaah - Ambil Dari Harga Perbulan
-57.Tambah Kuota untuk harga per bulan - flexibel
+58.edit jamaah data harga tidak ter record
 ------------------------------------------------------------------------------------------------------------------------------------
 1. ada pembayaran langsung dengan uang real / cash - DONE
 2. Paket Tour diganti dengan Paket Umroh Plus - DONE
@@ -46,6 +40,8 @@
 33.muncul kan total pendampingan di create jamaah - DONE
 34.fee agent di keluarga jamaah belum format rupiah - DONE
 35.fee masih tertagih di keluarga - DONE
+36.kopsurat yang berisikan logo, alamat, no-telp, email, tanda tangan direktur, syarat dan ketentuan, rekening pembayaran perusahaan. cap. - DONE
+37.lembar pertama invoice, lembara kedua syarat dan ketentuan, lembar terakhir lampiran pembayaran - DONE
 38.keluara/kelompok di show keluarga - DONE
 40.biar tidak lusan biar saja masukan di daftar jamaah, tapi tanda merah merah yang belum daftar - DONE
 41.atur hotel paket toure bisa beberapa tipe kamar, total seluruh nya juga belum - DONE
@@ -54,5 +50,10 @@
 44.Jenis Transaksi, buat apakah sudah di terima jenis transaksi atau tidak samaa jaamaah - DONE
 48.pdf di keluarga _ DONE
 49.multiple input harga paket -> DONE
+51.Pendapingan (pembuatan passport) - nama pendampingan (di hilangkan ganti dengan Ya-Tidak tinggal centang) - fee Pendamping (Pembayaran passport) - fee petugas (Pendapatan perusahaan) - DONE
+52.hilangkan harga default di bulan keberangkatan - DONE
+54.Taruh Bulan dan Tahun keberangkatan di PDF - DONE
 55.Tambah Bulan Keberangkatan Di PRoduk Paket - Harga perbulan tetap - DONE
+56.Pilih Jamaah - Ambil Dari Harga Perbulan - DONE
+57.Tambah Kuota untuk harga per bulan - flexibel - DONE
 ------------------------------------------------------------------------------------------------------------------------------------

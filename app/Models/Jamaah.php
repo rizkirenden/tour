@@ -93,6 +93,10 @@ class Jamaah extends Model
         'is_kepala_keluarga' => 'boolean',
     ];
 
+    // ==========================================
+    // RELATIONS
+    // ==========================================
+
     public function keluarga()
     {
         return $this->belongsTo(Keluarga::class, 'id_keluarga', 'id_keluarga');
@@ -123,6 +127,27 @@ class Jamaah extends Model
     public function departureJamaahs()
     {
         return $this->hasMany(DepartureJamaah::class, 'id_jamaah', 'id_jamaah');
+    }
+
+    /**
+     * Relasi multiple keberangkatan (bulan & tahun)
+     * Pivot table: jamaah_keberangkatans
+     */
+    public function keberangkatan()
+    {
+        return $this->belongsToMany(
+            ProdukKeberangkatan::class,
+            'jamaah_keberangkatans',
+            'id_jamaah',
+            'id_produk_keberangkatan'
+        )->withPivot([
+            'bulan_keberangkatan',
+            'tahun_keberangkatan',
+            'bulan_harga',
+            'tahun_harga',
+            'harga',
+            'id_produk_harga_bulanan'
+        ])->withTimestamps();
     }
 
     // ==========================================
@@ -361,6 +386,81 @@ class Jamaah extends Model
             'nama_keluarga' => null,
             'link' => null
         ];
+    }
+
+    // ==========================================
+    // ACCESSORS - KEBERANGKATAN (MULTIPLE)
+    // ==========================================
+
+    public function getKeberangkatanListAttribute()
+    {
+        $bulanNama = [
+            1 => 'Januari', 2 => 'Februari', 3 => 'Maret', 4 => 'April',
+            5 => 'Mei', 6 => 'Juni', 7 => 'Juli', 8 => 'Agustus',
+            9 => 'September', 10 => 'Oktober', 11 => 'November', 12 => 'Desember'
+        ];
+
+        if ($this->keberangkatan->isEmpty()) {
+            if ($this->bulan_keberangkatan && $this->tahun_keberangkatan) {
+                return $bulanNama[$this->bulan_keberangkatan] . ' ' . $this->tahun_keberangkatan;
+            }
+            return '-';
+        }
+
+        return $this->keberangkatan
+            ->sortBy(['pivot.tahun_keberangkatan', 'pivot.bulan_keberangkatan'])
+            ->map(function ($k) use ($bulanNama) {
+                $text = $bulanNama[$k->pivot->bulan_keberangkatan] . ' ' . $k->pivot->tahun_keberangkatan;
+                // Jika harga beda bulan/tahun
+                if ($k->pivot->bulan_harga && $k->pivot->tahun_harga) {
+                    if ($k->pivot->bulan_harga != $k->pivot->bulan_keberangkatan ||
+                        $k->pivot->tahun_harga != $k->pivot->tahun_keberangkatan) {
+                        $text .= ' (Harga: ' . $bulanNama[$k->pivot->bulan_harga] . ' ' . $k->pivot->tahun_harga . ')';
+                    }
+                }
+                return $text;
+            })
+            ->implode(', ');
+    }
+
+    public function getKeberangkatanBadgesAttribute()
+    {
+        $bulanNama = [
+            1 => 'Januari', 2 => 'Februari', 3 => 'Maret', 4 => 'April',
+            5 => 'Mei', 6 => 'Juni', 7 => 'Juli', 8 => 'Agustus',
+            9 => 'September', 10 => 'Oktober', 11 => 'November', 12 => 'Desember'
+        ];
+
+        if ($this->keberangkatan->isEmpty()) {
+            if ($this->bulan_keberangkatan && $this->tahun_keberangkatan) {
+                return '<span class="px-2 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-700">'
+                    . $bulanNama[$this->bulan_keberangkatan] . ' ' . $this->tahun_keberangkatan . '</span>';
+            }
+            return '<span class="text-xs text-gray-400">-</span>';
+        }
+
+        return $this->keberangkatan
+            ->sortBy(['pivot.tahun_keberangkatan', 'pivot.bulan_keberangkatan'])
+            ->map(function ($k) use ($bulanNama) {
+                $html = '<span class="px-2 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-700 inline-flex items-center gap-1">';
+                $html .= '<i class="fas fa-plane text-[10px]"></i>';
+                $html .= $bulanNama[$k->pivot->bulan_keberangkatan] . ' ' . $k->pivot->tahun_keberangkatan;
+
+                // Jika harga beda bulan/tahun
+                if ($k->pivot->bulan_harga && $k->pivot->tahun_harga) {
+                    if ($k->pivot->bulan_harga != $k->pivot->bulan_keberangkatan ||
+                        $k->pivot->tahun_harga != $k->pivot->tahun_keberangkatan) {
+                        $html .= '<span class="text-[10px] text-green-700 ml-1 border-l border-blue-300 pl-1">';
+                        $html .= '<i class="fas fa-tag text-[9px]"></i> ';
+                        $html .= $bulanNama[$k->pivot->bulan_harga] . ' ' . $k->pivot->tahun_harga;
+                        $html .= '</span>';
+                    }
+                }
+
+                $html .= '</span>';
+                return $html;
+            })
+            ->implode(' ');
     }
 
     // ==========================================

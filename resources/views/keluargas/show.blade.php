@@ -56,16 +56,40 @@
                                 </span>
                                 {!! $keluarga->status_pembayaran_badge !!}
                             </div>
-                            <p class="text-gray-500 text-sm mt-1">
-                                <i class="fas fa-calendar-alt mr-1"></i> Keberangkatan:
-                                @if ($keluarga->bulan_keberangkatan)
-                                    {{ date('F', mktime(0, 0, 0, $keluarga->bulan_keberangkatan, 1)) }}
-                                    {{ $keluarga->tahun_keberangkatan }}
+
+                            <!-- BULAN KEBERANGKATAN & HARGA -->
+                            <div class="flex flex-wrap items-center gap-2 mt-2">
+                                <span class="text-xs text-gray-500">
+                                    <i class="fas fa-plane text-blue-500 mr-1"></i> Keberangkatan:
+                                </span>
+                                @if ($keluarga->bulan_keberangkatan && $keluarga->tahun_keberangkatan)
+                                    <span
+                                        class="inline-flex items-center gap-1 px-2 py-0.5 bg-blue-100 text-blue-700 rounded-full text-xs font-medium">
+                                        {{ $keluarga->bulan_keberangkatan_nama }} {{ $keluarga->tahun_keberangkatan }}
+                                    </span>
                                 @else
-                                    -
+                                    <span class="text-xs text-gray-400">-</span>
                                 @endif
-                            </p>
-                            <p class="text-gray-500 text-sm">
+
+                                @if ($keluarga->bulan_harga && $keluarga->tahun_harga)
+                                    @if (
+                                        $keluarga->bulan_harga != $keluarga->bulan_keberangkatan ||
+                                            $keluarga->tahun_harga != $keluarga->tahun_keberangkatan)
+                                        <span class="text-xs text-gray-500 ml-2">
+                                            <i class="fas fa-tag text-green-500 mr-1"></i> Harga dari:
+                                        </span>
+                                        <span
+                                            class="inline-flex items-center gap-1 px-2 py-0.5 bg-green-100 text-green-700 rounded-full text-xs font-medium">
+                                            {{ $keluarga->bulan_harga_nama }} {{ $keluarga->tahun_harga }}
+                                        </span>
+                                    @else
+                                        <span class="text-xs text-gray-400 italic ml-2">(harga sama dengan
+                                            keberangkatan)</span>
+                                    @endif
+                                @endif
+                            </div>
+
+                            <p class="text-gray-500 text-sm mt-1">
                                 <i class="fas fa-box mr-1"></i> Produk: {{ $keluarga->produk_paket ?? '-' }}
                             </p>
                             <p class="text-gray-500 text-sm">
@@ -131,7 +155,7 @@
                                             Nama Jamaah</th>
                                         <th
                                             class="px-3 py-2 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
-                                            Hubungan</th>
+                                            Keberangkatan</th>
                                         <th
                                             class="px-3 py-2 text-right text-xs font-semibold text-gray-500 uppercase tracking-wider">
                                             Tagihan</th>
@@ -146,17 +170,11 @@
                                             Status</th>
                                         <th
                                             class="px-3 py-2 text-center text-xs font-semibold text-gray-500 uppercase tracking-wider">
-                                            Transaksi</th>
-                                        <th
-                                            class="px-3 py-2 text-center text-xs font-semibold text-gray-500 uppercase tracking-wider">
                                             Aksi</th>
                                     </tr>
                                 </thead>
                                 <tbody class="divide-y divide-gray-100">
                                     @foreach ($keluarga->jamaahs as $index => $jamaah)
-                                        @php
-                                            $rekap = $rekapJamaah[$jamaah->id_jamaah] ?? [];
-                                        @endphp
                                         <tr class="hover:bg-gray-50 transition-colors">
                                             <td class="px-3 py-2 text-gray-600">{{ $loop->iteration }}</td>
                                             <td class="px-3 py-2">
@@ -165,8 +183,19 @@
                                                     <span
                                                         class="ml-1 px-1.5 py-0.5 bg-yellow-100 text-yellow-700 rounded text-xs">Kepala</span>
                                                 @endif
+                                                <p class="text-xs text-gray-400">{{ $jamaah->hubungan_keluarga ?? '-' }}
+                                                </p>
                                             </td>
-                                            <td class="px-3 py-2 text-gray-600">{{ $jamaah->hubungan_keluarga ?? '-' }}
+                                            <td class="px-3 py-2">
+                                                @if ($jamaah->bulan_keberangkatan && $jamaah->tahun_keberangkatan)
+                                                    <span
+                                                        class="inline-flex items-center gap-1 px-2 py-0.5 bg-blue-100 text-blue-700 rounded-full text-xs font-medium">
+                                                        {{ $jamaah->bulan_keberangkatan_nama }}
+                                                        {{ $jamaah->tahun_keberangkatan }}
+                                                    </span>
+                                                @else
+                                                    <span class="text-xs text-gray-400">-</span>
+                                                @endif
                                             </td>
                                             <td class="px-3 py-2 text-right font-medium text-gray-800">
                                                 {{ $jamaah->total_tagihan_setelah_diskon_formatted }}
@@ -179,11 +208,6 @@
                                             </td>
                                             <td class="px-3 py-2 text-center">
                                                 {!! $jamaah->status_pembayaran_badge !!}
-                                            </td>
-                                            <td class="px-3 py-2 text-center">
-                                                <span class="text-xs bg-blue-100 text-blue-800 px-2 py-0.5 rounded-full">
-                                                    {{ $rekap['transaksi_count'] ?? 0 }}
-                                                </span>
                                             </td>
                                             <td class="px-3 py-2 text-center">
                                                 <a href="{{ route('transaksional.jamaah.show', $jamaah->id_jamaah) }}"
@@ -203,7 +227,87 @@
                     @endif
                 </div>
 
-                <!-- Riwayat Pembayaran Keluarga / Kelompok -->
+                <!-- Detail Pembuatan Passport Per Jamaah -->
+                <div class="bg-gray-50 rounded-xl p-5 border border-gray-100 mb-6">
+                    <h6 class="text-sm font-semibold text-gray-700 mb-4 flex items-center">
+                        <i class="fas fa-passport text-yellow-500 mr-2"></i> Detail Pembuatan Passport Per Jamaah
+                        <span class="ml-2 text-xs text-gray-400">(Pembuatan Passport)</span>
+                    </h6>
+
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-3">
+                        @php $hasPendampinganData = false; @endphp
+                        @foreach ($keluarga->jamaahs as $jamaah)
+                            @if (!empty($jamaah->pendampingan_nama) || $jamaah->pendampingan_fee > 0 || $jamaah->pendampingan_fee_petugas > 0)
+                                @php $hasPendampinganData = true; @endphp
+                                <div class="bg-white rounded-lg p-4 border border-gray-200">
+                                    <div class="flex items-center justify-between mb-2">
+                                        <span class="font-semibold text-gray-700">
+                                            <i class="fas fa-user text-yellow-500 mr-1"></i>
+                                            {{ $jamaah->nama_lengkap }}
+                                        </span>
+                                        @if ($jamaah->is_kepala_keluarga)
+                                            <span
+                                                class="px-2 py-0.5 bg-yellow-100 text-yellow-700 rounded text-xs font-medium">
+                                                ★ Kepala Keluarga
+                                            </span>
+                                        @endif
+                                    </div>
+
+                                    <dl class="space-y-1.5 text-sm">
+                                        @if (!empty($jamaah->pendampingan_nama))
+                                            <div class="flex justify-between">
+                                                <dt class="text-gray-500">
+                                                    Nama Pembuat Passport
+                                                    <span class="text-gray-400 text-xs">(Pembuatan passport)</span>
+                                                </dt>
+                                                <dd class="font-medium text-gray-700">{{ $jamaah->pendampingan_nama }}
+                                                </dd>
+                                            </div>
+                                        @endif
+                                        <div class="flex justify-between">
+                                            <dt class="text-gray-500">
+                                                Biaya Pembuatan Passport
+                                                <span class="text-gray-400 text-xs">(Pembayaran passport)</span>
+                                            </dt>
+                                            <dd class="font-medium text-green-600">
+                                                {{ $jamaah->pendampingan_fee_formatted }}</dd>
+                                        </div>
+                                        <div class="flex justify-between">
+                                            <dt class="text-gray-500">
+                                                Fee Petugas
+                                                <span class="text-gray-400 text-xs">(Pendapatan perusahaan)</span>
+                                            </dt>
+                                            <dd class="font-medium text-purple-600">
+                                                {{ $jamaah->pendampingan_fee_petugas_formatted }}
+                                            </dd>
+                                        </div>
+                                        <div class="flex justify-between pt-1.5 border-t border-gray-100">
+                                            <dt class="text-gray-600 font-medium">
+                                                Total Pembuatan Passport
+                                                <span class="text-gray-400 text-xs">(Biaya + Fee Petugas)</span>
+                                            </dt>
+                                            <dd class="font-bold text-blue-600">
+                                                Rp
+                                                {{ number_format(($jamaah->pendampingan_fee ?? 0) + ($jamaah->pendampingan_fee_petugas ?? 0), 0, ',', '.') }}
+                                            </dd>
+                                        </div>
+                                    </dl>
+                                </div>
+                            @endif
+                        @endforeach
+
+                        @if (!$hasPendampinganData)
+                            <div class="col-span-full text-center py-4">
+                                <p class="text-sm text-gray-400">
+                                    <i class="fas fa-info-circle mr-1"></i>
+                                    Belum ada data pembuatan passport untuk jamaah dalam keluarga ini
+                                </p>
+                            </div>
+                        @endif
+                    </div>
+                </div>
+
+                <!-- Riwayat Pembayaran Keluarga -->
                 <div class="bg-gray-50 rounded-xl p-5 border border-gray-100 mb-6">
                     <h6 class="text-sm font-semibold text-gray-700 mb-4 flex items-center justify-between">
                         <span>
@@ -241,9 +345,6 @@
                                             class="px-3 py-2 text-center text-xs font-semibold text-gray-500 uppercase tracking-wider">
                                             Bukti</th>
                                         <th
-                                            class="px-3 py-2 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
-                                            Keterangan</th>
-                                        <th
                                             class="px-3 py-2 text-center text-xs font-semibold text-gray-500 uppercase tracking-wider">
                                             Dibuat Oleh</th>
                                     </tr>
@@ -254,9 +355,6 @@
                                             <td class="px-3 py-2 text-gray-400 text-xs">{{ $loop->iteration }}</td>
                                             <td class="px-3 py-2 text-gray-600 whitespace-nowrap">
                                                 {{ $transaksi->tanggal_transaksi ? date('d M Y', strtotime($transaksi->tanggal_transaksi)) : '-' }}
-                                                <br>
-                                                <span
-                                                    class="text-xs text-gray-400">{{ $transaksi->created_at ? date('H:i', strtotime($transaksi->created_at)) : '' }}</span>
                                             </td>
                                             <td class="px-3 py-2">
                                                 <span class="text-sm font-medium text-gray-700">
@@ -274,11 +372,11 @@
                                             <td class="px-3 py-2">
                                                 <span
                                                     class="px-2 py-1 rounded-full text-xs font-medium
-                                    {{ $transaksi->jenisTransaksi->kode == 'DP'
-                                        ? 'bg-yellow-100 text-yellow-700'
-                                        : ($transaksi->jenisTransaksi->kode == 'LUNAS'
-                                            ? 'bg-green-100 text-green-700'
-                                            : 'bg-blue-100 text-blue-700') }}">
+                                                    {{ $transaksi->jenisTransaksi->kode == 'DP'
+                                                        ? 'bg-yellow-100 text-yellow-700'
+                                                        : ($transaksi->jenisTransaksi->kode == 'LUNAS'
+                                                            ? 'bg-green-100 text-green-700'
+                                                            : 'bg-blue-100 text-blue-700') }}">
                                                     {{ $transaksi->jenisTransaksi->nama ?? '-' }}
                                                 </span>
                                             </td>
@@ -295,9 +393,6 @@
                                                 @else
                                                     <span class="text-xs text-gray-400">-</span>
                                                 @endif
-                                            </td>
-                                            <td class="px-3 py-2 text-gray-500 text-sm max-w-xs truncate">
-                                                {{ $transaksi->keterangan ?? '-' }}
                                             </td>
                                             <td class="px-3 py-2 text-center text-xs text-gray-500">
                                                 {{ $transaksi->created_by ?? '-' }}

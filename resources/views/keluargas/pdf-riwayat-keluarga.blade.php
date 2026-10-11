@@ -21,63 +21,86 @@
         }
 
         /* ==========================================
-           HEADER WITH LOGO
+           HEADER DENGAN LOGO KIRI + INFO (SEJAJAR)
            ========================================== */
         .header {
-            text-align: center;
+            width: 100%;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
             border-bottom: 3px double #D4A017;
-            padding-bottom: 12px;
-            margin-bottom: 18px;
         }
 
-        .header .logo-container {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 12px;
-            margin-bottom: 2px;
+        .header-container {
+            width: 100%;
+            overflow: hidden;
         }
 
-        .header .logo-img {
-            max-height: 50px;
+        .header-logo-left {
+            float: left;
+            width: 90px;
+            margin-right: 15px;
+            padding-top: 37px;
+        }
+
+        .header-logo-left .logo-img {
+            max-height: 85px;
+            max-width: 90px;
             width: auto;
+            height: auto;
             object-fit: contain;
+            display: block;
         }
 
-        .header .logo-text {
-            font-size: 28px;
+        .header-content {
+            margin-left: 105px;
+            text-align: left;
+        }
+
+        .header-content .company-name {
+            font-size: 22px;
             font-weight: bold;
-            color: #D4A017;
-            letter-spacing: 1px;
+            color: #1a1a1a;
+            letter-spacing: 0.5px;
+            margin-bottom: 6px;
+            line-height: 1.2;
         }
 
-        .header .subtitle {
-            font-size: 13px;
-            color: #666;
-            margin-top: 2px;
+        .header-detail-table {
+            width: 100%;
+            border-collapse: collapse;
         }
 
-        .header .company-info {
+        .header-detail-table td {
+            padding: 1px 0;
             font-size: 10px;
-            color: #555;
-            margin-top: 4px;
-            line-height: 1.6;
+            color: #333;
+            line-height: 1.5;
+            vertical-align: top;
+            text-align: left;
+            white-space: nowrap;
         }
 
-        .header .company-info .separator {
-            color: #ccc;
-            margin: 0 4px;
+        .header-detail-table td.detail-label {
+            width: 60px;
+            font-weight: bold;
+            color: #000;
+            padding-right: 4px;
         }
 
-        .header .line {
-            width: 80px;
-            height: 2px;
+        .header-detail-table td.detail-value {
+            color: #333;
+        }
+
+        .header-line {
+            width: 100%;
+            height: 3px;
             background: #D4A017;
-            margin: 6px auto 0;
+            margin-top: 8px;
+            clear: both;
         }
 
         /* ==========================================
-           INFO KELUARGA - TABEL HORIZONTAL
+           INFO TABLE
            ========================================== */
         .info-table {
             width: 100%;
@@ -117,7 +140,21 @@
             font-weight: 700;
         }
 
-        /* Status Badge */
+        /* ==========================================
+           KEBERANGKATAN BADGES
+           ========================================== */
+        .keb-badge {
+            display: inline-block;
+            padding: 3px 12px;
+            border-radius: 20px;
+            font-size: 10px;
+            font-weight: 600;
+            background: #dbeafe;
+            color: #1e40af;
+            margin-right: 4px;
+            margin-bottom: 2px;
+        }
+
         .badge-status {
             display: inline-block;
             padding: 3px 16px;
@@ -199,7 +236,7 @@
         }
 
         /* ==========================================
-           RINGKASAN PER JAMAHA - TABLE
+           RINGKASAN PER JAMAAH - TABLE
            ========================================== */
         .jamaah-summary-wrapper {
             border: 1px solid #e9ecef;
@@ -352,7 +389,6 @@
             color: #999;
         }
 
-        /* Badge Jenis Transaksi */
         .badge-jenis {
             padding: 2px 10px;
             border-radius: 20px;
@@ -376,7 +412,6 @@
             color: #004085;
         }
 
-        /* Footer Table */
         .table-footer {
             background: #f8f9fa;
             padding: 8px 16px;
@@ -397,93 +432,6 @@
             font-weight: 700;
             color: #28a745;
             font-size: 15px;
-        }
-
-        /* ==========================================
-           METODE PEMBAYARAN - TABLE
-           ========================================== */
-        .metode-wrapper {
-            border: 1px solid #e9ecef;
-            border-radius: 8px;
-            overflow: hidden;
-            margin-bottom: 18px;
-        }
-
-        .metode-wrapper .metode-header {
-            background: #2c3e50;
-            padding: 8px 16px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .metode-wrapper .metode-header h3 {
-            color: #fff;
-            font-size: 11px;
-            font-weight: 600;
-            letter-spacing: 0.5px;
-            margin: 0;
-        }
-
-        .metode-wrapper .metode-header .count {
-            background: rgba(255, 255, 255, 0.2);
-            color: #fff;
-            padding: 2px 12px;
-            border-radius: 20px;
-            font-size: 10px;
-        }
-
-        table.metode {
-            width: 100%;
-            border-collapse: collapse;
-        }
-
-        table.metode thead {
-            background: #f8f9fa;
-        }
-
-        table.metode th {
-            padding: 8px 10px;
-            text-align: left;
-            font-size: 8px;
-            text-transform: uppercase;
-            letter-spacing: 0.8px;
-            color: #666;
-            font-weight: 700;
-            border-bottom: 2px solid #e9ecef;
-        }
-
-        table.metode td {
-            padding: 8px 10px;
-            border-bottom: 1px solid #f0f0f0;
-            vertical-align: middle;
-            font-size: 9px;
-        }
-
-        table.metode tbody tr:last-child td {
-            border-bottom: none;
-        }
-
-        table.metode tbody tr:hover {
-            background: #f8f9fa;
-        }
-
-        .badge-metode {
-            display: inline-block;
-            padding: 2px 12px;
-            border-radius: 12px;
-            font-size: 8px;
-            font-weight: 600;
-        }
-
-        .badge-bank {
-            background: #dbeafe;
-            color: #1e40af;
-        }
-
-        .badge-ewallet {
-            background: #fae8ff;
-            color: #6b21a8;
         }
 
         /* ==========================================
@@ -542,7 +490,7 @@
         }
 
         /* ==========================================
-           FOOTER - TABEL HORIZONTAL DI SETIAP HALAMAN
+           FOOTER
            ========================================== */
         .footer-table {
             width: 100%;
@@ -711,14 +659,95 @@
         }
 
         /* ==========================================
-           PAGE MARGIN UNTUK FOOTER
+           TTD & CAP
+           ========================================== */
+        .ttd-cap-wrapper {
+            width: 100%;
+            margin-top: 30px;
+            margin-bottom: 20px;
+            page-break-inside: avoid;
+        }
+
+        .ttd-cap-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .ttd-cap-spacer {
+            width: 55%;
+        }
+
+        .ttd-cap-content {
+            width: 45%;
+            text-align: center;
+            vertical-align: top;
+        }
+
+        .ttd-cap-location {
+            font-size: 11px;
+            color: #333;
+            margin-bottom: 4px;
+        }
+
+        .ttd-cap-company {
+            font-size: 11px;
+            font-weight: bold;
+            color: #1a1a1a;
+            margin-bottom: 10px;
+        }
+
+        .ttd-cap-signature-area {
+            position: relative;
+            height: 110px;
+            width: 100%;
+            margin-bottom: 8px;
+        }
+
+        /* TTD di TENGAH */
+        .ttd-cap-signature-area .ttd-image {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            max-height: 90px;
+            max-width: 150px;
+            z-index: 2;
+        }
+
+        /* Cap geser kanan, overlap ~30% dengan TTD */
+        .ttd-cap-signature-area .cap-image {
+            position: absolute;
+            top: 55%;
+            left: 60%;
+            transform: translate(-50%, -50%);
+            max-height: 100px;
+            max-width: 100px;
+            opacity: 0.85;
+            z-index: 1;
+        }
+
+        .ttd-cap-name {
+            font-size: 11px;
+            color: #1a1a1a;
+            border-top: 1px solid #333;
+            padding-top: 4px;
+            margin-top: 4px;
+        }
+
+        .ttd-cap-jabatan {
+            font-size: 10px;
+            color: #666;
+            margin-top: 2px;
+        }
+
+        /* ==========================================
+           PAGE MARGIN
            ========================================== */
         @page {
             margin: 12px;
             margin-bottom: 45px;
         }
 
-        /* CSS Paged Media - Footer di setiap halaman */
         .footer-table {
             position: running(footer);
         }
@@ -734,36 +763,100 @@
 <body>
 
     <!-- ==========================================
-    HEADER WITH LOGO FROM DATABASE
-    ========================================== -->
+         LEMBAR 1: INVOICE
+         ========================================== -->
+
+    <!-- HEADER DENGAN LOGO KIRI + INFO -->
     <div class="header">
-        <div class="logo-container">
-            @if ($logoExists && $logoBase64)
-                <img src="{{ $logoBase64 }}" alt="Logo PT. BERKAH ARRUM HARAMAIN" class="logo-img">
-            @else
-                <!-- Fallback jika logo tidak ditemukan -->
-                <div style="font-size:40px; font-weight:bold; color:#D4A017;">🏛️</div>
-            @endif
-            <div class="logo-text">PT. BERKAH ARRUM HARAMAIN</div>
+        <div class="header-container">
+
+            {{-- LOGO DI KIRI --}}
+            <div class="header-logo-left">
+                @if (!empty($logoBase64))
+                    <img src="{{ $logoBase64 }}" alt="Logo" class="logo-img">
+                @else
+                    <div style="font-size:50px; color:#D4A017; font-weight:bold;">🏛️</div>
+                @endif
+            </div>
+
+            {{-- INFO PERUSAHAAN --}}
+            <div class="header-content">
+                <div class="company-name">PT. BERKAH ARRUM HARAMAIN</div>
+
+                <table class="header-detail-table">
+                    <tr>
+                        <td class="detail-label">Alamat</td>
+                        <td class="detail-value">: Jl. Munif Rahman 2. No. 33. Kota Palu, Sulawesi Tengah, Indonesia
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="detail-label">Telepon</td>
+                        <td class="detail-value">: 082237100071 - 082215127565</td>
+                    </tr>
+                    <tr>
+                        <td class="detail-label">Email</td>
+                        <td class="detail-value">: arrumtourpalu@gmail.com</td>
+                    </tr>
+                </table>
+            </div>
+
         </div>
-        <div class="subtitle">Riwayat Pembayaran Keluarga / Kelompok</div>
-        <div class="company-info">
-            Jl. Munif Rahman 2, No. 33, Kota Palu
-            <span class="separator">|</span>
-            Sulawesi Tengah, Indonesia
-            <br>
-            <span style="font-size:9px; color:#666;">
-                Telp: 082237100071 - 082215127565
-                <span class="separator">|</span>
-                Email: arrumtourpalu@gmail.com
-            </span>
-        </div>
-        <div class="line"></div>
+
+        <div class="header-line"></div>
     </div>
 
-    <!-- ==========================================
-    INFO KELUARGA - TABEL HORIZONTAL
-    ========================================== -->
+    <!-- INFO KELUARGA -->
+    @php
+        $bulanNama = [
+            1 => 'Januari',
+            2 => 'Februari',
+            3 => 'Maret',
+            4 => 'April',
+            5 => 'Mei',
+            6 => 'Juni',
+            7 => 'Juli',
+            8 => 'Agustus',
+            9 => 'September',
+            10 => 'Oktober',
+            11 => 'November',
+            12 => 'Desember',
+        ];
+
+        $allKeberangkatan = collect();
+
+        foreach ($keluarga->jamaahs as $j) {
+            if ($j->keberangkatan && $j->keberangkatan->count() > 0) {
+                foreach ($j->keberangkatan as $keb) {
+                    $keyKeb =
+                        $keb->pivot->tahun_keberangkatan .
+                        '-' .
+                        str_pad($keb->pivot->bulan_keberangkatan, 2, '0', STR_PAD_LEFT);
+                    $allKeberangkatan->put($keyKeb, [
+                        'bulan' => $keb->pivot->bulan_keberangkatan,
+                        'tahun' => $keb->pivot->tahun_keberangkatan,
+                    ]);
+                }
+            } elseif ($j->bulan_keberangkatan && $j->tahun_keberangkatan) {
+                $keyKeb = $j->tahun_keberangkatan . '-' . str_pad($j->bulan_keberangkatan, 2, '0', STR_PAD_LEFT);
+                $allKeberangkatan->put($keyKeb, [
+                    'bulan' => $j->bulan_keberangkatan,
+                    'tahun' => $j->tahun_keberangkatan,
+                ]);
+            }
+        }
+
+        if ($allKeberangkatan->isEmpty() && $keluarga->bulan_keberangkatan && $keluarga->tahun_keberangkatan) {
+            $keyKeb =
+                $keluarga->tahun_keberangkatan . '-' . str_pad($keluarga->bulan_keberangkatan, 2, '0', STR_PAD_LEFT);
+            $allKeberangkatan->put($keyKeb, [
+                'bulan' => $keluarga->bulan_keberangkatan,
+                'tahun' => $keluarga->tahun_keberangkatan,
+            ]);
+        }
+
+        $allKeberangkatan = $allKeberangkatan->sortKeys();
+    @endphp
+
     <table class="info-table">
         <tr>
             <td class="label">Nama Keluarga</td>
@@ -778,25 +871,26 @@
             <td class="value"><strong>{{ $keluarga->jamaahs->count() }}</strong> Orang</td>
         </tr>
         <tr>
-            <td class="label">Keberangkatan</td>
-            <td class="value">
-                @if ($keluarga->bulan_keberangkatan)
-                    {{ date('F', mktime(0, 0, 0, $keluarga->bulan_keberangkatan, 1)) }}
-                    {{ $keluarga->tahun_keberangkatan }}
-                @else
-                    -
-                @endif
+            <td class="label">Bulan Keberangkatan</td>
+            <td class="value" colspan="3">
+                @forelse ($allKeberangkatan as $keb)
+                    <span class="keb-badge">
+                        {{ $bulanNama[$keb['bulan']] ?? '-' }} {{ $keb['tahun'] }}
+                    </span>
+                @empty
+                    <span class="text-muted">-</span>
+                @endforelse
             </td>
+        </tr>
+        <tr>
             <td class="label">Agent</td>
             <td class="value">{{ $keluarga->agent ?? '-' }}
                 @if ($keluarga->fee_agent > 0)
                     (Fee: Rp {{ number_format($keluarga->fee_agent, 0, ',', '.') }})
                 @endif
             </td>
-        </tr>
-        <tr>
             <td class="label">Status Pembayaran</td>
-            <td class="value" colspan="3">
+            <td class="value">
                 @php
                     $statusColors = [
                         'Belum Bayar' => 'badge-belum',
@@ -808,18 +902,21 @@
                 <span class="badge-status {{ $statusColors[$keluarga->status_pembayaran] ?? 'badge-belum' }}">
                     {{ $keluarga->status_pembayaran }}
                 </span>
-                @if ($keluarga->catatan_tambahan)
-                    <span style="margin-left:10px; font-size:10px; color:#888;">
-                        <i>Catatan: {{ $keluarga->catatan_tambahan }}</i>
-                    </span>
-                @endif
             </td>
         </tr>
+        @if ($keluarga->catatan_tambahan)
+            <tr>
+                <td class="label">Catatan</td>
+                <td class="value" colspan="3">
+                    <span style="font-size:10px; color:#888;">
+                        <i>{{ $keluarga->catatan_tambahan }}</i>
+                    </span>
+                </td>
+            </tr>
+        @endif
     </table>
 
-    <!-- ==========================================
-    SUMMARY - TABEL HORIZONTAL 3 KOLOM
-    ========================================== -->
+    <!-- SUMMARY -->
     <table class="summary-table">
         <tr>
             <td>
@@ -838,9 +935,7 @@
         </tr>
     </table>
 
-    <!-- ==========================================
-    RINGKASAN PER JAMAAH
-    ========================================== -->
+    <!-- RINGKASAN PER JAMAAH -->
     <div class="jamaah-summary-wrapper">
         <div class="jamaah-header">
             <h3>Ringkasan Pembayaran Per Jamaah</h3>
@@ -851,12 +946,12 @@
             <thead>
                 <tr>
                     <th style="width: 5%;">#</th>
-                    <th style="width: 25%;">Nama Jamaah</th>
-                    <th style="width: 12%;">Hubungan</th>
+                    <th style="width: 30%;">Nama Jamaah</th>
+                    <th style="width: 13%;">Hubungan</th>
                     <th style="width: 17%; text-align: right;">Tagihan</th>
-                    <th style="width: 17%; text-align: right;">Dibayar</th>
-                    <th style="width: 17%; text-align: right;">Sisa</th>
-                    <th style="width: 12%; text-align: center;">Status</th>
+                    <th style="width: 15%; text-align: right;">Dibayar</th>
+                    <th style="width: 15%; text-align: right;">Sisa</th>
+                    <th style="width: 10%; text-align: center;">Status</th>
                 </tr>
             </thead>
             <tbody>
@@ -900,9 +995,7 @@
         </table>
     </div>
 
-    <!-- ==========================================
-    TABLE RIWAYAT PEMBAYARAN KELUARGA
-    ========================================== -->
+    <!-- TABLE RIWAYAT PEMBAYARAN KELUARGA -->
     <div class="table-wrapper">
         <div class="table-header">
             <h3>Riwayat Pembayaran Keluarga</h3>
@@ -914,10 +1007,10 @@
                 <tr>
                     <th style="width: 5%;">#</th>
                     <th style="width: 15%;">Tanggal</th>
-                    <th style="width: 25%;">Jamaah</th>
-                    <th style="width: 17%;">Metode</th>
-                    <th style="width: 15%;">Jenis</th>
-                    <th style="width: 23%; text-align: right;">Jumlah</th>
+                    <th style="width: 30%;">Jamaah</th>
+                    <th style="width: 18%;">Metode</th>
+                    <th style="width: 12%;">Jenis</th>
+                    <th style="width: 20%; text-align: right;">Jumlah</th>
                 </tr>
             </thead>
             <tbody>
@@ -985,163 +1078,8 @@
     </div>
 
     <!-- ==========================================
-    DAFTAR METODE PEMBAYARAN (HALAMAN BARU)
-    ========================================== -->
-    @php
-        $filteredMetode = isset($metodePembayarans)
-            ? $metodePembayarans->filter(function ($item) {
-                return $item->jenis_pembayaran != 'cash';
-            })
-            : collect();
-    @endphp
-
-    @if ($filteredMetode->count() > 0)
-        <div class="page-break"></div>
-
-        <div class="metode-wrapper">
-            <div class="metode-header">
-                <h3>Daftar Metode Pembayaran Tersedia</h3>
-                <span class="count">{{ $filteredMetode->count() }} Metode</span>
-            </div>
-
-            <table class="metode">
-                <thead>
-                    <tr>
-                        <th style="width: 5%;">#</th>
-                        <th style="width: 18%;">Jenis Pembayaran</th>
-                        <th style="width: 27%;">Bank / E-Wallet</th>
-                        <th style="width: 25%;">Nomor Rekening / Telepon</th>
-                        <th style="width: 25%;">Atas Nama</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @foreach ($filteredMetode as $index => $metode)
-                        @php
-                            $badgeClass = match ($metode->jenis_pembayaran) {
-                                'bank_transfer' => 'badge-bank',
-                                'e_wallet' => 'badge-ewallet',
-                                default => 'badge-bank',
-                            };
-                            $jenisLabel = match ($metode->jenis_pembayaran) {
-                                'bank_transfer' => 'Bank Transfer',
-                                'e_wallet' => 'E-Wallet',
-                                default => '-',
-                            };
-                        @endphp
-                        <tr>
-                            <td class="text-center text-muted">{{ $loop->iteration }}</td>
-                            <td>
-                                <span class="badge-metode {{ $badgeClass }}">
-                                    {{ $jenisLabel }}
-                                </span>
-                            </td>
-                            <td>
-                                @if ($metode->jenis_pembayaran == 'bank_transfer')
-                                    <strong>{{ $metode->nama_bank }}</strong>
-                                    <span style="color:#888; font-size:8px;">({{ $metode->kode_bank ?? '-' }})</span>
-                                @elseif($metode->jenis_pembayaran == 'e_wallet')
-                                    <strong>{{ $metode->e_wallet_type }}</strong>
-                                @else
-                                    <span style="color:#888;">-</span>
-                                @endif
-                            </td>
-                            <td>
-                                @if ($metode->jenis_pembayaran == 'bank_transfer')
-                                    {{ $metode->nomor_rekening ?? '-' }}
-                                @elseif($metode->jenis_pembayaran == 'e_wallet')
-                                    {{ $metode->nomor_telepon ?? '-' }}
-                                @else
-                                    <span style="color:#888;">-</span>
-                                @endif
-                            </td>
-                            <td>
-                                @if ($metode->jenis_pembayaran == 'bank_transfer')
-                                    {{ $metode->atas_nama ?? '-' }}
-                                @else
-                                    <span style="color:#888;">-</span>
-                                @endif
-                            </td>
-                        </tr>
-                    @endforeach
-                </tbody>
-            </table>
-        </div>
-    @endif
-
-    @php
-        $transaksiDenganBukti = $transaksis->filter(function ($t) {
-            return ($t->bukti_exists ?? false) && !empty($t->bukti_base64);
-        });
-    @endphp
-
-    @if ($transaksiDenganBukti->count() > 0)
-        <div class="page-break"></div>
-
-        <div class="lampiran-header">
-            <h2>Lampiran Bukti Pembayaran Keluarga</h2>
-            <p>{{ $transaksiDenganBukti->count() }} Bukti pembayaran dari {{ $transaksis->count() }} transaksi</p>
-        </div>
-
-        <div class="lampiran-grid">
-            @foreach ($transaksiDenganBukti as $index => $transaksi)
-                @php
-                    $isImage = in_array($transaksi->bukti_extension ?? '', [
-                        'jpg',
-                        'jpeg',
-                        'png',
-                        'gif',
-                        'webp',
-                        'bmp',
-                    ]);
-                    $isPdf = ($transaksi->bukti_extension ?? '') == 'pdf';
-                    $buktiBase64 = $transaksi->bukti_base64 ?? '';
-                    $buktiName = $transaksi->bukti_name ?? 'file';
-                    $tanggal =
-                        $transaksi->tanggal_transaksi_formatted ??
-                        ($transaksi->tanggal_transaksi ? date('d/m/Y', strtotime($transaksi->tanggal_transaksi)) : '-');
-                    $jumlah = number_format($transaksi->jumlah_bayar, 0, ',', '.');
-                    $jenis = $transaksi->jenisTransaksi->nama ?? '-';
-                    $jamaahName = $transaksi->jamaah->nama_lengkap ?? 'Unknown';
-                @endphp
-                <div class="lampiran-item">
-                    <div class="lampiran-info">
-                        <strong>#{{ $loop->iteration }}</strong> - {{ $jenis }}
-                        <div style="font-size:8px; color:#666; margin-top:2px;">
-                            {{ $jamaahName }}
-                        </div>
-                        <div class="lampiran-date">{{ $tanggal }}</div>
-                    </div>
-
-                    @if ($isImage)
-                        <div class="lampiran-image">
-                            <img src="{{ $buktiBase64 }}" alt="Bukti {{ $loop->iteration }}">
-                        </div>
-                    @elseif($isPdf)
-                        <div class="lampiran-file">
-                            <span class="icon">PDF</span>
-                            <div class="filename">{{ Str::limit($buktiName, 25) }}</div>
-                            <div style="font-size: 8px; color: #999; margin-top: 3px;">File PDF</div>
-                        </div>
-                    @else
-                        <div class="lampiran-file">
-                            <span class="icon">FILE</span>
-                            <div class="filename">{{ Str::limit($buktiName, 25) }}</div>
-                            <div style="font-size: 8px; color: #999; margin-top: 3px;">File</div>
-                        </div>
-                    @endif
-
-                    <div class="lampiran-amount">Rp {{ $jumlah }}</div>
-                    @if ($transaksi->keterangan)
-                        <div class="lampiran-keterangan">{{ $transaksi->keterangan }}</div>
-                    @endif
-                </div>
-            @endforeach
-        </div>
-    @endif
-
-    <!-- ==========================================
-    SYARAT DAN KETENTUAN (HALAMAN TERPISAH)
-    ========================================== -->
+         LEMBAR 2: SYARAT DAN KETENTUAN
+         ========================================== -->
     <div class="page-break"></div>
 
     <div class="syarat-wrapper">
@@ -1182,8 +1120,119 @@
     </div>
 
     <!-- ==========================================
-    FOOTER - TABEL HORIZONTAL DI SETIAP HALAMAN
-    ========================================== -->
+         LEMBAR 3: LAMPIRAN BUKTI PEMBAYARAN
+         ========================================== -->
+    @php
+        $transaksiDenganBukti = collect();
+
+        if (isset($transaksis) && $transaksis instanceof \Illuminate\Support\Collection) {
+            $transaksiDenganBukti = $transaksis->filter(function ($t) {
+                return ($t->bukti_exists ?? false) && !empty($t->bukti_base64);
+            });
+        }
+    @endphp
+
+    @if ($transaksiDenganBukti->count() > 0)
+        <div class="page-break"></div>
+
+        <div class="lampiran-header">
+            <h2>Lampiran Bukti Pembayaran Keluarga</h2>
+            <p>{{ $transaksiDenganBukti->count() }} Bukti pembayaran dari {{ $transaksis->count() }} transaksi</p>
+        </div>
+
+        <div class="lampiran-grid">
+            @foreach ($transaksiDenganBukti as $index => $transaksi)
+                @php
+                    $isImage = in_array($transaksi->bukti_extension ?? '', [
+                        'jpg',
+                        'jpeg',
+                        'png',
+                        'gif',
+                        'webp',
+                        'bmp',
+                    ]);
+                    $isPdf = ($transaksi->bukti_extension ?? '') == 'pdf';
+                    $buktiBase64 = $transaksi->bukti_base64 ?? '';
+                    $buktiName = $transaksi->bukti_name ?? 'file';
+                    $tanggal =
+                        $transaksi->tanggal_transaksi_formatted ??
+                        ($transaksi->tanggal_transaksi ? date('d/m/Y', strtotime($transaksi->tanggal_transaksi)) : '-');
+                    $jumlah = number_format($transaksi->jumlah_bayar, 0, ',', '.');
+                    $jenis = $transaksi->jenisTransaksi->nama ?? '-';
+                    $jamaahName = $transaksi->jamaah->nama_lengkap ?? 'Unknown';
+                @endphp
+                <div class="lampiran-item">
+                    <div class="lampiran-info">
+                        <strong>#{{ $loop->iteration }}</strong> - {{ $jenis }}
+                        <div style="font-size:8px; color:#666; margin-top:2px;">
+                            {{ $jamaahName }}
+                        </div>
+                        <div class="lampiran-date">{{ $tanggal }}</div>
+                    </div>
+
+                    @if ($isImage && $buktiBase64)
+                        <div class="lampiran-image">
+                            <img src="{{ $buktiBase64 }}" alt="Bukti {{ $loop->iteration }}">
+                        </div>
+                    @elseif($isPdf)
+                        <div class="lampiran-file">
+                            <span class="icon">📄 PDF</span>
+                            <div class="filename">{{ Str::limit($buktiName, 25) }}</div>
+                            <div style="font-size: 8px; color: #999; margin-top: 3px;">File PDF</div>
+                        </div>
+                    @else
+                        <div class="lampiran-file">
+                            <span class="icon">📎 FILE</span>
+                            <div class="filename">{{ Str::limit($buktiName, 25) }}</div>
+                            <div style="font-size: 8px; color: #999; margin-top: 3px;">File</div>
+                        </div>
+                    @endif
+
+                    <div class="lampiran-amount">Rp {{ $jumlah }}</div>
+                    @if ($transaksi->keterangan)
+                        <div class="lampiran-keterangan">{{ $transaksi->keterangan }}</div>
+                    @endif
+                </div>
+            @endforeach
+        </div>
+    @endif
+
+    <!-- ==========================================
+         TANDA TANGAN & CAP PERUSAHAAN
+         ========================================== -->
+    @if (!empty($ttdBase64) || !empty($capBase64))
+        <div class="ttd-cap-wrapper">
+            <table class="ttd-cap-table">
+                <tr>
+                    <td class="ttd-cap-spacer"></td>
+                    <td class="ttd-cap-content">
+                        <div class="ttd-cap-location">
+                            Palu, {{ $tanggal_cetak ? date('d F Y', strtotime($tanggal_cetak)) : date('d F Y') }}
+                        </div>
+                        <div class="ttd-cap-company">PT. BERKAH ARRUM HARAMAIN</div>
+
+                        <div class="ttd-cap-signature-area">
+                            @if (!empty($capBase64))
+                                <img src="{{ $capBase64 }}" alt="Cap" class="cap-image">
+                            @endif
+                            @if (!empty($ttdBase64))
+                                <img src="{{ $ttdBase64 }}" alt="TTD" class="ttd-image">
+                            @endif
+                        </div>
+
+                        <div class="ttd-cap-name">
+                            <strong>{{ $ttdNama ?? '(...................................)' }}</strong>
+                        </div>
+                        <div class="ttd-cap-jabatan">
+                            {{ $ttdJabatan ?? 'Direktur' }}
+                        </div>
+                    </td>
+                </tr>
+            </table>
+        </div>
+    @endif
+
+    <!-- FOOTER -->
     <table class="footer-table">
         <tr>
             <td class="footer-left">

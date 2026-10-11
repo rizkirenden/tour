@@ -14,6 +14,7 @@ return new class extends Migration
             $table->integer('bulan');
             $table->integer('tahun');
             $table->integer('harga')->default(0);
+            $table->integer('kuota')->default(0);   // <-- TAMBAH INI
             $table->string('flyer')->nullable()->comment('Path file flyer untuk harga bulanan ini');
             $table->boolean('is_active')->default(true);
             $table->timestamps();

@@ -7,6 +7,9 @@
                     Keluarga / Kelompok</th>
                 <th class="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Nama
                     Keluarga / Kelompok</th>
+                <th class="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                    Keberangkatan
+                </th>
                 <th class="px-4 py-3 text-center text-xs font-semibold text-gray-500 uppercase tracking-wider">Jamaah
                 </th>
                 <th class="px-4 py-3 text-center text-xs font-semibold text-gray-500 uppercase tracking-wider">Diskon
@@ -30,6 +33,17 @@
                     <td class="px-4 py-3">
                         <p class="font-medium text-gray-800">{{ $item->nama_keluarga }}</p>
                         <p class="text-xs text-gray-400">Agent: {{ $item->agent ?? '-' }}</p>
+                    </td>
+                    <td class="px-4 py-3">
+                        @if ($item->bulan_keberangkatan && $item->tahun_keberangkatan)
+                            <span
+                                class="inline-flex items-center gap-1 px-2 py-0.5 bg-blue-100 text-blue-700 rounded-full text-xs font-medium w-fit">
+                                <i class="fas fa-plane text-[10px]"></i>
+                                {{ $item->bulan_keberangkatan_nama }} {{ $item->tahun_keberangkatan }}
+                            </span>
+                        @else
+                            <span class="text-xs text-gray-400">-</span>
+                        @endif
                     </td>
                     <td class="px-4 py-3 text-center">
                         <span
@@ -86,7 +100,7 @@
                 </tr>
             @empty
                 <tr>
-                    <td colspan="8" class="px-4 py-12 text-center">
+                    <td colspan="9" class="px-4 py-12 text-center">
                         <div class="flex flex-col items-center">
                             <div class="w-16 h-16 bg-gray-100 rounded-2xl flex items-center justify-center mb-3">
                                 <i class="fas fa-users text-gray-300 text-3xl"></i>

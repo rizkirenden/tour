@@ -21,6 +21,10 @@ class Keluarga extends Model
         'fee_agent',
         'bulan_keberangkatan',
         'tahun_keberangkatan',
+        'bulan_harga',
+        'tahun_harga',
+        'id_produk_keberangkatan',
+        'id_produk_harga_bulanan',
         'total_tagihan_sebelum_diskon',
         'nilai_diskon',
         'total_diskon',
@@ -35,6 +39,8 @@ class Keluarga extends Model
     protected $casts = [
         'bulan_keberangkatan' => 'integer',
         'tahun_keberangkatan' => 'integer',
+        'bulan_harga' => 'integer',
+        'tahun_harga' => 'integer',
         'fee_agent' => 'integer',
         'total_tagihan_sebelum_diskon' => 'integer',
         'nilai_diskon' => 'integer',
@@ -43,6 +49,10 @@ class Keluarga extends Model
         'total_dibayar' => 'integer',
         'sisa_tagihan' => 'integer',
     ];
+
+    // ==========================================
+    // RELATIONS
+    // ==========================================
 
     public function jamaahs()
     {
@@ -59,7 +69,20 @@ class Keluarga extends Model
         return $this->belongsTo(Diskon::class, 'id_diskon', 'id_diskon');
     }
 
-    // Accessor untuk fee agent formatted
+    public function produkKeberangkatan()
+    {
+        return $this->belongsTo(ProdukKeberangkatan::class, 'id_produk_keberangkatan', 'id');
+    }
+
+    public function produkHargaBulanan()
+    {
+        return $this->belongsTo(ProdukHargaBulanan::class, 'id_produk_harga_bulanan', 'id');
+    }
+
+    // ==========================================
+    // ACCESSORS
+    // ==========================================
+
     public function getFeeAgentFormattedAttribute()
     {
         return 'Rp ' . number_format($this->fee_agent, 0, ',', '.');
@@ -96,6 +119,50 @@ class Keluarga extends Model
     {
         return $this->kode_keluarga ?? '-';
     }
+
+    // ==========================================
+    // KEBERANGKATAN & HARGA
+    // ==========================================
+
+    public function getBulanKeberangkatanNamaAttribute()
+    {
+        $bulanNama = [
+            1 => 'Januari', 2 => 'Februari', 3 => 'Maret', 4 => 'April',
+            5 => 'Mei', 6 => 'Juni', 7 => 'Juli', 8 => 'Agustus',
+            9 => 'September', 10 => 'Oktober', 11 => 'November', 12 => 'Desember'
+        ];
+        return $bulanNama[$this->bulan_keberangkatan] ?? '-';
+    }
+
+    public function getBulanHargaNamaAttribute()
+    {
+        $bulanNama = [
+            1 => 'Januari', 2 => 'Februari', 3 => 'Maret', 4 => 'April',
+            5 => 'Mei', 6 => 'Juni', 7 => 'Juli', 8 => 'Agustus',
+            9 => 'September', 10 => 'Oktober', 11 => 'November', 12 => 'Desember'
+        ];
+        return $bulanNama[$this->bulan_harga] ?? '-';
+    }
+
+    public function getKeberangkatanFormattedAttribute()
+    {
+        if ($this->bulan_keberangkatan && $this->tahun_keberangkatan) {
+            return $this->bulan_keberangkatan_nama . ' ' . $this->tahun_keberangkatan;
+        }
+        return '-';
+    }
+
+    public function getHargaBulanFormattedAttribute()
+    {
+        if ($this->bulan_harga && $this->tahun_harga) {
+            return $this->bulan_harga_nama . ' ' . $this->tahun_harga;
+        }
+        return '-';
+    }
+
+    // ==========================================
+    // GENERATE KODE
+    // ==========================================
 
     public static function generateKodeKeluarga()
     {
