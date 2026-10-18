@@ -555,6 +555,42 @@ class Jamaah extends Model
     }
 
     // ==========================================
+// PEMBUATAN PASSPORT (Fee Pendamping + Fee Petugas)
+// ==========================================
+public function getTotalPembuatanPassportAttribute()
+{
+    return ($this->pendampingan_fee ?? 0) + ($this->pendampingan_fee_petugas ?? 0);
+}
+
+public function getTotalPembuatanPassportFormattedAttribute()
+{
+    return 'Rp ' . number_format($this->total_pembuatan_passport, 0, ',', '.');
+}
+
+// ==========================================
+// HARGA PRODUK (dari pivot keberangkatan)
+// ==========================================
+public function getHargaProdukAttribute()
+{
+    if ($this->relationLoaded('keberangkatan') && $this->keberangkatan->isNotEmpty()) {
+        return (int) ($this->keberangkatan->first()->pivot->harga ?? 0);
+    }
+
+    if ($this->keberangkatan()->exists()) {
+        $first = $this->keberangkatan()->first();
+        return (int) ($first->pivot->harga ?? 0);
+    }
+
+    // Fallback: harga_produk = total_tagihan_sebelum_diskon - passport fee
+    return max(0, ($this->total_tagihan_sebelum_diskon ?? 0) - $this->total_pembuatan_passport);
+}
+
+public function getHargaProdukFormattedAttribute()
+{
+    return 'Rp ' . number_format($this->harga_produk, 0, ',', '.');
+}
+
+    // ==========================================
     // SCOPES
     // ==========================================
 

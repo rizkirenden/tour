@@ -21,6 +21,7 @@
 @section('content')
     <div class="mx-auto">
         <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+            <!-- HEADER -->
             <div class="px-6 py-4 border-b border-gray-100 flex flex-wrap items-center justify-between gap-3">
                 <div>
                     <h5 class="text-sm font-semibold text-gray-700">Detail Keberangkatan</h5>
@@ -42,7 +43,7 @@
                 </div>
             </div>
 
-            <!-- Progress Bar -->
+            <!-- PROGRESS BAR -->
             <div class="px-6 pt-4">
                 <div class="flex items-center gap-4">
                     <span class="text-sm font-medium text-gray-700">Progress:</span>
@@ -54,8 +55,9 @@
                 </div>
             </div>
 
-            <!-- Header -->
+            <!-- CONTENT -->
             <div class="p-6">
+                {{-- HEADER KEBERANGKATAN --}}
                 <div
                     class="bg-gradient-to-r from-yellow-50 to-yellow-100/50 rounded-xl p-6 mb-6 border border-yellow-200/50">
                     <div class="flex flex-wrap items-start justify-between gap-4">
@@ -109,790 +111,673 @@
                     </div>
                 </div>
 
-                <!-- Grid Detail -->
-                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                {{-- 1. RINGKASAN PENDAPATAN --}}
+                <div class="bg-gray-50 rounded-xl p-5 border border-gray-100 mb-6">
+                    <h6 class="text-sm font-semibold text-gray-700 mb-4 flex items-center">
+                        <i class="fas fa-money-bill-wave text-green-500 mr-2"></i> Ringkasan Pendapatan
+                    </h6>
 
-                    <!-- ========================================== -->
-                    <!-- MASKAPAI & HARGA -->
-                    <!-- ========================================== -->
-                    <div class="bg-gray-50 rounded-xl p-5 border border-gray-100">
-                        <div class="flex items-center justify-between mb-4">
-                            <h6 class="text-sm font-semibold text-gray-700 flex items-center">
-                                <i class="fas fa-plane text-yellow-500 mr-2"></i> Maskapai & Harga
-                            </h6>
-                            <div class="flex items-center gap-2">
-                                {!! $departure->maskapai_status_badge !!}
-                                <button onclick="openMaskapaiModal()"
-                                    class="inline-flex items-center px-3 py-1.5 bg-yellow-500 text-white text-xs rounded-lg hover:bg-yellow-600 transition">
-                                    <i class="fas fa-plus mr-1"></i> Atur Maskapai
-                                </button>
-                            </div>
+                    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
+                        <div class="bg-white rounded-lg p-3 border border-gray-200 text-center">
+                            <p class="text-xs text-gray-500">Pendapatan Kotor</p>
+                            <p class="text-sm font-bold text-green-600">
+                                {{ $departure->total_pendapatan_kotor_formatted }}</p>
                         </div>
-
-                        <div class="mb-3">
-                            <div class="relative">
-                                <i class="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm"></i>
-                                <input type="text" id="searchMaskapai" placeholder="Cari maskapai..."
-                                    class="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500 text-sm">
-                            </div>
+                        <div class="bg-white rounded-lg p-3 border border-gray-200 text-center">
+                            <p class="text-xs text-gray-500">Total Diskon</p>
+                            <p class="text-sm font-bold text-red-600">{{ $departure->total_diskon_formatted }}</p>
                         </div>
-
-                        <dl class="space-y-3" id="maskapaiList">
-                            <div class="flex justify-between text-sm border-b border-gray-100 pb-2 maskapai-item"
-                                data-nama="domestik berangkat">
-                                <dt class="text-gray-500">Domestik Berangkat</dt>
-                                <dd class="font-medium text-gray-700 text-right">
-                                    <div>{{ $departure->maskapaiDomestikBerangkat->nama_maskapai ?? '-' }}</div>
-                                    <div class="text-xs text-yellow-600 font-bold">
-                                        {{ $departure->harga_maskapai_domestik_berangkat_formatted }}</div>
-                                </dd>
-                            </div>
-                            <div class="flex justify-between text-sm border-b border-gray-100 pb-2 maskapai-item"
-                                data-nama="domestik pulang">
-                                <dt class="text-gray-500">Domestik Pulang</dt>
-                                <dd class="font-medium text-gray-700 text-right">
-                                    <div>{{ $departure->maskapaiDomestikPulang->nama_maskapai ?? '-' }}</div>
-                                    <div class="text-xs text-yellow-600 font-bold">
-                                        {{ $departure->harga_maskapai_domestik_pulang_formatted }}</div>
-                                </dd>
-                            </div>
-                            <div class="flex justify-between text-sm border-b border-gray-100 pb-2 maskapai-item"
-                                data-nama="internasional berangkat">
-                                <dt class="text-gray-500">Internasional Berangkat</dt>
-                                <dd class="font-medium text-gray-700 text-right">
-                                    <div>{{ $departure->maskapaiInternasionalBerangkat->nama_maskapai ?? '-' }}</div>
-                                    <div class="text-xs text-yellow-600 font-bold">
-                                        {{ $departure->harga_maskapai_internasional_berangkat_formatted }}</div>
-                                </dd>
-                            </div>
-                            <div class="flex justify-between text-sm border-b border-gray-100 pb-2 maskapai-item"
-                                data-nama="internasional pulang">
-                                <dt class="text-gray-500">Internasional Pulang</dt>
-                                <dd class="font-medium text-gray-700 text-right">
-                                    <div>{{ $departure->maskapaiInternasionalPulang->nama_maskapai ?? '-' }}</div>
-                                    <div class="text-xs text-yellow-600 font-bold">
-                                        {{ $departure->harga_maskapai_internasional_pulang_formatted }}</div>
-                                </dd>
-                            </div>
-                            <div class="flex justify-between text-sm font-semibold border-t border-gray-200 pt-2 mt-2">
-                                <dt class="text-gray-700">Total Harga Maskapai</dt>
-                                <dd class="text-lg font-bold text-blue-600">
-                                    {{ $departure->total_harga_maskapai_formatted }}</dd>
-                            </div>
-                        </dl>
+                        <div class="bg-white rounded-lg p-3 border border-gray-200 text-center">
+                            <p class="text-xs text-gray-500">Pendapatan Bersih</p>
+                            <p class="text-sm font-bold text-yellow-600">
+                                {{ $departure->total_pendapatan_bersih_formatted }}</p>
+                        </div>
+                        <div class="bg-white rounded-lg p-3 border border-gray-200 text-center">
+                            <p class="text-xs text-gray-500">Total Pendapatan</p>
+                            <p class="text-sm font-bold text-blue-600">
+                                {{ $departure->total_pendapatan_formatted }}</p>
+                        </div>
                     </div>
 
-                    <!-- ========================================== -->
-                    <!-- HOTEL & TIPE KAMAR -->
-                    <!-- ========================================== -->
-                    <div class="bg-gray-50 rounded-xl p-5 border border-gray-100">
-                        <div class="flex items-center justify-between mb-4">
-                            <h6 class="text-sm font-semibold text-gray-700 flex items-center">
-                                <i class="fas fa-hotel text-yellow-500 mr-2"></i> Hotel & Tipe Kamar
-                            </h6>
-                            <div class="flex items-center gap-2">
-                                {!! $departure->hotel_status_badge !!}
-                                <button onclick="openHotelModal()"
-                                    class="inline-flex items-center px-3 py-1.5 bg-yellow-500 text-white text-xs rounded-lg hover:bg-yellow-600 transition">
-                                    <i class="fas fa-plus mr-1"></i> Atur Hotel
+                    <div class="grid grid-cols-2 gap-4 mb-4">
+                        <div class="bg-white rounded-lg p-3 border border-gray-200 text-center">
+                            <p class="text-xs text-gray-500">Keuntungan</p>
+                            <p
+                                class="text-lg font-bold {{ $departure->keuntungan > 0 ? 'text-green-600' : 'text-red-600' }}">
+                                {{ $departure->keuntungan_formatted }}
+                            </p>
+                        </div>
+                        <div class="bg-white rounded-lg p-3 border border-gray-200 text-center">
+                            <p class="text-xs text-gray-500">Margin Laba</p>
+                            <p
+                                class="text-lg font-bold {{ $departure->margin_laba > 0 ? 'text-green-600' : 'text-red-600' }}">
+                                {{ $departure->margin_laba_formatted }}
+                            </p>
+                        </div>
+                    </div>
+
+                    <div class="bg-gradient-to-r from-green-100 to-emerald-100 rounded-lg p-4 border-2 border-green-400">
+                        <div class="flex items-center justify-between flex-wrap gap-2">
+                            <div>
+                                <p class="text-sm font-bold text-green-800">
+                                    <i class="fas fa-calculator mr-2"></i>
+                                    TOTAL KESELURUHAN PENDAPATAN
+                                </p>
+                                <p class="text-[10px] text-green-600 mt-0.5">
+                                    Pendapatan Kotor + Diskon = Total Pendapatan Bersih
+                                </p>
+                            </div>
+                            <div class="text-right">
+                                <p class="text-xl md:text-2xl font-extrabold text-green-700">
+                                    {{ $departure->total_pendapatan_bersih_formatted }}
+                                </p>
+                                <p class="text-[10px] text-green-600">Pendapatan Bersih Final</p>
+                            </div>
+                        </div>
+                        <div class="mt-3 pt-3 border-t border-green-300 grid grid-cols-2 md:grid-cols-3 gap-2 text-xs">
+                            <div class="flex justify-between">
+                                <span class="text-green-700">Kotor:</span>
+                                <span
+                                    class="font-bold text-green-800">{{ $departure->total_pendapatan_kotor_formatted }}</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="text-green-700">Diskon:</span>
+                                <span class="font-bold text-red-600">{{ $departure->total_diskon_formatted }}</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="text-green-700">Bersih:</span>
+                                <span
+                                    class="font-bold text-green-800">{{ $departure->total_pendapatan_bersih_formatted }}</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                {{-- 2. FEE PASSPORT & DAFTAR JAMAAH --}}
+                @php
+                    $bulanNama = [
+                        1 => 'Jan',
+                        2 => 'Feb',
+                        3 => 'Mar',
+                        4 => 'Apr',
+                        5 => 'Mei',
+                        6 => 'Jun',
+                        7 => 'Jul',
+                        8 => 'Agu',
+                        9 => 'Sep',
+                        10 => 'Okt',
+                        11 => 'Nov',
+                        12 => 'Des',
+                    ];
+                    $bulanFull = [
+                        1 => 'Januari',
+                        2 => 'Februari',
+                        3 => 'Maret',
+                        4 => 'April',
+                        5 => 'Mei',
+                        6 => 'Juni',
+                        7 => 'Juli',
+                        8 => 'Agustus',
+                        9 => 'September',
+                        10 => 'Oktober',
+                        11 => 'November',
+                        12 => 'Desember',
+                    ];
+
+                    $totalFeePassport = $departure->jamaahs->sum(function ($j) {
+                        return $j->fee_passport ?? 0;
+                    });
+                    $jamaahDenganPassport = $departure->jamaahs
+                        ->filter(function ($j) {
+                            return ($j->fee_passport ?? 0) > 0;
+                        })
+                        ->count();
+                @endphp
+
+                <div class="bg-gray-50 rounded-xl p-5 border border-gray-100 mb-6">
+                    <div class="flex items-center justify-between mb-4 flex-wrap gap-2">
+                        <h6 class="text-sm font-semibold text-gray-700 flex items-center">
+                            <i class="fas fa-passport text-purple-500 mr-2"></i> Fee Passport & Daftar Jamaah
+                            <span class="ml-2 text-xs bg-blue-100 text-blue-800 px-2 py-0.5 rounded-full">
+                                {{ $departure->jamaahs->count() }} Jamaah
+                            </span>
+                        </h6>
+                        <div class="flex items-center gap-2">
+                            {!! $departure->jamaah_status_badge !!}
+                            <form action="{{ route('transaksional.departure.sync-jamaahs', $departure->id_departure) }}"
+                                method="POST"
+                                onsubmit="return confirm('Mencari jamaah baru yang memenuhi kriteria (Lunas, produk sesuai, bulan/tahun sesuai, dan belum terdaftar di departure lain). Lanjutkan?')">
+                                @csrf
+                                <button type="submit"
+                                    class="inline-flex items-center px-3 py-1.5 bg-purple-500 text-white text-xs rounded-lg hover:bg-purple-600 transition"
+                                    title="Cari jamaah baru yang tersedia">
+                                    <i class="fas fa-sync-alt mr-1"></i> Sync Jamaah
                                 </button>
-                            </div>
+                            </form>
+                            <button onclick="openJamaahModal()"
+                                class="inline-flex items-center px-3 py-1.5 bg-yellow-500 text-white text-xs rounded-lg hover:bg-yellow-600 transition">
+                                <i class="fas fa-plus mr-1"></i> Atur Daftar Jamaah
+                            </button>
                         </div>
+                    </div>
 
-                        <div class="mb-3">
-                            <div class="relative">
-                                <i
-                                    class="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm"></i>
-                                <input type="text" id="searchHotel" placeholder="Cari hotel..."
-                                    class="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500 text-sm">
-                            </div>
+                    <div class="grid grid-cols-2 md:grid-cols-3 gap-3 mb-4">
+                        <div class="bg-white rounded-lg p-3 border border-purple-200 text-center">
+                            <p class="text-xs text-gray-500">Total Fee Passport</p>
+                            <p class="text-lg font-bold text-purple-600">
+                                Rp {{ number_format($totalFeePassport, 0, ',', '.') }}
+                            </p>
                         </div>
+                        <div class="bg-white rounded-lg p-3 border border-purple-200 text-center">
+                            <p class="text-xs text-gray-500">Jamaah dengan Passport</p>
+                            <p class="text-lg font-bold text-purple-600">{{ $jamaahDenganPassport }} orang</p>
+                        </div>
+                        <div class="bg-white rounded-lg p-3 border border-purple-200 text-center">
+                            <p class="text-xs text-gray-500">Total Jamaah</p>
+                            <p class="text-lg font-bold text-gray-700">{{ $departure->jamaahs->count() }} orang</p>
+                        </div>
+                    </div>
 
-                        @php
-                            $hotelMekkahDetails = $departure->hotelMekkahDetails;
-                            $hotelMadinahDetails = $departure->hotelMadinahDetails;
-                            $hotelTransitDetails = $departure->hotelDetails->whereNotIn('id_hotel', [
-                                $departure->id_hotel_mekkah,
-                                $departure->id_hotel_madinah,
-                            ]);
-                        @endphp
+                    <div class="mb-3 flex flex-wrap items-center gap-3 text-xs">
+                        <span class="inline-flex items-center gap-1.5">
+                            <span class="w-3 h-3 rounded-full bg-green-500"></span>
+                            <span class="text-gray-600">Lunas</span>
+                        </span>
+                        <span class="inline-flex items-center gap-1.5">
+                            <span class="w-3 h-3 rounded-full bg-red-500"></span>
+                            <span class="text-gray-600">Belum Lunas</span>
+                        </span>
+                        <span class="inline-flex items-center gap-1.5">
+                            <span class="w-3 h-3 rounded-full bg-purple-500"></span>
+                            <span class="text-gray-600">Fee Passport</span>
+                        </span>
+                    </div>
 
-                        <div id="hotelList">
-                            @if ($departure->hotelMekkah || $departure->hotelMadinah || $departure->hotelTransit)
-                                @if ($departure->hotelMekkah)
-                                    <div class="mb-4 hotel-item"
-                                        data-nama="{{ strtolower($departure->hotel_mekkah_nama) }}">
-                                        <div class="flex items-center justify-between">
-                                            <h5 class="text-sm font-semibold text-gray-700">
-                                                {{ $departure->hotel_mekkah_nama }}</h5>
-                                            <span class="text-sm font-bold text-yellow-600">
-                                                {{ $departure->total_harga_hotel_mekkah_formatted }}</span>
-                                        </div>
-                                        @if ($hotelMekkahDetails->count() > 0)
-                                            <div class="grid grid-cols-1 gap-2 mt-2">
-                                                @foreach ($hotelMekkahDetails as $detail)
-                                                    <div class="bg-white rounded-lg p-3 border border-gray-200 hotel-detail-item"
-                                                        data-hotel="mekkah">
-                                                        <p class="text-sm font-medium text-gray-700">
-                                                            {{ $detail->tipe_kamar }}</p>
-                                                        <p class="text-xs text-gray-500">
-                                                            {{ $detail->jumlah_kamar }} Kamar ×
-                                                            {{ $detail->harga_per_malam_formatted }} ×
-                                                            {{ $detail->durasi_menginap }} Malam
-                                                        </p>
-                                                        <p class="text-sm font-bold text-yellow-600">
-                                                            {{ $detail->total_harga_formatted }}</p>
-                                                        @if ($detail->catatan)
-                                                            <p class="text-xs text-gray-400 mt-1">{{ $detail->catatan }}
-                                                            </p>
-                                                        @endif
-                                                    </div>
-                                                @endforeach
+                    <div class="mb-3">
+                        <div class="relative">
+                            <i class="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm"></i>
+                            <input type="text" id="searchJamaah" placeholder="Cari jamaah..."
+                                class="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500 text-sm">
+                        </div>
+                    </div>
+
+                    @if ($departure->jamaahs->count() > 0)
+                        <div class="max-h-96 overflow-y-auto space-y-1.5" id="jamaahList">
+                            @foreach ($departure->jamaahs as $jamaah)
+                                @php
+                                    $isLunas = $jamaah->status_pembayaran == 'Lunas';
+
+                                    if ($isLunas) {
+                                        $borderClass = 'border-l-4 border-l-green-500';
+                                        $bgClass = 'bg-green-50/60';
+                                        $badgeClass = 'bg-green-500 text-white';
+                                        $badgeText = 'LUNAS';
+                                    } else {
+                                        $borderClass = 'border-l-4 border-l-red-500';
+                                        $bgClass = 'bg-red-50/60';
+                                        $badgeClass = 'bg-red-500 text-white';
+                                        $badgeText = 'BELUM LUNAS';
+                                    }
+
+                                    $jamaahKeberangkatanInfo = '';
+                                    $jamaahHargaInfo = '';
+                                    $jamaahHargaLabel = 'Harga';
+                                    $jamaahFeePassport = $jamaah->fee_passport ?? 0;
+
+                                    if ($jamaah->keberangkatan && $jamaah->keberangkatan->count() > 0) {
+                                        $firstK = $jamaah->keberangkatan->first();
+                                        $bulanPivot = $firstK->pivot->bulan_keberangkatan ?? null;
+                                        $tahunPivot = $firstK->pivot->tahun_keberangkatan ?? null;
+
+                                        if ($bulanPivot && $tahunPivot) {
+                                            $jamaahKeberangkatanInfo =
+                                                ($bulanNama[$bulanPivot] ?? '-') . ' ' . $tahunPivot;
+                                            $jamaahHargaLabel =
+                                                'Harga (' . ($bulanFull[$bulanPivot] ?? '-') . ' ' . $tahunPivot . ')';
+                                        }
+
+                                        if ($firstK->pivot->harga_paket ?? null) {
+                                            $jamaahHargaInfo =
+                                                'Rp ' . number_format($firstK->pivot->harga_paket, 0, ',', '.');
+                                        } elseif ($firstK->pivot->harga ?? null) {
+                                            $jamaahHargaInfo =
+                                                'Rp ' . number_format($firstK->pivot->harga, 0, ',', '.');
+                                        }
+                                    } elseif ($jamaah->bulan_keberangkatan && $jamaah->tahun_keberangkatan) {
+                                        $jamaahKeberangkatanInfo =
+                                            ($bulanNama[$jamaah->bulan_keberangkatan] ?? '-') .
+                                            ' ' .
+                                            $jamaah->tahun_keberangkatan;
+                                        $jamaahHargaLabel =
+                                            'Harga (' .
+                                            ($bulanFull[$jamaah->bulan_keberangkatan] ?? '-') .
+                                            ' ' .
+                                            $jamaah->tahun_keberangkatan .
+                                            ')';
+                                    }
+
+                                    if (!$jamaahHargaInfo) {
+                                        if ($jamaah->harga_paket ?? null) {
+                                            $jamaahHargaInfo = 'Rp ' . number_format($jamaah->harga_paket, 0, ',', '.');
+                                        } elseif ($jamaah->total_tagihan ?? null) {
+                                            $jamaahHargaInfo =
+                                                'Rp ' . number_format($jamaah->total_tagihan, 0, ',', '.');
+                                        } elseif ($jamaah->total_tagihan_setelah_diskon ?? null) {
+                                            $jamaahHargaInfo =
+                                                'Rp ' .
+                                                number_format($jamaah->total_tagihan_setelah_diskon, 0, ',', '.');
+                                        }
+                                    }
+                                @endphp
+
+                                <div class="p-3 rounded-lg {{ $borderClass }} {{ $bgClass }} jamaah-item"
+                                    data-name="{{ strtolower($jamaah->nama_lengkap) }}"
+                                    data-status="{{ strtolower($jamaah->status_pembayaran) }}">
+                                    <div class="flex items-start justify-between gap-2">
+                                        <div class="flex-1 min-w-0">
+                                            <div class="flex items-center gap-2 flex-wrap">
+                                                <p class="text-sm font-semibold text-gray-800">
+                                                    {{ $jamaah->nama_lengkap }}
+                                                </p>
+                                                <span
+                                                    class="px-1.5 py-0.5 rounded-full text-[10px] font-bold {{ $badgeClass }}">
+                                                    {{ $badgeText }}
+                                                </span>
+                                                @if ($jamaahFeePassport > 0)
+                                                    <span
+                                                        class="px-1.5 py-0.5 rounded-full text-[10px] font-bold bg-purple-500 text-white">
+                                                        FEE PASS {{ number_format($jamaahFeePassport, 0, ',', '.') }}
+                                                    </span>
+                                                @endif
                                             </div>
-                                        @endif
-                                    </div>
-                                @endif
 
-                                @if ($departure->hotelMadinah)
-                                    <div class="mb-4 hotel-item"
-                                        data-nama="{{ strtolower($departure->hotel_madinah_nama) }}">
-                                        <div class="flex items-center justify-between">
-                                            <h5 class="text-sm font-semibold text-gray-700">
-                                                {{ $departure->hotel_madinah_nama }}</h5>
-                                            <span class="text-sm font-bold text-yellow-600">
-                                                {{ $departure->total_harga_hotel_madinah_formatted }}</span>
+                                            <p class="text-xs text-gray-500 truncate">
+                                                {{ $jamaah->produk_paket }}
+                                            </p>
+
+                                            @if ($jamaahKeberangkatanInfo)
+                                                <p class="text-[11px] text-blue-600 mt-0.5">
+                                                    <i class="fas fa-plane mr-0.5"></i>
+                                                    Keberangkatan:
+                                                    <strong>{{ $jamaahKeberangkatanInfo }}</strong>
+                                                </p>
+                                            @endif
+
+                                            @if ($jamaahHargaInfo)
+                                                <p class="text-[11px] text-emerald-600 font-semibold mt-0.5">
+                                                    <i class="fas fa-money-bill-wave mr-0.5"></i>
+                                                    {{ $jamaahHargaLabel }}:
+                                                    <strong>{{ $jamaahHargaInfo }}</strong>
+                                                </p>
+                                            @endif
+
+                                            @if ($jamaahFeePassport > 0)
+                                                <p class="text-[11px] text-purple-600 font-semibold mt-0.5">
+                                                    <i class="fas fa-passport mr-0.5"></i>
+                                                    Fee Passport:
+                                                    <strong>Rp
+                                                        {{ number_format($jamaahFeePassport, 0, ',', '.') }}</strong>
+                                                </p>
+                                            @endif
+
+                                            @if ($jamaah->agent)
+                                                <p class="text-[11px] text-purple-600 mt-0.5">
+                                                    <i class="fas fa-user-tie mr-0.5"></i>
+                                                    {{ $jamaah->agent->nama_agent ?? 'Agent' }}
+                                                </p>
+                                            @endif
                                         </div>
-                                        @if ($hotelMadinahDetails->count() > 0)
-                                            <div class="grid grid-cols-1 gap-2 mt-2">
-                                                @foreach ($hotelMadinahDetails as $detail)
-                                                    <div class="bg-white rounded-lg p-3 border border-gray-200 hotel-detail-item"
-                                                        data-hotel="madinah">
-                                                        <p class="text-sm font-medium text-gray-700">
-                                                            {{ $detail->tipe_kamar }}</p>
-                                                        <p class="text-xs text-gray-500">
-                                                            {{ $detail->jumlah_kamar }} Kamar ×
-                                                            {{ $detail->harga_per_malam_formatted }} ×
-                                                            {{ $detail->durasi_menginap }} Malam
-                                                        </p>
-                                                        <p class="text-sm font-bold text-yellow-600">
-                                                            {{ $detail->total_harga_formatted }}</p>
-                                                        @if ($detail->catatan)
-                                                            <p class="text-xs text-gray-400 mt-1">{{ $detail->catatan }}
-                                                            </p>
-                                                        @endif
-                                                    </div>
-                                                @endforeach
-                                            </div>
-                                        @endif
-                                    </div>
-                                @endif
 
-                                @if ($departure->hotelTransit)
-                                    <div class="mb-4 hotel-item"
-                                        data-nama="{{ strtolower($departure->hotel_transit_nama) }}">
-                                        <div class="flex items-center justify-between">
-                                            <h5 class="text-sm font-semibold text-gray-700">
-                                                {{ $departure->hotel_transit_nama }}</h5>
-                                            <span class="text-sm font-bold text-yellow-600">
-                                                {{ $departure->total_harga_hotel_transit_formatted }}</span>
+                                        <div class="flex flex-col items-end gap-1 flex-shrink-0">
+                                            <span
+                                                class="text-xs text-green-600 font-medium">{{ $jamaah->total_dibayar_formatted }}</span>
+                                            <button
+                                                onclick="removeJamaah({{ $departure->id_departure }}, {{ $jamaah->id_jamaah }})"
+                                                class="text-red-500 hover:text-red-700 text-xs"
+                                                title="Hapus dari keberangkatan">
+                                                <i class="fas fa-times"></i>
+                                            </button>
+                                            <form
+                                                id="remove-jamaah-form-{{ $departure->id_departure }}-{{ $jamaah->id_jamaah }}"
+                                                action="{{ route('transaksional.departure.remove-jamaah', [$departure->id_departure, $jamaah->id_jamaah]) }}"
+                                                method="POST" class="hidden">
+                                                @csrf @method('DELETE')
+                                            </form>
                                         </div>
-                                        @if ($hotelTransitDetails->count() > 0)
-                                            <div class="grid grid-cols-1 gap-2 mt-2">
-                                                @foreach ($hotelTransitDetails as $detail)
-                                                    <div class="bg-white rounded-lg p-3 border border-gray-200 hotel-detail-item"
-                                                        data-hotel="transit">
-                                                        <p class="text-sm font-medium text-gray-700">
-                                                            {{ $detail->tipe_kamar }}</p>
-                                                        <p class="text-xs text-gray-500">
-                                                            {{ $detail->jumlah_kamar }} Kamar ×
-                                                            {{ $detail->harga_per_malam_formatted }} ×
-                                                            {{ $detail->durasi_menginap }} Malam
-                                                        </p>
-                                                        <p class="text-sm font-bold text-yellow-600">
-                                                            {{ $detail->total_harga_formatted }}</p>
-                                                        @if ($detail->catatan)
-                                                            <p class="text-xs text-gray-400 mt-1">{{ $detail->catatan }}
-                                                            </p>
-                                                        @endif
-                                                    </div>
-                                                @endforeach
-                                            </div>
-                                        @endif
                                     </div>
-                                @endif
-
-                                <div class="mt-3 pt-3 border-t border-gray-200 flex items-center justify-between">
-                                    <span class="text-sm font-semibold text-gray-700">Total Semua Hotel</span>
-                                    <span
-                                        class="text-lg font-bold text-blue-600">{{ $departure->total_harga_hotel_all_formatted }}</span>
                                 </div>
-                            @else
-                                <div class="text-center py-6">
-                                    <div
-                                        class="w-12 h-12 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-3">
-                                        <i class="fas fa-hotel text-gray-300 text-xl"></i>
+                            @endforeach
+                        </div>
+
+                        <div class="mt-3 pt-3 border-t border-gray-200">
+                            <div class="flex items-center justify-between">
+                                <span class="text-sm font-semibold text-gray-700">Total Pendapatan dari Jamaah</span>
+                                <span
+                                    class="text-lg font-bold text-green-600">{{ $departure->total_pendapatan_kotor_formatted }}</span>
+                            </div>
+                            <div class="flex items-center justify-between text-sm text-gray-500 mt-1">
+                                <span>Total Jamaah: {{ $departure->jamaahs->count() }} orang</span>
+                                <span>Rata-rata per Jamaah:
+                                    {{ $departure->total_pendapatan_kotor > 0 && $departure->jamaahs->count() > 0 ? 'Rp ' . number_format($departure->total_pendapatan_kotor / $departure->jamaahs->count(), 0, ',', '.') : 'Rp 0' }}
+                                </span>
+                            </div>
+                            <div class="flex items-center justify-between text-sm text-gray-500 mt-1">
+                                <span><i class="fas fa-passport text-purple-500 mr-1"></i> Total Fee Passport</span>
+                                <span class="font-bold text-purple-600">
+                                    Rp {{ number_format($totalFeePassport, 0, ',', '.') }}
+                                </span>
+                            </div>
+                        </div>
+                    @else
+                        <div class="text-center py-6">
+                            <div class="w-12 h-12 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-3">
+                                <i class="fas fa-users text-gray-300 text-xl"></i>
+                            </div>
+                            <p class="text-gray-500 text-sm">Belum ada jamaah terdaftar</p>
+                            <p class="text-gray-400 text-xs mt-1">Klik tombol "Sync Jamaah" atau "Atur Daftar Jamaah" untuk
+                                menambahkan</p>
+                        </div>
+                    @endif
+                </div>
+
+                {{-- 3. PENGELUARAN --}}
+                <div class="mb-6">
+                    <h6 class="text-sm font-semibold text-gray-700 mb-3 flex items-center">
+                        <i class="fas fa-receipt text-red-500 mr-2"></i> Pengeluaran
+                    </h6>
+                </div>
+
+                {{-- MASKAPAI --}}
+                <div class="bg-gray-50 rounded-xl p-5 border border-gray-100 mb-6">
+                    <div class="flex items-center justify-between mb-4">
+                        <h6 class="text-sm font-semibold text-gray-700 flex items-center">
+                            <i class="fas fa-plane text-yellow-500 mr-2"></i> Maskapai & Harga
+                        </h6>
+                        <div class="flex items-center gap-2">
+                            {!! $departure->maskapai_status_badge !!}
+                            <button onclick="openMaskapaiModal()"
+                                class="inline-flex items-center px-3 py-1.5 bg-yellow-500 text-white text-xs rounded-lg hover:bg-yellow-600 transition">
+                                <i class="fas fa-plus mr-1"></i> Atur Maskapai
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <div class="relative">
+                            <i class="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm"></i>
+                            <input type="text" id="searchMaskapai" placeholder="Cari maskapai..."
+                                class="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500 text-sm">
+                        </div>
+                    </div>
+
+                    <dl class="space-y-3" id="maskapaiList">
+                        <div class="flex justify-between text-sm border-b border-gray-100 pb-2 maskapai-item"
+                            data-nama="domestik berangkat">
+                            <dt class="text-gray-500">Domestik Berangkat</dt>
+                            <dd class="font-medium text-gray-700 text-right">
+                                <div>{{ $departure->maskapaiDomestikBerangkat->nama_maskapai ?? '-' }}</div>
+                                <div class="text-xs text-yellow-600 font-bold">
+                                    {{ $departure->harga_maskapai_domestik_berangkat_formatted }}</div>
+                            </dd>
+                        </div>
+                        <div class="flex justify-between text-sm border-b border-gray-100 pb-2 maskapai-item"
+                            data-nama="domestik pulang">
+                            <dt class="text-gray-500">Domestik Pulang</dt>
+                            <dd class="font-medium text-gray-700 text-right">
+                                <div>{{ $departure->maskapaiDomestikPulang->nama_maskapai ?? '-' }}</div>
+                                <div class="text-xs text-yellow-600 font-bold">
+                                    {{ $departure->harga_maskapai_domestik_pulang_formatted }}</div>
+                            </dd>
+                        </div>
+                        <div class="flex justify-between text-sm border-b border-gray-100 pb-2 maskapai-item"
+                            data-nama="internasional berangkat">
+                            <dt class="text-gray-500">Internasional Berangkat</dt>
+                            <dd class="font-medium text-gray-700 text-right">
+                                <div>{{ $departure->maskapaiInternasionalBerangkat->nama_maskapai ?? '-' }}</div>
+                                <div class="text-xs text-yellow-600 font-bold">
+                                    {{ $departure->harga_maskapai_internasional_berangkat_formatted }}</div>
+                            </dd>
+                        </div>
+                        <div class="flex justify-between text-sm border-b border-gray-100 pb-2 maskapai-item"
+                            data-nama="internasional pulang">
+                            <dt class="text-gray-500">Internasional Pulang</dt>
+                            <dd class="font-medium text-gray-700 text-right">
+                                <div>{{ $departure->maskapaiInternasionalPulang->nama_maskapai ?? '-' }}</div>
+                                <div class="text-xs text-yellow-600 font-bold">
+                                    {{ $departure->harga_maskapai_internasional_pulang_formatted }}</div>
+                            </dd>
+                        </div>
+                        <div class="flex justify-between text-sm font-semibold border-t border-gray-200 pt-2 mt-2">
+                            <dt class="text-gray-700">Total Harga Maskapai</dt>
+                            <dd class="text-lg font-bold text-blue-600">
+                                {{ $departure->total_harga_maskapai_formatted }}</dd>
+                        </div>
+                    </dl>
+                </div>
+
+                {{-- HOTEL --}}
+                <div class="bg-gray-50 rounded-xl p-5 border border-gray-100 mb-6">
+                    <div class="flex items-center justify-between mb-4">
+                        <h6 class="text-sm font-semibold text-gray-700 flex items-center">
+                            <i class="fas fa-hotel text-yellow-500 mr-2"></i> Hotel & Tipe Kamar
+                        </h6>
+                        <div class="flex items-center gap-2">
+                            {!! $departure->hotel_status_badge !!}
+                            <button onclick="openHotelModal()"
+                                class="inline-flex items-center px-3 py-1.5 bg-yellow-500 text-white text-xs rounded-lg hover:bg-yellow-600 transition">
+                                <i class="fas fa-plus mr-1"></i> Atur Hotel
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <div class="relative">
+                            <i class="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm"></i>
+                            <input type="text" id="searchHotel" placeholder="Cari hotel..."
+                                class="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500 text-sm">
+                        </div>
+                    </div>
+
+                    @php
+                        $hotelMekkahDetails = $departure->hotelMekkahDetails;
+                        $hotelMadinahDetails = $departure->hotelMadinahDetails;
+                        $hotelTransitDetails = $departure->hotelDetails->whereNotIn('id_hotel', [
+                            $departure->id_hotel_mekkah,
+                            $departure->id_hotel_madinah,
+                        ]);
+                    @endphp
+
+                    <div id="hotelList">
+                        @if ($departure->hotelMekkah || $departure->hotelMadinah || $departure->hotelTransit)
+                            @if ($departure->hotelMekkah)
+                                <div class="mb-4 hotel-item" data-nama="{{ strtolower($departure->hotel_mekkah_nama) }}">
+                                    <div class="flex items-center justify-between">
+                                        <h5 class="text-sm font-semibold text-gray-700">
+                                            {{ $departure->hotel_mekkah_nama }}</h5>
+                                        <span class="text-sm font-bold text-yellow-600">
+                                            {{ $departure->total_harga_hotel_mekkah_formatted }}</span>
                                     </div>
-                                    <p class="text-gray-500 text-sm">Belum ada data hotel</p>
-                                    <p class="text-gray-400 text-xs mt-1">Klik tombol "Atur Hotel" untuk menambahkan hotel
-                                    </p>
+                                    @if ($hotelMekkahDetails->count() > 0)
+                                        <div class="grid grid-cols-1 md:grid-cols-2 gap-2 mt-2">
+                                            @foreach ($hotelMekkahDetails as $detail)
+                                                <div class="bg-white rounded-lg p-3 border border-gray-200 hotel-detail-item"
+                                                    data-hotel="mekkah">
+                                                    <p class="text-sm font-medium text-gray-700">{{ $detail->tipe_kamar }}
+                                                    </p>
+                                                    <p class="text-xs text-gray-500">
+                                                        {{ $detail->jumlah_kamar }} Kamar ×
+                                                        {{ $detail->harga_per_malam_formatted }} ×
+                                                        {{ $detail->durasi_menginap }} Malam
+                                                    </p>
+                                                    <p class="text-sm font-bold text-yellow-600">
+                                                        {{ $detail->total_harga_formatted }}</p>
+                                                    @if ($detail->catatan)
+                                                        <p class="text-xs text-gray-400 mt-1">{{ $detail->catatan }}</p>
+                                                    @endif
+                                                </div>
+                                            @endforeach
+                                        </div>
+                                    @endif
                                 </div>
                             @endif
-                        </div>
-                    </div>
 
-                    <!-- ========================================== -->
-                    <!-- HOTEL TOUR (PAKET TOUR) -->
-                    <!-- ========================================== -->
-                    <div class="bg-gray-50 rounded-xl p-5 border border-gray-100">
-                        <div class="flex items-center justify-between mb-4">
-                            <h6 class="text-sm font-semibold text-gray-700 flex items-center">
-                                <i class="fas fa-umbrella-beach text-yellow-500 mr-2"></i> Hotel Tour (Paket Tour)
-                                <span class="ml-2 text-xs bg-blue-100 text-blue-800 px-2 py-0.5 rounded-full">
-                                    {{ $departure->departurePaketTourHotels->count() }} hotel
-                                </span>
-                            </h6>
-                            <div class="flex items-center gap-2">
-                                @if ($departure->produk && $departure->produk->include_tur && $departure->produk->paketTour)
-                                    <span class="px-2 py-1 text-xs font-medium rounded-full bg-green-100 text-green-700">
-                                        <i class="fas fa-check mr-1"></i> Include Tour
-                                    </span>
-                                    <button onclick="openPaketTourHotelModal()"
-                                        class="inline-flex items-center px-3 py-1.5 bg-yellow-500 text-white text-xs rounded-lg hover:bg-yellow-600 transition">
-                                        <i class="fas fa-plus mr-1"></i> Atur Hotel Tour
-                                    </button>
-                                @else
-                                    <span class="px-2 py-1 text-xs font-medium rounded-full bg-gray-100 text-gray-500">
-                                        <i class="fas fa-minus mr-1"></i> Tanpa Tour
-                                    </span>
-                                @endif
-                            </div>
-                        </div>
-
-                        <div class="mb-3">
-                            <div class="relative">
-                                <i
-                                    class="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm"></i>
-                                <input type="text" id="searchHotelTour" placeholder="Cari hotel tour..."
-                                    class="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500 text-sm">
-                            </div>
-                        </div>
-
-                        @if ($departure->produk && $departure->produk->include_tur && $departure->produk->paketTour)
-                            @php
-                                $tourHotels = $departure->departurePaketTourHotels->sortBy('urutan');
-                            @endphp
-
-                            <div id="hotelTourList">
-                                @if ($tourHotels->count() > 0)
-                                    <div class="grid grid-cols-1 gap-3 max-h-60 overflow-y-auto pr-1">
-                                        @foreach ($tourHotels as $item)
-                                            <div class="bg-white rounded-lg p-3 border border-gray-200 hover:shadow-md transition-shadow duration-200 hotel-tour-item"
-                                                data-nama="{{ strtolower($item->hotel->nama_hotel) }}"
-                                                data-kota="{{ strtolower($item->hotel->kota ?? '') }}">
-                                                <div class="flex items-start justify-between">
-                                                    <div class="flex-1 min-w-0">
-                                                        <div class="flex items-center gap-2">
-                                                            <span
-                                                                class="inline-flex items-center justify-center w-6 h-6 bg-yellow-100 text-yellow-600 text-xs font-bold rounded-full flex-shrink-0">
-                                                                {{ $loop->iteration }}
-                                                            </span>
-                                                            <div>
-                                                                <p class="text-sm font-semibold text-gray-800 truncate">
-                                                                    {{ $item->hotel->nama_hotel }}</p>
-                                                                <p class="text-xs text-gray-400">
-                                                                    {{ $item->hotel->kota ?? '-' }}
-                                                                    @if ($item->tipe_kamar)
-                                                                        · {{ $item->tipe_kamar }}
-                                                                    @endif
-                                                                </p>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                    <div class="text-right flex-shrink-0 ml-2">
-                                                        <p class="text-sm font-bold text-yellow-600">
-                                                            {{ $item->total_harga_formatted }}</p>
-                                                        <p class="text-xs text-gray-400">{{ $item->jumlah_kamar }} kamar ×
-                                                            {{ $item->harga_per_malam_formatted }} ×
-                                                            {{ $item->durasi_menginap }} malam</p>
-                                                    </div>
-                                                </div>
-                                                @if ($item->catatan)
-                                                    <p class="text-xs text-gray-400 mt-1">{{ $item->catatan }}</p>
-                                                @endif
-                                            </div>
-                                        @endforeach
+                            @if ($departure->hotelMadinah)
+                                <div class="mb-4 hotel-item"
+                                    data-nama="{{ strtolower($departure->hotel_madinah_nama) }}">
+                                    <div class="flex items-center justify-between">
+                                        <h5 class="text-sm font-semibold text-gray-700">
+                                            {{ $departure->hotel_madinah_nama }}</h5>
+                                        <span class="text-sm font-bold text-yellow-600">
+                                            {{ $departure->total_harga_hotel_madinah_formatted }}</span>
                                     </div>
-
-                                    <div class="mt-3 pt-3 border-t border-gray-200 flex items-center justify-between">
-                                        <span class="text-sm font-semibold text-gray-700">Total Hotel Tour</span>
-                                        <span class="text-lg font-bold text-blue-600">
-                                            {{ $departure->total_harga_paket_tour_hotel_formatted }}</span>
-                                    </div>
-                                @else
-                                    <div class="text-center py-6">
-                                        <div
-                                            class="w-12 h-12 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-3">
-                                            <i class="fas fa-umbrella-beach text-gray-300 text-xl"></i>
-                                        </div>
-                                        <p class="text-gray-500 text-sm">Belum ada hotel tour yang diatur</p>
-                                        <p class="text-gray-400 text-xs mt-1">Klik tombol "Atur Hotel Tour" untuk mengatur
-                                            hotel tour</p>
-                                    </div>
-                                @endif
-                            </div>
-
-                            <div class="mt-3 pt-3 border-t border-gray-200">
-                                <div class="grid grid-cols-2 gap-2">
-                                    <div class="flex items-center justify-between text-sm">
-                                        <span class="text-gray-500">Paket Tour</span>
-                                        <span
-                                            class="font-medium text-gray-700">{{ $departure->produk->paketTour->kota_tujuan ?? '-' }}</span>
-                                    </div>
-                                    <div class="flex items-center justify-between text-sm">
-                                        <span class="text-gray-500">Durasi Tour</span>
-                                        <span
-                                            class="font-medium text-gray-700">{{ $departure->produk->paketTour->durasi_hari ?? 0 }}
-                                            Hari</span>
-                                    </div>
-                                </div>
-                            </div>
-                        @else
-                            <div class="text-center py-8">
-                                <div
-                                    class="w-12 h-12 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-3">
-                                    <i class="fas fa-umbrella-beach text-gray-300 text-xl"></i>
-                                </div>
-                                <p class="text-gray-500 text-sm">Produk ini tidak termasuk tour</p>
-                                <p class="text-gray-400 text-xs mt-1">Hotel tour hanya tersedia untuk produk dengan include
-                                    tour</p>
-                            </div>
-                        @endif
-                    </div>
-
-                    <!-- ========================================== -->
-                    <!-- DAFTAR JAMAAH -->
-                    <!-- ========================================== -->
-                    <div class="bg-gray-50 rounded-xl p-5 border border-gray-100">
-                        <div class="flex items-center justify-between mb-4">
-                            <h6 class="text-sm font-semibold text-gray-700 flex items-center">
-                                <i class="fas fa-users text-yellow-500 mr-2"></i> Daftar Jamaah
-                                <span class="ml-2 text-xs bg-blue-100 text-blue-800 px-2 py-0.5 rounded-full">
-                                    {{ $departure->jamaahs->count() }} Jamaah
-                                </span>
-                            </h6>
-                            <div class="flex items-center gap-2">
-                                {!! $departure->jamaah_status_badge !!}
-
-                                <form
-                                    action="{{ route('transaksional.departure.sync-jamaahs', $departure->id_departure) }}"
-                                    method="POST"
-                                    onsubmit="return confirm('Mencari jamaah baru yang memenuhi kriteria (Lunas, bulan/tahun sesuai, dan belum terdaftar di departure lain). Lanjutkan?')">
-                                    @csrf
-                                    <button type="submit"
-                                        class="inline-flex items-center px-3 py-1.5 bg-purple-500 text-white text-xs rounded-lg hover:bg-purple-600 transition"
-                                        title="Cari jamaah baru yang tersedia">
-                                        <i class="fas fa-sync-alt mr-1"></i> Sync Jamaah
-                                    </button>
-                                </form>
-
-                                <button onclick="openJamaahModal()"
-                                    class="inline-flex items-center px-3 py-1.5 bg-yellow-500 text-white text-xs rounded-lg hover:bg-yellow-600 transition">
-                                    <i class="fas fa-plus mr-1"></i> Atur Daftar Jamaah
-                                </button>
-                            </div>
-                        </div>
-
-                        <div class="mb-3">
-                            <div class="relative">
-                                <i
-                                    class="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm"></i>
-                                <input type="text" id="searchJamaah" placeholder="Cari jamaah..."
-                                    class="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500 text-sm">
-                            </div>
-                        </div>
-
-                        @if ($departure->jamaahs->count() > 0)
-                            <div class="max-h-48 overflow-y-auto" id="jamaahList">
-                                <ul class="divide-y divide-gray-200" id="jamaahItems">
-                                    @foreach ($departure->jamaahs as $jamaah)
-                                        <li class="py-2 flex items-center justify-between jamaah-item"
-                                            data-name="{{ strtolower($jamaah->nama_lengkap) }}">
-                                            <div>
-                                                <p class="text-sm font-medium text-gray-700">{{ $jamaah->nama_lengkap }}
-                                                </p>
-                                                <p class="text-xs text-gray-400">{{ $jamaah->produk_paket }}</p>
-                                                @if ($jamaah->agent)
-                                                    <p class="text-xs text-purple-600">
-                                                        <i class="fas fa-user-tie mr-1"></i>
-                                                        {{ $jamaah->agent->nama_agent ?? 'Agent' }}
+                                    @if ($hotelMadinahDetails->count() > 0)
+                                        <div class="grid grid-cols-1 md:grid-cols-2 gap-2 mt-2">
+                                            @foreach ($hotelMadinahDetails as $detail)
+                                                <div class="bg-white rounded-lg p-3 border border-gray-200 hotel-detail-item"
+                                                    data-hotel="madinah">
+                                                    <p class="text-sm font-medium text-gray-700">{{ $detail->tipe_kamar }}
                                                     </p>
-                                                @endif
-                                            </div>
-                                            <div class="flex items-center gap-2">
-                                                <span
-                                                    class="text-xs text-gray-500">{{ $jamaah->status_pembayaran }}</span>
-                                                <span
-                                                    class="text-xs text-green-600">{{ $jamaah->total_dibayar_formatted }}</span>
-                                                <button
-                                                    onclick="removeJamaah({{ $departure->id_departure }}, {{ $jamaah->id_jamaah }})"
-                                                    class="text-red-500 hover:text-red-700 text-xs">
-                                                    <i class="fas fa-times"></i>
-                                                </button>
-                                                <form
-                                                    id="remove-jamaah-form-{{ $departure->id_departure }}-{{ $jamaah->id_jamaah }}"
-                                                    action="{{ route('transaksional.departure.remove-jamaah', [$departure->id_departure, $jamaah->id_jamaah]) }}"
-                                                    method="POST" class="hidden">
-                                                    @csrf @method('DELETE')
-                                                </form>
-                                            </div>
-                                        </li>
-                                    @endforeach
-                                </ul>
-                            </div>
+                                                    <p class="text-xs text-gray-500">
+                                                        {{ $detail->jumlah_kamar }} Kamar ×
+                                                        {{ $detail->harga_per_malam_formatted }} ×
+                                                        {{ $detail->durasi_menginap }} Malam
+                                                    </p>
+                                                    <p class="text-sm font-bold text-yellow-600">
+                                                        {{ $detail->total_harga_formatted }}</p>
+                                                    @if ($detail->catatan)
+                                                        <p class="text-xs text-gray-400 mt-1">{{ $detail->catatan }}</p>
+                                                    @endif
+                                                </div>
+                                            @endforeach
+                                        </div>
+                                    @endif
+                                </div>
+                            @endif
 
-                            <div class="mt-3 pt-3 border-t border-gray-200">
-                                <div class="flex items-center justify-between">
-                                    <span class="text-sm font-semibold text-gray-700">Total Pendapatan dari Jamaah</span>
-                                    <span
-                                        class="text-lg font-bold text-green-600">{{ $departure->total_pendapatan_kotor_formatted }}</span>
+                            @if ($departure->hotelTransit)
+                                <div class="mb-4 hotel-item"
+                                    data-nama="{{ strtolower($departure->hotel_transit_nama) }}">
+                                    <div class="flex items-center justify-between">
+                                        <h5 class="text-sm font-semibold text-gray-700">
+                                            {{ $departure->hotel_transit_nama }}</h5>
+                                        <span class="text-sm font-bold text-yellow-600">
+                                            {{ $departure->total_harga_hotel_transit_formatted }}</span>
+                                    </div>
+                                    @if ($hotelTransitDetails->count() > 0)
+                                        <div class="grid grid-cols-1 md:grid-cols-2 gap-2 mt-2">
+                                            @foreach ($hotelTransitDetails as $detail)
+                                                <div class="bg-white rounded-lg p-3 border border-gray-200 hotel-detail-item"
+                                                    data-hotel="transit">
+                                                    <p class="text-sm font-medium text-gray-700">{{ $detail->tipe_kamar }}
+                                                    </p>
+                                                    <p class="text-xs text-gray-500">
+                                                        {{ $detail->jumlah_kamar }} Kamar ×
+                                                        {{ $detail->harga_per_malam_formatted }} ×
+                                                        {{ $detail->durasi_menginap }} Malam
+                                                    </p>
+                                                    <p class="text-sm font-bold text-yellow-600">
+                                                        {{ $detail->total_harga_formatted }}</p>
+                                                    @if ($detail->catatan)
+                                                        <p class="text-xs text-gray-400 mt-1">{{ $detail->catatan }}</p>
+                                                    @endif
+                                                </div>
+                                            @endforeach
+                                        </div>
+                                    @endif
                                 </div>
-                                <div class="flex items-center justify-between text-sm text-gray-500 mt-1">
-                                    <span>Total Jamaah: {{ $departure->jamaahs->count() }} orang</span>
-                                    <span>Rata-rata per Jamaah:
-                                        {{ $departure->total_pendapatan_kotor > 0 && $departure->jamaahs->count() > 0 ? 'Rp ' . number_format($departure->total_pendapatan_kotor / $departure->jamaahs->count(), 0, ',', '.') : 'Rp 0' }}
-                                    </span>
-                                </div>
+                            @endif
+
+                            <div class="mt-3 pt-3 border-t border-gray-200 flex items-center justify-between">
+                                <span class="text-sm font-semibold text-gray-700">Total Semua Hotel</span>
+                                <span
+                                    class="text-lg font-bold text-blue-600">{{ $departure->total_harga_hotel_all_formatted }}</span>
                             </div>
                         @else
                             <div class="text-center py-6">
                                 <div
                                     class="w-12 h-12 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-3">
-                                    <i class="fas fa-users text-gray-300 text-xl"></i>
+                                    <i class="fas fa-hotel text-gray-300 text-xl"></i>
                                 </div>
-                                <p class="text-gray-500 text-sm">Belum ada jamaah terdaftar</p>
-                                <p class="text-gray-400 text-xs mt-1">Klik tombol "Sync Jamaah" untuk mencari jamaah baru,
-                                    atau klik "Atur Daftar Jamaah" untuk memilih manual</p>
+                                <p class="text-gray-500 text-sm">Belum ada data hotel</p>
+                                <p class="text-gray-400 text-xs mt-1">Klik tombol "Atur Hotel" untuk menambahkan hotel</p>
                             </div>
                         @endif
                     </div>
+                </div>
 
-                    <!-- ========================================== -->
-                    <!-- PERLENGKAPAN DEPARTURE -->
-                    <!-- ========================================== -->
-                    <div class="bg-gray-50 rounded-xl p-5 border border-gray-100">
-                        <div class="flex items-center justify-between mb-4">
-                            <h6 class="text-sm font-semibold text-gray-700 flex items-center">
-                                <i class="fas fa-box text-yellow-500 mr-2"></i> Perlengkapan Departure
-                                <span class="ml-2 text-xs bg-blue-100 text-blue-800 px-2 py-0.5 rounded-full">
-                                    {{ $departure->departurePerlengkapan->count() }} item
+                {{-- HOTEL TOUR --}}
+                <div class="bg-gray-50 rounded-xl p-5 border border-gray-100 mb-6">
+                    <div class="flex items-center justify-between mb-4">
+                        <h6 class="text-sm font-semibold text-gray-700 flex items-center">
+                            <i class="fas fa-umbrella-beach text-yellow-500 mr-2"></i> Hotel Tour (Paket Tour)
+                            <span class="ml-2 text-xs bg-blue-100 text-blue-800 px-2 py-0.5 rounded-full">
+                                {{ $departure->departurePaketTourHotels->count() }} hotel
+                            </span>
+                        </h6>
+                        <div class="flex items-center gap-2">
+                            @if ($departure->produk && $departure->produk->include_tur && $departure->produk->paketTour)
+                                <span class="px-2 py-1 text-xs font-medium rounded-full bg-green-100 text-green-700">
+                                    <i class="fas fa-check mr-1"></i> Include Tour
                                 </span>
-                                @php
-                                    $totalItems = $departure->total_perlengkapan_item;
-                                    $totalReceived = $departure->total_perlengkapan_diterima;
-                                @endphp
-                                <span class="ml-2 text-xs bg-green-100 text-green-800 px-2 py-0.5 rounded-full">
-                                    {{ $totalReceived }} / {{ $totalItems }} diterima
-                                </span>
-                            </h6>
-                            <div class="flex items-center gap-2">
-                                {!! $departure->perlengkapan_status_badge !!}
-                                <button onclick="openPerlengkapanModal()"
+                                <button onclick="openPaketTourHotelModal()"
                                     class="inline-flex items-center px-3 py-1.5 bg-yellow-500 text-white text-xs rounded-lg hover:bg-yellow-600 transition">
-                                    <i class="fas fa-plus mr-1"></i> Atur Perlengkapan
+                                    <i class="fas fa-plus mr-1"></i> Atur Hotel Tour
                                 </button>
-                            </div>
-                        </div>
-
-                        <div class="mb-3">
-                            <div class="relative">
-                                <i
-                                    class="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm"></i>
-                                <input type="text" id="searchPerlengkapan" placeholder="Cari perlengkapan..."
-                                    class="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500 text-sm">
-                            </div>
-                        </div>
-
-                        @php
-                            $perlengkapanList = $departure->departurePerlengkapan;
-                            $totalJamaah = $departure->jamaahs->count();
-                        @endphp
-
-                        <div id="perlengkapanList">
-                            @if ($perlengkapanList->count() > 0)
-                                <div class="grid grid-cols-1 md:grid-cols-2 gap-3 max-h-96 overflow-y-auto pr-1">
-                                    @foreach ($perlengkapanList as $perlengkapan)
-                                        @php
-                                            $totalPerItem = $perlengkapan->perlengkapanJamaahs->count();
-                                            $sudahTerima = $perlengkapan->perlengkapanJamaahs
-                                                ->where('status_terima', 'Sudah Diterima')
-                                                ->count();
-                                            $belumTerima = $totalPerItem - $sudahTerima;
-                                            $progressPercent =
-                                                $totalPerItem > 0 ? round(($sudahTerima / $totalPerItem) * 100) : 0;
-
-                                            $totalDiterima = $perlengkapan->perlengkapanJamaahs
-                                                ->where('status_terima', 'Sudah Diterima')
-                                                ->sum('total_harga');
-                                        @endphp
-
-                                        <div class="bg-white rounded-lg p-3 border border-gray-200 hover:shadow-md transition-shadow duration-200 perlengkapan-item"
-                                            data-nama="{{ strtolower($perlengkapan->perlengkapan->nama_perlengkapan) }}">
-                                            <div class="flex items-start justify-between">
-                                                <div class="flex-1 min-w-0">
-                                                    <div class="flex items-center gap-2">
-                                                        <div
-                                                            class="w-8 h-8 bg-yellow-100 rounded-lg flex items-center justify-center flex-shrink-0">
-                                                            <i class="fas fa-box text-yellow-600 text-xs"></i>
-                                                        </div>
-                                                        <div>
-                                                            <p class="text-sm font-semibold text-gray-800 truncate">
-                                                                {{ $perlengkapan->perlengkapan->nama_perlengkapan }}</p>
-                                                            <p class="text-xs text-gray-400">
-                                                                {{ $perlengkapan->jumlah_per_jamaah }} per jamaah ·
-                                                                {{ $perlengkapan->harga_satuan_formatted }}</p>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                                <div class="flex items-center gap-1 ml-2 flex-shrink-0">
-                                                    <button type="button"
-                                                        onclick="openPerlengkapanDetailModal({{ $perlengkapan->id }})"
-                                                        class="p-1 text-blue-500 hover:bg-blue-50 rounded transition"
-                                                        title="Lihat Detail">
-                                                        <i class="fas fa-eye text-xs"></i>
-                                                    </button>
-                                                    <button type="button"
-                                                        onclick="removePerlengkapan({{ $departure->id_departure }}, {{ $perlengkapan->id }})"
-                                                        class="p-1 text-red-500 hover:bg-red-50 rounded transition"
-                                                        title="Hapus">
-                                                        <i class="fas fa-trash text-xs"></i>
-                                                    </button>
-                                                    <form
-                                                        id="remove-perlengkapan-form-{{ $departure->id_departure }}-{{ $perlengkapan->id }}"
-                                                        action="{{ route('transaksional.departure.remove-perlengkapan', [$departure->id_departure, $perlengkapan->id]) }}"
-                                                        method="POST" class="hidden">
-                                                        @csrf @method('DELETE')
-                                                    </form>
-                                                </div>
-                                            </div>
-
-                                            <div class="mt-2">
-                                                <div class="flex items-center justify-between text-xs">
-                                                    <span class="text-gray-500">Progress penerimaan</span>
-                                                    <div class="flex items-center gap-2">
-                                                        <span class="text-green-600">{{ $sudahTerima }} diterima</span>
-                                                        @if ($belumTerima > 0)
-                                                            <span class="text-yellow-600">{{ $belumTerima }}
-                                                                belum</span>
-                                                        @endif
-                                                    </div>
-                                                </div>
-                                                <div class="w-full bg-gray-200 rounded-full h-1.5 mt-1">
-                                                    <div class="h-1.5 rounded-full transition-all duration-500 {{ $progressPercent >= 100 ? 'bg-green-500' : 'bg-yellow-500' }}"
-                                                        style="width: {{ $progressPercent }}%"></div>
-                                                </div>
-                                            </div>
-
-                                            <div class="mt-2 pt-2 border-t border-gray-100">
-                                                <div class="flex items-center justify-between">
-                                                    <div>
-                                                        <span class="text-xs text-gray-500">Total Diterima</span>
-                                                        <p class="text-[10px] text-gray-400">
-                                                            {{ $sudahTerima }} dari {{ $totalPerItem }} item
-                                                        </p>
-                                                    </div>
-                                                    <div class="text-right">
-                                                        <span class="text-sm font-bold text-purple-600">
-                                                            Rp {{ number_format($totalDiterima, 0, ',', '.') }}
-                                                        </span>
-                                                        <p class="text-[10px] text-gray-400">
-                                                            dari Rp
-                                                            {{ number_format($perlengkapan->total_harga, 0, ',', '.') }}
-                                                        </p>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    @endforeach
-                                </div>
-
-                                <div class="mt-3 pt-3 border-t border-gray-200">
-                                    <div class="flex items-center justify-between">
-                                        <div>
-                                            <span class="text-sm font-semibold text-gray-700">Total Perlengkapan
-                                                Diterima</span>
-                                            <p class="text-xs text-gray-400 mt-0.5">
-                                                <i class="fas fa-info-circle mr-1"></i>
-                                                Hanya dihitung dari perlengkapan yang <strong>sudah diterima</strong> jamaah
-                                            </p>
-                                        </div>
-                                        <span class="text-lg font-bold text-purple-600">
-                                            {{ $departure->total_harga_perlengkapan_formatted }}
-                                        </span>
-                                    </div>
-
-                                    <div class="flex items-center justify-between mt-1">
-                                        <span class="text-xs text-gray-400">Total semua perlengkapan (target):</span>
-                                        <span class="text-xs text-gray-500 font-medium">
-                                            {{ $departure->total_harga_perlengkapan_all_formatted }}
-                                        </span>
-                                    </div>
-                                </div>
                             @else
-                                <div class="text-center py-8">
-                                    <div
-                                        class="w-12 h-12 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-3">
-                                        <i class="fas fa-box text-gray-300 text-xl"></i>
-                                    </div>
-                                    <p class="text-gray-500 text-sm">Belum ada perlengkapan yang ditambahkan</p>
-                                    <p class="text-gray-400 text-xs mt-1">Klik tombol "Atur Perlengkapan" untuk menambahkan
-                                        perlengkapan</p>
-                                </div>
+                                <span class="px-2 py-1 text-xs font-medium rounded-full bg-gray-100 text-gray-500">
+                                    <i class="fas fa-minus mr-1"></i> Tanpa Tour
+                                </span>
                             @endif
                         </div>
                     </div>
 
-                    <!-- ========================================== -->
-                    <!-- JENIS TRANSAKSI -->
-                    <!-- ========================================== -->
-                    <div class="bg-gray-50 rounded-xl p-5 border border-gray-100">
-                        <div class="flex items-center justify-between mb-4">
-                            <h6 class="text-sm font-semibold text-gray-700 flex items-center">
-                                <i class="fas fa-receipt text-yellow-500 mr-2"></i> Jenis Transaksi
-                                <span class="ml-2 text-xs bg-blue-100 text-blue-800 px-2 py-0.5 rounded-full">
-                                    {{ $departure->departureJenisTransaksis->count() }} item
-                                </span>
-                                @php
-                                    $totalJtItems = $departure->total_jenis_transaksi_item;
-                                    $totalJtReceived = $departure->total_jenis_transaksi_diterima;
-                                @endphp
-                                <span class="ml-2 text-xs bg-green-100 text-green-800 px-2 py-0.5 rounded-full">
-                                    {{ $totalJtReceived }} / {{ $totalJtItems }} diterima
-                                </span>
-                            </h6>
-                            <div class="flex items-center gap-2">
-                                <button onclick="openJenisTransaksiModal()"
-                                    class="inline-flex items-center px-3 py-1.5 bg-yellow-500 text-white text-xs rounded-lg hover:bg-yellow-600 transition">
-                                    <i class="fas fa-plus mr-1"></i> Atur Jenis Transaksi
-                                </button>
-                            </div>
+                    <div class="mb-3">
+                        <div class="relative">
+                            <i class="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm"></i>
+                            <input type="text" id="searchHotelTour" placeholder="Cari hotel tour..."
+                                class="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500 text-sm">
                         </div>
+                    </div>
 
-                        <div class="mb-3">
-                            <div class="relative">
-                                <i
-                                    class="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm"></i>
-                                <input type="text" id="searchJenisTransaksi" placeholder="Cari jenis transaksi..."
-                                    class="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500 text-sm">
-                            </div>
-                        </div>
-
+                    @if ($departure->produk && $departure->produk->include_tur && $departure->produk->paketTour)
                         @php
-                            $jenisTransaksiList = $departure->departureJenisTransaksis;
-                            $totalJamaah = $departure->jamaahs->count();
+                            $tourHotels = $departure->departurePaketTourHotels->sortBy('urutan');
                         @endphp
 
-                        <div id="jenisTransaksiList">
-                            @if ($jenisTransaksiList->count() > 0)
+                        <div id="hotelTourList">
+                            @if ($tourHotels->count() > 0)
                                 <div class="grid grid-cols-1 md:grid-cols-2 gap-3 max-h-96 overflow-y-auto pr-1">
-                                    @foreach ($jenisTransaksiList as $item)
-                                        @php
-                                            $totalPerItem = $item->departureJenisTransaksiJamaahs->count();
-                                            $sudahTerima = $item->departureJenisTransaksiJamaahs
-                                                ->where('status_terima', 'Sudah Diterima')
-                                                ->count();
-                                            $belumTerima = $totalPerItem - $sudahTerima;
-                                            $progressPercent =
-                                                $totalPerItem > 0 ? round(($sudahTerima / $totalPerItem) * 100) : 0;
-
-                                            $totalDiterima = $item->departureJenisTransaksiJamaahs
-                                                ->where('status_terima', 'Sudah Diterima')
-                                                ->sum('total_harga');
-                                        @endphp
-
-                                        <div class="bg-white rounded-lg p-3 border border-gray-200 hover:shadow-md transition-shadow duration-200 jenis-transaksi-item"
-                                            data-nama="{{ strtolower($item->jenisTransaksi->nama) }}">
+                                    @foreach ($tourHotels as $item)
+                                        <div class="bg-white rounded-lg p-3 border border-gray-200 hover:shadow-md transition-shadow duration-200 hotel-tour-item"
+                                            data-nama="{{ strtolower($item->hotel->nama_hotel) }}"
+                                            data-kota="{{ strtolower($item->hotel->kota ?? '') }}">
                                             <div class="flex items-start justify-between">
                                                 <div class="flex-1 min-w-0">
                                                     <div class="flex items-center gap-2">
-                                                        <div
-                                                            class="w-8 h-8 bg-purple-100 rounded-lg flex items-center justify-center flex-shrink-0">
-                                                            <i class="fas fa-tag text-purple-600 text-xs"></i>
-                                                        </div>
+                                                        <span
+                                                            class="inline-flex items-center justify-center w-6 h-6 bg-yellow-100 text-yellow-600 text-xs font-bold rounded-full flex-shrink-0">
+                                                            {{ $loop->iteration }}
+                                                        </span>
                                                         <div>
                                                             <p class="text-sm font-semibold text-gray-800 truncate">
-                                                                {{ $item->jenisTransaksi->nama }}</p>
+                                                                {{ $item->hotel->nama_hotel }}</p>
                                                             <p class="text-xs text-gray-400">
-                                                                Total: {{ $item->total_harga_formatted }} · Rp
-                                                                {{ number_format($item->harga_satuan, 0, ',', '.') }} /
-                                                                jamaah
+                                                                {{ $item->hotel->kota ?? '-' }}
+                                                                @if ($item->tipe_kamar)
+                                                                    · {{ $item->tipe_kamar }}
+                                                                @endif
                                                             </p>
                                                         </div>
                                                     </div>
                                                 </div>
-                                                <div class="flex items-center gap-1 ml-2 flex-shrink-0">
-                                                    <button type="button"
-                                                        onclick="openJenisTransaksiDetailModal({{ $item->id }})"
-                                                        class="p-1 text-blue-500 hover:bg-blue-50 rounded transition"
-                                                        title="Lihat Detail">
-                                                        <i class="fas fa-eye text-xs"></i>
-                                                    </button>
-                                                    <button type="button"
-                                                        onclick="editJenisTransaksiHarga({{ $departure->id_departure }}, {{ $item->id_jenis_transaksi }}, '{{ $item->total_harga }}')"
-                                                        class="p-1 text-blue-500 hover:bg-blue-50 rounded transition"
-                                                        title="Edit Harga Total">
-                                                        <i class="fas fa-edit text-xs"></i>
-                                                    </button>
-                                                    <button type="button"
-                                                        onclick="removeJenisTransaksi({{ $departure->id_departure }}, {{ $item->id_jenis_transaksi }})"
-                                                        class="p-1 text-red-500 hover:bg-red-50 rounded transition"
-                                                        title="Hapus">
-                                                        <i class="fas fa-trash text-xs"></i>
-                                                    </button>
-                                                    <form
-                                                        id="remove-jenis-transaksi-form-{{ $departure->id_departure }}-{{ $item->id_jenis_transaksi }}"
-                                                        action="{{ route('transaksional.departure.remove-jenis-transaksi', [$departure->id_departure, $item->id_jenis_transaksi]) }}"
-                                                        method="POST" class="hidden">
-                                                        @csrf @method('DELETE')
-                                                    </form>
+                                                <div class="text-right flex-shrink-0 ml-2">
+                                                    <p class="text-sm font-bold text-yellow-600">
+                                                        {{ $item->total_harga_formatted }}</p>
+                                                    <p class="text-xs text-gray-400">{{ $item->jumlah_kamar }} kamar ×
+                                                        {{ $item->harga_per_malam_formatted }} ×
+                                                        {{ $item->durasi_menginap }} malam</p>
                                                 </div>
                                             </div>
-
-                                            <div class="mt-2">
-                                                <div class="flex items-center justify-between text-xs">
-                                                    <span class="text-gray-500">Progress penerimaan</span>
-                                                    <div class="flex items-center gap-2">
-                                                        <span class="text-green-600">{{ $sudahTerima }} diterima</span>
-                                                        @if ($belumTerima > 0)
-                                                            <span class="text-yellow-600">{{ $belumTerima }}
-                                                                belum</span>
-                                                        @endif
-                                                    </div>
-                                                </div>
-                                                <div class="w-full bg-gray-200 rounded-full h-1.5 mt-1">
-                                                    <div class="h-1.5 rounded-full transition-all duration-500 {{ $progressPercent >= 100 ? 'bg-green-500' : 'bg-yellow-500' }}"
-                                                        style="width: {{ $progressPercent }}%"></div>
-                                                </div>
-                                            </div>
-
-                                            <div class="mt-2 pt-2 border-t border-gray-100">
-                                                <div class="flex items-center justify-between">
-                                                    <div>
-                                                        <span class="text-xs text-gray-500">Total Diterima</span>
-                                                        <p class="text-[10px] text-gray-400">
-                                                            {{ $sudahTerima }} dari {{ $totalPerItem }} item
-                                                        </p>
-                                                    </div>
-                                                    <div class="text-right">
-                                                        <span class="text-sm font-bold text-purple-600">
-                                                            Rp {{ number_format($totalDiterima, 0, ',', '.') }}
-                                                        </span>
-                                                        <p class="text-[10px] text-gray-400">
-                                                            dari Rp {{ number_format($item->total_harga, 0, ',', '.') }}
-                                                        </p>
-                                                    </div>
-                                                </div>
-                                            </div>
-
                                             @if ($item->catatan)
                                                 <p class="text-xs text-gray-400 mt-1">{{ $item->catatan }}</p>
                                             @endif
@@ -900,139 +785,566 @@
                                     @endforeach
                                 </div>
 
-                                <div class="mt-3 pt-3 border-t border-gray-200">
-                                    <div class="flex items-center justify-between">
-                                        <div>
-                                            <span class="text-sm font-semibold text-gray-700">Total Jenis Transaksi
-                                                Diterima</span>
-                                            <p class="text-xs text-gray-400 mt-0.5">
-                                                <i class="fas fa-info-circle mr-1"></i>
-                                                Hanya dihitung dari jenis transaksi yang <strong>sudah diterima</strong>
-                                                jamaah
-                                            </p>
-                                        </div>
-                                        <span class="text-lg font-bold text-purple-600">
-                                            {{ $departure->total_jenis_transaksi_formatted }}
-                                        </span>
-                                    </div>
-
-                                    <div class="flex items-center justify-between mt-1">
-                                        <span class="text-xs text-gray-400">Total semua jenis transaksi (target):</span>
-                                        <span class="text-xs text-gray-500 font-medium">
-                                            {{ $departure->total_jenis_transaksi_all_formatted }}
-                                        </span>
-                                    </div>
+                                <div class="mt-3 pt-3 border-t border-gray-200 flex items-center justify-between">
+                                    <span class="text-sm font-semibold text-gray-700">Total Hotel Tour</span>
+                                    <span
+                                        class="text-lg font-bold text-blue-600">{{ $departure->total_harga_paket_tour_hotel_formatted }}</span>
                                 </div>
                             @else
-                                <div class="text-center py-8">
+                                <div class="text-center py-6">
                                     <div
                                         class="w-12 h-12 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-3">
-                                        <i class="fas fa-receipt text-gray-300 text-xl"></i>
+                                        <i class="fas fa-umbrella-beach text-gray-300 text-xl"></i>
                                     </div>
-                                    <p class="text-gray-500 text-sm">Belum ada jenis transaksi yang ditambahkan</p>
-                                    <p class="text-gray-400 text-xs mt-1">Klik tombol "Atur Jenis Transaksi" untuk
-                                        menambahkan jenis transaksi</p>
+                                    <p class="text-gray-500 text-sm">Belum ada hotel tour yang diatur</p>
+                                    <p class="text-gray-400 text-xs mt-1">Klik tombol "Atur Hotel Tour" untuk mengatur
+                                        hotel tour</p>
                                 </div>
                             @endif
                         </div>
-                    </div>
 
-                    <!-- ========================================== -->
-                    <!-- AGENT & JAMAAH -->
-                    <!-- ========================================== -->
-                    <div class="bg-gray-50 rounded-xl p-5 border border-gray-100 lg:col-span-2">
-                        <div class="flex items-center justify-between mb-4">
-                            <h6 class="text-sm font-semibold text-gray-700 flex items-center">
-                                <i class="fas fa-user-tie text-purple-500 mr-2"></i> Agent & Jamaah
-                                <span class="ml-2 text-xs bg-purple-100 text-purple-800 px-2 py-0.5 rounded-full">
-                                    {{ $departure->jamaahs->filter(function ($jamaah) {return !empty($jamaah->agent_name);})->count() }}
-                                    dengan Agent
-                                </span>
-                                <span class="ml-2 text-xs bg-gray-100 text-gray-600 px-2 py-0.5 rounded-full">
-                                    Total {{ $departure->jamaahs->count() }} Jamaah
-                                </span>
-                            </h6>
-                        </div>
-
-                        <div class="mb-3">
-                            <div class="relative">
-                                <i
-                                    class="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm"></i>
-                                <input type="text" id="searchAgent" placeholder="Cari agent atau jamaah..."
-                                    class="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 text-sm">
+                        <div class="mt-3 pt-3 border-t border-gray-200">
+                            <div class="grid grid-cols-2 gap-2">
+                                <div class="flex items-center justify-between text-sm">
+                                    <span class="text-gray-500">Paket Tour</span>
+                                    <span
+                                        class="font-medium text-gray-700">{{ $departure->produk->paketTour->kota_tujuan ?? '-' }}</span>
+                                </div>
+                                <div class="flex items-center justify-between text-sm">
+                                    <span class="text-gray-500">Durasi Tour</span>
+                                    <span
+                                        class="font-medium text-gray-700">{{ $departure->produk->paketTour->durasi_hari ?? 0 }}
+                                        Hari</span>
+                                </div>
                             </div>
                         </div>
+                    @else
+                        <div class="text-center py-8">
+                            <div class="w-12 h-12 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-3">
+                                <i class="fas fa-umbrella-beach text-gray-300 text-xl"></i>
+                            </div>
+                            <p class="text-gray-500 text-sm">Produk ini tidak termasuk tour</p>
+                            <p class="text-gray-400 text-xs mt-1">Hotel tour hanya tersedia untuk produk dengan include
+                                tour</p>
+                        </div>
+                    @endif
+                </div>
 
-                        @php
-                            $jamaahsWithAgent = $departure->jamaahs->filter(function ($jamaah) {
-                                return !empty($jamaah->agent_name) && trim($jamaah->agent_name) !== '';
-                            });
+                {{-- PERLENGKAPAN --}}
+                <div class="bg-gray-50 rounded-xl p-5 border border-gray-100 mb-6">
+                    <div class="flex items-center justify-between mb-4">
+                        <h6 class="text-sm font-semibold text-gray-700 flex items-center">
+                            <i class="fas fa-box text-yellow-500 mr-2"></i> Perlengkapan Departure
+                            <span class="ml-2 text-xs bg-blue-100 text-blue-800 px-2 py-0.5 rounded-full">
+                                {{ $departure->departurePerlengkapan->count() }} item
+                            </span>
+                            @php
+                                $totalItems = $departure->total_perlengkapan_item;
+                                $totalReceived = $departure->total_perlengkapan_diterima;
+                            @endphp
+                            <span class="ml-2 text-xs bg-green-100 text-green-800 px-2 py-0.5 rounded-full">
+                                {{ $totalReceived }} / {{ $totalItems }} diterima
+                            </span>
+                        </h6>
+                        <div class="flex items-center gap-2">
+                            {!! $departure->perlengkapan_status_badge !!}
+                            <button onclick="openPerlengkapanModal()"
+                                class="inline-flex items-center px-3 py-1.5 bg-yellow-500 text-white text-xs rounded-lg hover:bg-yellow-600 transition">
+                                <i class="fas fa-plus mr-1"></i> Atur Perlengkapan
+                            </button>
+                        </div>
+                    </div>
 
-                            $groupedByAgent = $jamaahsWithAgent->groupBy(function ($jamaah) {
-                                return $jamaah->agent_name ?? 'Agent Tidak Diketahui';
-                            });
+                    <div class="mb-3">
+                        <div class="relative">
+                            <i class="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm"></i>
+                            <input type="text" id="searchPerlengkapan" placeholder="Cari perlengkapan..."
+                                class="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500 text-sm">
+                        </div>
+                    </div>
 
-                            $jamaahsWithoutAgent = $departure->jamaahs->filter(function ($jamaah) {
-                                return empty($jamaah->agent_name) || trim($jamaah->agent_name) === '';
-                            });
-                        @endphp
+                    @php
+                        $perlengkapanList = $departure->departurePerlengkapan;
+                        $totalJamaah = $departure->jamaahs->count();
+                    @endphp
 
-                        <div id="agentList">
-                            @if ($jamaahsWithAgent->count() > 0)
-                                <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-4">
-                                    <div class="bg-white rounded-lg p-3 border border-gray-200 text-center">
-                                        <p class="text-xs text-gray-500">Total Agent</p>
-                                        <p class="text-lg font-bold text-purple-600">{{ $groupedByAgent->count() }}</p>
+                    <div id="perlengkapanList">
+                        @if ($perlengkapanList->count() > 0)
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-3 max-h-96 overflow-y-auto pr-1">
+                                @foreach ($perlengkapanList as $perlengkapan)
+                                    @php
+                                        $totalPerItem = $perlengkapan->perlengkapanJamaahs->count();
+                                        $sudahTerima = $perlengkapan->perlengkapanJamaahs
+                                            ->where('status_terima', 'Sudah Diterima')
+                                            ->count();
+                                        $belumTerima = $totalPerItem - $sudahTerima;
+                                        $progressPercent =
+                                            $totalPerItem > 0 ? round(($sudahTerima / $totalPerItem) * 100) : 0;
+
+                                        $totalDiterima = $perlengkapan->perlengkapanJamaahs
+                                            ->where('status_terima', 'Sudah Diterima')
+                                            ->sum('total_harga');
+                                    @endphp
+
+                                    <div class="bg-white rounded-lg p-3 border border-gray-200 hover:shadow-md transition-shadow duration-200 perlengkapan-item"
+                                        data-nama="{{ strtolower($perlengkapan->perlengkapan->nama_perlengkapan) }}">
+                                        <div class="flex items-start justify-between">
+                                            <div class="flex-1 min-w-0">
+                                                <div class="flex items-center gap-2">
+                                                    <div
+                                                        class="w-8 h-8 bg-yellow-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                                                        <i class="fas fa-box text-yellow-600 text-xs"></i>
+                                                    </div>
+                                                    <div>
+                                                        <p class="text-sm font-semibold text-gray-800 truncate">
+                                                            {{ $perlengkapan->perlengkapan->nama_perlengkapan }}</p>
+                                                        <p class="text-xs text-gray-400">
+                                                            {{ $perlengkapan->jumlah_per_jamaah }} per jamaah ·
+                                                            {{ $perlengkapan->harga_satuan_formatted }}</p>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="flex items-center gap-1 ml-2 flex-shrink-0">
+                                                <button type="button"
+                                                    onclick="openPerlengkapanDetailModal({{ $perlengkapan->id }})"
+                                                    class="p-1 text-blue-500 hover:bg-blue-50 rounded transition"
+                                                    title="Lihat Detail">
+                                                    <i class="fas fa-eye text-xs"></i>
+                                                </button>
+                                                <button type="button"
+                                                    onclick="removePerlengkapan({{ $departure->id_departure }}, {{ $perlengkapan->id }})"
+                                                    class="p-1 text-red-500 hover:bg-red-50 rounded transition"
+                                                    title="Hapus">
+                                                    <i class="fas fa-trash text-xs"></i>
+                                                </button>
+                                                <form
+                                                    id="remove-perlengkapan-form-{{ $departure->id_departure }}-{{ $perlengkapan->id }}"
+                                                    action="{{ route('transaksional.departure.remove-perlengkapan', [$departure->id_departure, $perlengkapan->id]) }}"
+                                                    method="POST" class="hidden">
+                                                    @csrf @method('DELETE')
+                                                </form>
+                                            </div>
+                                        </div>
+
+                                        <div class="mt-2">
+                                            <div class="flex items-center justify-between text-xs">
+                                                <span class="text-gray-500">Progress penerimaan</span>
+                                                <div class="flex items-center gap-2">
+                                                    <span class="text-green-600">{{ $sudahTerima }} diterima</span>
+                                                    @if ($belumTerima > 0)
+                                                        <span class="text-yellow-600">{{ $belumTerima }} belum</span>
+                                                    @endif
+                                                </div>
+                                            </div>
+                                            <div class="w-full bg-gray-200 rounded-full h-1.5 mt-1">
+                                                <div class="h-1.5 rounded-full transition-all duration-500 {{ $progressPercent >= 100 ? 'bg-green-500' : 'bg-yellow-500' }}"
+                                                    style="width: {{ $progressPercent }}%"></div>
+                                            </div>
+                                        </div>
+
+                                        <div class="mt-2 pt-2 border-t border-gray-100">
+                                            <div class="flex items-center justify-between">
+                                                <div>
+                                                    <span class="text-xs text-gray-500">Total Diterima</span>
+                                                    <p class="text-[10px] text-gray-400">{{ $sudahTerima }} dari
+                                                        {{ $totalPerItem }} item</p>
+                                                </div>
+                                                <div class="text-right">
+                                                    <span class="text-sm font-bold text-purple-600">
+                                                        Rp {{ number_format($totalDiterima, 0, ',', '.') }}
+                                                    </span>
+                                                    <p class="text-[10px] text-gray-400">
+                                                        dari Rp
+                                                        {{ number_format($perlengkapan->total_harga, 0, ',', '.') }}
+                                                    </p>
+                                                </div>
+                                            </div>
+                                        </div>
                                     </div>
-                                    <div class="bg-white rounded-lg p-3 border border-gray-200 text-center">
-                                        <p class="text-xs text-gray-500">Dengan Agent</p>
-                                        <p class="text-lg font-bold text-blue-600">{{ $jamaahsWithAgent->count() }}</p>
-                                    </div>
-                                    <div class="bg-white rounded-lg p-3 border border-gray-200 text-center">
-                                        <p class="text-xs text-gray-500">Tanpa Agent</p>
-                                        <p class="text-lg font-bold text-orange-500">{{ $jamaahsWithoutAgent->count() }}
+                                @endforeach
+                            </div>
+
+                            <div class="mt-3 pt-3 border-t border-gray-200">
+                                <div class="flex items-center justify-between">
+                                    <div>
+                                        <span class="text-sm font-semibold text-gray-700">Total Perlengkapan
+                                            Diterima</span>
+                                        <p class="text-xs text-gray-400 mt-0.5">
+                                            <i class="fas fa-info-circle mr-1"></i>
+                                            Hanya dihitung dari perlengkapan yang <strong>sudah diterima</strong> jamaah
                                         </p>
                                     </div>
-                                    <div class="bg-white rounded-lg p-3 border border-gray-200 text-center">
-                                        <p class="text-xs text-gray-500">Total Jamaah</p>
-                                        <p class="text-lg font-bold text-gray-700">{{ $departure->jamaahs->count() }}</p>
-                                    </div>
+                                    <span class="text-lg font-bold text-purple-600">
+                                        {{ $departure->total_harga_perlengkapan_formatted }}
+                                    </span>
                                 </div>
 
-                                <div class="overflow-x-auto">
-                                    <table class="w-full text-sm border border-gray-200 rounded-lg">
-                                        <thead class="bg-purple-50">
-                                            <tr>
-                                                <th class="px-4 py-2 text-left text-xs font-semibold text-purple-700">Agent
-                                                </th>
-                                                <th class="px-4 py-2 text-left text-xs font-semibold text-purple-700">Nama
-                                                    Jamaah</th>
-                                                <th class="px-4 py-2 text-left text-xs font-semibold text-purple-700">
-                                                    Produk</th>
-                                                <th class="px-4 py-2 text-center text-xs font-semibold text-purple-700">
-                                                    Status Pembayaran</th>
-                                                <th class="px-4 py-2 text-right text-xs font-semibold text-purple-700">Fee
-                                                    Agent</th>
+                                <div class="flex items-center justify-between mt-1">
+                                    <span class="text-xs text-gray-400">Total semua perlengkapan (target):</span>
+                                    <span class="text-xs text-gray-500 font-medium">
+                                        {{ $departure->total_harga_perlengkapan_all_formatted }}
+                                    </span>
+                                </div>
+                            </div>
+                        @else
+                            <div class="text-center py-8">
+                                <div
+                                    class="w-12 h-12 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-3">
+                                    <i class="fas fa-box text-gray-300 text-xl"></i>
+                                </div>
+                                <p class="text-gray-500 text-sm">Belum ada perlengkapan yang ditambahkan</p>
+                                <p class="text-gray-400 text-xs mt-1">Klik tombol "Atur Perlengkapan" untuk menambahkan
+                                    perlengkapan</p>
+                            </div>
+                        @endif
+                    </div>
+                </div>
+
+                {{-- JENIS TRANSAKSI --}}
+                <div class="bg-gray-50 rounded-xl p-5 border border-gray-100 mb-6">
+                    <div class="flex items-center justify-between mb-4">
+                        <h6 class="text-sm font-semibold text-gray-700 flex items-center">
+                            <i class="fas fa-receipt text-yellow-500 mr-2"></i> Jenis Transaksi
+                            <span class="ml-2 text-xs bg-blue-100 text-blue-800 px-2 py-0.5 rounded-full">
+                                {{ $departure->departureJenisTransaksis->count() }} item
+                            </span>
+                            @php
+                                $totalJtItems = $departure->total_jenis_transaksi_item;
+                                $totalJtReceived = $departure->total_jenis_transaksi_diterima;
+                            @endphp
+                            <span class="ml-2 text-xs bg-green-100 text-green-800 px-2 py-0.5 rounded-full">
+                                {{ $totalJtReceived }} / {{ $totalJtItems }} diterima
+                            </span>
+                        </h6>
+                        <div class="flex items-center gap-2">
+                            <button onclick="openJenisTransaksiModal()"
+                                class="inline-flex items-center px-3 py-1.5 bg-yellow-500 text-white text-xs rounded-lg hover:bg-yellow-600 transition">
+                                <i class="fas fa-plus mr-1"></i> Atur Jenis Transaksi
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <div class="relative">
+                            <i class="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm"></i>
+                            <input type="text" id="searchJenisTransaksi" placeholder="Cari jenis transaksi..."
+                                class="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500 text-sm">
+                        </div>
+                    </div>
+
+                    @php
+                        $jenisTransaksiList = $departure->departureJenisTransaksis;
+                        $totalJamaah = $departure->jamaahs->count();
+                    @endphp
+
+                    <div id="jenisTransaksiList">
+                        @if ($jenisTransaksiList->count() > 0)
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-3 max-h-96 overflow-y-auto pr-1">
+                                @foreach ($jenisTransaksiList as $item)
+                                    @php
+                                        $totalPerItem = $item->departureJenisTransaksiJamaahs->count();
+                                        $sudahTerima = $item->departureJenisTransaksiJamaahs
+                                            ->where('status_terima', 'Sudah Diterima')
+                                            ->count();
+                                        $belumTerima = $totalPerItem - $sudahTerima;
+                                        $progressPercent =
+                                            $totalPerItem > 0 ? round(($sudahTerima / $totalPerItem) * 100) : 0;
+
+                                        $totalDiterima = $item->departureJenisTransaksiJamaahs
+                                            ->where('status_terima', 'Sudah Diterima')
+                                            ->sum('total_harga');
+                                    @endphp
+
+                                    <div class="bg-white rounded-lg p-3 border border-gray-200 hover:shadow-md transition-shadow duration-200 jenis-transaksi-item"
+                                        data-nama="{{ strtolower($item->jenisTransaksi->nama) }}">
+                                        <div class="flex items-start justify-between">
+                                            <div class="flex-1 min-w-0">
+                                                <div class="flex items-center gap-2">
+                                                    <div
+                                                        class="w-8 h-8 bg-purple-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                                                        <i class="fas fa-tag text-purple-600 text-xs"></i>
+                                                    </div>
+                                                    <div>
+                                                        <p class="text-sm font-semibold text-gray-800 truncate">
+                                                            {{ $item->jenisTransaksi->nama }}</p>
+                                                        <p class="text-xs text-gray-400">
+                                                            Total: {{ $item->total_harga_formatted }} · Rp
+                                                            {{ number_format($item->harga_satuan, 0, ',', '.') }} / jamaah
+                                                        </p>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="flex items-center gap-1 ml-2 flex-shrink-0">
+                                                <button type="button"
+                                                    onclick="openJenisTransaksiDetailModal({{ $item->id }})"
+                                                    class="p-1 text-blue-500 hover:bg-blue-50 rounded transition"
+                                                    title="Lihat Detail">
+                                                    <i class="fas fa-eye text-xs"></i>
+                                                </button>
+                                                <button type="button"
+                                                    onclick="editJenisTransaksiHarga({{ $departure->id_departure }}, {{ $item->id_jenis_transaksi }}, '{{ $item->total_harga }}')"
+                                                    class="p-1 text-blue-500 hover:bg-blue-50 rounded transition"
+                                                    title="Edit Harga Total">
+                                                    <i class="fas fa-edit text-xs"></i>
+                                                </button>
+                                                <button type="button"
+                                                    onclick="removeJenisTransaksi({{ $departure->id_departure }}, {{ $item->id_jenis_transaksi }})"
+                                                    class="p-1 text-red-500 hover:bg-red-50 rounded transition"
+                                                    title="Hapus">
+                                                    <i class="fas fa-trash text-xs"></i>
+                                                </button>
+                                                <form
+                                                    id="remove-jenis-transaksi-form-{{ $departure->id_departure }}-{{ $item->id_jenis_transaksi }}"
+                                                    action="{{ route('transaksional.departure.remove-jenis-transaksi', [$departure->id_departure, $item->id_jenis_transaksi]) }}"
+                                                    method="POST" class="hidden">
+                                                    @csrf @method('DELETE')
+                                                </form>
+                                            </div>
+                                        </div>
+
+                                        <div class="mt-2">
+                                            <div class="flex items-center justify-between text-xs">
+                                                <span class="text-gray-500">Progress penerimaan</span>
+                                                <div class="flex items-center gap-2">
+                                                    <span class="text-green-600">{{ $sudahTerima }} diterima</span>
+                                                    @if ($belumTerima > 0)
+                                                        <span class="text-yellow-600">{{ $belumTerima }} belum</span>
+                                                    @endif
+                                                </div>
+                                            </div>
+                                            <div class="w-full bg-gray-200 rounded-full h-1.5 mt-1">
+                                                <div class="h-1.5 rounded-full transition-all duration-500 {{ $progressPercent >= 100 ? 'bg-green-500' : 'bg-yellow-500' }}"
+                                                    style="width: {{ $progressPercent }}%"></div>
+                                            </div>
+                                        </div>
+
+                                        <div class="mt-2 pt-2 border-t border-gray-100">
+                                            <div class="flex items-center justify-between">
+                                                <div>
+                                                    <span class="text-xs text-gray-500">Total Diterima</span>
+                                                    <p class="text-[10px] text-gray-400">{{ $sudahTerima }} dari
+                                                        {{ $totalPerItem }} item</p>
+                                                </div>
+                                                <div class="text-right">
+                                                    <span class="text-sm font-bold text-purple-600">
+                                                        Rp {{ number_format($totalDiterima, 0, ',', '.') }}
+                                                    </span>
+                                                    <p class="text-[10px] text-gray-400">
+                                                        dari Rp {{ number_format($item->total_harga, 0, ',', '.') }}
+                                                    </p>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        @if ($item->catatan)
+                                            <p class="text-xs text-gray-400 mt-1">{{ $item->catatan }}</p>
+                                        @endif
+                                    </div>
+                                @endforeach
+                            </div>
+
+                            <div class="mt-3 pt-3 border-t border-gray-200">
+                                <div class="flex items-center justify-between">
+                                    <div>
+                                        <span class="text-sm font-semibold text-gray-700">Total Jenis Transaksi
+                                            Diterima</span>
+                                        <p class="text-xs text-gray-400 mt-0.5">
+                                            <i class="fas fa-info-circle mr-1"></i>
+                                            Hanya dihitung dari jenis transaksi yang <strong>sudah diterima</strong> jamaah
+                                        </p>
+                                    </div>
+                                    <span class="text-lg font-bold text-purple-600">
+                                        {{ $departure->total_jenis_transaksi_formatted }}
+                                    </span>
+                                </div>
+
+                                <div class="flex items-center justify-between mt-1">
+                                    <span class="text-xs text-gray-400">Total semua jenis transaksi (target):</span>
+                                    <span class="text-xs text-gray-500 font-medium">
+                                        {{ $departure->total_jenis_transaksi_all_formatted }}
+                                    </span>
+                                </div>
+                            </div>
+                        @else
+                            <div class="text-center py-8">
+                                <div
+                                    class="w-12 h-12 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-3">
+                                    <i class="fas fa-receipt text-gray-300 text-xl"></i>
+                                </div>
+                                <p class="text-gray-500 text-sm">Belum ada jenis transaksi yang ditambahkan</p>
+                                <p class="text-gray-400 text-xs mt-1">Klik tombol "Atur Jenis Transaksi" untuk menambahkan
+                                    jenis transaksi</p>
+                            </div>
+                        @endif
+                    </div>
+                </div>
+
+                {{-- AGENT & JAMAAH --}}
+                <div class="bg-gray-50 rounded-xl p-5 border border-gray-100 mb-6">
+                    <div class="flex items-center justify-between mb-4">
+                        <h6 class="text-sm font-semibold text-gray-700 flex items-center">
+                            <i class="fas fa-user-tie text-purple-500 mr-2"></i> Agent & Jamaah
+                            <span class="ml-2 text-xs bg-purple-100 text-purple-800 px-2 py-0.5 rounded-full">
+                                {{ $departure->jamaahs->filter(function ($jamaah) {return !empty($jamaah->agent_name);})->count() }}
+                                dengan Agent
+                            </span>
+                            <span class="ml-2 text-xs bg-gray-100 text-gray-600 px-2 py-0.5 rounded-full">
+                                Total {{ $departure->jamaahs->count() }} Jamaah
+                            </span>
+                        </h6>
+                    </div>
+
+                    <div class="mb-3">
+                        <div class="relative">
+                            <i class="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm"></i>
+                            <input type="text" id="searchAgent" placeholder="Cari agent atau jamaah..."
+                                class="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 text-sm">
+                        </div>
+                    </div>
+
+                    @php
+                        $jamaahsWithAgent = $departure->jamaahs->filter(function ($jamaah) {
+                            return !empty($jamaah->agent_name) && trim($jamaah->agent_name) !== '';
+                        });
+
+                        $groupedByAgent = $jamaahsWithAgent->groupBy(function ($jamaah) {
+                            return $jamaah->agent_name ?? 'Agent Tidak Diketahui';
+                        });
+
+                        $jamaahsWithoutAgent = $departure->jamaahs->filter(function ($jamaah) {
+                            return empty($jamaah->agent_name) || trim($jamaah->agent_name) === '';
+                        });
+                    @endphp
+
+                    <div id="agentList">
+                        @if ($jamaahsWithAgent->count() > 0)
+                            <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-4">
+                                <div class="bg-white rounded-lg p-3 border border-gray-200 text-center">
+                                    <p class="text-xs text-gray-500">Total Agent</p>
+                                    <p class="text-lg font-bold text-purple-600">{{ $groupedByAgent->count() }}</p>
+                                </div>
+                                <div class="bg-white rounded-lg p-3 border border-gray-200 text-center">
+                                    <p class="text-xs text-gray-500">Dengan Agent</p>
+                                    <p class="text-lg font-bold text-blue-600">{{ $jamaahsWithAgent->count() }}</p>
+                                </div>
+                                <div class="bg-white rounded-lg p-3 border border-gray-200 text-center">
+                                    <p class="text-xs text-gray-500">Tanpa Agent</p>
+                                    <p class="text-lg font-bold text-orange-500">{{ $jamaahsWithoutAgent->count() }}</p>
+                                </div>
+                                <div class="bg-white rounded-lg p-3 border border-gray-200 text-center">
+                                    <p class="text-xs text-gray-500">Total Jamaah</p>
+                                    <p class="text-lg font-bold text-gray-700">{{ $departure->jamaahs->count() }}</p>
+                                </div>
+                            </div>
+
+                            <div class="overflow-x-auto">
+                                <table class="w-full text-sm border border-gray-200 rounded-lg">
+                                    <thead class="bg-purple-50">
+                                        <tr>
+                                            <th class="px-4 py-2 text-left text-xs font-semibold text-purple-700">Agent
+                                            </th>
+                                            <th class="px-4 py-2 text-left text-xs font-semibold text-purple-700">Nama
+                                                Jamaah</th>
+                                            <th class="px-4 py-2 text-left text-xs font-semibold text-purple-700">Produk
+                                            </th>
+                                            <th class="px-4 py-2 text-center text-xs font-semibold text-purple-700">Status
+                                                Pembayaran</th>
+                                            <th class="px-4 py-2 text-right text-xs font-semibold text-purple-700">Fee
+                                                Agent</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody class="divide-y divide-gray-100">
+                                        @foreach ($groupedByAgent as $agentName => $jamaahs)
+                                            @foreach ($jamaahs as $jamaah)
+                                                <tr class="hover:bg-gray-50 transition-colors agent-row"
+                                                    data-agent="{{ strtolower($agentName) }}"
+                                                    data-name="{{ strtolower($jamaah->nama_lengkap) }}">
+                                                    <td class="px-4 py-2.5">
+                                                        @if ($loop->first)
+                                                            <span
+                                                                class="inline-flex items-center gap-1.5 px-2.5 py-1 bg-purple-100 text-purple-700 rounded-lg text-xs font-medium">
+                                                                <i class="fas fa-user-tie text-purple-500"></i>
+                                                                {{ $agentName }}
+                                                            </span>
+                                                            <span
+                                                                class="text-xs text-gray-400 ml-1">({{ $jamaahs->count() }}
+                                                                jamaah)</span>
+                                                        @endif
+                                                    </td>
+                                                    <td class="px-4 py-2.5 font-medium text-gray-800">
+                                                        {{ $jamaah->nama_lengkap }}</td>
+                                                    <td class="px-4 py-2.5 text-gray-600">{{ $jamaah->produk_paket }}
+                                                    </td>
+                                                    <td class="px-4 py-2.5 text-center">
+                                                        <span
+                                                            class="px-2 py-0.5 rounded-full text-xs font-medium
+                                        {{ $jamaah->status_pembayaran == 'Lunas'
+                                            ? 'bg-green-100 text-green-700'
+                                            : ($jamaah->status_pembayaran == 'DP'
+                                                ? 'bg-yellow-100 text-yellow-700'
+                                                : ($jamaah->status_pembayaran == 'Setoran'
+                                                    ? 'bg-blue-100 text-blue-700'
+                                                    : 'bg-red-100 text-red-700')) }}">
+                                                            {{ $jamaah->status_pembayaran }}
+                                                        </span>
+                                                    </td>
+                                                    <td class="px-4 py-2.5 text-right font-medium text-purple-600">
+                                                        @if ($loop->first)
+                                                            Rp {{ number_format($jamaah->fee_agent ?? 0, 0, ',', '.') }}
+                                                        @endif
+                                                    </td>
+                                                </tr>
+                                            @endforeach
+                                            <tr class="bg-purple-50/50 border-t border-purple-200">
+                                                <td colspan="4"
+                                                    class="px-4 py-2 text-right text-sm font-medium text-purple-700">
+                                                    Total Fee Agent {{ $agentName }}
+                                                </td>
+                                                <td class="px-4 py-2 text-right font-bold text-purple-700">
+                                                    Rp {{ number_format($jamaahs->sum('fee_agent'), 0, ',', '.') }}
+                                                </td>
                                             </tr>
-                                        </thead>
-                                        <tbody class="divide-y divide-gray-100">
-                                            @foreach ($groupedByAgent as $agentName => $jamaahs)
-                                                @foreach ($jamaahs as $jamaah)
-                                                    <tr class="hover:bg-gray-50 transition-colors agent-row"
-                                                        data-agent="{{ strtolower($agentName) }}"
+                                        @endforeach
+                                    </tbody>
+                                    <tfoot class="bg-purple-100 border-t-2 border-purple-300">
+                                        <tr>
+                                            <td colspan="4" class="px-4 py-3 text-right font-semibold text-gray-700">
+                                                <i class="fas fa-calculator mr-2 text-purple-500"></i>
+                                                Total Keseluruhan Fee Agent
+                                            </td>
+                                            <td class="px-4 py-3 text-right font-bold text-purple-700 text-lg">
+                                                Rp {{ number_format($jamaahsWithAgent->sum('fee_agent'), 0, ',', '.') }}
+                                            </td>
+                                        </tr>
+                                    </tfoot>
+                                </table>
+                            </div>
+
+                            @if ($jamaahsWithoutAgent->count() > 0)
+                                <div class="mt-4">
+                                    <p class="text-sm font-medium text-gray-600 mb-2 flex items-center gap-2">
+                                        <i class="fas fa-user text-gray-400"></i>
+                                        Jamaah Tanpa Agent
+                                        <span class="text-xs bg-orange-100 text-orange-700 px-2 py-0.5 rounded-full">
+                                            {{ $jamaahsWithoutAgent->count() }} jamaah
+                                        </span>
+                                    </p>
+                                    <div class="overflow-x-auto">
+                                        <table class="w-full text-sm border border-gray-200 rounded-lg">
+                                            <thead class="bg-gray-50">
+                                                <tr>
+                                                    <th class="px-4 py-2 text-left text-xs font-semibold text-gray-500">
+                                                        Nama Jamaah</th>
+                                                    <th class="px-4 py-2 text-left text-xs font-semibold text-gray-500">
+                                                        Produk</th>
+                                                    <th class="px-4 py-2 text-center text-xs font-semibold text-gray-500">
+                                                        Status Pembayaran</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody class="divide-y divide-gray-100">
+                                                @foreach ($jamaahsWithoutAgent as $jamaah)
+                                                    <tr class="hover:bg-gray-50 transition-colors no-agent-row"
                                                         data-name="{{ strtolower($jamaah->nama_lengkap) }}">
-                                                        <td class="px-4 py-2.5">
-                                                            @if ($loop->first)
-                                                                <span
-                                                                    class="inline-flex items-center gap-1.5 px-2.5 py-1 bg-purple-100 text-purple-700 rounded-lg text-xs font-medium">
-                                                                    <i class="fas fa-user-tie text-purple-500"></i>
-                                                                    {{ $agentName }}
-                                                                </span>
-                                                                <span
-                                                                    class="text-xs text-gray-400 ml-1">({{ $jamaahs->count() }}
-                                                                    jamaah)</span>
-                                                            @endif
-                                                        </td>
                                                         <td class="px-4 py-2.5 font-medium text-gray-800">
                                                             {{ $jamaah->nama_lengkap }}</td>
                                                         <td class="px-4 py-2.5 text-gray-600">{{ $jamaah->produk_paket }}
@@ -1050,274 +1362,324 @@
                                                                 {{ $jamaah->status_pembayaran }}
                                                             </span>
                                                         </td>
-                                                        <td class="px-4 py-2.5 text-right font-medium text-purple-600">
-                                                            @if ($loop->first)
-                                                                Rp
-                                                                {{ number_format($jamaah->fee_agent ?? 0, 0, ',', '.') }}
-                                                            @endif
-                                                        </td>
                                                     </tr>
                                                 @endforeach
-                                                <tr class="bg-purple-50/50 border-t border-purple-200">
-                                                    <td colspan="4"
-                                                        class="px-4 py-2 text-right text-sm font-medium text-purple-700">
-                                                        Total Fee Agent {{ $agentName }}
-                                                    </td>
-                                                    <td class="px-4 py-2 text-right font-bold text-purple-700">
-                                                        Rp {{ number_format($jamaahs->sum('fee_agent'), 0, ',', '.') }}
-                                                    </td>
-                                                </tr>
-                                            @endforeach
-                                        </tbody>
-                                        <tfoot class="bg-purple-100 border-t-2 border-purple-300">
-                                            <tr>
-                                                <td colspan="4"
-                                                    class="px-4 py-3 text-right font-semibold text-gray-700">
-                                                    <i class="fas fa-calculator mr-2 text-purple-500"></i>
-                                                    Total Keseluruhan Fee Agent
-                                                </td>
-                                                <td class="px-4 py-3 text-right font-bold text-purple-700 text-lg">
-                                                    Rp
-                                                    {{ number_format($jamaahsWithAgent->sum('fee_agent'), 0, ',', '.') }}
-                                                </td>
-                                            </tr>
-                                        </tfoot>
-                                    </table>
-                                </div>
-
-                                @if ($jamaahsWithoutAgent->count() > 0)
-                                    <div class="mt-4">
-                                        <p class="text-sm font-medium text-gray-600 mb-2 flex items-center gap-2">
-                                            <i class="fas fa-user text-gray-400"></i>
-                                            Jamaah Tanpa Agent
-                                            <span class="text-xs bg-orange-100 text-orange-700 px-2 py-0.5 rounded-full">
-                                                {{ $jamaahsWithoutAgent->count() }} jamaah
-                                            </span>
-                                        </p>
-                                        <div class="overflow-x-auto">
-                                            <table class="w-full text-sm border border-gray-200 rounded-lg">
-                                                <thead class="bg-gray-50">
-                                                    <tr>
-                                                        <th
-                                                            class="px-4 py-2 text-left text-xs font-semibold text-gray-500">
-                                                            Nama Jamaah</th>
-                                                        <th
-                                                            class="px-4 py-2 text-left text-xs font-semibold text-gray-500">
-                                                            Produk</th>
-                                                        <th
-                                                            class="px-4 py-2 text-center text-xs font-semibold text-gray-500">
-                                                            Status Pembayaran</th>
-                                                    </tr>
-                                                </thead>
-                                                <tbody class="divide-y divide-gray-100">
-                                                    @foreach ($jamaahsWithoutAgent as $jamaah)
-                                                        <tr class="hover:bg-gray-50 transition-colors no-agent-row"
-                                                            data-name="{{ strtolower($jamaah->nama_lengkap) }}">
-                                                            <td class="px-4 py-2.5 font-medium text-gray-800">
-                                                                {{ $jamaah->nama_lengkap }}</td>
-                                                            <td class="px-4 py-2.5 text-gray-600">
-                                                                {{ $jamaah->produk_paket }}</td>
-                                                            <td class="px-4 py-2.5 text-center">
-                                                                <span
-                                                                    class="px-2 py-0.5 rounded-full text-xs font-medium
-                                                {{ $jamaah->status_pembayaran == 'Lunas'
-                                                    ? 'bg-green-100 text-green-700'
-                                                    : ($jamaah->status_pembayaran == 'DP'
-                                                        ? 'bg-yellow-100 text-yellow-700'
-                                                        : ($jamaah->status_pembayaran == 'Setoran'
-                                                            ? 'bg-blue-100 text-blue-700'
-                                                            : 'bg-red-100 text-red-700')) }}">
-                                                                    {{ $jamaah->status_pembayaran }}
-                                                                </span>
-                                                            </td>
-                                                        </tr>
-                                                    @endforeach
-                                                </tbody>
-                                            </table>
-                                        </div>
+                                            </tbody>
+                                        </table>
                                     </div>
-                                @endif
-                            @else
-                                <div class="text-center py-8">
-                                    <div
-                                        class="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-3">
-                                        <i class="fas fa-user-tie text-gray-300 text-2xl"></i>
-                                    </div>
-                                    <p class="text-gray-500 font-medium">Belum ada jamaah yang memiliki agent</p>
-                                    <p class="text-gray-400 text-sm mt-1">Semua jamaah terdaftar tanpa agent</p>
-                                    @if ($departure->jamaahs->count() > 0)
-                                        <p class="text-xs text-gray-400 mt-2">
-                                            Total jamaah terdaftar: <strong>{{ $departure->jamaahs->count() }}</strong>
-                                            orang
-                                        </p>
-                                        <div class="mt-4 text-left overflow-x-auto">
-                                            <table class="w-full text-sm border border-gray-200 rounded-lg">
-                                                <thead class="bg-gray-50">
-                                                    <tr>
-                                                        <th
-                                                            class="px-4 py-2 text-left text-xs font-semibold text-gray-500">
-                                                            Nama Jamaah</th>
-                                                        <th
-                                                            class="px-4 py-2 text-left text-xs font-semibold text-gray-500">
-                                                            Produk</th>
-                                                        <th
-                                                            class="px-4 py-2 text-center text-xs font-semibold text-gray-500">
-                                                            Status Pembayaran</th>
-                                                    </tr>
-                                                </thead>
-                                                <tbody class="divide-y divide-gray-100">
-                                                    @foreach ($departure->jamaahs as $jamaah)
-                                                        <tr class="hover:bg-gray-50 transition-colors">
-                                                            <td class="px-4 py-2.5 font-medium text-gray-800">
-                                                                {{ $jamaah->nama_lengkap }}</td>
-                                                            <td class="px-4 py-2.5 text-gray-600">
-                                                                {{ $jamaah->produk_paket }}</td>
-                                                            <td class="px-4 py-2.5 text-center">
-                                                                <span
-                                                                    class="px-2 py-0.5 rounded-full text-xs font-medium
-                                                {{ $jamaah->status_pembayaran == 'Lunas'
-                                                    ? 'bg-green-100 text-green-700'
-                                                    : ($jamaah->status_pembayaran == 'DP'
-                                                        ? 'bg-yellow-100 text-yellow-700'
-                                                        : ($jamaah->status_pembayaran == 'Setoran'
-                                                            ? 'bg-blue-100 text-blue-700'
-                                                            : 'bg-red-100 text-red-700')) }}">
-                                                                    {{ $jamaah->status_pembayaran }}
-                                                                </span>
-                                                            </td>
-                                                        </tr>
-                                                    @endforeach
-                                                </tbody>
-                                            </table>
-                                        </div>
-                                    @endif
                                 </div>
                             @endif
-                        </div>
-                    </div>
-
-                    <!-- ========================================== -->
-                    <!-- CATATAN -->
-                    <!-- ========================================== -->
-                    <div class="bg-gray-50 rounded-xl p-5 border border-gray-100">
-                        <div class="flex items-center justify-between mb-4">
-                            <h6 class="text-sm font-semibold text-gray-700 flex items-center">
-                                <i class="fas fa-sticky-note text-yellow-500 mr-2"></i> Catatan
-                            </h6>
-                            <div class="flex items-center gap-2">
-                                {!! $departure->catatan_status_badge !!}
-                                <button onclick="openCatatanModal()"
-                                    class="inline-flex items-center px-3 py-1.5 bg-yellow-500 text-white text-xs rounded-lg hover:bg-yellow-600 transition">
-                                    <i class="fas fa-plus mr-1"></i> Tambah
-                                </button>
+                        @else
+                            <div class="text-center py-8">
+                                <div
+                                    class="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-3">
+                                    <i class="fas fa-user-tie text-gray-300 text-2xl"></i>
+                                </div>
+                                <p class="text-gray-500 font-medium">Belum ada jamaah yang memiliki agent</p>
+                                <p class="text-gray-400 text-sm mt-1">Semua jamaah terdaftar tanpa agent</p>
+                                @if ($departure->jamaahs->count() > 0)
+                                    <p class="text-xs text-gray-400 mt-2">
+                                        Total jamaah terdaftar: <strong>{{ $departure->jamaahs->count() }}</strong> orang
+                                    </p>
+                                @endif
                             </div>
-                        </div>
-                        <div class="bg-white rounded-lg p-3 border border-gray-200 min-h-[60px]">
-                            <p class="text-sm text-gray-600">{{ $departure->catatan ?? '-' }}</p>
-                        </div>
+                        @endif
                     </div>
+                </div>
 
-                    <!-- ========================================== -->
-                    <!-- KEUANGAN -->
-                    <!-- ========================================== -->
-                    <div class="bg-gray-50 rounded-xl p-5 border border-gray-100 lg:col-span-2">
-                        <h6 class="text-sm font-semibold text-gray-700 mb-4 flex items-center">
-                            <i class="fas fa-money-bill-wave text-yellow-500 mr-2"></i> Ringkasan Keuangan
+                {{-- CATATAN --}}
+                <div class="bg-gray-50 rounded-xl p-5 border border-gray-100 mb-6">
+                    <div class="flex items-center justify-between mb-4">
+                        <h6 class="text-sm font-semibold text-gray-700 flex items-center">
+                            <i class="fas fa-sticky-note text-yellow-500 mr-2"></i> Catatan
                         </h6>
-
-                        <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
-                            <div class="bg-white rounded-lg p-3 border border-gray-200 text-center">
-                                <p class="text-xs text-gray-500">Total Pendapatan</p>
-                                <p class="text-sm font-bold text-blue-600">{{ $departure->total_pendapatan_formatted }}
-                                </p>
-                            </div>
-                            <div class="bg-white rounded-lg p-3 border border-gray-200 text-center">
-                                <p class="text-xs text-gray-500">Diskon</p>
-                                <p class="text-sm font-bold text-red-600">{{ $departure->total_diskon_formatted }}</p>
-                            </div>
-                            <div class="bg-white rounded-lg p-3 border border-gray-200 text-center">
-                                <p class="text-xs text-gray-500">Pendapatan Bersih</p>
-                                <p class="text-sm font-bold text-yellow-600">
-                                    {{ $departure->total_pendapatan_bersih_formatted }}</p>
-                            </div>
-                            <div class="bg-white rounded-lg p-3 border border-gray-200 text-center">
-                                <p class="text-xs text-gray-500">Total Pengeluaran</p>
-                                <p class="text-sm font-bold text-purple-600">
-                                    {{ $departure->total_pengeluaran_formatted }}</p>
-                            </div>
+                        <div class="flex items-center gap-2">
+                            {!! $departure->catatan_status_badge !!}
+                            <button onclick="openCatatanModal()"
+                                class="inline-flex items-center px-3 py-1.5 bg-yellow-500 text-white text-xs rounded-lg hover:bg-yellow-600 transition">
+                                <i class="fas fa-plus mr-1"></i> Tambah
+                            </button>
                         </div>
+                    </div>
+                    <div class="bg-white rounded-lg p-3 border border-gray-200 min-h-[60px]">
+                        <p class="text-sm text-gray-600">{{ $departure->catatan ?? '-' }}</p>
+                    </div>
+                </div>
 
-                        <div class="bg-white rounded-lg p-3 border border-gray-200 mb-4">
-                            <p class="text-xs font-medium text-gray-600 mb-2">
-                                <i class="fas fa-list mr-1"></i> Rincian Pengeluaran
-                            </p>
-                            <div class="grid grid-cols-2 md:grid-cols-3 gap-2 text-xs">
-                                <div class="flex justify-between">
-                                    <span class="text-gray-500">Maskapai:</span>
-                                    <span
-                                        class="font-medium text-gray-700">{{ $departure->total_harga_maskapai_formatted }}</span>
-                                </div>
-                                <div class="flex justify-between">
-                                    <span class="text-gray-500">Hotel:</span>
-                                    <span
-                                        class="font-medium text-gray-700">{{ $departure->total_harga_hotel_all_formatted }}</span>
-                                </div>
-                                <div class="flex justify-between">
-                                    <span class="text-gray-500">Hotel Tour:</span>
-                                    <span
-                                        class="font-medium text-gray-700">{{ $departure->total_harga_paket_tour_hotel_formatted }}</span>
-                                </div>
-                                <div class="flex justify-between">
-                                    <span class="text-gray-500">Perlengkapan:</span>
-                                    <span
-                                        class="font-medium text-purple-600">{{ $departure->total_harga_perlengkapan_formatted }}</span>
-                                </div>
-                                <div class="flex justify-between">
-                                    <span class="text-gray-500">Jenis Transaksi:</span>
-                                    <span
-                                        class="font-medium text-gray-700">{{ $departure->total_jenis_transaksi_formatted }}</span>
-                                </div>
-                            </div>
-                            <p class="text-[10px] text-gray-400 mt-2">
-                                <i class="fas fa-info-circle mr-1"></i>
-                                Perlengkapan & Jenis Transaksi hanya dihitung setelah diterima jamaah
+                {{-- 4. RINCIAN PENGELUARAN --}}
+                <div class="bg-gray-50 rounded-xl p-5 border border-gray-100 mb-6">
+                    <h6 class="text-sm font-semibold text-gray-700 mb-4 flex items-center">
+                        <i class="fas fa-list text-red-500 mr-2"></i> Rincian Pengeluaran
+                    </h6>
+
+                    @php
+                        $totalFeeAgent = $departure->jamaahs->sum('fee_agent');
+                        $totalFeePassport = $departure->jamaahs->sum('fee_passport');
+                    @endphp
+
+                    <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-4">
+                        <div class="bg-white rounded-lg p-3 border border-gray-200 text-center">
+                            <p class="text-xs text-gray-500">Maskapai</p>
+                            <p class="text-sm font-bold text-gray-700">{{ $departure->total_harga_maskapai_formatted }}
                             </p>
                         </div>
+                        <div class="bg-white rounded-lg p-3 border border-gray-200 text-center">
+                            <p class="text-xs text-gray-500">Hotel</p>
+                            <p class="text-sm font-bold text-gray-700">{{ $departure->total_harga_hotel_all_formatted }}
+                            </p>
+                        </div>
+                        <div class="bg-white rounded-lg p-3 border border-gray-200 text-center">
+                            <p class="text-xs text-gray-500">Hotel Tour</p>
+                            <p class="text-sm font-bold text-gray-700">
+                                {{ $departure->total_harga_paket_tour_hotel_formatted }}</p>
+                        </div>
+                        <div class="bg-white rounded-lg p-3 border border-gray-200 text-center">
+                            <p class="text-xs text-gray-500">Perlengkapan</p>
+                            <p class="text-sm font-bold text-purple-600">
+                                {{ $departure->total_harga_perlengkapan_formatted }}</p>
+                        </div>
+                        <div class="bg-white rounded-lg p-3 border border-gray-200 text-center">
+                            <p class="text-xs text-gray-500">Jenis Transaksi</p>
+                            <p class="text-sm font-bold text-gray-700">{{ $departure->total_jenis_transaksi_formatted }}
+                            </p>
+                        </div>
+                        <div class="bg-white rounded-lg p-3 border border-gray-200 text-center">
+                            <p class="text-xs text-gray-500">Fee Passport</p>
+                            <p class="text-sm font-bold text-purple-600">Rp
+                                {{ number_format($totalFeePassport, 0, ',', '.') }}</p>
+                        </div>
+                        <div class="bg-white rounded-lg p-3 border border-gray-200 text-center">
+                            <p class="text-xs text-gray-500">Fee Agent</p>
+                            <p class="text-sm font-bold text-purple-600">Rp
+                                {{ number_format($totalFeeAgent, 0, ',', '.') }}</p>
+                        </div>
+                        <div class="bg-white rounded-lg p-3 border border-gray-200 text-center">
+                            <p class="text-xs text-gray-500">Jumlah Item</p>
+                            <p class="text-sm font-bold text-gray-700">
+                                {{ $departure->departurePerlengkapan->count() + $departure->departureJenisTransaksis->count() + $departure->departurePaketTourHotels->count() }}
+                                item
+                            </p>
+                        </div>
+                    </div>
 
-                        <div class="grid grid-cols-2 gap-4">
-                            <div class="bg-white rounded-lg p-3 border border-gray-200 text-center">
-                                <p class="text-xs text-gray-500">Keuntungan</p>
-                                <p
-                                    class="text-lg font-bold {{ $departure->keuntungan > 0 ? 'text-green-600' : 'text-red-600' }}">
-                                    {{ $departure->keuntungan_formatted }}
+                    <div class="bg-gradient-to-r from-red-100 to-orange-100 rounded-lg p-4 border-2 border-red-400">
+                        <div class="flex items-center justify-between flex-wrap gap-2">
+                            <div>
+                                <p class="text-sm font-bold text-red-800">
+                                    <i class="fas fa-calculator mr-2"></i>
+                                    TOTAL KESELURUHAN PENGELUARAN
+                                </p>
+                                <p class="text-[10px] text-red-600 mt-0.5">
+                                    Maskapai + Hotel + Hotel Tour + Perlengkapan + Jenis Transaksi + Fee Passport + Fee
+                                    Agent
                                 </p>
                             </div>
-                            <div class="bg-white rounded-lg p-3 border border-gray-200 text-center">
-                                <p class="text-xs text-gray-500">Margin Laba</p>
+                            <div class="text-right">
+                                <p class="text-xl md:text-2xl font-extrabold text-red-700">
+                                    {{ $departure->total_pengeluaran_formatted }}
+                                </p>
+                                <p class="text-[10px] text-red-600">Total Pengeluaran Final</p>
+                            </div>
+                        </div>
+
+                        <div class="mt-3 pt-3 border-t border-red-300 grid grid-cols-1 md:grid-cols-2 gap-1 text-xs">
+                            <div class="flex justify-between">
+                                <span class="text-red-700">Maskapai:</span>
+                                <span
+                                    class="font-bold text-red-800">{{ $departure->total_harga_maskapai_formatted }}</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="text-red-700">Hotel:</span>
+                                <span
+                                    class="font-bold text-red-800">{{ $departure->total_harga_hotel_all_formatted }}</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="text-red-700">Hotel Tour:</span>
+                                <span
+                                    class="font-bold text-red-800">{{ $departure->total_harga_paket_tour_hotel_formatted }}</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="text-red-700">Perlengkapan (diterima):</span>
+                                <span
+                                    class="font-bold text-red-800">{{ $departure->total_harga_perlengkapan_formatted }}</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="text-red-700">Jenis Transaksi (diterima):</span>
+                                <span
+                                    class="font-bold text-red-800">{{ $departure->total_jenis_transaksi_formatted }}</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="text-red-700">Fee Passport:</span>
+                                <span class="font-bold text-red-800">Rp
+                                    {{ number_format($totalFeePassport, 0, ',', '.') }}</span>
+                            </div>
+                            <div class="flex justify-between md:col-span-2">
+                                <span class="text-red-700">Fee Agent:</span>
+                                <span class="font-bold text-red-800">Rp
+                                    {{ number_format($totalFeeAgent, 0, ',', '.') }}</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                {{-- 5. HASIL PERHITUNGAN --}}
+                @php
+                    $hasilPendapatan = $departure->total_pendapatan_bersih ?? 0;
+                    $hasilPengeluaran = $departure->total_pengeluaran ?? 0;
+                    $hasilAkhir = $hasilPendapatan - $hasilPengeluaran;
+                    $isProfit = $hasilAkhir >= 0;
+                    $persentaseHasil = $hasilPendapatan > 0 ? round(($hasilAkhir / $hasilPendapatan) * 100, 2) : 0;
+                @endphp
+
+                <div class="mb-6">
+                    <div
+                        class="rounded-2xl border-4 {{ $isProfit ? 'border-green-500 bg-gradient-to-br from-green-50 via-emerald-50 to-green-100' : 'border-red-500 bg-gradient-to-br from-red-50 via-rose-50 to-red-100' }} overflow-hidden shadow-lg">
+                        <div class="{{ $isProfit ? 'bg-green-500' : 'bg-red-500' }} px-6 py-3">
+                            <div class="flex items-center justify-between flex-wrap gap-2">
+                                <div class="flex items-center gap-3">
+                                    <div class="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center">
+                                        <i
+                                            class="fas {{ $isProfit ? 'fa-trophy' : 'fa-exclamation-triangle' }} text-white text-lg"></i>
+                                    </div>
+                                    <div>
+                                        <h5 class="text-white font-bold text-lg">
+                                            {{ $isProfit ? 'KEUNTUNGAN' : 'KERUGIAN' }}</h5>
+                                        <p class="text-white/80 text-xs">Hasil Perhitungan: Pendapatan Bersih − Total
+                                            Pengeluaran</p>
+                                    </div>
+                                </div>
+                                <div class="text-right">
+                                    <span
+                                        class="inline-flex items-center gap-1.5 px-3 py-1 bg-white/20 rounded-full text-white text-xs font-semibold">
+                                        <i class="fas {{ $isProfit ? 'fa-arrow-up' : 'fa-arrow-down' }}"></i>
+                                        {{ $isProfit ? 'PROFIT' : 'LOSS' }}
+                                        {{ number_format(abs($persentaseHasil), 2) }}%
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="p-6">
+                            <div class="text-center mb-5">
+                                <p class="text-xs text-gray-500 mb-1">
+                                    {{ $isProfit ? 'Total Keuntungan' : 'Total Kerugian' }}</p>
                                 <p
-                                    class="text-lg font-bold {{ $departure->margin_laba > 0 ? 'text-green-600' : 'text-red-600' }}">
-                                    {{ $departure->margin_laba_formatted }}
+                                    class="text-4xl md:text-5xl font-extrabold {{ $isProfit ? 'text-green-600' : 'text-red-600' }} tracking-tight">
+                                    {{ $hasilAkhir >= 0 ? '+' : '−' }} Rp
+                                    {{ number_format(abs($hasilAkhir), 0, ',', '.') }}
+                                </p>
+                                <p class="text-xs text-gray-500 mt-1">
+                                    {{ $isProfit ? 'Pendapatan melebihi pengeluaran' : 'Pengeluaran melebihi pendapatan' }}
+                                </p>
+                            </div>
+
+                            <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+                                <div class="bg-white rounded-xl p-4 border-2 border-green-300 text-center">
+                                    <p class="text-[10px] text-gray-500 uppercase tracking-wider mb-1">Pendapatan Bersih
+                                    </p>
+                                    <p class="text-lg font-bold text-green-600">
+                                        {{ $departure->total_pendapatan_bersih_formatted }}</p>
+                                    <p class="text-[10px] text-gray-400 mt-1">
+                                        <i class="fas fa-arrow-down text-green-500 mr-1"></i>Dari Ringkasan Pendapatan
+                                    </p>
+                                </div>
+                                <div class="flex items-center justify-center">
+                                    <div
+                                        class="w-12 h-12 rounded-full {{ $isProfit ? 'bg-green-500' : 'bg-red-500' }} flex items-center justify-center shadow-md">
+                                        <i class="fas fa-minus text-white text-xl"></i>
+                                    </div>
+                                </div>
+                                <div class="bg-white rounded-xl p-4 border-2 border-red-300 text-center">
+                                    <p class="text-[10px] text-gray-500 uppercase tracking-wider mb-1">Total Pengeluaran
+                                    </p>
+                                    <p class="text-lg font-bold text-red-600">
+                                        {{ $departure->total_pengeluaran_formatted }}</p>
+                                    <p class="text-[10px] text-gray-400 mt-1">
+                                        <i class="fas fa-arrow-down text-red-500 mr-1"></i>Dari Rincian Pengeluaran
+                                    </p>
+                                </div>
+                            </div>
+
+                            <div class="mt-4 p-3 bg-white rounded-xl border border-gray-200">
+                                <div class="flex items-center justify-center flex-wrap gap-2 text-sm">
+                                    <span class="px-2 py-1 bg-green-100 text-green-700 rounded font-semibold">
+                                        {{ $departure->total_pendapatan_bersih_formatted }}
+                                    </span>
+                                    <span class="text-gray-400 font-bold">−</span>
+                                    <span class="px-2 py-1 bg-red-100 text-red-700 rounded font-semibold">
+                                        {{ $departure->total_pengeluaran_formatted }}
+                                    </span>
+                                    <span class="text-gray-400 font-bold">=</span>
+                                    <span
+                                        class="px-3 py-1 {{ $isProfit ? 'bg-green-500' : 'bg-red-500' }} text-white rounded font-bold">
+                                        {{ $hasilAkhir >= 0 ? '+' : '−' }} Rp
+                                        {{ number_format(abs($hasilAkhir), 0, ',', '.') }}
+                                    </span>
+                                </div>
+                            </div>
+
+                            <div class="mt-4 grid grid-cols-2 md:grid-cols-4 gap-2">
+                                <div class="bg-white rounded-lg p-2 border border-gray-200 text-center">
+                                    <p class="text-[10px] text-gray-500">Margin Laba</p>
+                                    <p class="text-sm font-bold {{ $isProfit ? 'text-green-600' : 'text-red-600' }}">
+                                        {{ $departure->margin_laba_formatted }}</p>
+                                </div>
+                                <div class="bg-white rounded-lg p-2 border border-gray-200 text-center">
+                                    <p class="text-[10px] text-gray-500">Rasio Profit</p>
+                                    <p class="text-sm font-bold {{ $isProfit ? 'text-green-600' : 'text-red-600' }}">
+                                        {{ number_format($persentaseHasil, 2) }}%</p>
+                                </div>
+                                <div class="bg-white rounded-lg p-2 border border-gray-200 text-center">
+                                    <p class="text-[10px] text-gray-500">Total Jamaah</p>
+                                    <p class="text-sm font-bold text-gray-700">{{ $departure->jamaahs->count() }} orang
+                                    </p>
+                                </div>
+                                <div class="bg-white rounded-lg p-2 border border-gray-200 text-center">
+                                    <p class="text-[10px] text-gray-500">Laba per Jamaah</p>
+                                    <p class="text-sm font-bold {{ $isProfit ? 'text-green-600' : 'text-red-600' }}">
+                                        @if ($departure->jamaahs->count() > 0)
+                                            {{ $hasilAkhir >= 0 ? '+' : '−' }} Rp
+                                            {{ number_format(abs($hasilAkhir) / $departure->jamaahs->count(), 0, ',', '.') }}
+                                        @else
+                                            Rp 0
+                                        @endif
+                                    </p>
+                                </div>
+                            </div>
+
+                            <div
+                                class="mt-4 p-3 rounded-lg {{ $isProfit ? 'bg-green-50 border border-green-200' : 'bg-red-50 border border-red-200' }}">
+                                <p class="text-xs {{ $isProfit ? 'text-green-700' : 'text-red-700' }}">
+                                    <i class="fas fa-info-circle mr-1"></i>
+                                    @if ($isProfit)
+                                        Keberangkatan ini <strong>menghasilkan keuntungan</strong> sebesar
+                                        <strong>{{ $departure->keuntungan_formatted }}</strong> dengan margin laba
+                                        <strong>{{ $departure->margin_laba_formatted }}</strong> dari total pendapatan
+                                        bersih.
+                                    @else
+                                        Keberangkatan ini <strong>mengalami kerugian</strong> sebesar
+                                        <strong>Rp {{ number_format(abs($hasilAkhir), 0, ',', '.') }}</strong>.
+                                        Periksa kembali rincian pengeluaran untuk efisiensi.
+                                    @endif
                                 </p>
                             </div>
                         </div>
                     </div>
+                </div>
 
-                    <!-- Informasi Sistem -->
-                    <div class="bg-gray-50 rounded-xl p-5 border border-gray-100 lg:col-span-2">
-                        <h6 class="text-sm font-semibold text-gray-700 mb-4 flex items-center">
-                            <i class="fas fa-calendar-alt text-yellow-500 mr-2"></i> Informasi Sistem
-                        </h6>
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <div class="flex justify-between text-sm">
-                                <dt class="text-gray-500">Dibuat Pada</dt>
-                                <dd class="font-medium text-gray-700">{{ $departure->created_at->format('d M Y H:i') }}
-                                </dd>
-                            </div>
-                            <div class="flex justify-between text-sm">
-                                <dt class="text-gray-500">Terakhir Diperbarui</dt>
-                                <dd class="font-medium text-gray-700">{{ $departure->updated_at->format('d M Y H:i') }}
-                                </dd>
-                            </div>
+                {{-- INFORMASI SISTEM --}}
+                <div class="bg-gray-50 rounded-xl p-5 border border-gray-100">
+                    <h6 class="text-sm font-semibold text-gray-700 mb-4 flex items-center">
+                        <i class="fas fa-calendar-alt text-yellow-500 mr-2"></i> Informasi Sistem
+                    </h6>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div class="flex justify-between text-sm">
+                            <dt class="text-gray-500">Dibuat Pada</dt>
+                            <dd class="font-medium text-gray-700">{{ $departure->created_at->format('d M Y H:i') }}</dd>
+                        </div>
+                        <div class="flex justify-between text-sm">
+                            <dt class="text-gray-500">Terakhir Diperbarui</dt>
+                            <dd class="font-medium text-gray-700">{{ $departure->updated_at->format('d M Y H:i') }}</dd>
                         </div>
                     </div>
                 </div>
@@ -1342,15 +1704,12 @@
         </div>
     </div>
 
-    <!-- ========================================== -->
-    <!-- MODAL ATUR HOTEL TOUR -->
-    <!-- ========================================== -->
+    {{-- MODAL ATUR HOTEL TOUR --}}
     <div id="paketTourHotelModal" class="fixed inset-0 bg-black/50 z-50 hidden flex items-center justify-center">
         <div class="bg-white rounded-2xl max-w-5xl w-full max-h-[90vh] overflow-y-auto">
             <div class="sticky top-0 bg-white px-6 py-4 border-b border-gray-200 flex items-center justify-between">
                 <h5 class="text-lg font-semibold text-gray-800 flex items-center">
-                    <i class="fas fa-umbrella-beach text-yellow-500 mr-2"></i>
-                    Atur Hotel Tour
+                    <i class="fas fa-umbrella-beach text-yellow-500 mr-2"></i> Atur Hotel Tour
                 </h5>
                 <button onclick="closePaketTourHotelModal()" class="text-gray-400 hover:text-gray-600">
                     <i class="fas fa-times text-xl"></i>
@@ -1433,8 +1792,7 @@
                         <div class="bg-gray-50 rounded-lg p-3 border border-gray-200">
                             <div class="flex items-center justify-between">
                                 <span class="text-sm font-semibold text-gray-700">
-                                    <i class="fas fa-calculator mr-2 text-yellow-500"></i>
-                                    Total Seluruh Hotel Tour
+                                    <i class="fas fa-calculator mr-2 text-yellow-500"></i> Total Seluruh Hotel Tour
                                 </span>
                                 <span class="text-lg font-bold text-yellow-600" id="totalPaketTourHotelPreview">
                                     {{ $departure->total_harga_paket_tour_hotel_formatted }}
@@ -1467,15 +1825,12 @@
         </div>
     </div>
 
-    <!-- ========================================== -->
-    <!-- MODAL MASKAPAI & HARGA -->
-    <!-- ========================================== -->
+    {{-- MODAL MASKAPAI --}}
     <div id="maskapaiModal" class="fixed inset-0 bg-black/50 z-50 hidden flex items-center justify-center">
         <div class="bg-white rounded-2xl max-w-3xl w-full max-h-[90vh] overflow-y-auto">
             <div class="sticky top-0 bg-white px-6 py-4 border-b border-gray-200 flex items-center justify-between">
                 <h5 class="text-lg font-semibold text-gray-800 flex items-center">
-                    <i class="fas fa-plane text-yellow-500 mr-2"></i>
-                    Tambah Maskapai & Harga
+                    <i class="fas fa-plane text-yellow-500 mr-2"></i> Tambah Maskapai & Harga
                 </h5>
                 <button onclick="closeMaskapaiModal()" class="text-gray-400 hover:text-gray-600">
                     <i class="fas fa-times text-xl"></i>
@@ -1641,15 +1996,12 @@
         </div>
     </div>
 
-    <!-- ========================================== -->
-    <!-- MODAL HOTEL -->
-    <!-- ========================================== -->
+    {{-- MODAL HOTEL --}}
     <div id="hotelModal" class="fixed inset-0 bg-black/50 z-50 hidden flex items-center justify-center">
         <div class="bg-white rounded-2xl max-w-4xl w-full max-h-[90vh] overflow-y-auto">
             <div class="sticky top-0 bg-white px-6 py-4 border-b border-gray-200 flex items-center justify-between">
                 <h5 class="text-lg font-semibold text-gray-800 flex items-center">
-                    <i class="fas fa-hotel text-yellow-500 mr-2"></i>
-                    Tambah Hotel & Tipe Kamar
+                    <i class="fas fa-hotel text-yellow-500 mr-2"></i> Tambah Hotel & Tipe Kamar
                 </h5>
                 <button onclick="closeHotelModal()" class="text-gray-400 hover:text-gray-600">
                     <i class="fas fa-times text-xl"></i>
@@ -1746,15 +2098,12 @@
         </div>
     </div>
 
-    <!-- ========================================== -->
-    <!-- MODAL JAMAAH -->
-    <!-- ========================================== -->
+    {{-- MODAL JAMAAH --}}
     <div id="jamaahModal" class="fixed inset-0 bg-black/50 z-50 hidden flex items-center justify-center">
         <div class="bg-white rounded-2xl max-w-4xl w-full max-h-[90vh] overflow-hidden">
             <div class="sticky top-0 bg-white px-6 py-4 border-b border-gray-200 flex items-center justify-between">
                 <h5 class="text-lg font-semibold text-gray-800 flex items-center">
-                    <i class="fas fa-users text-yellow-500 mr-2"></i>
-                    Tambah Daftar Jamaah
+                    <i class="fas fa-users text-yellow-500 mr-2"></i> Tambah Daftar Jamaah
                 </h5>
                 <button onclick="closeJamaahModal()" class="text-gray-400 hover:text-gray-600">
                     <i class="fas fa-times text-xl"></i>
@@ -1765,28 +2114,54 @@
                 @csrf
                 @method('PUT')
 
-                {{-- Info Filter Bulan/Tahun --}}
-                @if ($departure->bulan_keberangkatan && $departure->tahun_keberangkatan)
+                @if ($departure->produk_paket || ($departure->bulan_keberangkatan && $departure->tahun_keberangkatan))
                     <div class="mb-4 bg-blue-50 border border-blue-200 rounded-xl p-3">
                         <div class="flex items-start gap-2">
                             <i class="fas fa-filter text-blue-500 mt-0.5"></i>
                             <div class="flex-1">
-                                <p class="text-sm font-medium text-blue-800">
-                                    Jamaah ditampilkan berdasarkan filter keberangkatan:
-                                </p>
-                                <p class="text-xs text-blue-600 mt-0.5">
-                                    <i class="fas fa-calendar-alt mr-1"></i>
-                                    Bulan:
-                                    <strong>{{ date('F', mktime(0, 0, 0, $departure->bulan_keberangkatan, 1)) }}</strong>
-                                    · Tahun: <strong>{{ $departure->tahun_keberangkatan }}</strong>
-                                </p>
+                                <p class="text-sm font-medium text-blue-800">Jamaah ditampilkan berdasarkan filter
+                                    keberangkatan:</p>
+                                @if ($departure->produk_paket)
+                                    <p class="text-xs text-blue-600 mt-1">
+                                        <i class="fas fa-box mr-1"></i> Produk Paket:
+                                        <strong>{{ $departure->produk_paket }}</strong>
+                                    </p>
+                                @endif
+                                @if ($departure->bulan_keberangkatan && $departure->tahun_keberangkatan)
+                                    <p class="text-xs text-blue-600 mt-0.5">
+                                        <i class="fas fa-calendar-alt mr-1"></i>
+                                        Bulan:
+                                        <strong>{{ date('F', mktime(0, 0, 0, $departure->bulan_keberangkatan, 1)) }}</strong>
+                                        · Tahun: <strong>{{ $departure->tahun_keberangkatan }}</strong>
+                                    </p>
+                                @endif
                                 <p class="text-xs text-blue-500 mt-1">
-                                    Hanya jamaah dengan bulan/tahun keberangkatan yang sama yang ditampilkan.
+                                    Hanya jamaah dengan <strong>produk paket & bulan/tahun</strong> yang sama yang
+                                    ditampilkan.
                                 </p>
                             </div>
                         </div>
                     </div>
                 @endif
+
+                <div class="mb-3 flex flex-wrap items-center gap-3 text-xs">
+                    <span class="inline-flex items-center gap-1.5">
+                        <span class="w-3 h-3 rounded-full bg-green-500"></span>
+                        <span class="text-gray-600">Lunas</span>
+                    </span>
+                    <span class="inline-flex items-center gap-1.5">
+                        <span class="w-3 h-3 rounded-full bg-red-500"></span>
+                        <span class="text-gray-600">Belum Lunas</span>
+                    </span>
+                    <span class="inline-flex items-center gap-1.5">
+                        <span class="w-3 h-3 rounded-full bg-blue-500"></span>
+                        <span class="text-gray-600">Sudah Terdaftar</span>
+                    </span>
+                    <span class="inline-flex items-center gap-1.5">
+                        <span class="w-3 h-3 rounded-full bg-purple-500"></span>
+                        <span class="text-gray-600">Fee Passport</span>
+                    </span>
+                </div>
 
                 <div class="mb-4">
                     <div class="relative">
@@ -1814,83 +2189,156 @@
                     </div>
                 </div>
 
-                <div class="grid grid-cols-2 md:grid-cols-3 gap-2 max-h-60 overflow-y-auto border border-gray-200 rounded-xl p-4"
+                <div class="grid grid-cols-2 md:grid-cols-3 gap-2 max-h-72 overflow-y-auto border border-gray-200 rounded-xl p-4"
                     id="jamaahModalList">
                     @php
                         $selectedJamaahs = $departure->jamaahs->pluck('id_jamaah')->toArray();
+
+                        $bulanNamaModal = [
+                            1 => 'Jan',
+                            2 => 'Feb',
+                            3 => 'Mar',
+                            4 => 'Apr',
+                            5 => 'Mei',
+                            6 => 'Jun',
+                            7 => 'Jul',
+                            8 => 'Agu',
+                            9 => 'Sep',
+                            10 => 'Okt',
+                            11 => 'Nov',
+                            12 => 'Des',
+                        ];
+
+                        $bulanFullModal = [
+                            1 => 'Januari',
+                            2 => 'Februari',
+                            3 => 'Maret',
+                            4 => 'April',
+                            5 => 'Mei',
+                            6 => 'Juni',
+                            7 => 'Juli',
+                            8 => 'Agustus',
+                            9 => 'September',
+                            10 => 'Oktober',
+                            11 => 'November',
+                            12 => 'Desember',
+                        ];
                     @endphp
                     @forelse($jamaahs as $jamaah)
                         @php
                             $isLunas = $jamaah->status_pembayaran == 'Lunas';
+                            $isRegistered = in_array($jamaah->id_jamaah, $selectedJamaahs);
 
-                            if ($isLunas) {
-                                $borderClass = 'border border-green-200';
+                            if ($isRegistered) {
+                                $borderClass = 'border-2 border-blue-400';
+                                $bgClass = 'bg-blue-50';
+                                $badgeClass = 'bg-blue-500 text-white';
+                                $badgeText = 'TERDAFTAR';
+                            } elseif ($isLunas) {
+                                $borderClass = 'border-2 border-green-500';
                                 $bgClass = 'bg-green-50';
-                                $badgeClass = 'bg-green-100 text-green-700';
+                                $badgeClass = 'bg-green-500 text-white';
                                 $badgeText = 'LUNAS';
                             } else {
                                 $borderClass = 'border-2 border-red-500';
                                 $bgClass = 'bg-red-50';
-                                $badgeClass = 'bg-red-100 text-red-700';
+                                $badgeClass = 'bg-red-500 text-white';
                                 $badgeText = 'BELUM LUNAS';
                             }
 
-                            // Ambil info keberangkatan jamaah untuk ditampilkan
-                            $bulanNama = [
-                                1 => 'Jan',
-                                2 => 'Feb',
-                                3 => 'Mar',
-                                4 => 'Apr',
-                                5 => 'Mei',
-                                6 => 'Jun',
-                                7 => 'Jul',
-                                8 => 'Agu',
-                                9 => 'Sep',
-                                10 => 'Okt',
-                                11 => 'Nov',
-                                12 => 'Des',
-                            ];
-
                             $jamaahKeberangkatanInfo = '';
+                            $jamaahHargaInfo = '';
+                            $jamaahHargaLabel = 'Harga';
+                            $jamaahFeePassport = $jamaah->fee_passport ?? 0;
+
                             if ($jamaah->keberangkatan && $jamaah->keberangkatan->count() > 0) {
-                                $jamaahKeberangkatanInfo = $jamaah->keberangkatan
-                                    ->map(function ($k) use ($bulanNama) {
-                                        return $bulanNama[$k->pivot->bulan_keberangkatan] .
-                                            ' ' .
-                                            $k->pivot->tahun_keberangkatan;
-                                    })
-                                    ->implode(', ');
+                                $firstK = $jamaah->keberangkatan->first();
+                                $bulanPivot = $firstK->pivot->bulan_keberangkatan ?? null;
+                                $tahunPivot = $firstK->pivot->tahun_keberangkatan ?? null;
+
+                                if ($bulanPivot && $tahunPivot) {
+                                    $jamaahKeberangkatanInfo =
+                                        ($bulanNamaModal[$bulanPivot] ?? '-') . ' ' . $tahunPivot;
+                                    $jamaahHargaLabel =
+                                        'Harga (' . ($bulanFullModal[$bulanPivot] ?? '-') . ' ' . $tahunPivot . ')';
+                                }
+
+                                if ($firstK->pivot->harga_paket ?? null) {
+                                    $jamaahHargaInfo = 'Rp ' . number_format($firstK->pivot->harga_paket, 0, ',', '.');
+                                } elseif ($firstK->pivot->harga ?? null) {
+                                    $jamaahHargaInfo = 'Rp ' . number_format($firstK->pivot->harga, 0, ',', '.');
+                                }
                             } elseif ($jamaah->bulan_keberangkatan && $jamaah->tahun_keberangkatan) {
                                 $jamaahKeberangkatanInfo =
-                                    $bulanNama[$jamaah->bulan_keberangkatan] . ' ' . $jamaah->tahun_keberangkatan;
+                                    ($bulanNamaModal[$jamaah->bulan_keberangkatan] ?? '-') .
+                                    ' ' .
+                                    $jamaah->tahun_keberangkatan;
+                                $jamaahHargaLabel =
+                                    'Harga (' .
+                                    ($bulanFullModal[$jamaah->bulan_keberangkatan] ?? '-') .
+                                    ' ' .
+                                    $jamaah->tahun_keberangkatan .
+                                    ')';
+
+                                if ($jamaah->harga_paket ?? null) {
+                                    $jamaahHargaInfo = 'Rp ' . number_format($jamaah->harga_paket, 0, ',', '.');
+                                }
+                            }
+
+                            if (!$jamaahHargaInfo) {
+                                if ($jamaah->total_tagihan ?? null) {
+                                    $jamaahHargaInfo = 'Rp ' . number_format($jamaah->total_tagihan, 0, ',', '.');
+                                } elseif ($jamaah->total_tagihan_setelah_diskon ?? null) {
+                                    $jamaahHargaInfo =
+                                        'Rp ' . number_format($jamaah->total_tagihan_setelah_diskon, 0, ',', '.');
+                                }
                             }
                         @endphp
                         <label
-                            class="jamaah-modal-item relative flex items-center p-2 {{ $borderClass }} {{ $bgClass }} rounded-lg hover:shadow-md transition cursor-pointer"
+                            class="jamaah-modal-item relative flex items-start p-2.5 {{ $borderClass }} {{ $bgClass }} rounded-lg hover:shadow-md transition cursor-pointer"
                             data-name="{{ strtolower($jamaah->nama_lengkap) }}"
                             data-produk="{{ strtolower($jamaah->produk_paket) }}"
                             data-status="{{ strtolower($jamaah->status_pembayaran) }}"
-                            title="Keberangkatan: {{ $jamaahKeberangkatanInfo ?: '-' }}">
+                            data-registered="{{ $isRegistered ? '1' : '0' }}"
+                            title="Keberangkatan: {{ $jamaahKeberangkatanInfo ?: '-' }}{{ $jamaahHargaInfo ? ' | Harga: ' . $jamaahHargaInfo : '' }}">
 
                             <span
-                                class="absolute -top-1.5 -right-1.5 text-[10px] font-bold px-1.5 py-0.5 rounded-full {{ $badgeClass }} shadow-sm">
+                                class="absolute -top-2 -right-1 text-[10px] font-bold px-2 py-0.5 rounded-full {{ $badgeClass }} shadow-sm whitespace-nowrap">
                                 {{ $badgeText }}
                             </span>
 
                             <input type="checkbox" name="jamaah_ids[]" value="{{ $jamaah->id_jamaah }}"
-                                {{ in_array($jamaah->id_jamaah, $selectedJamaahs) ? 'checked' : '' }}
-                                class="w-4 h-4 text-yellow-500 border-gray-300 rounded focus:ring-yellow-500 flex-shrink-0">
+                                {{ $isRegistered ? 'checked' : '' }}
+                                class="w-4 h-4 text-yellow-500 border-gray-300 rounded focus:ring-yellow-500 flex-shrink-0 mt-0.5">
                             <div class="ml-2 overflow-hidden flex-1">
-                                <p class="text-sm font-medium text-gray-700 truncate">{{ $jamaah->nama_lengkap }}</p>
-                                <p class="text-xs text-gray-400 truncate">{{ $jamaah->produk_paket }}</p>
+                                <p class="text-sm font-semibold text-gray-800 truncate pr-2">{{ $jamaah->nama_lengkap }}
+                                </p>
+                                <p class="text-xs text-gray-500 truncate">{{ $jamaah->produk_paket }}</p>
+
                                 @if ($jamaahKeberangkatanInfo)
-                                    <p class="text-[10px] text-blue-500 truncate">
-                                        <i class="fas fa-plane mr-0.5"></i> {{ $jamaahKeberangkatanInfo }}
+                                    <p class="text-[10px] text-blue-600 truncate mt-0.5">
+                                        <i class="fas fa-plane mr-0.5"></i> Keberangkatan:
+                                        {{ $jamaahKeberangkatanInfo }}
                                     </p>
                                 @endif
-                                <p class="text-xs mt-0.5">
+
+                                @if ($jamaahHargaInfo)
+                                    <p class="text-[10px] text-emerald-600 font-semibold truncate mt-0.5">
+                                        <i class="fas fa-money-bill-wave mr-0.5"></i> {{ $jamaahHargaLabel }}:
+                                        {{ $jamaahHargaInfo }}
+                                    </p>
+                                @endif
+
+                                @if ($jamaahFeePassport > 0)
+                                    <p class="text-[10px] text-purple-600 font-semibold truncate mt-0.5">
+                                        <i class="fas fa-passport mr-0.5"></i> Fee Passport: Rp
+                                        {{ number_format($jamaahFeePassport, 0, ',', '.') }}
+                                    </p>
+                                @endif
+
+                                <p class="text-xs mt-1">
                                     <span
-                                        class="px-1.5 py-0.5 rounded-full text-xs font-medium
+                                        class="px-1.5 py-0.5 rounded-full text-[10px] font-medium
                                     {{ $jamaah->status_pembayaran == 'Lunas'
                                         ? 'bg-green-100 text-green-700'
                                         : ($jamaah->status_pembayaran == 'DP'
@@ -1908,21 +2356,16 @@
                             <div class="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-3">
                                 <i class="fas fa-users text-gray-300 text-2xl"></i>
                             </div>
-                            <p class="text-gray-500 font-medium">
-                                Tidak ada jamaah yang tersedia
-                            </p>
-                            @if ($departure->bulan_keberangkatan && $departure->tahun_keberangkatan)
-                                <p class="text-gray-400 text-xs mt-1">
-                                    Tidak ada jamaah dengan keberangkatan
+                            <p class="text-gray-500 font-medium">Tidak ada jamaah yang tersedia</p>
+                            <p class="text-gray-400 text-xs mt-1">
+                                Tidak ada jamaah dengan produk <strong>{{ $departure->produk_paket }}</strong>
+                                @if ($departure->bulan_keberangkatan && $departure->tahun_keberangkatan)
+                                    dan keberangkatan
                                     <strong>{{ date('F', mktime(0, 0, 0, $departure->bulan_keberangkatan, 1)) }}
                                         {{ $departure->tahun_keberangkatan }}</strong>
-                                    yang belum terdaftar di departure lain.
-                                </p>
-                            @else
-                                <p class="text-gray-400 text-xs mt-1">
-                                    Silakan atur bulan/tahun keberangkatan pada departure terlebih dahulu.
-                                </p>
-                            @endif
+                                @endif
+                                yang belum terdaftar di departure lain.
+                            </p>
                         </div>
                     @endforelse
                 </div>
@@ -1957,9 +2400,7 @@
         </div>
     </div>
 
-    <!-- ========================================== -->
-    <!-- MODAL PERLENGKAPAN -->
-    <!-- ========================================== -->
+    {{-- MODAL PERLENGKAPAN --}}
     <div id="perlengkapanModal" class="fixed inset-0 bg-black/50 z-50 hidden flex items-center justify-center">
         <div class="bg-white rounded-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
             <div class="sticky top-0 bg-white px-6 py-4 border-b border-gray-200 flex items-center justify-between">
@@ -2035,15 +2476,12 @@
         </div>
     </div>
 
-    <!-- ========================================== -->
-    <!-- MODAL TAMBAH JENIS TRANSAKSI -->
-    <!-- ========================================== -->
+    {{-- MODAL JENIS TRANSAKSI --}}
     <div id="jenisTransaksiModal" class="fixed inset-0 bg-black/50 z-50 hidden flex items-center justify-center">
         <div class="bg-white rounded-2xl max-w-4xl w-full max-h-[90vh] overflow-y-auto">
             <div class="sticky top-0 bg-white px-6 py-4 border-b border-gray-200 flex items-center justify-between">
                 <h5 class="text-lg font-semibold text-gray-800 flex items-center">
-                    <i class="fas fa-receipt text-yellow-500 mr-2"></i>
-                    Tambah Jenis Transaksi ke Departure
+                    <i class="fas fa-receipt text-yellow-500 mr-2"></i> Tambah Jenis Transaksi ke Departure
                 </h5>
                 <button onclick="closeJenisTransaksiModal()" class="text-gray-400 hover:text-gray-600">
                     <i class="fas fa-times text-xl"></i>
@@ -2099,7 +2537,8 @@
                                             <div class="relative">
                                                 <span
                                                     class="absolute left-2 top-1/2 -translate-y-1/2 text-gray-400 text-xs">Rp</span>
-                                                <input type="text" name="harga_total_display[{{ $jenis->id_jenis }}]"
+                                                <input type="text"
+                                                    name="harga_total_display[{{ $jenis->id_jenis }}]"
                                                     id="harga_total_display_{{ $jenis->id_jenis }}"
                                                     class="jenis-harga w-full pl-8 pr-2 py-1.5 border border-gray-200 rounded text-sm rupiah-input"
                                                     placeholder="Rp 0"
@@ -2109,9 +2548,8 @@
                                                 <input type="hidden" name="harga_total[{{ $jenis->id_jenis }}]"
                                                     id="harga_total_{{ $jenis->id_jenis }}" value="0">
                                             </div>
-                                            <p class="text-[10px] text-gray-400 mt-0.5">
-                                                Dibagi ke {{ $totalJamaah }} jamaah
-                                            </p>
+                                            <p class="text-[10px] text-gray-400 mt-0.5">Dibagi ke {{ $totalJamaah }}
+                                                jamaah</p>
                                         </div>
                                         <div>
                                             <label class="text-xs text-gray-500">Catatan</label>
@@ -2123,9 +2561,8 @@
                                 </div>
                             </label>
                         @empty
-                            <p class="text-sm text-gray-400 col-span-2 text-center py-4">
-                                Semua jenis transaksi sudah ditambahkan.
-                            </p>
+                            <p class="text-sm text-gray-400 col-span-2 text-center py-4">Semua jenis transaksi sudah
+                                ditambahkan.</p>
                         @endforelse
                     </div>
                     <p class="text-xs text-gray-400 mt-2">
@@ -2199,9 +2636,7 @@
         </div>
     </div>
 
-    <!-- ========================================== -->
-    <!-- MODAL EDIT HARGA JENIS TRANSAKSI -->
-    <!-- ========================================== -->
+    {{-- MODAL EDIT HARGA JENIS TRANSAKSI --}}
     <div id="editJenisTransaksiModal" class="fixed inset-0 bg-black/50 z-50 hidden flex items-center justify-center">
         <div class="bg-white rounded-2xl max-w-md w-full">
             <div class="px-6 py-4 border-b border-gray-200 flex items-center justify-between">
@@ -2224,9 +2659,8 @@
                             onblur="formatRupiahJenisTransaksi(this, 'edit_harga_total')">
                         <input type="hidden" name="harga_total" id="edit_harga_total" value="0">
                     </div>
-                    <p class="text-xs text-gray-400 mt-1">
-                        Jumlah jamaah saat ini: {{ $departure->jamaahs->count() }} orang
-                    </p>
+                    <p class="text-xs text-gray-400 mt-1">Jumlah jamaah saat ini: {{ $departure->jamaahs->count() }}
+                        orang</p>
                     <p class="text-xs text-gray-400 mt-0.5">
                         <i class="fas fa-info-circle mr-1"></i>
                         Sistem akan otomatis membagi rata ke setiap jamaah
@@ -2242,9 +2676,7 @@
         </div>
     </div>
 
-    <!-- ========================================== -->
-    <!-- MODAL CATATAN -->
-    <!-- ========================================== -->
+    {{-- MODAL CATATAN --}}
     <div id="catatanModal" class="fixed inset-0 bg-black/50 z-50 hidden flex items-center justify-center">
         <div class="bg-white rounded-2xl max-w-2xl w-full">
             <div class="px-6 py-4 border-b border-gray-200 flex items-center justify-between">
@@ -2270,9 +2702,7 @@
         </div>
     </div>
 
-    <!-- ========================================== -->
-    <!-- MODAL DETAIL PERLENGKAPAN -->
-    <!-- ========================================== -->
+    {{-- MODAL DETAIL PERLENGKAPAN --}}
     <div id="perlengkapanDetailModal" class="fixed inset-0 bg-black/50 z-50 hidden flex items-center justify-center">
         <div class="bg-white rounded-2xl max-w-3xl w-full max-h-[90vh] overflow-hidden">
             <div class="sticky top-0 bg-white px-6 py-4 border-b border-gray-200 flex items-center justify-between">
@@ -2292,9 +2722,7 @@
         </div>
     </div>
 
-    <!-- ========================================== -->
-    <!-- MODAL DETAIL JENIS TRANSAKSI -->
-    <!-- ========================================== -->
+    {{-- MODAL DETAIL JENIS TRANSAKSI --}}
     <div id="jenisTransaksiDetailModal" class="fixed inset-0 bg-black/50 z-50 hidden flex items-center justify-center">
         <div class="bg-white rounded-2xl max-w-3xl w-full max-h-[90vh] overflow-hidden">
             <div class="sticky top-0 bg-white px-6 py-4 border-b border-gray-200 flex items-center justify-between">
@@ -2323,12 +2751,10 @@
 
 @push('scripts')
     <script>
-        // ============================================
-        // SEARCH FUNCTIONS
-        // ============================================
-
         document.addEventListener('DOMContentLoaded', function() {
-            // Search Maskapai
+            // ============================================
+            // SEARCH FUNCTIONS
+            // ============================================
             const searchMaskapai = document.getElementById('searchMaskapai');
             if (searchMaskapai) {
                 searchMaskapai.addEventListener('keyup', function() {
@@ -2340,7 +2766,6 @@
                 });
             }
 
-            // Search Hotel
             const searchHotel = document.getElementById('searchHotel');
             if (searchHotel) {
                 searchHotel.addEventListener('keyup', function() {
@@ -2352,7 +2777,6 @@
                 });
             }
 
-            // Search Hotel Tour
             const searchHotelTour = document.getElementById('searchHotelTour');
             if (searchHotelTour) {
                 searchHotelTour.addEventListener('keyup', function() {
@@ -2366,7 +2790,6 @@
                 });
             }
 
-            // Search Perlengkapan
             const searchPerlengkapan = document.getElementById('searchPerlengkapan');
             if (searchPerlengkapan) {
                 searchPerlengkapan.addEventListener('keyup', function() {
@@ -2378,19 +2801,17 @@
                 });
             }
 
-            // Search Jamaah
             const searchJamaah = document.getElementById('searchJamaah');
             if (searchJamaah) {
                 searchJamaah.addEventListener('keyup', function() {
                     const search = this.value.toLowerCase();
                     document.querySelectorAll('.jamaah-item').forEach(function(item) {
                         const name = item.dataset.name || '';
-                        item.style.display = name.includes(search) ? 'flex' : 'none';
+                        item.style.display = name.includes(search) ? 'block' : 'none';
                     });
                 });
             }
 
-            // Search Jenis Transaksi
             const searchJenisTransaksi = document.getElementById('searchJenisTransaksi');
             if (searchJenisTransaksi) {
                 searchJenisTransaksi.addEventListener('keyup', function() {
@@ -2402,7 +2823,6 @@
                 });
             }
 
-            // Search Jamaah di Modal
             const searchJamaahModal = document.getElementById('searchJamaahModal');
             if (searchJamaahModal) {
                 searchJamaahModal.addEventListener('keyup', function() {
@@ -2438,7 +2858,6 @@
                 });
             }
 
-            // Search Jenis Transaksi di Modal
             const searchJenisTransaksiModal = document.getElementById('searchJenisTransaksiModal');
             if (searchJenisTransaksiModal) {
                 searchJenisTransaksiModal.addEventListener('keyup', function() {
@@ -2459,7 +2878,6 @@
                 });
             }
 
-            // Search Agent
             const searchAgent = document.getElementById('searchAgent');
             if (searchAgent) {
                 searchAgent.addEventListener('keyup', function() {
@@ -2479,8 +2897,6 @@
             // ============================================
             // INITIAL EVENT LISTENERS
             // ============================================
-
-            // Hotel Tour Checkbox
             document.querySelectorAll('.hotel-tour-item .hotel-tour-checkbox').forEach(function(checkbox) {
                 checkbox.addEventListener('change', function() {
                     const parent = this.closest('.hotel-tour-item');
@@ -2502,7 +2918,6 @@
                 });
             });
 
-            // Hotel Select
             document.querySelectorAll('.hotel-select').forEach(function(select) {
                 select.addEventListener('change', function() {
                     const containerId = this.dataset.container;
@@ -2511,7 +2926,6 @@
                 });
             });
 
-            // Jenis Transaksi Checkbox di Modal
             document.querySelectorAll('.jenis-transaksi-checkbox').forEach(function(checkbox) {
                 checkbox.addEventListener('change', function() {
                     const parent = this.closest('.jenis-transaksi-modal-item');
@@ -2531,7 +2945,6 @@
                 checkbox.dispatchEvent(new Event('change'));
             });
 
-            // Close modal on click outside
             document.querySelectorAll('.fixed.inset-0.bg-black\\/50').forEach(function(modal) {
                 modal.addEventListener('click', function(e) {
                     if (e.target === this) {
@@ -2544,7 +2957,6 @@
         // ============================================
         // PAKET TOUR HOTEL FUNCTIONS
         // ============================================
-
         function openPaketTourHotelModal() {
             document.getElementById('paketTourHotelModal').classList.remove('hidden');
             loadAllKamarsForHotelTour();
@@ -2656,7 +3068,7 @@
                             const kamarCheckbox = kamarItem.querySelector('.kamar-checkbox');
                             if (kamarCheckbox && kamarCheckbox.checked) {
                                 const jumlah = parseInt(kamarItem.querySelector('.kamar-jumlah').value) ||
-                                    0;
+                                0;
                                 const hargaInput = kamarItem.querySelector('.kamar-harga');
                                 let harga = 0;
                                 if (hargaInput) {
@@ -2665,7 +3077,7 @@
                                     harga = parseInt(rawValue) || 0;
                                 }
                                 const durasi = parseInt(kamarItem.querySelector('.kamar-durasi').value) ||
-                                    1;
+                                1;
                                 grandTotal += jumlah * harga * durasi;
                             }
                         });
@@ -2692,7 +3104,6 @@
         // ============================================
         // MASKAPAI FUNCTIONS
         // ============================================
-
         function openMaskapaiModal() {
             document.getElementById('maskapaiModal').classList.remove('hidden');
             document.querySelectorAll('.maskapai-harga').forEach(function(input) {
@@ -2710,7 +3121,6 @@
         // ============================================
         // HOTEL FUNCTIONS
         // ============================================
-
         function openHotelModal() {
             document.getElementById('hotelModal').classList.remove('hidden');
             loadKamarsWithSelected('id_hotel_mekkah', 'kamarContainerMekkah', 'totalHotelMekkah');
@@ -2802,7 +3212,6 @@
         // ============================================
         // JAMAAH FUNCTIONS
         // ============================================
-
         function openJamaahModal() {
             document.getElementById('jamaahModal').classList.remove('hidden');
             document.getElementById('searchJamaahModal').value = '';
@@ -2853,7 +3262,6 @@
         // ============================================
         // PERLENGKAPAN FUNCTIONS
         // ============================================
-
         function openPerlengkapanModal() {
             document.getElementById('perlengkapanModal').classList.remove('hidden');
         }
@@ -2868,25 +3276,52 @@
             }
         }
 
-        function openPerlengkapanDetailModal(perlengkapanId) {
+        function openPerlengkapanDetailModal(perlengkapanId, refreshOnly = false) {
             const modal = document.getElementById('perlengkapanDetailModal');
             const content = document.getElementById('perlengkapanDetailContent');
 
-            content.innerHTML =
-                `<div class="flex items-center justify-center py-12"><div class="text-center"><i class="fas fa-spinner fa-spin text-3xl text-yellow-500 mb-3"></i><p class="text-gray-500">Memuat data...</p></div></div>`;
-            modal.classList.remove('hidden');
+            if (!refreshOnly) {
+                content.innerHTML =
+                    `<div class="flex items-center justify-center py-12"><div class="text-center"><i class="fas fa-spinner fa-spin text-3xl text-yellow-500 mb-3"></i><p class="text-gray-500">Memuat data...</p></div></div>`;
+                modal.classList.remove('hidden');
+            }
 
             fetch(`/transaksional/get-perlengkapan-detail/${perlengkapanId}`)
                 .then(response => response.json())
                 .then(data => {
                     content.innerHTML = data.html;
                     document.getElementById('perlengkapanDetailTitle').textContent = 'Detail: ' + data
-                        .nama_perlengkapan;
+                    .nama_perlengkapan;
+
+                    const checkAll = document.getElementById(`perlengkapan-check-all-${perlengkapanId}`);
+                    if (checkAll) {
+                        checkAll.addEventListener('change', function() {
+                            document.querySelectorAll(
+                                `#perlengkapan-jamaah-list-${perlengkapanId} .perlengkapan-jamaah-checkbox`
+                            ).forEach(cb => cb.checked = this.checked);
+                        });
+                    }
+
+                    document.querySelectorAll(
+                        `#perlengkapan-jamaah-list-${perlengkapanId} .perlengkapan-jamaah-checkbox`
+                    ).forEach(cb => {
+                        cb.addEventListener('change', function() {
+                            const all = document.querySelectorAll(
+                                `#perlengkapan-jamaah-list-${perlengkapanId} .perlengkapan-jamaah-checkbox`
+                            );
+                            const checked = document.querySelectorAll(
+                                `#perlengkapan-jamaah-list-${perlengkapanId} .perlengkapan-jamaah-checkbox:checked`
+                            );
+                            if (checkAll) checkAll.checked = all.length === checked.length;
+                        });
+                    });
                 })
                 .catch(error => {
                     console.error('Error:', error);
-                    content.innerHTML =
-                        `<div class="text-center py-12"><i class="fas fa-exclamation-circle text-3xl text-red-500 mb-3"></i><p class="text-gray-500">Gagal memuat data. Silakan coba lagi.</p></div>`;
+                    if (!refreshOnly) {
+                        content.innerHTML =
+                            `<div class="text-center py-12"><i class="fas fa-exclamation-circle text-3xl text-red-500 mb-3"></i><p class="text-gray-500">Gagal memuat data. Silakan coba lagi.</p></div>`;
+                    }
                 });
         }
 
@@ -2894,30 +3329,9 @@
             document.getElementById('perlengkapanDetailModal').classList.add('hidden');
         }
 
-        // ✅ TOGGLE STATUS JAMAAH (Perlengkapan)
-        function toggleStatusJamaah(departurePerlengkapanId, jamaahId, currentStatus) {
-            const newStatus = currentStatus === 'Sudah Diterima' ? 'Belum Diterima' : 'Sudah Diterima';
-
-            const inputEl = document.getElementById('status_input_' + departurePerlengkapanId + '_' + jamaahId);
-            if (inputEl) {
-                inputEl.value = newStatus;
-            } else {
-                console.error('Input tidak ditemukan: status_input_' + departurePerlengkapanId + '_' + jamaahId);
-                return;
-            }
-
-            const formEl = document.getElementById('status-jamaah-form-' + departurePerlengkapanId + '-' + jamaahId);
-            if (formEl) {
-                formEl.submit();
-            } else {
-                console.error('Form tidak ditemukan: status-jamaah-form-' + departurePerlengkapanId + '-' + jamaahId);
-            }
-        }
-
         // ============================================
-        // JENIS TRANSAKSI FUNCTIONS (HARGA TOTAL + TOGGLE)
+        // JENIS TRANSAKSI FUNCTIONS
         // ============================================
-
         function openJenisTransaksiModal() {
             document.getElementById('jenisTransaksiModal').classList.remove('hidden');
             document.getElementById('searchJenisTransaksiModal').value = '';
@@ -3017,14 +3431,15 @@
                 });
         }
 
-        // ✅ DETAIL JENIS TRANSAKSI & TOGGLE STATUS
-        function openJenisTransaksiDetailModal(jenisTransaksiId) {
+        function openJenisTransaksiDetailModal(jenisTransaksiId, refreshOnly = false) {
             const modal = document.getElementById('jenisTransaksiDetailModal');
             const content = document.getElementById('jenisTransaksiDetailContent');
 
-            content.innerHTML =
-                `<div class="flex items-center justify-center py-12"><div class="text-center"><i class="fas fa-spinner fa-spin text-3xl text-yellow-500 mb-3"></i><p class="text-gray-500">Memuat data...</p></div></div>`;
-            modal.classList.remove('hidden');
+            if (!refreshOnly) {
+                content.innerHTML =
+                    `<div class="flex items-center justify-center py-12"><div class="text-center"><i class="fas fa-spinner fa-spin text-3xl text-yellow-500 mb-3"></i><p class="text-gray-500">Memuat data...</p></div></div>`;
+                modal.classList.remove('hidden');
+            }
 
             fetch(`/transaksional/get-jenis-transaksi-detail/${jenisTransaksiId}`)
                 .then(response => response.json())
@@ -3032,11 +3447,36 @@
                     content.innerHTML = data.html;
                     document.getElementById('jenisTransaksiDetailTitle').textContent = 'Detail: ' + data
                         .nama_jenis_transaksi;
+
+                    const checkAll = document.getElementById(`jenis-transaksi-check-all-${jenisTransaksiId}`);
+                    if (checkAll) {
+                        checkAll.addEventListener('change', function() {
+                            document.querySelectorAll(
+                                `#jenis-transaksi-jamaah-list-${jenisTransaksiId} .jenis-transaksi-jamaah-checkbox`
+                            ).forEach(cb => cb.checked = this.checked);
+                        });
+                    }
+
+                    document.querySelectorAll(
+                        `#jenis-transaksi-jamaah-list-${jenisTransaksiId} .jenis-transaksi-jamaah-checkbox`
+                    ).forEach(cb => {
+                        cb.addEventListener('change', function() {
+                            const all = document.querySelectorAll(
+                                `#jenis-transaksi-jamaah-list-${jenisTransaksiId} .jenis-transaksi-jamaah-checkbox`
+                            );
+                            const checked = document.querySelectorAll(
+                                `#jenis-transaksi-jamaah-list-${jenisTransaksiId} .jenis-transaksi-jamaah-checkbox:checked`
+                            );
+                            if (checkAll) checkAll.checked = all.length === checked.length;
+                        });
+                    });
                 })
                 .catch(error => {
                     console.error('Error:', error);
-                    content.innerHTML =
-                        `<div class="text-center py-12"><i class="fas fa-exclamation-circle text-3xl text-red-500 mb-3"></i><p class="text-gray-500">Gagal memuat data. Silakan coba lagi.</p></div>`;
+                    if (!refreshOnly) {
+                        content.innerHTML =
+                            `<div class="text-center py-12"><i class="fas fa-exclamation-circle text-3xl text-red-500 mb-3"></i><p class="text-gray-500">Gagal memuat data. Silakan coba lagi.</p></div>`;
+                    }
                 });
         }
 
@@ -3044,33 +3484,184 @@
             document.getElementById('jenisTransaksiDetailModal').classList.add('hidden');
         }
 
-        function toggleStatusJenisTransaksiJamaah(departureJenisTransaksiId, jamaahId, currentStatus) {
+        // ============================================
+        // AJAX STATUS UPDATE (MODAL TETAP TERBUKA)
+        // ============================================
+        const CSRF_TOKEN = '{{ csrf_token() }}';
+
+        // ---------- PERLENGKAPAN ----------
+        function togglePerlengkapanStatusJamaah(departurePerlengkapanId, jamaahId, currentStatus) {
             const newStatus = currentStatus === 'Sudah Diterima' ? 'Belum Diterima' : 'Sudah Diterima';
 
-            const inputEl = document.getElementById('jenis_transaksi_status_input_' + departureJenisTransaksiId + '_' +
-                jamaahId);
-            if (inputEl) {
-                inputEl.value = newStatus;
-            } else {
-                console.error('Input tidak ditemukan: jenis_transaksi_status_input_' + departureJenisTransaksiId + '_' +
-                    jamaahId);
+            fetch(`/transaksional/departure/perlengkapan-status-jamaah/${departurePerlengkapanId}/${jamaahId}/ajax`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': CSRF_TOKEN,
+                        'X-Requested-With': 'XMLHttpRequest',
+                        'Accept': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        status_terima: newStatus
+                    })
+                })
+                .then(res => res.json())
+                .then(data => {
+                    if (data.success) {
+                        openPerlengkapanDetailModal(departurePerlengkapanId, true);
+                        showToast(data.message, 'success');
+                    } else {
+                        showToast(data.message || 'Gagal', 'error');
+                    }
+                })
+                .catch(err => {
+                    console.error(err);
+                    showToast('Terjadi kesalahan', 'error');
+                });
+        }
+
+        function bulkUpdatePerlengkapanStatus(departurePerlengkapanId, departureId, statusTerima) {
+            const checkboxes = document.querySelectorAll(
+                `#perlengkapan-jamaah-list-${departurePerlengkapanId} .perlengkapan-jamaah-checkbox:checked`
+            );
+
+            if (checkboxes.length === 0) {
+                showToast('Pilih minimal 1 jamaah terlebih dahulu', 'warning');
                 return;
             }
 
-            const formEl = document.getElementById('jenis-transaksi-jamaah-form-' + departureJenisTransaksiId + '-' +
-                jamaahId);
-            if (formEl) {
-                formEl.submit();
-            } else {
-                console.error('Form tidak ditemukan: jenis-transaksi-jamaah-form-' + departureJenisTransaksiId + '-' +
-                    jamaahId);
+            const jamaahIds = Array.from(checkboxes).map(cb => parseInt(cb.value));
+
+            fetch(`/transaksional/departure/${departureId}/perlengkapan/${departurePerlengkapanId}/status-jamaah-bulk`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': CSRF_TOKEN,
+                        'X-Requested-With': 'XMLHttpRequest',
+                        'Accept': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        jamaah_ids: jamaahIds,
+                        status_terima: statusTerima
+                    })
+                })
+                .then(res => res.json())
+                .then(data => {
+                    if (data.success) {
+                        openPerlengkapanDetailModal(departurePerlengkapanId, true);
+                        showToast(data.message, 'success');
+                    } else {
+                        showToast(data.message || 'Gagal', 'error');
+                    }
+                })
+                .catch(err => {
+                    console.error(err);
+                    showToast('Terjadi kesalahan', 'error');
+                });
+        }
+
+        // ---------- JENIS TRANSAKSI ----------
+        function toggleJenisTransaksiStatusJamaah(departureJenisTransaksiId, jamaahId, currentStatus) {
+            const newStatus = currentStatus === 'Sudah Diterima' ? 'Belum Diterima' : 'Sudah Diterima';
+
+            fetch(`/transaksional/departure/jenis-transaksi-status-jamaah/${departureJenisTransaksiId}/${jamaahId}/ajax`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': CSRF_TOKEN,
+                        'X-Requested-With': 'XMLHttpRequest',
+                        'Accept': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        status_terima: newStatus
+                    })
+                })
+                .then(res => res.json())
+                .then(data => {
+                    if (data.success) {
+                        openJenisTransaksiDetailModal(departureJenisTransaksiId, true);
+                        showToast(data.message, 'success');
+                    } else {
+                        showToast(data.message || 'Gagal', 'error');
+                    }
+                })
+                .catch(err => {
+                    console.error(err);
+                    showToast('Terjadi kesalahan', 'error');
+                });
+        }
+
+        function bulkUpdateJenisTransaksiStatus(departureJenisTransaksiId, departureId, statusTerima) {
+            const checkboxes = document.querySelectorAll(
+                `#jenis-transaksi-jamaah-list-${departureJenisTransaksiId} .jenis-transaksi-jamaah-checkbox:checked`
+            );
+
+            if (checkboxes.length === 0) {
+                showToast('Pilih minimal 1 jamaah terlebih dahulu', 'warning');
+                return;
             }
+
+            const jamaahIds = Array.from(checkboxes).map(cb => parseInt(cb.value));
+
+            fetch(`/transaksional/departure/${departureId}/jenis-transaksi/${departureJenisTransaksiId}/status-jamaah-bulk`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': CSRF_TOKEN,
+                        'X-Requested-With': 'XMLHttpRequest',
+                        'Accept': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        jamaah_ids: jamaahIds,
+                        status_terima: statusTerima
+                    })
+                })
+                .then(res => res.json())
+                .then(data => {
+                    if (data.success) {
+                        openJenisTransaksiDetailModal(departureJenisTransaksiId, true);
+                        showToast(data.message, 'success');
+                    } else {
+                        showToast(data.message || 'Gagal', 'error');
+                    }
+                })
+                .catch(err => {
+                    console.error(err);
+                    showToast('Terjadi kesalahan', 'error');
+                });
+        }
+
+        // ---------- TOAST ----------
+        function showToast(message, type = 'success') {
+            const colors = {
+                success: 'bg-green-500',
+                error: 'bg-red-500',
+                warning: 'bg-yellow-500',
+                info: 'bg-blue-500',
+            };
+            const icons = {
+                success: 'fa-check-circle',
+                error: 'fa-exclamation-circle',
+                warning: 'fa-exclamation-triangle',
+                info: 'fa-info-circle',
+            };
+
+            const toast = document.createElement('div');
+            toast.className =
+                `fixed top-4 right-4 z-[9999] px-4 py-3 rounded-lg shadow-lg text-white text-sm font-medium ${colors[type] || colors.success} flex items-center gap-2`;
+            toast.innerHTML = `<i class="fas ${icons[type] || icons.success}"></i> ${message}`;
+            document.body.appendChild(toast);
+
+            setTimeout(() => {
+                toast.style.transition = 'opacity 0.3s';
+                toast.style.opacity = '0';
+                setTimeout(() => toast.remove(), 300);
+            }, 3000);
         }
 
         // ============================================
         // CATATAN FUNCTIONS
         // ============================================
-
         function openCatatanModal() {
             document.getElementById('catatanModal').classList.remove('hidden');
         }
@@ -3082,7 +3673,6 @@
         // ============================================
         // RECALCULATE
         // ============================================
-
         function recalculate(id) {
             if (confirm('Yakin ingin menghitung ulang data keuangan?')) {
                 document.getElementById('recalculate-form').submit();
@@ -3092,7 +3682,6 @@
         // ============================================
         // FORMAT RUPIAH FUNCTIONS
         // ============================================
-
         function formatRupiahMaskapai(input, hiddenId) {
             let value = input.value.replace(/[^,\d]/g, '').replace(/^Rp\s*/, '').replace(/\./g, '').replace(/,/g, '.');
             if (value === '' || isNaN(value)) value = '0';

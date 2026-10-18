@@ -197,7 +197,8 @@
                                         <input type="text" name="fee_agent" id="fee_agent"
                                             value="{{ old('fee_agent', number_format($keluarga->fee_agent, 0, ',', '.')) }}"
                                             class="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-xl focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500 text-sm"
-                                            placeholder="0" oninput="formatRupiah(this)">
+                                            placeholder="0" oninput="formatRupiah(this)" onfocus="handleZeroFocus(this)"
+                                            onblur="handleZeroBlur(this)">
                                     </div>
                                     @error('fee_agent')
                                         <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
@@ -211,6 +212,7 @@
                     <div class="border-b border-gray-200 pb-4">
                         <h6 class="text-sm font-semibold text-gray-700 mb-4 flex items-center">
                             <i class="fas fa-tags text-yellow-500 mr-2"></i> Diskon
+                            <span class="ml-2 text-xs text-gray-400">(total kelompok, dibagi rata per jamaah)</span>
                         </h6>
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div>
@@ -241,6 +243,25 @@
                                     placeholder="Catatan diskon (opsional)">
                             </div>
                         </div>
+
+                        {{-- Panel Preview Diskon --}}
+                        <div id="infoDiskonContainer"
+                            class="mt-3 bg-green-50 rounded-xl p-3 border border-green-200 hidden">
+                            <div class="grid grid-cols-1 md:grid-cols-3 gap-2 text-sm">
+                                <div>
+                                    <span class="text-gray-500 text-xs">Total Diskon Kelompok</span>
+                                    <p class="font-bold text-rose-700" id="infoTotalDiskon">Rp 0</p>
+                                </div>
+                                <div>
+                                    <span class="text-gray-500 text-xs">Jumlah Jamaah</span>
+                                    <p class="font-bold text-blue-700" id="infoJumlahJamaah">0</p>
+                                </div>
+                                <div>
+                                    <span class="text-gray-500 text-xs">Diskon per Orang</span>
+                                    <p class="font-bold text-green-700" id="infoDiskonPerOrang">Rp 0</p>
+                                </div>
+                            </div>
+                        </div>
                     </div>
 
                     <!-- Daftar Jamaah -->
@@ -249,11 +270,19 @@
                             <h6 class="text-sm font-semibold text-gray-700 flex items-center">
                                 <i class="fas fa-user text-yellow-500 mr-2"></i> Daftar Jamaah
                                 <span class="ml-2 text-xs text-gray-400">(minimal 1 jamaah)</span>
+                                <span class="ml-2 text-xs text-red-500 font-normal">(semua wajib diisi)</span>
                             </h6>
                             <button type="button" onclick="addJamaah()"
                                 class="inline-flex items-center px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition text-sm font-medium">
                                 <i class="fas fa-plus mr-2"></i> Tambah Jamaah
                             </button>
+                        </div>
+
+                        <div id="jamaahError" class="hidden mb-3 bg-red-50 border border-red-200 rounded-xl p-3">
+                            <p class="text-sm text-red-600 flex items-start">
+                                <i class="fas fa-exclamation-triangle mt-0.5 mr-2"></i>
+                                <span id="jamaahErrorText">Lengkapi semua data jamaah yang wajib diisi.</span>
+                            </p>
                         </div>
 
                         <div id="jamaahContainer">
@@ -265,10 +294,14 @@
                                             return [
                                                 'id_jamaah' => $jamaah->id_jamaah,
                                                 'nama_lengkap' => $jamaah->nama_lengkap,
+                                                'nik' => $jamaah->nik,
+                                                'nama_ayah' => $jamaah->nama_ayah,
+                                                'pekerjaan' => $jamaah->pekerjaan,
                                                 'hubungan_keluarga' => $jamaah->hubungan_keluarga,
                                                 'is_kepala_keluarga' => $jamaah->is_kepala_keluarga,
                                                 'jenis_kelamin' => $jamaah->jenis_kelamin,
                                                 'telepon' => $jamaah->telepon,
+                                                'wa' => $jamaah->wa,
                                                 'alamat' => $jamaah->alamat,
                                                 'kota_asal' => $jamaah->kota_asal,
                                                 'pulau' => $jamaah->pulau,
@@ -294,10 +327,14 @@
                                         [
                                             'id_jamaah' => '',
                                             'nama_lengkap' => '',
+                                            'nik' => '',
+                                            'nama_ayah' => '',
+                                            'pekerjaan' => '',
                                             'hubungan_keluarga' => '',
                                             'is_kepala_keluarga' => true,
                                             'jenis_kelamin' => '',
                                             'telepon' => '',
+                                            'wa' => '',
                                             'alamat' => '',
                                             'kota_asal' => '',
                                             'pulau' => '',
@@ -329,6 +366,8 @@
                                     </div>
                                     <input type="hidden" name="jamaahs[{{ $index }}][id_jamaah]"
                                         value="{{ $jamaah['id_jamaah'] ?? '' }}">
+
+                                    <!-- Baris 1 -->
                                     <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
                                         <div>
                                             <label class="block text-xs font-medium text-gray-600 mb-1">
@@ -336,9 +375,99 @@
                                             </label>
                                             <input type="text" name="jamaahs[{{ $index }}][nama_lengkap]"
                                                 value="{{ $jamaah['nama_lengkap'] ?? '' }}"
-                                                class="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-yellow-500 text-sm"
+                                                class="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-yellow-500 text-sm wajib-jamaah"
                                                 required>
                                         </div>
+                                        <div>
+                                            <label class="block text-xs font-medium text-gray-600 mb-1">
+                                                NIK <span class="text-red-500">*</span>
+                                            </label>
+                                            <input type="text" name="jamaahs[{{ $index }}][nik]"
+                                                value="{{ $jamaah['nik'] ?? '' }}"
+                                                class="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-yellow-500 text-sm wajib-jamaah"
+                                                placeholder="16 digit NIK" required>
+                                        </div>
+                                        <div>
+                                            <label class="block text-xs font-medium text-gray-600 mb-1">
+                                                Nama Ayah <span class="text-red-500">*</span>
+                                            </label>
+                                            <input type="text" name="jamaahs[{{ $index }}][nama_ayah]"
+                                                value="{{ $jamaah['nama_ayah'] ?? '' }}"
+                                                class="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-yellow-500 text-sm wajib-jamaah"
+                                                required>
+                                        </div>
+                                    </div>
+
+                                    <!-- Baris 2 -->
+                                    <div class="grid grid-cols-1 md:grid-cols-3 gap-3 mt-3">
+                                        <div>
+                                            <label class="block text-xs font-medium text-gray-600 mb-1">
+                                                Pekerjaan <span class="text-red-500">*</span>
+                                            </label>
+                                            <input type="text" name="jamaahs[{{ $index }}][pekerjaan]"
+                                                value="{{ $jamaah['pekerjaan'] ?? '' }}"
+                                                class="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-yellow-500 text-sm wajib-jamaah"
+                                                required>
+                                        </div>
+                                        <div>
+                                            <label class="block text-xs font-medium text-gray-600 mb-1">
+                                                Jenis Kelamin <span class="text-red-500">*</span>
+                                            </label>
+                                            <select name="jamaahs[{{ $index }}][jenis_kelamin]"
+                                                class="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-yellow-500 text-sm wajib-jamaah"
+                                                required>
+                                                <option value="">-- Pilih --</option>
+                                                <option value="L"
+                                                    {{ ($jamaah['jenis_kelamin'] ?? '') == 'L' ? 'selected' : '' }}>
+                                                    Laki-laki</option>
+                                                <option value="P"
+                                                    {{ ($jamaah['jenis_kelamin'] ?? '') == 'P' ? 'selected' : '' }}>
+                                                    Perempuan</option>
+                                            </select>
+                                        </div>
+                                        <div>
+                                            <label class="block text-xs font-medium text-gray-600 mb-1">
+                                                Telepon <span class="text-red-500">*</span>
+                                            </label>
+                                            <input type="text" name="jamaahs[{{ $index }}][telepon]"
+                                                value="{{ $jamaah['telepon'] ?? '' }}"
+                                                class="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-yellow-500 text-sm wajib-jamaah"
+                                                placeholder="08xxxxxxxxxx" required>
+                                        </div>
+                                    </div>
+
+                                    <!-- Baris 3 -->
+                                    <div class="grid grid-cols-1 md:grid-cols-3 gap-3 mt-3">
+                                        <div>
+                                            <label class="block text-xs font-medium text-gray-600 mb-1">
+                                                WhatsApp <span class="text-red-500">*</span>
+                                            </label>
+                                            <input type="text" name="jamaahs[{{ $index }}][wa]"
+                                                value="{{ $jamaah['wa'] ?? '' }}"
+                                                class="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-yellow-500 text-sm wajib-jamaah"
+                                                placeholder="08xxxxxxxxxx" required>
+                                        </div>
+                                        <div>
+                                            <label class="block text-xs font-medium text-gray-600 mb-1">
+                                                Tempat Lahir <span class="text-red-500">*</span>
+                                            </label>
+                                            <input type="text" name="jamaahs[{{ $index }}][tempat_lahir]"
+                                                value="{{ $jamaah['tempat_lahir'] ?? '' }}"
+                                                class="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-yellow-500 text-sm wajib-jamaah"
+                                                required>
+                                        </div>
+                                        <div>
+                                            <label class="block text-xs font-medium text-gray-600 mb-1">
+                                                Tanggal Lahir
+                                            </label>
+                                            <input type="date" name="jamaahs[{{ $index }}][tanggal_lahir]"
+                                                value="{{ $jamaah['tanggal_lahir'] ?? '' }}"
+                                                class="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-yellow-500 text-sm">
+                                        </div>
+                                    </div>
+
+                                    <!-- Baris 4 -->
+                                    <div class="grid grid-cols-1 md:grid-cols-3 gap-3 mt-3">
                                         <div>
                                             <label class="block text-xs font-medium text-gray-600 mb-1">Hubungan
                                                 Keluarga</label>
@@ -354,27 +483,11 @@
                                             </select>
                                         </div>
                                         <div>
-                                            <label class="block text-xs font-medium text-gray-600 mb-1">Jenis
-                                                Kelamin</label>
-                                            <select name="jamaahs[{{ $index }}][jenis_kelamin]"
-                                                class="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-yellow-500 text-sm">
-                                                <option value="">-- Pilih --</option>
-                                                <option value="L"
-                                                    {{ ($jamaah['jenis_kelamin'] ?? '') == 'L' ? 'selected' : '' }}>
-                                                    Laki-laki</option>
-                                                <option value="P"
-                                                    {{ ($jamaah['jenis_kelamin'] ?? '') == 'P' ? 'selected' : '' }}>
-                                                    Perempuan</option>
-                                            </select>
-                                        </div>
-                                    </div>
-                                    <div class="grid grid-cols-1 md:grid-cols-3 gap-3 mt-3">
-                                        <div>
-                                            <label class="block text-xs font-medium text-gray-600 mb-1">Telepon</label>
-                                            <input type="text" name="jamaahs[{{ $index }}][telepon]"
-                                                value="{{ $jamaah['telepon'] ?? '' }}"
+                                            <label class="block text-xs font-medium text-gray-600 mb-1">Alamat</label>
+                                            <input type="text" name="jamaahs[{{ $index }}][alamat]"
+                                                value="{{ $jamaah['alamat'] ?? '' }}"
                                                 class="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-yellow-500 text-sm"
-                                                placeholder="08xxxxxxxxxx">
+                                                placeholder="Alamat lengkap">
                                         </div>
                                         <div>
                                             <label class="block text-xs font-medium text-gray-600 mb-1">Kota Asal</label>
@@ -391,14 +504,9 @@
                                                 @endforeach
                                             </select>
                                         </div>
-                                        <div>
-                                            <label class="block text-xs font-medium text-gray-600 mb-1">Alamat</label>
-                                            <input type="text" name="jamaahs[{{ $index }}][alamat]"
-                                                value="{{ $jamaah['alamat'] ?? '' }}"
-                                                class="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-yellow-500 text-sm"
-                                                placeholder="Alamat lengkap">
-                                        </div>
                                     </div>
+
+                                    <!-- Baris 5 -->
                                     <div class="grid grid-cols-1 md:grid-cols-3 gap-3 mt-3">
                                         <div>
                                             <label class="block text-xs font-medium text-gray-600 mb-1">Nomor
@@ -407,22 +515,6 @@
                                                 value="{{ $jamaah['nomor_paspor'] ?? '' }}"
                                                 class="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-yellow-500 text-sm">
                                         </div>
-                                        <div>
-                                            <label class="block text-xs font-medium text-gray-600 mb-1">Tempat
-                                                Lahir</label>
-                                            <input type="text" name="jamaahs[{{ $index }}][tempat_lahir]"
-                                                value="{{ $jamaah['tempat_lahir'] ?? '' }}"
-                                                class="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-yellow-500 text-sm">
-                                        </div>
-                                        <div>
-                                            <label class="block text-xs font-medium text-gray-600 mb-1">Tanggal
-                                                Lahir</label>
-                                            <input type="date" name="jamaahs[{{ $index }}][tanggal_lahir]"
-                                                value="{{ $jamaah['tanggal_lahir'] ?? '' }}"
-                                                class="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-yellow-500 text-sm">
-                                        </div>
-                                    </div>
-                                    <div class="grid grid-cols-1 md:grid-cols-3 gap-3 mt-3">
                                         <div>
                                             <label class="block text-xs font-medium text-gray-600 mb-1">Pulau</label>
                                             <input type="text" name="jamaahs[{{ $index }}][pulau]"
@@ -439,16 +531,17 @@
                                                 class="w-full px-3 py-2 border border-gray-200 rounded-lg bg-gray-100 text-sm cursor-not-allowed"
                                                 readonly>
                                         </div>
-                                        <div class="flex items-center gap-4 pt-2">
-                                            <label class="flex items-center gap-2 text-sm text-gray-700 cursor-pointer">
-                                                <input type="checkbox"
-                                                    name="jamaahs[{{ $index }}][is_kepala_keluarga]"
-                                                    value="1"
-                                                    {{ $jamaah['is_kepala_keluarga'] ?? false ? 'checked' : '' }}
-                                                    class="w-4 h-4 text-yellow-500 border-gray-300 rounded focus:ring-yellow-500">
-                                                <span>Kepala Keluarga / Kelompok</span>
-                                            </label>
-                                        </div>
+                                    </div>
+
+                                    <!-- Baris 6: Kepala Keluarga -->
+                                    <div class="mt-3">
+                                        <label class="flex items-center gap-2 text-sm text-gray-700 cursor-pointer">
+                                            <input type="checkbox"
+                                                name="jamaahs[{{ $index }}][is_kepala_keluarga]" value="1"
+                                                {{ $jamaah['is_kepala_keluarga'] ?? false ? 'checked' : '' }}
+                                                class="w-4 h-4 text-yellow-500 border-gray-300 rounded focus:ring-yellow-500">
+                                            <span>Kepala Keluarga / Kelompok</span>
+                                        </label>
                                     </div>
 
                                     <!-- Pendampingan -->
@@ -477,6 +570,7 @@
                                                         name="jamaahs[{{ $index }}][pendampingan_fee]"
                                                         value="{{ isset($jamaah['pendampingan_fee']) ? number_format($jamaah['pendampingan_fee'], 0, ',', '.') : '0' }}"
                                                         oninput="formatRupiah(this); updateTotalPendampingan({{ $index }})"
+                                                        onfocus="handleZeroFocus(this)" onblur="handleZeroBlur(this)"
                                                         class="w-full pl-8 pr-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-yellow-500 text-sm"
                                                         placeholder="0">
                                                 </div>
@@ -516,6 +610,7 @@
                                                             id="pendampingan_fee_petugas-{{ $index }}"
                                                             value="{{ isset($jamaah['pendampingan_fee_petugas']) ? number_format($jamaah['pendampingan_fee_petugas'], 0, ',', '.') : '0' }}"
                                                             oninput="formatRupiah(this); updateTotalPendampingan({{ $index }})"
+                                                            onfocus="handleZeroFocus(this)" onblur="handleZeroBlur(this)"
                                                             class="w-full pl-8 pr-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-yellow-500 text-sm"
                                                             placeholder="0">
                                                     </div>
@@ -647,6 +742,9 @@
 
     @push('scripts')
         <script>
+            // ==========================================
+            // GLOBAL DATA
+            // ==========================================
             var globalKeberangkatanList = [];
             var globalHargaBulananList = [];
 
@@ -656,19 +754,135 @@
                 element.value = value;
             }
 
+            // ==========================================
+            // HANDLE ZERO (hilangkan 0 saat fokus, kembalikan saat blur kosong)
+            // ==========================================
+            function handleZeroFocus(element) {
+                if (element.value === '0' || element.value === '') {
+                    element.value = '';
+                }
+            }
+
+            function handleZeroBlur(element) {
+                if (element.value === '' || element.value === '0') {
+                    element.value = '0';
+                }
+                formatRupiah(element);
+            }
+
             let jamaahIndex = {{ count($jamaahData) }};
 
+            // ==========================================
+            // HITUNG DISKON KELOMPOK
+            // ==========================================
+            function hitungDiskonKelompok() {
+                var selectDiskon = document.getElementById('id_diskon');
+                if (!selectDiskon) return;
+
+                var container = document.getElementById('infoDiskonContainer');
+                var elTotal = document.getElementById('infoTotalDiskon');
+                var elJumlah = document.getElementById('infoJumlahJamaah');
+                var elPerOrang = document.getElementById('infoDiskonPerOrang');
+
+                var selectedOption = selectDiskon.options[selectDiskon.selectedIndex];
+                var totalDiskon = parseInt(selectedOption.dataset.nilai || 0);
+
+                var jumlahJamaah = document.querySelectorAll('.jamaah-row').length;
+                var diskonPerOrang = jumlahJamaah > 0 ?
+                    Math.round(totalDiskon / jumlahJamaah) :
+                    0;
+
+                if (totalDiskon > 0 && jumlahJamaah > 0) {
+                    container.classList.remove('hidden');
+                    elTotal.textContent = 'Rp ' + totalDiskon.toLocaleString('id-ID');
+                    elJumlah.textContent = jumlahJamaah + ' orang';
+                    elPerOrang.textContent = 'Rp ' + diskonPerOrang.toLocaleString('id-ID');
+                } else {
+                    container.classList.add('hidden');
+                }
+            }
+
+            // ==========================================
+            // VALIDASI JAMAAH
+            // ==========================================
+            function validateJamaahForm() {
+                var labels = {
+                    nama_lengkap: 'Nama Lengkap',
+                    nik: 'NIK',
+                    nama_ayah: 'Nama Ayah',
+                    pekerjaan: 'Pekerjaan',
+                    jenis_kelamin: 'Jenis Kelamin',
+                    telepon: 'Telepon',
+                    wa: 'WhatsApp',
+                    tempat_lahir: 'Tempat Lahir'
+                };
+                var missing = [];
+                var firstInvalid = null;
+                var rows = document.querySelectorAll('.jamaah-row');
+
+                rows.forEach(function(row, idx) {
+                    var fields = row.querySelectorAll('.wajib-jamaah');
+                    fields.forEach(function(f) {
+                        var val = (f.value || '').trim();
+                        if (!val) {
+                            f.classList.add('border-red-500', 'ring-2', 'ring-red-300');
+                            f.classList.remove('border-gray-200');
+                            var key = f.name.replace(/jamaahs\[\d+\]\[|\]/g, '');
+                            missing.push('Jamaah #' + (idx + 1) + ' - ' + (labels[key] || key));
+                            if (!firstInvalid) firstInvalid = f;
+                        } else {
+                            f.classList.remove('border-red-500', 'ring-2', 'ring-red-300');
+                            f.classList.add('border-gray-200');
+                        }
+                    });
+                });
+
+                var errBox = document.getElementById('jamaahError');
+                var errText = document.getElementById('jamaahErrorText');
+
+                if (missing.length > 0) {
+                    errText.textContent = 'Data jamaah belum lengkap: ' + missing.slice(0, 5).join(', ') +
+                        (missing.length > 5 ? ' dan ' + (missing.length - 5) + ' lainnya.' : '.');
+                    errBox.classList.remove('hidden');
+                    if (firstInvalid) {
+                        firstInvalid.scrollIntoView({
+                            behavior: 'smooth',
+                            block: 'center'
+                        });
+                        firstInvalid.focus();
+                    }
+                    return false;
+                }
+                errBox.classList.add('hidden');
+                return true;
+            }
+
+            document.addEventListener('input', function(e) {
+                if (e.target.classList.contains('wajib-jamaah') && e.target.value.trim() !== '') {
+                    e.target.classList.remove('border-red-500', 'ring-2', 'ring-red-300');
+                    e.target.classList.add('border-gray-200');
+                }
+            });
+
+            document.addEventListener('change', function(e) {
+                if (e.target.classList.contains('wajib-jamaah') && e.target.value.trim() !== '') {
+                    e.target.classList.remove('border-red-500', 'ring-2', 'ring-red-300');
+                    e.target.classList.add('border-gray-200');
+                }
+            });
+
+            // ==========================================
+            // TOGGLE FEE PETUGAS
+            // ==========================================
             function showFeePetugas(index) {
                 var container = document.getElementById('feePetugasContainer-' + index);
                 var btnShow = document.getElementById('btnShowFeePetugas-' + index);
                 var btnHide = document.getElementById('btnHideFeePetugas-' + index);
                 var input = document.getElementById('pendampingan_fee_petugas-' + index);
-
                 container.style.display = 'block';
                 btnShow.style.display = 'none';
                 btnHide.style.display = 'inline-flex';
-
-                if (input && input.value === '0') input.value = '';
+                if (input && (input.value === '0' || input.value === '')) input.value = '';
                 if (input) input.focus();
                 updateTotalPendampingan(index);
             }
@@ -678,7 +892,6 @@
                 var btnShow = document.getElementById('btnShowFeePetugas-' + index);
                 var btnHide = document.getElementById('btnHideFeePetugas-' + index);
                 var input = document.getElementById('pendampingan_fee_petugas-' + index);
-
                 container.style.display = 'none';
                 btnShow.style.display = 'inline-flex';
                 btnHide.style.display = 'none';
@@ -691,15 +904,13 @@
                 var petugasInput = document.getElementById('pendampingan_fee_petugas-' + index);
                 var totalSpan = document.getElementById('total-pendampingan-' + index);
                 var container = document.getElementById('feePetugasContainer-' + index);
-
                 if (feeInput && totalSpan) {
                     var fee = parseInt(feeInput.value.replace(/\./g, '')) || 0;
                     var petugas = 0;
                     if (container && container.style.display !== 'none' && petugasInput) {
                         petugas = parseInt(petugasInput.value.replace(/\./g, '')) || 0;
                     }
-                    var total = fee + petugas;
-                    totalSpan.textContent = 'Rp ' + total.toLocaleString('id-ID');
+                    totalSpan.textContent = 'Rp ' + (fee + petugas).toLocaleString('id-ID');
                 }
             }
 
@@ -731,34 +942,25 @@
 
                 fetch(
                         `{{ route('transaksional.keluarga.keberangkatan-by-produk') }}?produk_paket=${encodeURIComponent(produkPaket.value)}`
-                    )
+                        )
                     .then(res => res.json())
                     .then(data => {
                         if (!data.success || !data.keberangkatan || data.keberangkatan.length === 0) {
                             tahunSelect.innerHTML = '<option value="">-- Tidak ada data --</option>';
                             return;
                         }
-
                         globalKeberangkatanList = data.keberangkatan;
                         globalHargaBulananList = data.harga_bulanan || [];
-
                         var tahunSet = new Set();
-                        globalKeberangkatanList.forEach(function(k) {
-                            tahunSet.add(k.tahun);
-                        });
-
-                        var tahunList = Array.from(tahunSet).sort(function(a, b) {
-                            return a - b;
-                        });
-
+                        globalKeberangkatanList.forEach(k => tahunSet.add(k.tahun));
+                        var tahunList = Array.from(tahunSet).sort((a, b) => a - b);
                         tahunSelect.innerHTML = '<option value="">-- Pilih Tahun --</option>';
-                        tahunList.forEach(function(tahun) {
+                        tahunList.forEach(tahun => {
                             var option = document.createElement('option');
                             option.value = tahun;
                             option.textContent = tahun;
                             tahunSelect.appendChild(option);
                         });
-
                         var selectedTahun = document.getElementById('tahun_keberangkatan_hidden').value;
                         if (selectedTahun && tahunList.includes(parseInt(selectedTahun))) {
                             tahunSelect.value = selectedTahun;
@@ -772,7 +974,7 @@
             }
 
             // ==========================================
-            // RENDER KEBERANGKATAN (DENGAN KUOTA)
+            // RENDER KEBERANGKATAN
             // ==========================================
             function renderKeberangkatanByTahun(tahun) {
                 var step2Container = document.getElementById('step-2-container');
@@ -783,12 +985,8 @@
                     resetHiddenInputs();
                     return;
                 }
-
                 step2Container.classList.remove('hidden');
-
-                var filtered = globalKeberangkatanList.filter(function(k) {
-                    return parseInt(k.tahun) === parseInt(tahun);
-                });
+                var filtered = globalKeberangkatanList.filter(k => parseInt(k.tahun) === parseInt(tahun));
 
                 if (filtered.length === 0) {
                     container.innerHTML = `
@@ -804,34 +1002,31 @@
 
                 var selectedKeberangkatanId = document.getElementById('id_produk_keberangkatan_hidden').value;
                 var selectedHargaBulananId = document.getElementById('id_produk_harga_bulanan_hidden').value;
-
                 var html = '';
+
                 filtered.forEach(function(k) {
                     var isSelected = selectedKeberangkatanId && parseInt(selectedKeberangkatanId) === parseInt(k.id);
                     var isChecked = isSelected ? 'checked' : '';
-
                     var currentKuotaText = 'Tidak Terbatas';
                     var currentKuotaColor = 'text-gray-500';
                     var currentIdHarga = k.id_harga_default;
 
                     if (isSelected && selectedHargaBulananId) {
                         currentIdHarga = selectedHargaBulananId;
-                        var hargaMatch = globalHargaBulananList.find(function(h) {
-                            return parseInt(h.id) === parseInt(selectedHargaBulananId);
-                        });
+                        var hargaMatch = globalHargaBulananList.find(h => parseInt(h.id) === parseInt(
+                            selectedHargaBulananId));
                         if (hargaMatch) {
                             currentKuotaText = hargaMatch.kuota_formatted;
-                            currentKuotaColor = hargaMatch.is_full ? 'text-red-600' : (hargaMatch
-                                .kuota_sisa !== -1 && hargaMatch.kuota_sisa <= 3 ?
-                                'text-orange-600' : 'text-blue-600');
+                            currentKuotaColor = hargaMatch.is_full ? 'text-red-600' : (hargaMatch.kuota_sisa !== -1 &&
+                                hargaMatch.kuota_sisa <= 3 ? 'text-orange-600' : 'text-blue-600');
                         }
                     } else {
                         currentKuotaText = k.kuota_default_formatted;
                         currentKuotaColor = k.kuota_default_is_full ? 'text-red-600' : 'text-blue-600';
                     }
 
-                    var optionsHtml =
-                        '<option value="">-- Sama dengan keberangkatan (' + k.bulan_formatted + ') --</option>';
+                    var optionsHtml = '<option value="">-- Sama dengan keberangkatan (' + k.bulan_formatted +
+                        ') --</option>';
                     globalHargaBulananList.forEach(function(h) {
                         var selected = '';
                         if (isSelected && selectedHargaBulananId && parseInt(h.id) === parseInt(
@@ -844,7 +1039,6 @@
                         var disabledAttr = isFull ? 'disabled' : '';
                         var kuotaLabel = h.is_full ? 'PENUH (' + h.kuota + ')' : h.kuota_formatted;
                         var styleAttr = isFull ? 'style="color:#ef4444;font-style:italic;"' : '';
-
                         optionsHtml += '<option value="' + h.id +
                             '" data-bulan="' + h.bulan +
                             '" data-tahun="' + h.tahun +
@@ -853,14 +1047,12 @@
                             '" data-is-full="' + (isFull ? '1' : '0') + '" ' +
                             selected + ' ' + disabledAttr + ' ' + styleAttr + '>' +
                             h.bulan_formatted + ' - ' + h.harga_formatted +
-                            ' (Kuota: ' + kuotaLabel + ')' +
-                            (isFull ? ' ⛔' : '') +
-                            '</option>';
+                            ' (Kuota: ' + kuotaLabel + ')' + (isFull ? ' ⛔' : '') + '</option>';
                     });
 
                     var radioDisabled = k.kuota_default_is_full ? 'disabled' : '';
                     var radioWarning = k.kuota_default_is_full ?
-                        '<p class="text-xs text-red-600 font-medium mt-1"><i class="fas fa-ban mr-1"></i>Kuota PENUH — tidak bisa dipilih</p>' :
+                        '<p class="text-xs text-red-600 font-medium mt-1"><i class="fas fa-ban mr-1"></i>Kuota PENUH</p>' :
                         '';
 
                     html += `
@@ -900,14 +1092,13 @@
                                     <i class="fas fa-tag text-yellow-500 mr-1"></i>
                                     Harga diambil dari bulan/tahun:
                                 </label>
-                                <select class="harga-bulanan-select w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500"
+                                <select class="harga-bulanan-select w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-yellow-500"
                                         data-keberangkatan-id="${k.id}">
                                     ${optionsHtml}
                                 </select>
                                 <div class="flex items-center justify-between mt-1">
                                     <p class="text-xs text-gray-400">
-                                        <i class="fas fa-info-circle mr-1"></i>
-                                        Pilih harga dari bulan/tahun berbeda (opsional)
+                                        <i class="fas fa-info-circle mr-1"></i> Pilih harga dari bulan/tahun berbeda (opsional)
                                     </p>
                                     <p class="text-xs font-medium kuota-info-${k.id} ${currentKuotaColor}">
                                         <i class="fas fa-users mr-1"></i>
@@ -920,13 +1111,10 @@
                 });
 
                 container.innerHTML = html;
-
-                document.querySelectorAll('.keberangkatan-radio').forEach(function(radio) {
-                    radio.addEventListener('change', handleKeberangkatanChange);
-                });
-                document.querySelectorAll('.harga-bulanan-select').forEach(function(sel) {
-                    sel.addEventListener('change', handleHargaBulananChange);
-                });
+                document.querySelectorAll('.keberangkatan-radio').forEach(radio => radio.addEventListener('change',
+                    handleKeberangkatanChange));
+                document.querySelectorAll('.harga-bulanan-select').forEach(sel => sel.addEventListener('change',
+                    handleHargaBulananChange));
 
                 if (selectedKeberangkatanId) {
                     var checked = document.querySelector('.keberangkatan-radio:checked');
@@ -947,21 +1135,16 @@
             function handleKeberangkatanChange(e) {
                 var radio = e.target;
                 if (!radio) return;
-
                 var selectedId = radio.dataset.keberangkatanId;
-                var bulan = radio.dataset.bulan;
-                var tahun = radio.dataset.tahun;
-
                 document.getElementById('id_produk_keberangkatan_hidden').value = selectedId;
-                document.getElementById('bulan_keberangkatan_hidden').value = bulan;
-                document.getElementById('tahun_keberangkatan_hidden').value = tahun;
+                document.getElementById('bulan_keberangkatan_hidden').value = radio.dataset.bulan;
+                document.getElementById('tahun_keberangkatan_hidden').value = radio.dataset.tahun;
 
-                document.querySelectorAll('.keberangkatan-item').forEach(function(item) {
+                document.querySelectorAll('.keberangkatan-item').forEach(item => {
                     var itemId = item.dataset.keberangkatanId;
                     var hargaSection = item.querySelector('.keberangkatan-harga-section');
                     hargaSection.style.display = (itemId === selectedId) ? 'block' : 'none';
                 });
-
                 updateHargaDisplay(selectedId);
             }
 
@@ -970,7 +1153,6 @@
                 var keberangkatanId = sel.dataset.keberangkatanId;
                 var item = sel.closest('.keberangkatan-item');
                 var radio = item.querySelector('.keberangkatan-radio');
-
                 var selectedOption = sel.options[sel.selectedIndex];
                 var hargaBulananId = sel.value;
                 var bulanHarga, tahunHarga, harga, kuota, isFull;
@@ -990,7 +1172,7 @@
                 }
 
                 if (isFull) {
-                    alert('⚠️ Kuota untuk bulan/tahun ini sudah PENUH!\n\nSilakan pilih bulan/tahun lain.');
+                    alert('⚠️ Kuota untuk bulan/tahun ini sudah PENUH!');
                     sel.value = '';
                     return;
                 }
@@ -999,7 +1181,6 @@
                     document.getElementById('id_produk_harga_bulanan_hidden').value = hargaBulananId;
                     document.getElementById('bulan_harga_hidden').value = bulanHarga;
                     document.getElementById('tahun_harga_hidden').value = tahunHarga;
-
                     var bulanName = getBulanName(bulanHarga);
                     document.getElementById('hargaBulanTahun').textContent = bulanName + ' ' + tahunHarga;
                     document.getElementById('hargaProdukDisplay').textContent = 'Rp ' + parseInt(harga).toLocaleString('id-ID');
@@ -1028,7 +1209,6 @@
                     kuotaDisplay.className = 'text-xs mt-0.5 kuota-display-' + keberangkatanId + ' ' + kuotaColor;
                     kuotaDisplay.innerHTML = '<i class="fas fa-users text-[10px]"></i> Kuota: ' + kuotaText;
                 }
-
                 var kuotaInfoVal = item.querySelector('.kuota-info-val-' + keberangkatanId);
                 if (kuotaInfoVal) {
                     kuotaInfoVal.textContent = kuotaText;
@@ -1044,7 +1224,6 @@
                     document.getElementById('hargaBulanTahun').textContent = bulanName + ' ' + radio.dataset.tahun;
                     document.getElementById('hargaProdukDisplay').textContent = 'Rp ' + parseInt(harga).toLocaleString('id-ID');
                     document.getElementById('hargaInfo').classList.remove('hidden');
-
                     document.getElementById('bulan_harga_hidden').value = radio.dataset.bulan;
                     document.getElementById('tahun_harga_hidden').value = radio.dataset.tahun;
                 }
@@ -1067,11 +1246,14 @@
                 return namaBulan[parseInt(bulan) - 1] || bulan;
             }
 
+            // ==========================================
+            // EVENT LISTENERS
+            // ==========================================
             document.getElementById('filter-tahun').addEventListener('change', function() {
                 renderKeberangkatanByTahun(this.value);
             });
-
             document.getElementById('produk_paket').addEventListener('change', loadKeberangkatan);
+            document.getElementById('id_diskon').addEventListener('change', hitungDiskonKelompok);
 
             document.addEventListener('change', function(e) {
                 if (e.target && e.target.classList.contains('kota-asal-select')) {
@@ -1088,12 +1270,14 @@
 
             document.addEventListener('input', function(e) {
                 if (e.target && e.target.name && e.target.name.includes('pendampingan_fee')) {
-                    const nameAttr = e.target.name;
-                    const index = nameAttr.match(/\d+/)[0];
+                    const index = e.target.name.match(/\d+/)[0];
                     updateTotalPendampingan(parseInt(index));
                 }
             });
 
+            // ==========================================
+            // ADD / REMOVE JAMAAH
+            // ==========================================
             function addJamaah() {
                 const container = document.getElementById('jamaahContainer');
                 const row = document.createElement('div');
@@ -1107,12 +1291,69 @@
                         </button>
                     </div>
                     <input type="hidden" name="jamaahs[${jamaahIndex}][id_jamaah]" value="">
+
                     <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
                         <div>
                             <label class="block text-xs font-medium text-gray-600 mb-1">Nama Lengkap <span class="text-red-500">*</span></label>
                             <input type="text" name="jamaahs[${jamaahIndex}][nama_lengkap]"
-                                class="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-yellow-500 text-sm" required>
+                                class="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-yellow-500 text-sm wajib-jamaah" required>
                         </div>
+                        <div>
+                            <label class="block text-xs font-medium text-gray-600 mb-1">NIK <span class="text-red-500">*</span></label>
+                            <input type="text" name="jamaahs[${jamaahIndex}][nik]"
+                                class="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-yellow-500 text-sm wajib-jamaah"
+                                placeholder="16 digit NIK" required>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-medium text-gray-600 mb-1">Nama Ayah <span class="text-red-500">*</span></label>
+                            <input type="text" name="jamaahs[${jamaahIndex}][nama_ayah]"
+                                class="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-yellow-500 text-sm wajib-jamaah" required>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-3 mt-3">
+                        <div>
+                            <label class="block text-xs font-medium text-gray-600 mb-1">Pekerjaan <span class="text-red-500">*</span></label>
+                            <input type="text" name="jamaahs[${jamaahIndex}][pekerjaan]"
+                                class="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-yellow-500 text-sm wajib-jamaah" required>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-medium text-gray-600 mb-1">Jenis Kelamin <span class="text-red-500">*</span></label>
+                            <select name="jamaahs[${jamaahIndex}][jenis_kelamin]"
+                                class="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-yellow-500 text-sm wajib-jamaah" required>
+                                <option value="">-- Pilih --</option>
+                                <option value="L">Laki-laki</option>
+                                <option value="P">Perempuan</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-medium text-gray-600 mb-1">Telepon <span class="text-red-500">*</span></label>
+                            <input type="text" name="jamaahs[${jamaahIndex}][telepon]"
+                                class="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-yellow-500 text-sm wajib-jamaah"
+                                placeholder="08xxxxxxxxxx" required>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-3 mt-3">
+                        <div>
+                            <label class="block text-xs font-medium text-gray-600 mb-1">WhatsApp <span class="text-red-500">*</span></label>
+                            <input type="text" name="jamaahs[${jamaahIndex}][wa]"
+                                class="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-yellow-500 text-sm wajib-jamaah"
+                                placeholder="08xxxxxxxxxx" required>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-medium text-gray-600 mb-1">Tempat Lahir <span class="text-red-500">*</span></label>
+                            <input type="text" name="jamaahs[${jamaahIndex}][tempat_lahir]"
+                                class="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-yellow-500 text-sm wajib-jamaah" required>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-medium text-gray-600 mb-1">Tanggal Lahir</label>
+                            <input type="date" name="jamaahs[${jamaahIndex}][tanggal_lahir]"
+                                class="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-yellow-500 text-sm">
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-3 mt-3">
                         <div>
                             <label class="block text-xs font-medium text-gray-600 mb-1">Hubungan Keluarga</label>
                             <select name="jamaahs[${jamaahIndex}][hubungan_keluarga]"
@@ -1124,24 +1365,15 @@
                             </select>
                         </div>
                         <div>
-                            <label class="block text-xs font-medium text-gray-600 mb-1">Jenis Kelamin</label>
-                            <select name="jamaahs[${jamaahIndex}][jenis_kelamin]"
-                                class="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-yellow-500 text-sm">
-                                <option value="">-- Pilih --</option>
-                                <option value="L">Laki-laki</option>
-                                <option value="P">Perempuan</option>
-                            </select>
-                        </div>
-                    </div>
-                    <div class="grid grid-cols-1 md:grid-cols-3 gap-3 mt-3">
-                        <div>
-                            <label class="block text-xs font-medium text-gray-600 mb-1">Telepon</label>
-                            <input type="text" name="jamaahs[${jamaahIndex}][telepon]"
-                                class="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-yellow-500 text-sm" placeholder="08xxxxxxxxxx">
+                            <label class="block text-xs font-medium text-gray-600 mb-1">Alamat</label>
+                            <input type="text" name="jamaahs[${jamaahIndex}][alamat]"
+                                class="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-yellow-500 text-sm"
+                                placeholder="Alamat lengkap">
                         </div>
                         <div>
                             <label class="block text-xs font-medium text-gray-600 mb-1">Kota Asal</label>
-                            <select name="jamaahs[${jamaahIndex}][kota_asal]" class="kota-asal-select w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-yellow-500 text-sm">
+                            <select name="jamaahs[${jamaahIndex}][kota_asal]"
+                                class="kota-asal-select w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-yellow-500 text-sm">
                                 <option value="">-- Pilih Kota Asal --</option>
                                 @foreach ($kotaAsals as $kota)
                                     <option value="{{ $kota->nama_kota }}" data-pulau="{{ $kota->pulau }}"
@@ -1151,30 +1383,14 @@
                                 @endforeach
                             </select>
                         </div>
-                        <div>
-                            <label class="block text-xs font-medium text-gray-600 mb-1">Alamat</label>
-                            <input type="text" name="jamaahs[${jamaahIndex}][alamat]"
-                                class="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-yellow-500 text-sm" placeholder="Alamat lengkap">
-                        </div>
                     </div>
+
                     <div class="grid grid-cols-1 md:grid-cols-3 gap-3 mt-3">
                         <div>
                             <label class="block text-xs font-medium text-gray-600 mb-1">Nomor Paspor</label>
                             <input type="text" name="jamaahs[${jamaahIndex}][nomor_paspor]"
                                 class="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-yellow-500 text-sm">
                         </div>
-                        <div>
-                            <label class="block text-xs font-medium text-gray-600 mb-1">Tempat Lahir</label>
-                            <input type="text" name="jamaahs[${jamaahIndex}][tempat_lahir]"
-                                class="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-yellow-500 text-sm">
-                        </div>
-                        <div>
-                            <label class="block text-xs font-medium text-gray-600 mb-1">Tanggal Lahir</label>
-                            <input type="date" name="jamaahs[${jamaahIndex}][tanggal_lahir]"
-                                class="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-yellow-500 text-sm">
-                        </div>
-                    </div>
-                    <div class="grid grid-cols-1 md:grid-cols-3 gap-3 mt-3">
                         <div>
                             <label class="block text-xs font-medium text-gray-600 mb-1">Pulau</label>
                             <input type="text" name="jamaahs[${jamaahIndex}][pulau]"
@@ -1185,34 +1401,31 @@
                             <input type="text" name="jamaahs[${jamaahIndex}][bandara_keberangkatan]"
                                 class="w-full px-3 py-2 border border-gray-200 rounded-lg bg-gray-100 text-sm cursor-not-allowed" readonly>
                         </div>
-                        <div class="flex items-center gap-4 pt-2">
-                            <label class="flex items-center gap-2 text-sm text-gray-700 cursor-pointer">
-                                <input type="checkbox" name="jamaahs[${jamaahIndex}][is_kepala_keluarga]" value="1"
-                                    class="w-4 h-4 text-yellow-500 border-gray-300 rounded focus:ring-yellow-500">
-                                <span>Kepala Keluarga / Kelompok</span>
-                            </label>
-                        </div>
                     </div>
+
+                    <div class="mt-3">
+                        <label class="flex items-center gap-2 text-sm text-gray-700 cursor-pointer">
+                            <input type="checkbox" name="jamaahs[${jamaahIndex}][is_kepala_keluarga]" value="1"
+                                class="w-4 h-4 text-yellow-500 border-gray-300 rounded focus:ring-yellow-500">
+                            <span>Kepala Keluarga / Kelompok</span>
+                        </label>
+                    </div>
+
                     <div class="mt-3 pt-3 border-t border-gray-200">
                         <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
                             <div>
-                                <label class="block text-xs font-medium text-gray-600 mb-1">
-                                    Nama Pendamping
-                                    <span class="text-gray-400 text-xs">(Pembuatan passport)</span>
-                                </label>
+                                <label class="block text-xs font-medium text-gray-600 mb-1">Nama Pendamping</label>
                                 <input type="text" name="jamaahs[${jamaahIndex}][pendampingan_nama]"
                                     class="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-yellow-500 text-sm"
                                     placeholder="Kosongkan jika tidak ada">
                             </div>
                             <div>
-                                <label class="block text-xs font-medium text-gray-600 mb-1">
-                                    Fee Pendamping
-                                    <span class="text-gray-400 text-xs">(Pembayaran passport)</span>
-                                </label>
+                                <label class="block text-xs font-medium text-gray-600 mb-1">Fee Pendamping</label>
                                 <div class="relative">
                                     <span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-xs">Rp</span>
                                     <input type="text" name="jamaahs[${jamaahIndex}][pendampingan_fee]"
                                         value="0" oninput="formatRupiah(this); updateTotalPendampingan(${jamaahIndex})"
+                                        onfocus="handleZeroFocus(this)" onblur="handleZeroBlur(this)"
                                         class="w-full pl-8 pr-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-yellow-500 text-sm"
                                         placeholder="0">
                                 </div>
@@ -1236,17 +1449,13 @@
                         <div id="feePetugasContainer-${jamaahIndex}" class="mt-3" style="display:none;">
                             <div class="grid grid-cols-1 md:grid-cols-1 gap-3">
                                 <div>
-                                    <label class="block text-xs font-medium text-gray-600 mb-1">
-                                        Fee Petugas
-                                        <span class="text-gray-400 text-xs">(Pendapatan perusahaan)</span>
-                                    </label>
+                                    <label class="block text-xs font-medium text-gray-600 mb-1">Fee Petugas</label>
                                     <div class="relative">
                                         <span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-xs">Rp</span>
-                                        <input type="text"
-                                            name="jamaahs[${jamaahIndex}][pendampingan_fee_petugas]"
-                                            id="pendampingan_fee_petugas-${jamaahIndex}"
-                                            value="0"
+                                        <input type="text" name="jamaahs[${jamaahIndex}][pendampingan_fee_petugas]"
+                                            id="pendampingan_fee_petugas-${jamaahIndex}" value="0"
                                             oninput="formatRupiah(this); updateTotalPendampingan(${jamaahIndex})"
+                                            onfocus="handleZeroFocus(this)" onblur="handleZeroBlur(this)"
                                             class="w-full pl-8 pr-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-yellow-500 text-sm"
                                             placeholder="0">
                                     </div>
@@ -1254,11 +1463,12 @@
                             </div>
                         </div>
                     </div>
+
                     <div class="mt-2 text-xs text-gray-500">
                         Total Pendampingan:
                         <span class="font-bold text-blue-600" id="total-pendampingan-${jamaahIndex}">Rp 0</span>
-                        <span class="text-gray-400">(Fee Pendamping + Fee Petugas)</span>
                     </div>
+
                     <div class="grid grid-cols-1 md:grid-cols-4 gap-3 mt-3 pt-3 border-t border-gray-200">
                         <div>
                             <label class="block text-xs font-medium text-gray-600 mb-1">File KTP/KK</label>
@@ -1288,6 +1498,7 @@
                 `;
                 container.appendChild(row);
                 jamaahIndex++;
+                hitungDiskonKelompok();
             }
 
             function removeJamaah(button) {
@@ -1298,66 +1509,62 @@
                     const rows = container.querySelectorAll('.jamaah-row');
                     rows.forEach((r, idx) => {
                         const label = r.querySelector('.text-sm.font-medium');
-                        if (label) {
-                            label.textContent = `Jamaah #${idx + 1}`;
-                        }
+                        if (label) label.textContent = `Jamaah #${idx + 1}`;
                     });
+                    hitungDiskonKelompok();
                 } else {
                     alert('Minimal harus ada 1 jamaah!');
                 }
             }
 
+            // ==========================================
+            // DOM READY
+            // ==========================================
             document.addEventListener('DOMContentLoaded', function() {
-                document.querySelectorAll('.kota-asal-select').forEach(function(select) {
-                    if (select.value) {
-                        select.dispatchEvent(new Event('change'));
-                    }
+                document.querySelectorAll('.kota-asal-select').forEach(select => {
+                    if (select.value) select.dispatchEvent(new Event('change'));
                 });
-
-                document.querySelectorAll('.jamaah-row').forEach(function(row, index) {
+                document.querySelectorAll('.jamaah-row').forEach((row, index) => {
                     updateTotalPendampingan(index);
                 });
 
                 var produkPaket = document.getElementById('produk_paket');
-                if (produkPaket && produkPaket.value) {
-                    loadKeberangkatan();
-                }
+                if (produkPaket && produkPaket.value) loadKeberangkatan();
+
+                hitungDiskonKelompok();
 
                 const form = document.getElementById('keluargaForm');
                 if (form) {
                     form.addEventListener('submit', function(e) {
-                        const rupiahInputs = ['fee_agent'];
-                        rupiahInputs.forEach(function(id) {
+                        if (!validateJamaahForm()) {
+                            e.preventDefault();
+                            return false;
+                        }
+
+                        ['fee_agent'].forEach(id => {
                             const input = document.getElementById(id);
-                            if (input) {
-                                input.value = input.value.replace(/\./g, '');
-                            }
+                            if (input) input.value = input.value.replace(/\./g, '');
                         });
                         document.querySelectorAll(
                             '[name$="[pendampingan_fee]"], [name$="[pendampingan_fee_petugas]"]').forEach(
-                            function(input) {
-                                if (input.value) {
-                                    input.value = input.value.replace(/\./g, '');
-                                }
+                            input => {
+                                if (input.value) input.value = input.value.replace(/\./g, '');
                             });
 
                         var selectedRadio = document.querySelector('.keberangkatan-radio:checked');
                         if (selectedRadio) {
                             var isFullRadio = selectedRadio.dataset.kuotaDefaultIsFull === '1';
                             var hargaSel = document.querySelector(
-                                '.harga-bulanan-select[data-keberangkatan-id="' +
-                                selectedRadio.dataset.keberangkatanId + '"]');
+                                '.harga-bulanan-select[data-keberangkatan-id="' + selectedRadio.dataset
+                                .keberangkatanId + '"]');
                             var selectedHargaFull = false;
                             if (hargaSel && hargaSel.value) {
                                 var opt = hargaSel.options[hargaSel.selectedIndex];
                                 selectedHargaFull = opt.dataset.isFull === '1';
                             }
-
                             if (isFullRadio || selectedHargaFull) {
                                 e.preventDefault();
-                                alert(
-                                    '⚠️ Kuota bulan/tahun yang dipilih sudah PENUH!\n\nSilakan pilih bulan/tahun lain.'
-                                );
+                                alert('⚠️ Kuota bulan/tahun yang dipilih sudah PENUH!');
                                 return false;
                             }
                         }

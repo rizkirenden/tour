@@ -106,6 +106,7 @@
                             <p class="text-2xl font-bold text-yellow-600">
                                 {{ $keluarga->total_tagihan_setelah_diskon_formatted }}</p>
                             <p class="text-sm text-gray-500">Total Tagihan</p>
+                            <p class="text-sm text-red-600">Diskon: -{{ $keluarga->total_diskon_formatted }}</p>
                             <p class="text-sm text-green-600">{{ $keluarga->total_dibayar_formatted }} dibayar</p>
                             <p class="text-sm text-red-500">{{ $keluarga->sisa_tagihan_formatted }} sisa</p>
                         </div>
@@ -113,7 +114,12 @@
                 </div>
 
                 <!-- Ringkasan Keuangan -->
-                <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+                <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 mb-6">
+                    {{-- ✅ TOTAL DISKON --}}
+                    <div class="bg-rose-50 rounded-xl p-4 border border-rose-200 text-center">
+                        <p class="text-xs text-gray-500">Total Diskon</p>
+                        <p class="text-xl font-bold text-rose-600">- {{ $keluarga->total_diskon_formatted }}</p>
+                    </div>
                     <div class="bg-green-50 rounded-xl p-4 border border-green-200 text-center">
                         <p class="text-xs text-gray-500">Total Tagihan</p>
                         <p class="text-xl font-bold text-gray-800">{{ $keluarga->total_tagihan_setelah_diskon_formatted }}
@@ -155,16 +161,43 @@
                                             Nama Jamaah</th>
                                         <th
                                             class="px-3 py-2 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
-                                            Keberangkatan</th>
+                                            NIK</th>
+                                        <th
+                                            class="px-3 py-2 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                                            Nama Ayah</th>
+                                        <th
+                                            class="px-3 py-2 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                                            Pekerjaan</th>
+                                        <th
+                                            class="px-3 py-2 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                                            JK</th>
+                                        <th
+                                            class="px-3 py-2 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                                            Telepon</th>
+                                        <th
+                                            class="px-3 py-2 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                                            WhatsApp</th>
+                                        <th
+                                            class="px-3 py-2 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                                            TTL</th>
+                                        <th
+                                            class="px-3 py-2 text-right text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                                            Harga Produk</th>
+                                        <th
+                                            class="px-3 py-2 text-right text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                                            Passport</th>
+                                        <th
+                                            class="px-3 py-2 text-right text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                                            Kotor</th>
+                                        <th
+                                            class="px-3 py-2 text-right text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                                            Diskon</th>
                                         <th
                                             class="px-3 py-2 text-right text-xs font-semibold text-gray-500 uppercase tracking-wider">
                                             Tagihan</th>
                                         <th
                                             class="px-3 py-2 text-right text-xs font-semibold text-gray-500 uppercase tracking-wider">
                                             Dibayar</th>
-                                        <th
-                                            class="px-3 py-2 text-right text-xs font-semibold text-gray-500 uppercase tracking-wider">
-                                            Sisa</th>
                                         <th
                                             class="px-3 py-2 text-center text-xs font-semibold text-gray-500 uppercase tracking-wider">
                                             Status</th>
@@ -186,32 +219,56 @@
                                                 <p class="text-xs text-gray-400">{{ $jamaah->hubungan_keluarga ?? '-' }}
                                                 </p>
                                             </td>
-                                            <td class="px-3 py-2">
-                                                @if ($jamaah->bulan_keberangkatan && $jamaah->tahun_keberangkatan)
+                                            <td class="px-3 py-2 text-gray-600 text-xs">{{ $jamaah->nik ?? '-' }}</td>
+                                            <td class="px-3 py-2 text-gray-600 text-xs">{{ $jamaah->nama_ayah ?? '-' }}
+                                            </td>
+                                            <td class="px-3 py-2 text-gray-600 text-xs">{{ $jamaah->pekerjaan ?? '-' }}
+                                            </td>
+                                            <td class="px-3 py-2 text-center">
+                                                @if ($jamaah->jenis_kelamin == 'L')
                                                     <span
-                                                        class="inline-flex items-center gap-1 px-2 py-0.5 bg-blue-100 text-blue-700 rounded-full text-xs font-medium">
-                                                        {{ $jamaah->bulan_keberangkatan_nama }}
-                                                        {{ $jamaah->tahun_keberangkatan }}
-                                                    </span>
+                                                        class="px-2 py-0.5 bg-blue-100 text-blue-700 rounded text-xs">L</span>
+                                                @elseif ($jamaah->jenis_kelamin == 'P')
+                                                    <span
+                                                        class="px-2 py-0.5 bg-pink-100 text-pink-700 rounded text-xs">P</span>
                                                 @else
                                                     <span class="text-xs text-gray-400">-</span>
                                                 @endif
                                             </td>
-                                            <td class="px-3 py-2 text-right font-medium text-gray-800">
+                                            <td class="px-3 py-2 text-gray-600 text-xs">{{ $jamaah->telepon ?? '-' }}</td>
+                                            <td class="px-3 py-2 text-gray-600 text-xs">{{ $jamaah->wa ?? '-' }}</td>
+                                            <td class="px-3 py-2 text-gray-600 text-xs">
+                                                {{ $jamaah->tempat_lahir ?? '-' }}
+                                                @if ($jamaah->tanggal_lahir)
+                                                    <br><span
+                                                        class="text-gray-400">{{ $jamaah->tanggal_lahir->format('d/m/Y') }}</span>
+                                                @endif
+                                            </td>
+                                            <td class="px-3 py-2 text-right text-gray-600">
+                                                {{ $jamaah->harga_produk_formatted }}
+                                            </td>
+                                            <td class="px-3 py-2 text-right text-purple-600">
+                                                {{ $jamaah->total_pembuatan_passport_formatted }}
+                                            </td>
+                                            <td class="px-3 py-2 text-right text-gray-800">
+                                                {{ $jamaah->total_tagihan_sebelum_diskon_formatted }}
+                                            </td>
+                                            <td class="px-3 py-2 text-right text-red-600">
+                                                {{ $jamaah->total_diskon_formatted }}
+                                            </td>
+                                            <td class="px-3 py-2 text-right font-bold text-gray-800">
                                                 {{ $jamaah->total_tagihan_setelah_diskon_formatted }}
                                             </td>
                                             <td class="px-3 py-2 text-right text-green-600">
                                                 {{ $jamaah->total_dibayar_formatted }}
-                                            </td>
-                                            <td class="px-3 py-2 text-right text-red-500">
-                                                {{ $jamaah->sisa_tagihan_formatted }}
                                             </td>
                                             <td class="px-3 py-2 text-center">
                                                 {!! $jamaah->status_pembayaran_badge !!}
                                             </td>
                                             <td class="px-3 py-2 text-center">
                                                 <a href="{{ route('transaksional.jamaah.show', $jamaah->id_jamaah) }}"
-                                                    class="text-blue-500 hover:text-blue-700 text-sm" title="Detail Jamaah">
+                                                    class="text-blue-500 hover:text-blue-700 text-sm"
+                                                    title="Detail Jamaah">
                                                     <i class="fas fa-eye"></i>
                                                 </a>
                                             </td>
@@ -347,6 +404,9 @@
                                         <th
                                             class="px-3 py-2 text-center text-xs font-semibold text-gray-500 uppercase tracking-wider">
                                             Dibuat Oleh</th>
+                                        <th
+                                            class="px-3 py-2 text-center text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                                            Aksi</th>
                                     </tr>
                                 </thead>
                                 <tbody class="divide-y divide-gray-100">
@@ -396,6 +456,20 @@
                                             </td>
                                             <td class="px-3 py-2 text-center text-xs text-gray-500">
                                                 {{ $transaksi->created_by ?? '-' }}
+                                            </td>
+                                            <td class="px-3 py-2 text-center">
+                                                <button type="button"
+                                                    onclick="confirmDeleteTransaksiKeluarga({{ $transaksi->id_transaksi }})"
+                                                    class="text-red-500 hover:text-red-700 transition-colors duration-200"
+                                                    title="Hapus Transaksi">
+                                                    <i class="fas fa-trash text-sm"></i>
+                                                </button>
+                                                <form id="delete-transaksi-keluarga-form-{{ $transaksi->id_transaksi }}"
+                                                    action="{{ route('transaksional.keluarga.hapus-transaksi', $transaksi->id_transaksi) }}"
+                                                    method="POST" class="hidden">
+                                                    @csrf
+                                                    @method('DELETE')
+                                                </form>
                                             </td>
                                         </tr>
                                     @endforeach
@@ -459,3 +533,20 @@
         </div>
     </div>
 @endsection
+
+@push('scripts')
+    <script>
+        function confirmDeleteTransaksiKeluarga(id) {
+            if (confirm(
+                    'Yakin ingin menghapus transaksi pembayaran ini?\n\n' +
+                    'Data yang dihapus:\n' +
+                    '- Jumlah pembayaran jamaah akan dikurangi\n' +
+                    '- Sisa tagihan jamaah akan dihitung ulang\n' +
+                    '- Status pembayaran keluarga akan diperbarui\n' +
+                    '- Bukti pembayaran akan dihapus dari storage'
+                )) {
+                document.getElementById('delete-transaksi-keluarga-form-' + id).submit();
+            }
+        }
+    </script>
+@endpush

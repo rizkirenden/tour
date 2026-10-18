@@ -66,7 +66,8 @@ class JamaahService
     }
 
     // ==========================================
-    // CREATE — FIXED
+    // CREATE
+    // Total Tagihan = Harga Produk + Pembuatan Passport − Diskon
     // ==========================================
     public function create(array $data)
     {
@@ -103,10 +104,8 @@ class JamaahService
             $keberangkatanData = $data['keberangkatan_data'] ?? [];
             unset($data['keberangkatan_data']);
 
-            // Validasi kuota
             $this->validateKuota($keberangkatanData);
 
-            // ✅ AMBIL bulan_keberangkatan & tahun_keberangkatan DARI PRODUKKEBERANGKATAN
             if (!empty($keberangkatanData)) {
                 $first = $keberangkatanData[0];
                 $keberangkatanId = $first['id_produk_keberangkatan'] ?? null;
@@ -130,19 +129,25 @@ class JamaahService
                 $hargaProduk = (int) ($keberangkatanData[0]['harga'] ?? 0);
             }
 
-            $data['total_tagihan_sebelum_diskon'] = $hargaProduk;
+            // ==========================================
+            // TOTAL TAGIHAN = HARGA PRODUK + PEMBUATAN PASSPORT
+            // ==========================================
+            $passportFee = $data['pendampingan_fee'] + $data['pendampingan_fee_petugas'];
+            $totalTagihanKotor = $hargaProduk + $passportFee;
+            $totalTagihanSetelahDiskon = max(0, $totalTagihanKotor - $nilaiDiskon);
+
+            $data['total_tagihan_sebelum_diskon'] = $totalTagihanKotor;
             $data['nilai_diskon'] = $nilaiDiskon;
             $data['total_diskon'] = $nilaiDiskon;
-            $data['total_tagihan_setelah_diskon'] = $hargaProduk - $nilaiDiskon;
-            $data['sisa_tagihan'] = $data['total_tagihan_setelah_diskon'] - $data['total_dibayar'];
+            $data['total_tagihan_setelah_diskon'] = $totalTagihanSetelahDiskon;
+            $data['sisa_tagihan'] = $totalTagihanSetelahDiskon - $data['total_dibayar'];
             $data['status_pembayaran'] = $this->determinePaymentStatus(
                 $data['total_dibayar'],
-                $data['total_tagihan_setelah_diskon']
+                $totalTagihanSetelahDiskon
             );
 
             $jamaah = Jamaah::create($data);
 
-            // ✅ SIMPAN PIVOT LENGKAP
             if (!empty($keberangkatanData)) {
                 $pivotData = [];
                 foreach ($keberangkatanData as $item) {
@@ -164,11 +169,11 @@ class JamaahService
                         'id_produk_harga_bulanan' => !empty($item['id_produk_harga_bulanan'])
                             ? $item['id_produk_harga_bulanan']
                             : null,
-                        'bulan_keberangkatan'     => (int) $keberangkatan->bulan,
-                        'tahun_keberangkatan'     => (int) $keberangkatan->tahun,
-                        'bulan_harga'             => $bulanHarga,
-                        'tahun_harga'             => $tahunHarga,
-                        'harga'                   => (int) ($item['harga'] ?? 0),
+                        'bulan_keberangkatan' => (int) $keberangkatan->bulan,
+                        'tahun_keberangkatan' => (int) $keberangkatan->tahun,
+                        'bulan_harga' => $bulanHarga,
+                        'tahun_harga' => $tahunHarga,
+                        'harga' => (int) ($item['harga'] ?? 0),
                     ];
                 }
                 if (!empty($pivotData)) {
@@ -185,7 +190,7 @@ class JamaahService
     }
 
     // ==========================================
-    // UPDATE — FIXED
+    // UPDATE
     // ==========================================
     public function update($id, array $data)
     {
@@ -217,9 +222,7 @@ class JamaahService
 
             if ($jamaah->id_diskon && $jamaah->id_diskon != ($data['id_diskon'] ?? null)) {
                 $oldDiskon = Diskon::find($jamaah->id_diskon);
-                if ($oldDiskon) {
-                    $oldDiskon->decrement('sudah_digunakan');
-                }
+                if ($oldDiskon) $oldDiskon->decrement('sudah_digunakan');
             }
             if ($diskonData && $diskonData->is_available && $jamaah->id_diskon != ($data['id_diskon'] ?? null)) {
                 $diskonData->increment('sudah_digunakan');
@@ -228,10 +231,8 @@ class JamaahService
             $keberangkatanData = $data['keberangkatan_data'] ?? [];
             unset($data['keberangkatan_data']);
 
-            // Validasi kuota (exclude jamaah ini)
             $this->validateKuota($keberangkatanData, $id);
 
-            // ✅ AMBIL bulan_keberangkatan & tahun_keberangkatan DARI PRODUKKEBERANGKATAN
             if (!empty($keberangkatanData)) {
                 $first = $keberangkatanData[0];
                 $keberangkatanId = $first['id_produk_keberangkatan'] ?? null;
@@ -255,15 +256,25 @@ class JamaahService
                 $hargaProduk = (int) ($keberangkatanData[0]['harga'] ?? 0);
             }
 
-            $data['total_tagihan_sebelum_diskon'] = $hargaProduk;
+            // ==========================================
+            // TOTAL TAGIHAN = HARGA PRODUK + PEMBUATAN PASSPORT
+            // ==========================================
+            $passportFee = $data['pendampingan_fee'] + $data['pendampingan_fee_petugas'];
+            $totalTagihanKotor = $hargaProduk + $passportFee;
+            $totalTagihanSetelahDiskon = max(0, $totalTagihanKotor - $nilaiDiskon);
+
+            $data['total_tagihan_sebelum_diskon'] = $totalTagihanKotor;
             $data['nilai_diskon'] = $nilaiDiskon;
             $data['total_diskon'] = $nilaiDiskon;
-            $data['total_tagihan_setelah_diskon'] = $hargaProduk - $nilaiDiskon;
-            $data['sisa_tagihan'] = $data['total_tagihan_setelah_diskon'] - $data['total_dibayar'];
+            $data['total_tagihan_setelah_diskon'] = $totalTagihanSetelahDiskon;
+            $data['sisa_tagihan'] = $totalTagihanSetelahDiskon - $data['total_dibayar'];
+            $data['status_pembayaran'] = $this->determinePaymentStatus(
+                $data['total_dibayar'],
+                $totalTagihanSetelahDiskon
+            );
 
             $jamaah->update($data);
 
-            // ✅ SYNC PIVOT LENGKAP
             if (!empty($keberangkatanData)) {
                 $pivotData = [];
                 foreach ($keberangkatanData as $item) {
@@ -285,11 +296,11 @@ class JamaahService
                         'id_produk_harga_bulanan' => !empty($item['id_produk_harga_bulanan'])
                             ? $item['id_produk_harga_bulanan']
                             : null,
-                        'bulan_keberangkatan'     => (int) $keberangkatan->bulan,
-                        'tahun_keberangkatan'     => (int) $keberangkatan->tahun,
-                        'bulan_harga'             => $bulanHarga,
-                        'tahun_harga'             => $tahunHarga,
-                        'harga'                   => (int) ($item['harga'] ?? 0),
+                        'bulan_keberangkatan' => (int) $keberangkatan->bulan,
+                        'tahun_keberangkatan' => (int) $keberangkatan->tahun,
+                        'bulan_harga' => $bulanHarga,
+                        'tahun_harga' => $tahunHarga,
+                        'harga' => (int) ($item['harga'] ?? 0),
                     ];
                 }
                 if (!empty($pivotData)) {
@@ -299,6 +310,11 @@ class JamaahService
                 }
             } else {
                 $jamaah->keberangkatan()->detach();
+            }
+
+            if ($jamaah->id_keluarga) {
+                $keluargaService = new \App\Services\KeluargaService();
+                $keluargaService->recalculateKeluarga($jamaah->id_keluarga);
             }
 
             return $jamaah->fresh();
@@ -312,37 +328,31 @@ class JamaahService
 
             if ($jamaah->id_diskon) {
                 $diskon = Diskon::find($jamaah->id_diskon);
-                if ($diskon) {
-                    $diskon->decrement('sudah_digunakan');
-                }
+                if ($diskon) $diskon->decrement('sudah_digunakan');
             }
 
+            $keluargaId = $jamaah->id_keluarga;
             $nama = $jamaah->nama_lengkap;
             $jamaah->delete();
+
+            if ($keluargaId) {
+                $keluargaService = new \App\Services\KeluargaService();
+                $keluargaService->recalculateKeluarga($keluargaId);
+            }
+
             return $nama;
         });
     }
 
-    // ==========================================
-    // VALIDASI KUOTA (INTERNAL)
-    // ==========================================
     private function validateKuota(array $keberangkatanData, $excludeJamaahId = null)
     {
         foreach ($keberangkatanData as $item) {
             $hargaBulananId = $item['id_produk_harga_bulanan'] ?? null;
-
-            if (!$hargaBulananId) {
-                continue;
-            }
+            if (!$hargaBulananId) continue;
 
             $hargaBulanan = ProdukHargaBulanan::find($hargaBulananId);
-            if (!$hargaBulanan) {
-                continue;
-            }
-
-            if ($hargaBulanan->kuota <= 0) {
-                continue;
-            }
+            if (!$hargaBulanan) continue;
+            if ($hargaBulanan->kuota <= 0) continue;
 
             $query = DB::table('jamaah_keberangkatans')
                 ->where('id_produk_harga_bulanan', $hargaBulananId);
@@ -356,8 +366,7 @@ class JamaahService
             if ($terpakai >= $hargaBulanan->kuota) {
                 $label = $hargaBulanan->bulan_formatted . ' ' . $hargaBulanan->tahun;
                 throw new \Exception(
-                    "Kuota untuk harga {$label} sudah PENUH ({$terpakai}/{$hargaBulanan->kuota} orang). " .
-                    "Silakan pilih bulan/tahun harga lain atau tambah kuota terlebih dahulu."
+                    "Kuota untuk harga {$label} sudah PENUH ({$terpakai}/{$hargaBulanan->kuota} orang)."
                 );
             }
         }
@@ -365,15 +374,10 @@ class JamaahService
 
     private function determinePaymentStatus($totalDibayar, $totalTagihan)
     {
-        if ($totalDibayar == 0) {
-            return 'Belum Bayar';
-        } elseif ($totalDibayar >= $totalTagihan) {
-            return 'Lunas';
-        } elseif ($totalDibayar >= $totalTagihan * 0.5) {
-            return 'Setoran';
-        } else {
-            return 'DP';
-        }
+        if ($totalDibayar == 0) return 'Belum Bayar';
+        if ($totalDibayar >= $totalTagihan) return 'Lunas';
+        if ($totalDibayar >= $totalTagihan * 0.5) return 'Setoran';
+        return 'DP';
     }
 
     private function generateIdKeberangkatan($kodeProduk)
@@ -400,17 +404,11 @@ class JamaahService
         return Diskon::available()->orderBy('nama_diskon')->get();
     }
 
-    // ==========================================
-    // GET KEBERANGKATAN BY PRODUK (dengan kuota realtime)
-    // ==========================================
     public function getKeberangkatanByProduk($namaProduk)
     {
         $produk = ProdukPaket::where('nama_produk', $namaProduk)->first();
         if (!$produk) {
-            return [
-                'keberangkatan' => [],
-                'harga_bulanan' => [],
-            ];
+            return ['keberangkatan' => [], 'harga_bulanan' => []];
         }
 
         $hargaBulanan = ProdukHargaBulanan::where('produk_paket_id', $produk->id_produk)
@@ -435,16 +433,16 @@ class JamaahService
                 }
 
                 return [
-                    'id'              => $h->id,
-                    'bulan'           => (int) $h->bulan,
-                    'tahun'           => (int) $h->tahun,
+                    'id' => $h->id,
+                    'bulan' => (int) $h->bulan,
+                    'tahun' => (int) $h->tahun,
                     'bulan_formatted' => $h->bulan_formatted,
-                    'harga'           => (int) $h->harga,
+                    'harga' => (int) $h->harga,
                     'harga_formatted' => 'Rp ' . number_format($h->harga, 0, ',', '.'),
-                    'kuota'           => $h->kuota ?? 0,
-                    'kuota_terpakai'  => $terpakai,
-                    'kuota_sisa'      => $sisa,
-                    'is_full'         => $isFull,
+                    'kuota' => $h->kuota ?? 0,
+                    'kuota_terpakai' => $terpakai,
+                    'kuota_sisa' => $sisa,
+                    'is_full' => $isFull,
                     'kuota_formatted' => $kuotaFormatted,
                 ];
             })->values()->toArray();
@@ -460,17 +458,17 @@ class JamaahService
                 });
 
                 return [
-                    'id'                      => (int) $k->id,
-                    'bulan'                   => (int) $k->bulan,
-                    'tahun'                   => (int) $k->tahun,
-                    'bulan_formatted'         => $k->bulan_formatted,
+                    'id' => (int) $k->id,
+                    'bulan' => (int) $k->bulan,
+                    'tahun' => (int) $k->tahun,
+                    'bulan_formatted' => $k->bulan_formatted,
                     'keberangkatan_formatted' => $k->keberangkatan_formatted,
-                    'harga_default'           => $hargaDefault ? (int) $hargaDefault['harga'] : 0,
+                    'harga_default' => $hargaDefault ? (int) $hargaDefault['harga'] : 0,
                     'harga_default_formatted' => $hargaDefault ? $hargaDefault['harga_formatted'] : 'Rp 0',
-                    'id_harga_default'        => $hargaDefault ? (int) $hargaDefault['id'] : null,
-                    'kuota_default'           => $hargaDefault ? ($hargaDefault['kuota'] ?? 0) : 0,
+                    'id_harga_default' => $hargaDefault ? (int) $hargaDefault['id'] : null,
+                    'kuota_default' => $hargaDefault ? ($hargaDefault['kuota'] ?? 0) : 0,
                     'kuota_default_formatted' => $hargaDefault ? $hargaDefault['kuota_formatted'] : 'Tidak Terbatas',
-                    'kuota_default_is_full'   => $hargaDefault ? $hargaDefault['is_full'] : false,
+                    'kuota_default_is_full' => $hargaDefault ? $hargaDefault['is_full'] : false,
                 ];
             })->values()->toArray();
 

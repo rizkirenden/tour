@@ -65,19 +65,24 @@ class KeluargaController extends Controller
 
             'keterangan_diskon' => 'nullable|string',
             'catatan_tambahan' => 'nullable|string',
+
             'jamaahs' => 'required|array|min:1',
             'jamaahs.*.nama_lengkap' => 'required|string|max:100',
+            'jamaahs.*.nik' => 'required|string|max:20',
+            'jamaahs.*.nama_ayah' => 'required|string|max:100',
+            'jamaahs.*.pekerjaan' => 'required|string|max:100',
             'jamaahs.*.hubungan_keluarga' => 'nullable|string|max:30',
             'jamaahs.*.is_kepala_keluarga' => 'nullable|boolean',
-            'jamaahs.*.jenis_kelamin' => 'nullable|in:L,P',
-            'jamaahs.*.telepon' => 'nullable|string|max:20',
+            'jamaahs.*.jenis_kelamin' => 'required|in:L,P',
+            'jamaahs.*.telepon' => 'required|string|max:20',
+            'jamaahs.*.wa' => 'required|string|max:20',
             'jamaahs.*.alamat' => 'nullable|string',
             'jamaahs.*.kota_asal' => 'nullable|string|max:50|exists:kota_asals,nama_kota',
             'jamaahs.*.pulau' => 'nullable|string|max:20',
             'jamaahs.*.bandara_keberangkatan' => 'nullable|string|max:50',
             'jamaahs.*.nomor_paspor' => 'nullable|string|max:20',
             'jamaahs.*.tanggal_lahir' => 'nullable|date',
-            'jamaahs.*.tempat_lahir' => 'nullable|string|max:100',
+            'jamaahs.*.tempat_lahir' => 'required|string|max:100',
             'jamaahs.*.file_ktp_kk' => 'nullable|file|mimes:jpeg,png,jpg,pdf|max:2048',
             'jamaahs.*.file_vaksin' => 'nullable|file|mimes:jpeg,png,jpg,pdf|max:2048',
             'jamaahs.*.file_visa' => 'nullable|file|mimes:jpeg,png,jpg,pdf|max:2048',
@@ -93,7 +98,6 @@ class KeluargaController extends Controller
             return redirect()->route('transaksional.keluarga.index')
                 ->with('success', "Keluarga '{$keluarga->nama_keluarga}' berhasil ditambahkan!");
         } catch (\Exception $e) {
-            // Cleanup file uploads yang sudah tersimpan
             $this->cleanupUploadedFiles($validated);
 
             return redirect()->back()
@@ -156,20 +160,25 @@ class KeluargaController extends Controller
 
             'keterangan_diskon' => 'nullable|string',
             'catatan_tambahan' => 'nullable|string',
+
             'jamaahs' => 'required|array|min:1',
             'jamaahs.*.id_jamaah' => 'nullable|exists:jamaahs,id_jamaah',
             'jamaahs.*.nama_lengkap' => 'required|string|max:100',
+            'jamaahs.*.nik' => 'required|string|max:20',
+            'jamaahs.*.nama_ayah' => 'required|string|max:100',
+            'jamaahs.*.pekerjaan' => 'required|string|max:100',
             'jamaahs.*.hubungan_keluarga' => 'nullable|string|max:30',
             'jamaahs.*.is_kepala_keluarga' => 'nullable|boolean',
-            'jamaahs.*.jenis_kelamin' => 'nullable|in:L,P',
-            'jamaahs.*.telepon' => 'nullable|string|max:20',
+            'jamaahs.*.jenis_kelamin' => 'required|in:L,P',
+            'jamaahs.*.telepon' => 'required|string|max:20',
+            'jamaahs.*.wa' => 'required|string|max:20',
             'jamaahs.*.alamat' => 'nullable|string',
             'jamaahs.*.kota_asal' => 'nullable|string|max:50|exists:kota_asals,nama_kota',
             'jamaahs.*.pulau' => 'nullable|string|max:20',
             'jamaahs.*.bandara_keberangkatan' => 'nullable|string|max:50',
             'jamaahs.*.nomor_paspor' => 'nullable|string|max:20',
             'jamaahs.*.tanggal_lahir' => 'nullable|date',
-            'jamaahs.*.tempat_lahir' => 'nullable|string|max:100',
+            'jamaahs.*.tempat_lahir' => 'required|string|max:100',
             'jamaahs.*.file_ktp_kk' => 'nullable|file|mimes:jpeg,png,jpg,pdf|max:2048',
             'jamaahs.*.file_vaksin' => 'nullable|file|mimes:jpeg,png,jpg,pdf|max:2048',
             'jamaahs.*.file_visa' => 'nullable|file|mimes:jpeg,png,jpg,pdf|max:2048',
@@ -193,9 +202,6 @@ class KeluargaController extends Controller
         }
     }
 
-    // ==========================================
-    // CLEANUP FILE JIKA ERROR
-    // ==========================================
     private function cleanupUploadedFiles(array $validated)
     {
         if (empty($validated['jamaahs'])) return;
@@ -233,7 +239,7 @@ class KeluargaController extends Controller
             'id_jenis_transaksi' => 'required|exists:jenis_transaksis,id_jenis',
             'tanggal_transaksi' => 'required|date',
             'jumlah_bayar' => 'required|integer|min:1',
-            'bukti_pembayaran' => 'nullable|file|mimes:jpeg,png,jpg,pdf|max:2048',
+            'bukti_pembayaran' => 'required|file|mimes:jpeg,png,jpg,pdf|max:2048',
             'keterangan' => 'nullable|string'
         ]);
 
@@ -317,142 +323,184 @@ class KeluargaController extends Controller
             ->with('success', "Pembayaran keluarga sebesar Rp " . number_format($jumlahBayar, 0, ',', '.') . " berhasil dan telah masuk ke riwayat pembayaran jamaah masing-masing!");
     }
 
-    public function cetakPembayaran($id)
+    // ==========================================
+// HAPUS SATU TRANSAKSI PEMBAYARAN KELUARGA
+// ==========================================
+public function hapusTransaksi($idTransaksi)
 {
-    $keluarga = $this->service->getById($id);
+    return DB::transaction(function () use ($idTransaksi) {
+        $transaksi = TransaksiPembayaran::findOrFail($idTransaksi);
 
-    $jamaahIds = $keluarga->jamaahs->pluck('id_jamaah')->toArray();
-    $transaksis = TransaksiPembayaran::with(['metodePembayaran', 'jenisTransaksi', 'jamaah'])
-        ->whereIn('id_jamaah', $jamaahIds)
-        ->orderBy('created_at', 'asc')
-        ->get();
+        $jamaah = \App\Models\Jamaah::find($transaksi->id_jamaah);
+        $keluarga = $jamaah ? \App\Models\Keluarga::find($jamaah->id_keluarga) : null;
 
-    foreach ($transaksis as $transaksi) {
-        if ($transaksi->bukti_pembayaran) {
-            $path = storage_path('app/public/' . $transaksi->bukti_pembayaran);
-            if (file_exists($path)) {
-                $extension = pathinfo($path, PATHINFO_EXTENSION);
-                $isImage = in_array(strtolower($extension), ['jpg', 'jpeg', 'png', 'gif', 'webp', 'bmp']);
-                if ($isImage) {
-                    $imageData = base64_encode(file_get_contents($path));
-                    $transaksi->bukti_base64 = 'data:image/' . $extension . ';base64,' . $imageData;
-                    $transaksi->bukti_exists = true;
+        // 1. Kembalikan total dibayar & sisa tagihan jamaah
+        if ($jamaah) {
+            $totalDibayarBaru = max(0, $jamaah->total_dibayar - $transaksi->jumlah_bayar);
+            $sisaTagihanBaru = $jamaah->total_tagihan_setelah_diskon - $totalDibayarBaru;
+
+            if ($sisaTagihanBaru <= 0) {
+                $statusJamaah = 'Lunas';
+            } elseif ($totalDibayarBaru == 0) {
+                $statusJamaah = 'Belum Bayar';
+            } elseif ($totalDibayarBaru >= $jamaah->total_tagihan_setelah_diskon * 0.5) {
+                $statusJamaah = 'Setoran';
+            } else {
+                $statusJamaah = 'DP';
+            }
+
+            $jamaah->update([
+                'total_dibayar' => $totalDibayarBaru,
+                'sisa_tagihan' => $sisaTagihanBaru,
+                'status_pembayaran' => $statusJamaah,
+            ]);
+        }
+
+        // 2. Hapus file bukti dari storage
+        if ($transaksi->bukti_pembayaran && Storage::disk('public')->exists($transaksi->bukti_pembayaran)) {
+            Storage::disk('public')->delete($transaksi->bukti_pembayaran);
+        }
+
+        // 3. Hapus baris transaksi
+        $transaksi->delete();
+
+        // 4. Recalculate keluarga (total, sisa, status)
+        if ($keluarga) {
+            $this->service->recalculateKeluarga($keluarga->id_keluarga);
+        }
+
+        return redirect()->route('transaksional.keluarga.show', $keluarga->id_keluarga ?? null)
+            ->with('success', 'Transaksi pembayaran berhasil dihapus dan total tagihan telah diperbarui.');
+    });
+}
+
+    public function cetakPembayaran($id)
+    {
+        $keluarga = $this->service->getById($id);
+
+        $jamaahIds = $keluarga->jamaahs->pluck('id_jamaah')->toArray();
+        $transaksis = TransaksiPembayaran::with(['metodePembayaran', 'jenisTransaksi', 'jamaah'])
+            ->whereIn('id_jamaah', $jamaahIds)
+            ->orderBy('created_at', 'asc')
+            ->get();
+
+        foreach ($transaksis as $transaksi) {
+            if ($transaksi->bukti_pembayaran) {
+                $path = storage_path('app/public/' . $transaksi->bukti_pembayaran);
+                if (file_exists($path)) {
+                    $extension = pathinfo($path, PATHINFO_EXTENSION);
+                    $isImage = in_array(strtolower($extension), ['jpg', 'jpeg', 'png', 'gif', 'webp', 'bmp']);
+                    if ($isImage) {
+                        $imageData = base64_encode(file_get_contents($path));
+                        $transaksi->bukti_base64 = 'data:image/' . $extension . ';base64,' . $imageData;
+                        $transaksi->bukti_exists = true;
+                    } else {
+                        $transaksi->bukti_base64 = null;
+                        $transaksi->bukti_exists = true;
+                        $transaksi->is_pdf_file = strtolower($extension) == 'pdf';
+                    }
+                    $transaksi->bukti_extension = $extension;
+                    $transaksi->bukti_name = basename($transaksi->bukti_pembayaran);
                 } else {
-                    $transaksi->bukti_base64 = null;
-                    $transaksi->bukti_exists = true;
-                    $transaksi->is_pdf_file = strtolower($extension) == 'pdf';
+                    $transaksi->bukti_exists = false;
                 }
-                $transaksi->bukti_extension = $extension;
-                $transaksi->bukti_name = basename($transaksi->bukti_pembayaran);
             } else {
                 $transaksi->bukti_exists = false;
             }
-        } else {
-            $transaksi->bukti_exists = false;
         }
+
+        $metodePembayarans = MetodePembayaran::active()
+            ->orderBy('jenis_pembayaran')
+            ->orderBy('nama_bank')
+            ->get();
+
+        $ttdData = $this->loadDokumenTTD();
+
+        $data = [
+            'keluarga'          => $keluarga,
+            'transaksis'        => $transaksis,
+            'total_transaksi'   => $transaksis->sum('jumlah_bayar'),
+            'tanggal_cetak'     => date('d/m/Y H:i'),
+            'dicetak_oleh'      => Auth::user()->name ?? 'System',
+            'metodePembayarans' => $metodePembayarans,
+            'logoBase64'        => $this->loadDokumenBase64('logo'),
+            'ttdBase64'         => $ttdData['base64'],
+            'ttdNama'           => $ttdData['nama'],
+            'ttdJabatan'        => $ttdData['jabatan'],
+            'capBase64'         => $this->loadDokumenBase64('cap'),
+        ];
+
+        $pdf = Pdf::loadView('keluargas.pdf-riwayat-keluarga', $data);
+        $pdf->setPaper('A4', 'portrait');
+
+        $pdf->setOptions([
+            'defaultFont' => 'sans-serif',
+            'isHtml5ParserEnabled' => true,
+            'isRemoteEnabled' => false,
+            'isPhpEnabled' => false,
+            'chroot' => public_path(),
+        ]);
+
+        return $pdf->download('Riwayat_Pembayaran_Keluarga_' . $keluarga->kode_keluarga . '.pdf');
     }
 
-    $metodePembayarans = MetodePembayaran::active()
-        ->orderBy('jenis_pembayaran')
-        ->orderBy('nama_bank')
-        ->get();
+    private function loadDokumenBase64($jenis)
+    {
+        $dokumen = DokumenPerusahaan::where('jenis', $jenis)->first();
 
-    // ==========================================
-    // LOAD DOKUMEN PERUSAHAAN (Logo, TTD, Cap)
-    // ==========================================
-    $ttdData = $this->loadDokumenTTD();
-
-    $data = [
-        'keluarga'          => $keluarga,
-        'transaksis'        => $transaksis,
-        'total_transaksi'   => $transaksis->sum('jumlah_bayar'),
-        'tanggal_cetak'     => date('d/m/Y H:i'),
-        'dicetak_oleh'      => Auth::user()->name ?? 'System',
-        'metodePembayarans' => $metodePembayarans,
-        'logoBase64'        => $this->loadDokumenBase64('logo'),
-        'ttdBase64'         => $ttdData['base64'],
-        'ttdNama'           => $ttdData['nama'],
-        'ttdJabatan'        => $ttdData['jabatan'],
-        'capBase64'         => $this->loadDokumenBase64('cap'),
-    ];
-
-    $pdf = Pdf::loadView('keluargas.pdf-riwayat-keluarga', $data);
-    $pdf->setPaper('A4', 'portrait');
-
-    $pdf->setOptions([
-        'defaultFont' => 'sans-serif',
-        'isHtml5ParserEnabled' => true,
-        'isRemoteEnabled' => false,
-        'isPhpEnabled' => false,
-        'chroot' => public_path(),
-    ]);
-
-    return $pdf->download('Riwayat_Pembayaran_Keluarga_' . $keluarga->kode_keluarga . '.pdf');
-}
-
-// ==========================================
-// HELPER: Load dokumen jadi base64
-// ==========================================
-private function loadDokumenBase64($jenis)
-{
-    $dokumen = DokumenPerusahaan::where('jenis', $jenis)->first();
-
-    if (!$dokumen || !$dokumen->path) {
-        if ($jenis == 'logo') {
-            $fallbackPath = public_path('assets/logo.PNG');
-            if (file_exists($fallbackPath) && filesize($fallbackPath) < 500000) {
-                $data = file_get_contents($fallbackPath);
-                return 'data:image/png;base64,' . base64_encode($data);
+        if (!$dokumen || !$dokumen->path) {
+            if ($jenis == 'logo') {
+                $fallbackPath = public_path('assets/logo.PNG');
+                if (file_exists($fallbackPath) && filesize($fallbackPath) < 500000) {
+                    $data = file_get_contents($fallbackPath);
+                    return 'data:image/png;base64,' . base64_encode($data);
+                }
             }
+            return null;
         }
-        return null;
+
+        $fullPath = storage_path('app/public/' . $dokumen->path);
+        if (!file_exists($fullPath)) {
+            return null;
+        }
+
+        $data = file_get_contents($fullPath);
+        $finfo = finfo_open(FILEINFO_MIME_TYPE);
+        $mimeType = finfo_file($finfo, $fullPath);
+        finfo_close($finfo);
+
+        return 'data:' . $mimeType . ';base64,' . base64_encode($data);
     }
 
-    $fullPath = storage_path('app/public/' . $dokumen->path);
-    if (!file_exists($fullPath)) {
-        return null;
-    }
+    private function loadDokumenTTD()
+    {
+        $dokumen = DokumenPerusahaan::where('jenis', 'ttd')->first();
 
-    $data = file_get_contents($fullPath);
-    $finfo = finfo_open(FILEINFO_MIME_TYPE);
-    $mimeType = finfo_file($finfo, $fullPath);
-    finfo_close($finfo);
+        if (!$dokumen || !$dokumen->path) {
+            return ['base64' => null, 'nama' => null, 'jabatan' => null];
+        }
 
-    return 'data:' . $mimeType . ';base64,' . base64_encode($data);
-}
+        $fullPath = storage_path('app/public/' . $dokumen->path);
+        if (!file_exists($fullPath)) {
+            return [
+                'base64' => null,
+                'nama' => $dokumen->nama_penandatangan,
+                'jabatan' => $dokumen->jabatan,
+            ];
+        }
 
-private function loadDokumenTTD()
-{
-    $dokumen = DokumenPerusahaan::where('jenis', 'ttd')->first();
+        $data = file_get_contents($fullPath);
+        $finfo = finfo_open(FILEINFO_MIME_TYPE);
+        $mimeType = finfo_file($finfo, $fullPath);
+        finfo_close($finfo);
 
-    if (!$dokumen || !$dokumen->path) {
-        return ['base64' => null, 'nama' => null, 'jabatan' => null];
-    }
-
-    $fullPath = storage_path('app/public/' . $dokumen->path);
-    if (!file_exists($fullPath)) {
         return [
-            'base64' => null,
+            'base64' => 'data:' . $mimeType . ';base64,' . base64_encode($data),
             'nama' => $dokumen->nama_penandatangan,
             'jabatan' => $dokumen->jabatan,
         ];
     }
 
-    $data = file_get_contents($fullPath);
-    $finfo = finfo_open(FILEINFO_MIME_TYPE);
-    $mimeType = finfo_file($finfo, $fullPath);
-    finfo_close($finfo);
-
-    return [
-        'base64' => 'data:' . $mimeType . ';base64,' . base64_encode($data),
-        'nama' => $dokumen->nama_penandatangan,
-        'jabatan' => $dokumen->jabatan,
-    ];
-}
-
-    // ==========================================
-    // AJAX: Get Keberangkatan + Harga Bulanan by Produk
-    // ==========================================
     public function getKeberangkatanByProduk(Request $request)
     {
         $request->validate([
@@ -468,9 +516,6 @@ private function loadDokumenTTD()
         ]);
     }
 
-    // ==========================================
-    // AJAX: Get Harga by Bulan & Tahun
-    // ==========================================
     public function getHargaProdukByBulan(Request $request)
     {
         $request->validate([

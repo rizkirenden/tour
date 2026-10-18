@@ -420,10 +420,6 @@ class Departure extends Model
     // ACCESSORS - PERLENGKAPAN (HANYA YANG SUDAH DITERIMA)
     // ==========================================
 
-    /**
-     * Total harga perlengkapan yang HANYA dihitung dari
-     * PerlengkapanJamaah dengan status_terima = 'Sudah Diterima'
-     */
     public function getTotalHargaPerlengkapanAttribute()
     {
         $total = 0;
@@ -444,9 +440,6 @@ class Departure extends Model
         return 'Rp ' . number_format($this->total_harga_perlengkapan, 0, ',', '.');
     }
 
-    /**
-     * Total harga perlengkapan SEBELUM diterima (untuk referensi)
-     */
     public function getTotalHargaPerlengkapanAllAttribute()
     {
         return $this->departurePerlengkapan->sum('total_harga');
@@ -457,9 +450,6 @@ class Departure extends Model
         return 'Rp ' . number_format($this->total_harga_perlengkapan_all, 0, ',', '.');
     }
 
-    /**
-     * Jumlah item perlengkapan yang sudah diterima
-     */
     public function getTotalPerlengkapanDiterimaAttribute()
     {
         return $this->departurePerlengkapan->sum(function ($p) {
@@ -467,9 +457,6 @@ class Departure extends Model
         });
     }
 
-    /**
-     * Jumlah total item perlengkapan
-     */
     public function getTotalPerlengkapanItemAttribute()
     {
         return $this->departurePerlengkapan->sum(function ($p) {
@@ -481,20 +468,20 @@ class Departure extends Model
     // ACCESSORS - JENIS TRANSAKSI
     // ==========================================
 
-   public function getTotalJenisTransaksiAttribute()
-{
-    $total = 0;
+    public function getTotalJenisTransaksiAttribute()
+    {
+        $total = 0;
 
-    foreach ($this->departureJenisTransaksis as $item) {
-        foreach ($item->departureJenisTransaksiJamaahs as $jtj) {
-            if ($jtj->status_terima === 'Sudah Diterima') {
-                $total += $jtj->total_harga ?? 0;
+        foreach ($this->departureJenisTransaksis as $item) {
+            foreach ($item->departureJenisTransaksiJamaahs as $jtj) {
+                if ($jtj->status_terima === 'Sudah Diterima') {
+                    $total += $jtj->total_harga ?? 0;
+                }
             }
         }
-    }
 
-    return $total;
-}
+        return $total;
+    }
 
     public function getTotalJenisTransaksiFormattedAttribute()
     {
@@ -502,30 +489,29 @@ class Departure extends Model
     }
 
     public function getTotalJenisTransaksiAllAttribute()
-{
-    return $this->departureJenisTransaksis->sum('total_harga');
-}
-public function getTotalJenisTransaksiAllFormattedAttribute()
-{
-    return 'Rp ' . number_format($this->total_jenis_transaksi_all, 0, ',', '.');
-}
+    {
+        return $this->departureJenisTransaksis->sum('total_harga');
+    }
 
-public function getTotalJenisTransaksiDiterimaAttribute()
-{
-    return $this->departureJenisTransaksis->sum(function ($jt) {
-        return $jt->departureJenisTransaksiJamaahs->where('status_terima', 'Sudah Diterima')->count();
-    });
-}
+    public function getTotalJenisTransaksiAllFormattedAttribute()
+    {
+        return 'Rp ' . number_format($this->total_jenis_transaksi_all, 0, ',', '.');
+    }
 
-/**
- * Jumlah total item jenis transaksi
- */
-public function getTotalJenisTransaksiItemAttribute()
-{
-    return $this->departureJenisTransaksis->sum(function ($jt) {
-        return $jt->departureJenisTransaksiJamaahs->count();
-    });
-}
+    public function getTotalJenisTransaksiDiterimaAttribute()
+    {
+        return $this->departureJenisTransaksis->sum(function ($jt) {
+            return $jt->departureJenisTransaksiJamaahs->where('status_terima', 'Sudah Diterima')->count();
+        });
+    }
+
+    public function getTotalJenisTransaksiItemAttribute()
+    {
+        return $this->departureJenisTransaksis->sum(function ($jt) {
+            return $jt->departureJenisTransaksiJamaahs->count();
+        });
+    }
+
     // ==========================================
     // ACCESSORS - PAKET TOUR HOTEL
     // ==========================================
@@ -667,14 +653,14 @@ public function getTotalJenisTransaksiItemAttribute()
                 }
             }
 
-           // 5e. Harga Jenis Transaksi (HANYA yang Sudah Diterima)
-foreach ($this->departureJenisTransaksis as $item) {
-    foreach ($item->departureJenisTransaksiJamaahs as $jtj) {
-        if ($jtj->status_terima === 'Sudah Diterima') {
-            $totalPengeluaran += $jtj->total_harga ?? 0;
-        }
-    }
-}
+            // 5e. Harga Jenis Transaksi (HANYA yang Sudah Diterima)
+            foreach ($this->departureJenisTransaksis as $item) {
+                foreach ($item->departureJenisTransaksiJamaahs as $jtj) {
+                    if ($jtj->status_terima === 'Sudah Diterima') {
+                        $totalPengeluaran += $jtj->total_harga ?? 0;
+                    }
+                }
+            }
 
             // 5f. FEE AGENT
             foreach ($this->jamaahs as $jamaah) {
@@ -733,7 +719,6 @@ foreach ($this->departureJenisTransaksis as $item) {
             $this->total_harga_hotel_madinah +
             $this->total_harga_hotel_transit;
 
-        // Perlengkapan hanya yang sudah diterima
         $totalPengeluaran += $this->total_harga_perlengkapan;
 
         $totalPengeluaran += $this->total_jenis_transaksi;
@@ -743,11 +728,17 @@ foreach ($this->departureJenisTransaksis as $item) {
     }
 
     // ==========================================
-    // JAMAAH METHODS
+    // JAMAAH METHODS (FIXED)
     // ==========================================
 
+    /**
+     * Tambah jamaah ke departure.
+     * - Cek duplikat & kuota
+     * - Setelah attach, hitung ulang jamaah_terdaftar dari DB
+     */
     public function addJamaah($jamaahId, $catatan = null)
     {
+        // Cek duplikat
         $exists = DepartureJamaah::where('id_departure', $this->id_departure)
             ->where('id_jamaah', $jamaahId)
             ->exists();
@@ -756,25 +747,48 @@ foreach ($this->departureJenisTransaksis as $item) {
             throw new \Exception('Jamaah sudah terdaftar di departure ini.');
         }
 
-        if ($this->jamaah_terdaftar >= $this->kuota) {
+        // Cek kuota
+        if ($this->kuota > 0 && $this->jamaah_terdaftar >= $this->kuota) {
             throw new \Exception('Kuota sudah penuh! (Kuota: ' . $this->kuota . ', Terdaftar: ' . $this->jamaah_terdaftar . ')');
         }
 
+        // Attach relasi
         $this->jamaahs()->attach($jamaahId, [
             'status_keberangkatan' => 'Terdaftar',
             'catatan' => $catatan,
         ]);
 
-        $this->increment('jamaah_terdaftar');
+        // ✅ Hitung ulang jumlah jamaah dari DB (bukan increment manual)
+        $this->jamaah_terdaftar = $this->jamaahs()->count();
+        $this->is_jamaah_complete = $this->jamaah_terdaftar > 0;
+        $this->save();
+
         $this->recalculate();
 
         return $this;
     }
 
+    /**
+     * Hapus jamaah dari departure.
+     * - Hapus record pivot eksplisit
+     * - Hitung ulang jamaah_terdaftar dari DB
+     */
     public function removeJamaah($jamaahId)
     {
-        $this->jamaahs()->detach($jamaahId);
-        $this->decrement('jamaah_terdaftar');
+        $deleted = DepartureJamaah::where('id_departure', $this->id_departure)
+            ->where('id_jamaah', $jamaahId)
+            ->delete();
+
+        if (!$deleted) {
+            // Record tidak ada, tidak perlu ubah state
+            return $this;
+        }
+
+        // ✅ Hitung ulang jumlah jamaah dari DB
+        $this->jamaah_terdaftar = $this->jamaahs()->count();
+        $this->is_jamaah_complete = $this->jamaah_terdaftar > 0;
+        $this->save();
+
         $this->recalculate();
 
         return $this;
@@ -799,105 +813,104 @@ foreach ($this->departureJenisTransaksis as $item) {
     // JENIS TRANSAKSI METHODS
     // ==========================================
 
-  public function addMultipleJenisTransaksi(array $jenisTransaksiData)
-{
-    $totalJamaah = $this->jamaahs->count();
+    public function addMultipleJenisTransaksi(array $jenisTransaksiData)
+    {
+        $totalJamaah = $this->jamaahs->count();
 
-    if ($totalJamaah == 0) {
-        throw new \Exception('Tidak ada jamaah terdaftar.');
-    }
-
-    $added = [];
-
-    foreach ($jenisTransaksiData as $data) {
-        $jenisTransaksiId = $data['id_jenis_transaksi'];
-        $hargaTotal = $data['harga_total'] ?? 0;
-        $catatan = $data['catatan'] ?? null;
-
-        $exists = DepartureJenisTransaksi::where('id_departure', $this->id_departure)
-            ->where('id_jenis_transaksi', $jenisTransaksiId)
-            ->exists();
-
-        if ($exists) continue;
-
-        // ✅ Harga satuan = harga total ÷ jumlah jamaah
-        $hargaSatuan = round($hargaTotal / $totalJamaah);
-
-        $departureJenisTransaksi = DepartureJenisTransaksi::create([
-            'id_departure' => $this->id_departure,
-            'id_jenis_transaksi' => $jenisTransaksiId,
-            'harga_satuan' => $hargaSatuan,
-            'total_harga' => $hargaTotal,
-            'catatan' => $catatan,
-        ]);
-
-        // ✅ Buat record per jamaah
-        foreach ($this->jamaahs as $jamaah) {
-            DepartureJenisTransaksiJamaah::create([
-                'id_departure_jenis_transaksi' => $departureJenisTransaksi->id,
-                'id_jamaah' => $jamaah->id_jamaah,
-                'jumlah' => 1,
-                'harga_satuan' => $hargaSatuan,
-                'total_harga' => $hargaSatuan,
-                'status_terima' => 'Belum Diterima',
-                'keterangan' => $catatan,
-            ]);
+        if ($totalJamaah == 0) {
+            throw new \Exception('Tidak ada jamaah terdaftar.');
         }
 
-        $added[] = $departureJenisTransaksi;
+        $added = [];
+
+        foreach ($jenisTransaksiData as $data) {
+            $jenisTransaksiId = $data['id_jenis_transaksi'];
+            $hargaTotal = $data['harga_total'] ?? 0;
+            $catatan = $data['catatan'] ?? null;
+
+            $exists = DepartureJenisTransaksi::where('id_departure', $this->id_departure)
+                ->where('id_jenis_transaksi', $jenisTransaksiId)
+                ->exists();
+
+            if ($exists) continue;
+
+            // Harga satuan = harga total ÷ jumlah jamaah
+            $hargaSatuan = round($hargaTotal / $totalJamaah);
+
+            $departureJenisTransaksi = DepartureJenisTransaksi::create([
+                'id_departure' => $this->id_departure,
+                'id_jenis_transaksi' => $jenisTransaksiId,
+                'harga_satuan' => $hargaSatuan,
+                'total_harga' => $hargaTotal,
+                'catatan' => $catatan,
+            ]);
+
+            // Buat record per jamaah
+            foreach ($this->jamaahs as $jamaah) {
+                DepartureJenisTransaksiJamaah::create([
+                    'id_departure_jenis_transaksi' => $departureJenisTransaksi->id,
+                    'id_jamaah' => $jamaah->id_jamaah,
+                    'jumlah' => 1,
+                    'harga_satuan' => $hargaSatuan,
+                    'total_harga' => $hargaSatuan,
+                    'status_terima' => 'Belum Diterima',
+                    'keterangan' => $catatan,
+                ]);
+            }
+
+            $added[] = $departureJenisTransaksi;
+        }
+
+        if (count($added) > 0) {
+            $this->recalculate();
+        }
+
+        return $added;
     }
 
-    if (count($added) > 0) {
+    public function removeJenisTransaksi($jenisTransaksiId)
+    {
+        $departureJenisTransaksi = DepartureJenisTransaksi::where('id_departure', $this->id_departure)
+            ->where('id_jenis_transaksi', $jenisTransaksiId)
+            ->first();
+
+        if ($departureJenisTransaksi) {
+            // Hapus detail per jamaah dulu
+            $departureJenisTransaksi->departureJenisTransaksiJamaahs()->delete();
+            $departureJenisTransaksi->delete();
+        }
+
         $this->recalculate();
+        return $this;
     }
 
-    return $added;
-}
+    public function updateJenisTransaksiHarga($jenisTransaksiId, $hargaTotal)
+    {
+        $totalJamaah = $this->jamaahs->count();
 
-   public function removeJenisTransaksi($jenisTransaksiId)
-{
-    $departureJenisTransaksi = DepartureJenisTransaksi::where('id_departure', $this->id_departure)
-        ->where('id_jenis_transaksi', $jenisTransaksiId)
-        ->first();
+        if ($totalJamaah == 0) {
+            throw new \Exception('Tidak ada jamaah terdaftar.');
+        }
 
-    if ($departureJenisTransaksi) {
-        // Hapus detail per jamaah dulu
-        $departureJenisTransaksi->departureJenisTransaksiJamaahs()->delete();
-        $departureJenisTransaksi->delete();
+        $pivot = DepartureJenisTransaksi::where('id_departure', $this->id_departure)
+            ->where('id_jenis_transaksi', $jenisTransaksiId)
+            ->firstOrFail();
+
+        // Harga satuan = harga total ÷ jumlah jamaah
+        $hargaSatuan = round($hargaTotal / $totalJamaah);
+
+        $pivot->update([
+            'harga_satuan' => $hargaSatuan,
+            'total_harga' => $hargaTotal,
+        ]);
+
+        // Update harga di record per jamaah
+        $pivot->departureJenisTransaksiJamaahs()->update([
+            'harga_satuan' => $hargaSatuan,
+            'total_harga' => $hargaSatuan,
+        ]);
+
+        $this->recalculate();
+        return $this;
     }
-
-    $this->recalculate();
-    return $this;
-}
-
-   
-public function updateJenisTransaksiHarga($jenisTransaksiId, $hargaTotal)
-{
-    $totalJamaah = $this->jamaahs->count();
-
-    if ($totalJamaah == 0) {
-        throw new \Exception('Tidak ada jamaah terdaftar.');
-    }
-
-    $pivot = DepartureJenisTransaksi::where('id_departure', $this->id_departure)
-        ->where('id_jenis_transaksi', $jenisTransaksiId)
-        ->firstOrFail();
-
-    // ✅ Harga satuan = harga total ÷ jumlah jamaah
-    $hargaSatuan = round($hargaTotal / $totalJamaah);
-
-    $pivot->update([
-        'harga_satuan' => $hargaSatuan,
-        'total_harga' => $hargaTotal,
-    ]);
-
-    // ✅ Update harga di record per jamaah
-    $pivot->departureJenisTransaksiJamaahs()->update([
-        'harga_satuan' => $hargaSatuan,
-        'total_harga' => $hargaSatuan,
-    ]);
-
-    $this->recalculate();
-    return $this;
-}
 }

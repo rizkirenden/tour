@@ -81,7 +81,6 @@ class DepartureController extends Controller
         $departure = $this->service->getById($id);
         $maskapaiOptions = $this->service->getMaskapaiOptions();
         $hotelOptions = $this->service->getHotelOptions();
-        // ✅ Sudah terfilter berdasarkan bulan/tahun keberangkatan departure
         $jamaahs = $this->service->getAllJamaahsForSelection($id);
         $perlengkapanOptions = $this->service->getPerlengkapanOptionsForDeparture($id);
         $jenisTransaksiOptions = $this->service->getAvailableJenisTransaksi($id);
@@ -444,17 +443,19 @@ class DepartureController extends Controller
     {
         $departurePerlengkapan = DeparturePerlengkapan::with([
             'perlengkapan',
-            'perlengkapanJamaahs.jamaah'
+            'perlengkapanJamaahs.jamaah',
+            'departure',
         ])->findOrFail($perlengkapanId);
 
         $jamaahs = $departurePerlengkapan->perlengkapanJamaahs;
         $total = $jamaahs->count();
         $sudahTerima = $jamaahs->where('status_terima', 'Sudah Diterima')->count();
         $belumTerima = $total - $sudahTerima;
-        $csrfToken = csrf_token();
         $departurePerlengkapanId = $departurePerlengkapan->id;
+        $departureId = $departurePerlengkapan->id_departure;
 
-        $html = '<div class="mb-4">
+        $html = '
+        <div class="mb-4">
             <div class="flex items-center justify-between">
                 <div>
                     <p class="text-sm font-semibold text-gray-800">' . $departurePerlengkapan->perlengkapan->nama_perlengkapan . '</p>
@@ -475,9 +476,30 @@ class DepartureController extends Controller
                     style="width: ' . ($total > 0 ? round(($sudahTerima / $total) * 100) : 0) . '%"></div>
             </div>
         </div>
+
+        <div class="flex items-center justify-between mb-3 pb-3 border-b border-gray-200">
+            <label class="inline-flex items-center gap-2 cursor-pointer">
+                <input type="checkbox" id="perlengkapan-check-all-' . $departurePerlengkapanId . '"
+                    class="perlengkapan-check-all w-4 h-4 text-yellow-500 border-gray-300 rounded focus:ring-yellow-500">
+                <span class="text-xs font-medium text-gray-700">Pilih Semua</span>
+            </label>
+            <div class="flex items-center gap-2">
+                <button type="button"
+                    onclick="bulkUpdatePerlengkapanStatus(' . $departurePerlengkapanId . ', ' . $departureId . ', \'Sudah Diterima\')"
+                    class="inline-flex items-center gap-1 px-2.5 py-1.5 bg-green-500 text-white text-xs rounded-lg hover:bg-green-600 transition">
+                    <i class="fas fa-check-double"></i> Terima Terpilih
+                </button>
+                <button type="button"
+                    onclick="bulkUpdatePerlengkapanStatus(' . $departurePerlengkapanId . ', ' . $departureId . ', \'Belum Diterima\')"
+                    class="inline-flex items-center gap-1 px-2.5 py-1.5 bg-yellow-500 text-white text-xs rounded-lg hover:bg-yellow-600 transition">
+                    <i class="fas fa-undo"></i> Batalkan Terpilih
+                </button>
+            </div>
+        </div>
+
         <div class="border-t border-gray-200 pt-4">
             <p class="text-xs font-medium text-gray-500 mb-3">Daftar Jamaah:</p>
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-2">';
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-2" id="perlengkapan-jamaah-list-' . $departurePerlengkapanId . '">';
 
         foreach ($jamaahs as $item) {
             $statusClass = $item->status_terima == 'Sudah Diterima' ? 'bg-green-50 border-green-200' : 'bg-yellow-50 border-yellow-200';
@@ -488,31 +510,24 @@ class DepartureController extends Controller
                 ? '<span class="text-green-600 text-xs">Sudah Diterima</span>'
                 : '<span class="text-yellow-600 text-xs">Belum Diterima</span>';
 
-            $route = route('transaksional.departure.update-perlengkapan-status-jamaah', [
-                'departurePerlengkapanId' => $departurePerlengkapanId,
-                'jamaahId' => $item->id_jamaah,
-            ]);
-
             $html .= '
-            <div class="flex items-center justify-between p-2 rounded-lg border ' . $statusClass . '">
-                <div class="flex items-center gap-2">
+            <div class="flex items-center justify-between p-2 rounded-lg border ' . $statusClass . ' perlengkapan-jamaah-item"
+                data-jamaah-id="' . $item->id_jamaah . '"
+                data-departure-perlengkapan-id="' . $departurePerlengkapanId . '">
+                <div class="flex items-center gap-2 flex-1 min-w-0">
+                    <input type="checkbox"
+                        class="perlengkapan-jamaah-checkbox w-4 h-4 text-yellow-500 border-gray-300 rounded focus:ring-yellow-500 flex-shrink-0"
+                        value="' . $item->id_jamaah . '">
                     ' . $statusIcon . '
-                    <span class="text-sm font-medium text-gray-700">' . $item->jamaah->nama_lengkap . '</span>
+                    <span class="text-sm font-medium text-gray-700 truncate">' . $item->jamaah->nama_lengkap . '</span>
                 </div>
-                <div class="flex items-center gap-2">
+                <div class="flex items-center gap-2 flex-shrink-0">
                     ' . $statusText . '
                     <button type="button"
-                        onclick="toggleStatusJamaah(' . $departurePerlengkapanId . ', ' . $item->id_jamaah . ', \'' . $item->status_terima . '\')"
-                        class="text-blue-500 hover:text-blue-700 text-xs">
+                        onclick="togglePerlengkapanStatusJamaah(' . $departurePerlengkapanId . ', ' . $item->id_jamaah . ', \'' . $item->status_terima . '\')"
+                        class="text-blue-500 hover:text-blue-700 text-xs" title="Ubah Status">
                         <i class="fas fa-sync-alt"></i>
                     </button>
-                    <form id="status-jamaah-form-' . $departurePerlengkapanId . '-' . $item->id_jamaah . '"
-                        action="' . $route . '"
-                        method="POST" class="hidden">
-                        <input type="hidden" name="_token" value="' . $csrfToken . '">
-                        <input type="hidden" name="_method" value="PATCH">
-                        <input type="hidden" name="status_terima" id="status_input_' . $departurePerlengkapanId . '_' . $item->id_jamaah . '">
-                    </form>
                 </div>
             </div>';
         }
@@ -523,7 +538,108 @@ class DepartureController extends Controller
 
         return response()->json([
             'html' => $html,
-            'nama_perlengkapan' => $departurePerlengkapan->perlengkapan->nama_perlengkapan
+            'nama_perlengkapan' => $departurePerlengkapan->perlengkapan->nama_perlengkapan,
+            'departure_id' => $departureId,
+        ]);
+    }
+
+    public function getJenisTransaksiDetail($departureJenisTransaksiId)
+    {
+        $departureJenisTransaksi = $this->service->getJenisTransaksiDetail($departureJenisTransaksiId);
+
+        $jamaahs = $departureJenisTransaksi->departureJenisTransaksiJamaahs;
+        $total = $jamaahs->count();
+        $sudahTerima = $jamaahs->where('status_terima', 'Sudah Diterima')->count();
+        $belumTerima = $total - $sudahTerima;
+        $departureJenisTransaksiId = $departureJenisTransaksi->id;
+        $departureId = $departureJenisTransaksi->id_departure;
+
+        $html = '
+        <div class="mb-4">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-sm font-semibold text-gray-800">' . $departureJenisTransaksi->jenisTransaksi->nama . '</p>
+                    <p class="text-xs text-gray-400">Total: ' . $departureJenisTransaksi->total_harga_formatted . ' · Rp ' . number_format($departureJenisTransaksi->harga_satuan, 0, ',', '.') . ' / jamaah</p>
+                </div>
+                <div class="text-right">
+                    <p class="text-sm font-bold text-purple-600">' . $departureJenisTransaksi->total_harga_formatted . '</p>
+                    <p class="text-xs text-gray-400">Total Harga</p>
+                </div>
+            </div>
+            <div class="mt-2 flex items-center gap-4 text-sm">
+                <span class="text-green-600"><i class="fas fa-check-circle mr-1"></i> ' . $sudahTerima . ' Sudah Diterima</span>
+                <span class="text-yellow-600"><i class="fas fa-clock mr-1"></i> ' . $belumTerima . ' Belum Diterima</span>
+                <span class="text-gray-500">Total: ' . $total . ' jamaah</span>
+            </div>
+            <div class="w-full bg-gray-200 rounded-full h-2 mt-2">
+                <div class="h-2 rounded-full ' . ($sudahTerima == $total ? 'bg-green-500' : 'bg-yellow-500') . '"
+                    style="width: ' . ($total > 0 ? round(($sudahTerima / $total) * 100) : 0) . '%"></div>
+            </div>
+        </div>
+
+        <div class="flex items-center justify-between mb-3 pb-3 border-b border-gray-200">
+            <label class="inline-flex items-center gap-2 cursor-pointer">
+                <input type="checkbox" id="jenis-transaksi-check-all-' . $departureJenisTransaksiId . '"
+                    class="jenis-transaksi-check-all w-4 h-4 text-yellow-500 border-gray-300 rounded focus:ring-yellow-500">
+                <span class="text-xs font-medium text-gray-700">Pilih Semua</span>
+            </label>
+            <div class="flex items-center gap-2">
+                <button type="button"
+                    onclick="bulkUpdateJenisTransaksiStatus(' . $departureJenisTransaksiId . ', ' . $departureId . ', \'Sudah Diterima\')"
+                    class="inline-flex items-center gap-1 px-2.5 py-1.5 bg-green-500 text-white text-xs rounded-lg hover:bg-green-600 transition">
+                    <i class="fas fa-check-double"></i> Terima Terpilih
+                </button>
+                <button type="button"
+                    onclick="bulkUpdateJenisTransaksiStatus(' . $departureJenisTransaksiId . ', ' . $departureId . ', \'Belum Diterima\')"
+                    class="inline-flex items-center gap-1 px-2.5 py-1.5 bg-yellow-500 text-white text-xs rounded-lg hover:bg-yellow-600 transition">
+                    <i class="fas fa-undo"></i> Batalkan Terpilih
+                </button>
+            </div>
+        </div>
+
+        <div class="border-t border-gray-200 pt-4">
+            <p class="text-xs font-medium text-gray-500 mb-3">Daftar Jamaah:</p>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-2" id="jenis-transaksi-jamaah-list-' . $departureJenisTransaksiId . '">';
+
+        foreach ($jamaahs as $item) {
+            $statusClass = $item->status_terima == 'Sudah Diterima' ? 'bg-green-50 border-green-200' : 'bg-yellow-50 border-yellow-200';
+            $statusIcon = $item->status_terima == 'Sudah Diterima'
+                ? '<span class="text-green-500"><i class="fas fa-check-circle"></i></span>'
+                : '<span class="text-yellow-500"><i class="fas fa-clock"></i></span>';
+            $statusText = $item->status_terima == 'Sudah Diterima'
+                ? '<span class="text-green-600 text-xs">Sudah Diterima</span>'
+                : '<span class="text-yellow-600 text-xs">Belum Diterima</span>';
+
+            $html .= '
+            <div class="flex items-center justify-between p-2 rounded-lg border ' . $statusClass . ' jenis-transaksi-jamaah-item"
+                data-jamaah-id="' . $item->id_jamaah . '"
+                data-departure-jenis-transaksi-id="' . $departureJenisTransaksiId . '">
+                <div class="flex items-center gap-2 flex-1 min-w-0">
+                    <input type="checkbox"
+                        class="jenis-transaksi-jamaah-checkbox w-4 h-4 text-yellow-500 border-gray-300 rounded focus:ring-yellow-500 flex-shrink-0"
+                        value="' . $item->id_jamaah . '">
+                    ' . $statusIcon . '
+                    <span class="text-sm font-medium text-gray-700 truncate">' . $item->jamaah->nama_lengkap . '</span>
+                </div>
+                <div class="flex items-center gap-2 flex-shrink-0">
+                    ' . $statusText . '
+                    <button type="button"
+                        onclick="toggleJenisTransaksiStatusJamaah(' . $departureJenisTransaksiId . ', ' . $item->id_jamaah . ', \'' . $item->status_terima . '\')"
+                        class="text-blue-500 hover:text-blue-700 text-xs" title="Ubah Status">
+                        <i class="fas fa-sync-alt"></i>
+                    </button>
+                </div>
+            </div>';
+        }
+
+        $html .= '
+            </div>
+        </div>';
+
+        return response()->json([
+            'html' => $html,
+            'nama_jenis_transaksi' => $departureJenisTransaksi->jenisTransaksi->nama,
+            'departure_id' => $departureId,
         ]);
     }
 
@@ -622,6 +738,7 @@ class DepartureController extends Controller
             ->with('success', "Perlengkapan berhasil {$status}!");
     }
 
+    // Form lama (non-AJAX)
     public function updatePerlengkapanStatusJamaah(Request $request, $departurePerlengkapanId, $jamaahId)
     {
         $validated = $request->validate([
@@ -638,8 +755,61 @@ class DepartureController extends Controller
             ->with('success', 'Status penerimaan perlengkapan berhasil diperbarui!');
     }
 
+    // AJAX — single toggle perlengkapan
+    public function updatePerlengkapanStatusJamaahAjax(Request $request, $departurePerlengkapanId, $jamaahId)
+    {
+        $validated = $request->validate([
+            'status_terima' => 'required|in:Belum Diterima,Sudah Diterima',
+        ]);
+
+        try {
+            $this->service->updatePerlengkapanStatusJamaah(
+                $departurePerlengkapanId,
+                $jamaahId,
+                $validated['status_terima']
+            );
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Status berhasil diperbarui!',
+                'status'  => $validated['status_terima'],
+            ]);
+        } catch (\Exception $e) {
+            return response()->json(['success' => false, 'message' => $e->getMessage()], 500);
+        }
+    }
+
+    // AJAX — bulk update perlengkapan
+    public function bulkUpdatePerlengkapanStatusJamaah(Request $request, $departureId, $departurePerlengkapanId)
+    {
+        $validated = $request->validate([
+            'jamaah_ids' => 'required|array|min:1',
+            'jamaah_ids.*' => 'exists:jamaahs,id_jamaah',
+            'status_terima' => 'required|in:Belum Diterima,Sudah Diterima',
+        ]);
+
+        try {
+            foreach ($validated['jamaah_ids'] as $jamaahId) {
+                $this->service->updatePerlengkapanStatusJamaah(
+                    $departurePerlengkapanId,
+                    $jamaahId,
+                    $validated['status_terima']
+                );
+            }
+
+            return response()->json([
+                'success' => true,
+                'message' => count($validated['jamaah_ids']) . ' status jamaah berhasil diperbarui!',
+                'count'   => count($validated['jamaah_ids']),
+                'status'  => $validated['status_terima'],
+            ]);
+        } catch (\Exception $e) {
+            return response()->json(['success' => false, 'message' => $e->getMessage()], 500);
+        }
+    }
+
     // ==========================================
-    // JENIS TRANSAKSI — MENGGUNAKAN HARGA TOTAL
+    // JENIS TRANSAKSI
     // ==========================================
 
     public function updateJenisTransaksi(Request $request, $id)
@@ -692,6 +862,80 @@ class DepartureController extends Controller
         return redirect()->route('transaksional.departure.show', $departureId)
             ->with('success', 'Harga total jenis transaksi berhasil diperbarui!');
     }
+
+    // Form lama (non-AJAX)
+    public function updateJenisTransaksiStatusJamaah(Request $request, $departureJenisTransaksiId, $jamaahId)
+    {
+        $validated = $request->validate([
+            'status_terima' => 'required|in:Belum Diterima,Sudah Diterima',
+        ]);
+
+        $this->service->updateJenisTransaksiStatusJamaah(
+            $departureJenisTransaksiId,
+            $jamaahId,
+            $validated['status_terima']
+        );
+
+        return redirect()->back()
+            ->with('success', 'Status penerimaan jenis transaksi berhasil diperbarui!');
+    }
+
+    // AJAX — single toggle jenis transaksi
+    public function updateJenisTransaksiStatusJamaahAjax(Request $request, $departureJenisTransaksiId, $jamaahId)
+    {
+        $validated = $request->validate([
+            'status_terima' => 'required|in:Belum Diterima,Sudah Diterima',
+        ]);
+
+        try {
+            $this->service->updateJenisTransaksiStatusJamaah(
+                $departureJenisTransaksiId,
+                $jamaahId,
+                $validated['status_terima']
+            );
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Status berhasil diperbarui!',
+                'status'  => $validated['status_terima'],
+            ]);
+        } catch (\Exception $e) {
+            return response()->json(['success' => false, 'message' => $e->getMessage()], 500);
+        }
+    }
+
+    // AJAX — bulk update jenis transaksi
+    public function bulkUpdateJenisTransaksiStatusJamaah(Request $request, $departureId, $departureJenisTransaksiId)
+    {
+        $validated = $request->validate([
+            'jamaah_ids' => 'required|array|min:1',
+            'jamaah_ids.*' => 'exists:jamaahs,id_jamaah',
+            'status_terima' => 'required|in:Belum Diterima,Sudah Diterima',
+        ]);
+
+        try {
+            foreach ($validated['jamaah_ids'] as $jamaahId) {
+                $this->service->updateJenisTransaksiStatusJamaah(
+                    $departureJenisTransaksiId,
+                    $jamaahId,
+                    $validated['status_terima']
+                );
+            }
+
+            return response()->json([
+                'success' => true,
+                'message' => count($validated['jamaah_ids']) . ' status jamaah berhasil diperbarui!',
+                'count'   => count($validated['jamaah_ids']),
+                'status'  => $validated['status_terima'],
+            ]);
+        } catch (\Exception $e) {
+            return response()->json(['success' => false, 'message' => $e->getMessage()], 500);
+        }
+    }
+
+    // ==========================================
+    // OTHER
+    // ==========================================
 
     public function updateCatatan(Request $request, $id)
     {
@@ -788,105 +1032,5 @@ class DepartureController extends Controller
     {
         $hotels = $this->service->getPaketTourHotelsByDeparture($id);
         return response()->json($hotels);
-    }
-
-    public function updateJenisTransaksiStatusJamaah(Request $request, $departureJenisTransaksiId, $jamaahId)
-    {
-        $validated = $request->validate([
-            'status_terima' => 'required|in:Belum Diterima,Sudah Diterima',
-        ]);
-
-        $this->service->updateJenisTransaksiStatusJamaah(
-            $departureJenisTransaksiId,
-            $jamaahId,
-            $validated['status_terima']
-        );
-
-        return redirect()->back()
-            ->with('success', 'Status penerimaan jenis transaksi berhasil diperbarui!');
-    }
-
-    public function getJenisTransaksiDetail($departureJenisTransaksiId)
-    {
-        $departureJenisTransaksi = $this->service->getJenisTransaksiDetail($departureJenisTransaksiId);
-
-        $jamaahs = $departureJenisTransaksi->departureJenisTransaksiJamaahs;
-        $total = $jamaahs->count();
-        $sudahTerima = $jamaahs->where('status_terima', 'Sudah Diterima')->count();
-        $belumTerima = $total - $sudahTerima;
-        $csrfToken = csrf_token();
-        $departureJenisTransaksiId = $departureJenisTransaksi->id;
-
-        $html = '<div class="mb-4">
-            <div class="flex items-center justify-between">
-                <div>
-                    <p class="text-sm font-semibold text-gray-800">' . $departureJenisTransaksi->jenisTransaksi->nama . '</p>
-                    <p class="text-xs text-gray-400">Total: ' . $departureJenisTransaksi->total_harga_formatted . ' · Rp ' . number_format($departureJenisTransaksi->harga_satuan, 0, ',', '.') . ' / jamaah</p>
-                </div>
-                <div class="text-right">
-                    <p class="text-sm font-bold text-purple-600">' . $departureJenisTransaksi->total_harga_formatted . '</p>
-                    <p class="text-xs text-gray-400">Total Harga</p>
-                </div>
-            </div>
-            <div class="mt-2 flex items-center gap-4 text-sm">
-                <span class="text-green-600"><i class="fas fa-check-circle mr-1"></i> ' . $sudahTerima . ' Sudah Diterima</span>
-                <span class="text-yellow-600"><i class="fas fa-clock mr-1"></i> ' . $belumTerima . ' Belum Diterima</span>
-                <span class="text-gray-500">Total: ' . $total . ' jamaah</span>
-            </div>
-            <div class="w-full bg-gray-200 rounded-full h-2 mt-2">
-                <div class="h-2 rounded-full ' . ($sudahTerima == $total ? 'bg-green-500' : 'bg-yellow-500') . '"
-                    style="width: ' . ($total > 0 ? round(($sudahTerima / $total) * 100) : 0) . '%"></div>
-            </div>
-        </div>
-        <div class="border-t border-gray-200 pt-4">
-            <p class="text-xs font-medium text-gray-500 mb-3">Daftar Jamaah:</p>
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-2">';
-
-        foreach ($jamaahs as $item) {
-            $statusClass = $item->status_terima == 'Sudah Diterima' ? 'bg-green-50 border-green-200' : 'bg-yellow-50 border-yellow-200';
-            $statusIcon = $item->status_terima == 'Sudah Diterima'
-                ? '<span class="text-green-500"><i class="fas fa-check-circle"></i></span>'
-                : '<span class="text-yellow-500"><i class="fas fa-clock"></i></span>';
-            $statusText = $item->status_terima == 'Sudah Diterima'
-                ? '<span class="text-green-600 text-xs">Sudah Diterima</span>'
-                : '<span class="text-yellow-600 text-xs">Belum Diterima</span>';
-
-            $route = route('transaksional.departure.update-jenis-transaksi-status-jamaah', [
-                'departureJenisTransaksiId' => $departureJenisTransaksiId,
-                'jamaahId' => $item->id_jamaah,
-            ]);
-
-            $html .= '
-        <div class="flex items-center justify-between p-2 rounded-lg border ' . $statusClass . '">
-            <div class="flex items-center gap-2">
-                ' . $statusIcon . '
-                <span class="text-sm font-medium text-gray-700">' . $item->jamaah->nama_lengkap . '</span>
-            </div>
-            <div class="flex items-center gap-2">
-                ' . $statusText . '
-                <button type="button"
-                    onclick="toggleStatusJenisTransaksiJamaah(' . $departureJenisTransaksiId . ', ' . $item->id_jamaah . ', \'' . $item->status_terima . '\')"
-                    class="text-blue-500 hover:text-blue-700 text-xs">
-                    <i class="fas fa-sync-alt"></i>
-                </button>
-                <form id="jenis-transaksi-jamaah-form-' . $departureJenisTransaksiId . '-' . $item->id_jamaah . '"
-                    action="' . $route . '"
-                    method="POST" class="hidden">
-                    <input type="hidden" name="_token" value="' . $csrfToken . '">
-                    <input type="hidden" name="_method" value="PATCH">
-                    <input type="hidden" name="status_terima" id="jenis_transaksi_status_input_' . $departureJenisTransaksiId . '_' . $item->id_jamaah . '">
-                </form>
-            </div>
-        </div>';
-        }
-
-        $html .= '
-        </div>
-    </div>';
-
-        return response()->json([
-            'html' => $html,
-            'nama_jenis_transaksi' => $departureJenisTransaksi->jenisTransaksi->nama
-        ]);
     }
 }

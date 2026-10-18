@@ -8,6 +8,8 @@
                 <th class="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Produk</th>
                 <th class="px-4 py-3 text-center text-xs font-semibold text-gray-500 uppercase tracking-wider">Tanggal
                 </th>
+                <th class="px-4 py-3 text-center text-xs font-semibold text-gray-500 uppercase tracking-wider">Periode
+                </th>
                 <th class="px-4 py-3 text-center text-xs font-semibold text-gray-500 uppercase tracking-wider">Kuota</th>
                 <th class="px-4 py-3 text-center text-xs font-semibold text-gray-500 uppercase tracking-wider">Status
                 </th>
@@ -34,6 +36,18 @@
                     <td class="px-4 py-3 text-center">
                         <p class="text-sm text-gray-600">{{ $item->tanggal_keberangkatan->format('d/m/Y') }}</p>
                         <p class="text-xs text-gray-400">Kembali {{ $item->tanggal_kepulangan->format('d/m/Y') }}</p>
+                    </td>
+                    <td class="px-4 py-3 text-center">
+                        @if ($item->bulan_keberangkatan && $item->tahun_keberangkatan)
+                            <span
+                                class="inline-flex items-center gap-1 px-2.5 py-1 bg-blue-50 text-blue-700 border border-blue-200 rounded-lg text-xs font-medium">
+                                <i class="fas fa-calendar-alt text-[10px]"></i>
+                                {{ \Carbon\Carbon::create()->month($item->bulan_keberangkatan)->translatedFormat('F') }}
+                                {{ $item->tahun_keberangkatan }}
+                            </span>
+                        @else
+                            <span class="text-xs text-gray-400 italic">-</span>
+                        @endif
                     </td>
                     <td class="px-4 py-3 text-center">
                         <span class="inline-flex items-center gap-1 text-sm">
@@ -77,7 +91,7 @@
                 </tr>
             @empty
                 <tr>
-                    <td colspan="8" class="px-4 py-12 text-center">
+                    <td colspan="9" class="px-4 py-12 text-center">
                         <div class="flex flex-col items-center">
                             <div class="w-16 h-16 bg-gray-100 rounded-2xl flex items-center justify-center mb-3">
                                 <i class="fas fa-calendar-times text-gray-300 text-3xl"></i>

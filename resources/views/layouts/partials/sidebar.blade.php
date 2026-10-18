@@ -33,7 +33,7 @@
                 <a href="{{ route('dashboard') }}"
                     class="flex items-center px-3 py-2.5 rounded-xl transition-all duration-200
                 {{ request()->routeIs('dashboard')
-                    ? 'bg-white/15 text-white shadow-sm'
+                    ? 'bg-white/15 text-white'
                     : 'text-yellow-100 hover:bg-white/10 hover:text-white' }}">
 
                     <i class="fas fa-chart-pie w-5 text-center text-sm"></i>
@@ -46,12 +46,15 @@
 
 
             <!-- Master Data -->
-            <li x-data="{ open: {{ request()->routeIs('master.*') ? 'true' : 'false' }} }">
+            <li x-data="{ open: {{ request()->routeIs('master.*') && !request()->routeIs('master.paket-tour.*') && !request()->routeIs('master.produk.*') && !request()->routeIs('master.diskon.*') ? 'true' : 'false' }} }">
 
                 <a @click="open = !open"
                     class="flex items-center justify-between px-3 py-2.5 rounded-xl cursor-pointer transition-all duration-200
-                {{ request()->routeIs('master.*')
-                    ? 'bg-white/15 text-white shadow-sm'
+                {{ request()->routeIs('master.*') &&
+                !request()->routeIs('master.paket-tour.*') &&
+                !request()->routeIs('master.produk.*') &&
+                !request()->routeIs('master.diskon.*')
+                    ? 'bg-white/15 text-white'
                     : 'text-yellow-100 hover:bg-white/10 hover:text-white' }}">
 
                     <div class="flex items-center">
@@ -67,19 +70,6 @@
                 </a>
 
                 <ul x-show="open" x-transition class="ml-3 mt-1 space-y-1">
-
-                    <!-- Produk Paket -->
-                    <li>
-                        <a href="{{ route('master.produk.index') }}"
-                            class="flex items-center px-3 py-2 rounded-lg text-sm transition-all duration-200
-                        {{ request()->routeIs('master.produk.*')
-                            ? 'bg-white/15 text-white'
-                            : 'text-yellow-200 hover:bg-white/10 hover:text-white' }}">
-
-                            <i class="fas fa-box w-5 text-center text-xs"></i>
-                            <span class="ml-3">Produk Paket</span>
-                        </a>
-                    </li>
 
                     <!-- Metode Pembayaran -->
                     <li>
@@ -172,19 +162,6 @@
                         </a>
                     </li>
 
-                    <!-- Diskon -->
-                    <li>
-                        <a href="{{ route('master.diskon.index') }}"
-                            class="flex items-center px-3 py-2 rounded-lg text-sm transition-all duration-200
-                        {{ request()->routeIs('master.diskon.*')
-                            ? 'bg-white/15 text-white'
-                            : 'text-yellow-200 hover:bg-white/10 hover:text-white' }}">
-
-                            <i class="fas fa-percent w-5 text-center text-xs"></i>
-                            <span class="ml-3">Diskon</span>
-                        </a>
-                    </li>
-
                     <!-- Perlengkapan -->
                     <li>
                         <a href="{{ route('master.perlengkapan.index') }}"
@@ -195,19 +172,6 @@
 
                             <i class="fas fa-suitcase w-5 text-center text-xs"></i>
                             <span class="ml-3">Perlengkapan</span>
-                        </a>
-                    </li>
-
-                    <!-- Paket Tour -->
-                    <li>
-                        <a href="{{ route('master.paket-tour.index') }}"
-                            class="flex items-center px-3 py-2 rounded-lg text-sm transition-all duration-200
-                        {{ request()->routeIs('master.paket-tour.*')
-                            ? 'bg-white/15 text-white'
-                            : 'text-yellow-200 hover:bg-white/10 hover:text-white' }}">
-
-                            <i class="fas fa-route w-5 text-center text-xs"></i>
-                            <span class="ml-3">Paket Tour</span>
                         </a>
                     </li>
 
@@ -228,20 +192,88 @@
             </li>
 
 
-            <!-- Transaksional -->
-            <li x-data="{ open: {{ request()->routeIs('transaksional.*') ? 'true' : 'false' }} }">
+            <!-- Paket & Produk -->
+            <li x-data="{ open: {{ request()->routeIs('master.paket-tour.*') || request()->routeIs('master.produk.*') || request()->routeIs('master.diskon.*') ? 'true' : 'false' }} }">
 
                 <a @click="open = !open"
                     class="flex items-center justify-between px-3 py-2.5 rounded-xl cursor-pointer transition-all duration-200
-                {{ request()->routeIs('transaksional.*')
-                    ? 'bg-white/15 text-white shadow-sm'
+                {{ request()->routeIs('master.paket-tour.*') ||
+                request()->routeIs('master.produk.*') ||
+                request()->routeIs('master.diskon.*')
+                    ? 'bg-white/15 text-white'
                     : 'text-yellow-100 hover:bg-white/10 hover:text-white' }}">
 
                     <div class="flex items-center">
-                        <i class="fas fa-exchange-alt w-5 text-center text-sm"></i>
+                        <i class="fas fa-route w-5 text-center text-sm"></i>
 
                         <span class="ml-3 text-sm font-medium">
-                            Transaksional
+                            Paket & Produk
+                        </span>
+                    </div>
+
+                    <i class="fas fa-chevron-down text-[10px] transition-transform duration-200"
+                        :class="open ? 'rotate-180' : ''"></i>
+                </a>
+
+                <ul x-show="open" x-transition class="ml-3 mt-1 space-y-1">
+
+                    <!-- Paket Tour -->
+                    <li>
+                        <a href="{{ route('master.paket-tour.index') }}"
+                            class="flex items-center px-3 py-2 rounded-lg text-sm transition-all duration-200
+                        {{ request()->routeIs('master.paket-tour.*')
+                            ? 'bg-white/15 text-white'
+                            : 'text-yellow-200 hover:bg-white/10 hover:text-white' }}">
+
+                            <i class="fas fa-route w-5 text-center text-xs"></i>
+                            <span class="ml-3">Paket Umroh Plus</span>
+                        </a>
+                    </li>
+
+                    <!-- Produk Paket -->
+                    <li>
+                        <a href="{{ route('master.produk.index') }}"
+                            class="flex items-center px-3 py-2 rounded-lg text-sm transition-all duration-200
+                        {{ request()->routeIs('master.produk.*')
+                            ? 'bg-white/15 text-white'
+                            : 'text-yellow-200 hover:bg-white/10 hover:text-white' }}">
+
+                            <i class="fas fa-box w-5 text-center text-xs"></i>
+                            <span class="ml-3">Produk Paket</span>
+                        </a>
+                    </li>
+
+                    <!-- Diskon -->
+                    <li>
+                        <a href="{{ route('master.diskon.index') }}"
+                            class="flex items-center px-3 py-2 rounded-lg text-sm transition-all duration-200
+                        {{ request()->routeIs('master.diskon.*')
+                            ? 'bg-white/15 text-white'
+                            : 'text-yellow-200 hover:bg-white/10 hover:text-white' }}">
+
+                            <i class="fas fa-percent w-5 text-center text-xs"></i>
+                            <span class="ml-3">Diskon</span>
+                        </a>
+                    </li>
+
+                </ul>
+            </li>
+
+
+            <!-- Pendaftaran -->
+            <li x-data="{ open: {{ request()->routeIs('transaksional.jamaah.*') || request()->routeIs('transaksional.keluarga.*') ? 'true' : 'false' }} }">
+
+                <a @click="open = !open"
+                    class="flex items-center justify-between px-3 py-2.5 rounded-xl cursor-pointer transition-all duration-200
+                {{ request()->routeIs('transaksional.jamaah.*') || request()->routeIs('transaksional.keluarga.*')
+                    ? 'bg-white/15 text-white'
+                    : 'text-yellow-100 hover:bg-white/10 hover:text-white' }}">
+
+                    <div class="flex items-center">
+                        <i class="fas fa-user-plus w-5 text-center text-sm"></i>
+
+                        <span class="ml-3 text-sm font-medium">
+                            Pendaftaran
                         </span>
                     </div>
 
@@ -277,7 +309,34 @@
                         </a>
                     </li>
 
-                    <!-- Departure -->
+                </ul>
+            </li>
+
+
+            <!-- Keberangkatan (sub-menu tersendiri) -->
+            <li x-data="{ open: {{ request()->routeIs('transaksional.departure.*') ? 'true' : 'false' }} }">
+
+                <a @click="open = !open"
+                    class="flex items-center justify-between px-3 py-2.5 rounded-xl cursor-pointer transition-all duration-200
+                {{ request()->routeIs('transaksional.departure.*')
+                    ? 'bg-white/15 text-white'
+                    : 'text-yellow-100 hover:bg-white/10 hover:text-white' }}">
+
+                    <div class="flex items-center">
+                        <i class="fas fa-plane-departure w-5 text-center text-sm"></i>
+
+                        <span class="ml-3 text-sm font-medium">
+                            Keberangkatan
+                        </span>
+                    </div>
+
+                    <i class="fas fa-chevron-down text-[10px] transition-transform duration-200"
+                        :class="open ? 'rotate-180' : ''"></i>
+                </a>
+
+                <ul x-show="open" x-transition class="ml-3 mt-1 space-y-1">
+
+                    <!-- Keberangkatan -->
                     <li>
                         <a href="{{ route('transaksional.departure.index') }}"
                             class="flex items-center px-3 py-2 rounded-lg text-sm transition-all duration-200
@@ -320,6 +379,5 @@
 
         </div>
     </div>
-    ```
 
 </aside>

@@ -44,6 +44,13 @@
                             <p class="text-gray-500 text-sm mt-1">
                                 <i class="fas fa-users mr-1"></i> Jamaah: {{ $keluarga->jamaahs->count() }} Orang
                             </p>
+                            <p class="text-gray-500 text-sm mt-1">
+                                <i class="fas fa-tag text-rose-500 mr-1"></i>
+                                Total Diskon: {{ $keluarga->total_diskon_formatted }}
+                                @if ($keluarga->jamaahs->count() > 0)
+                                    <span class="text-xs">(≈ {{ $keluarga->diskon_per_orang_formatted }}/orang)</span>
+                                @endif
+                            </p>
                         </div>
                         <div class="text-right">
                             <p class="text-2xl font-bold text-yellow-600">
@@ -53,7 +60,7 @@
                     </div>
                 </div>
 
-                <!-- Detail Keuangan - 3 Kolom -->
+                <!-- Detail Keuangan -->
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
                     <div class="bg-green-50 rounded-xl p-4 border border-green-200 text-center">
                         <p class="text-xs text-gray-500">Total Dibayar</p>
@@ -69,7 +76,7 @@
                     </div>
                 </div>
 
-                <!-- Informasi Pembayaran Keluarga / Kelompok -->
+                <!-- Info Pembayaran -->
                 <div class="bg-blue-50 rounded-xl p-4 border border-blue-200 mb-6">
                     <div class="flex items-start">
                         <i class="fas fa-info-circle text-blue-500 mt-0.5 mr-3"></i>
@@ -78,54 +85,101 @@
                             <p class="text-xs text-blue-600 mt-1">
                                 Pembayaran akan dibagi secara proporsional ke seluruh jamaah berdasarkan tagihan
                                 masing-masing.
-                                Setiap jamaah akan menerima catatan pembayaran dari keluarga / kelompok.
                             </p>
                             <p class="text-xs text-blue-600 mt-1">
                                 <i class="fas fa-check-circle mr-1"></i>
-                                Riwayat pembayaran akan muncul di halaman detail setiap jamaah.
+                                Total tagihan = Harga Produk + Pembuatan Passport − Diskon.
+                                Fee Agent <span class="text-red-500 font-medium">TIDAK</span> termasuk.
                             </p>
                         </div>
                     </div>
                 </div>
 
-                <!-- Daftar Jamaah -->
+                <!-- Daftar Jamaah dengan Rincian Tagihan -->
                 <div class="bg-gray-50 rounded-xl p-5 border border-gray-100 mb-6">
-                    <h6 class="text-sm font-semibold text-gray-700 mb-4">Rincian Tagihan per Jamaah</h6>
+                    <h6 class="text-sm font-semibold text-gray-700 mb-4 flex items-center">
+                        <i class="fas fa-users text-yellow-500 mr-2"></i> Rincian Tagihan per Jamaah
+                    </h6>
                     <div class="overflow-x-auto">
                         <table class="w-full text-sm">
                             <thead>
-                                <tr class="border-b border-gray-200">
-                                    <th class="px-3 py-2 text-left">#</th>
-                                    <th class="px-3 py-2 text-left">Nama Jamaah</th>
-                                    <th class="px-3 py-2 text-right">Tagihan</th>
-                                    <th class="px-3 py-2 text-right">Dibayar</th>
-                                    <th class="px-3 py-2 text-center">Status</th>
+                                <tr class="border-b-2 border-gray-300 bg-gray-100">
+                                    <th class="px-3 py-2 text-left text-xs font-semibold text-gray-600 uppercase">#</th>
+                                    <th class="px-3 py-2 text-left text-xs font-semibold text-gray-600 uppercase">Nama</th>
+                                    <th class="px-3 py-2 text-right text-xs font-semibold text-gray-600 uppercase">Harga
+                                        Produk</th>
+                                    <th class="px-3 py-2 text-right text-xs font-semibold text-gray-600 uppercase">Passport
+                                    </th>
+                                    <th class="px-3 py-2 text-right text-xs font-semibold text-gray-600 uppercase">Kotor
+                                    </th>
+                                    <th class="px-3 py-2 text-right text-xs font-semibold text-gray-600 uppercase">Diskon
+                                    </th>
+                                    <th class="px-3 py-2 text-right text-xs font-semibold text-gray-600 uppercase">Tagihan
+                                    </th>
+                                    <th class="px-3 py-2 text-right text-xs font-semibold text-gray-600 uppercase">Dibayar
+                                    </th>
+                                    <th class="px-3 py-2 text-center text-xs font-semibold text-gray-600 uppercase">Status
+                                    </th>
                                 </tr>
                             </thead>
-                            <tbody>
+                            <tbody class="divide-y divide-gray-200">
                                 @foreach ($keluarga->jamaahs as $jamaah)
-                                    <tr>
-                                        <td class="px-3 py-2">{{ $loop->iteration }}</td>
-                                        <td class="px-3 py-2">{{ $jamaah->nama_lengkap }}</td>
-                                        <td class="px-3 py-2 text-right">
-                                            {{ $jamaah->total_tagihan_setelah_diskon_formatted }}</td>
-                                        <td class="px-3 py-2 text-right">{{ $jamaah->total_dibayar_formatted }}</td>
+                                    <tr class="hover:bg-white">
+                                        <td class="px-3 py-2 text-gray-600">{{ $loop->iteration }}</td>
+                                        <td class="px-3 py-2 font-medium text-gray-800">{{ $jamaah->nama_lengkap }}</td>
+                                        <td class="px-3 py-2 text-right text-gray-600">
+                                            {{ $jamaah->harga_produk_formatted }}
+                                        </td>
+                                        <td class="px-3 py-2 text-right text-purple-600">
+                                            {{ $jamaah->total_pembuatan_passport_formatted }}
+                                        </td>
+                                        <td class="px-3 py-2 text-right font-medium text-gray-800">
+                                            {{ $jamaah->total_tagihan_sebelum_diskon_formatted }}
+                                        </td>
+                                        <td class="px-3 py-2 text-right text-red-600">
+                                            {{ $jamaah->total_diskon_formatted }}
+                                        </td>
+                                        <td class="px-3 py-2 text-right font-bold text-gray-900">
+                                            {{ $jamaah->total_tagihan_setelah_diskon_formatted }}
+                                        </td>
+                                        <td class="px-3 py-2 text-right text-green-600">
+                                            {{ $jamaah->total_dibayar_formatted }}
+                                        </td>
                                         <td class="px-3 py-2 text-center">{!! $jamaah->status_pembayaran_badge !!}</td>
                                     </tr>
                                 @endforeach
                             </tbody>
+                            <tfoot class="border-t-2 border-gray-300 bg-gray-100">
+                                <tr class="font-bold">
+                                    <td colspan="4" class="px-3 py-2 text-right">TOTAL</td>
+                                    <td class="px-3 py-2 text-right text-gray-800">
+                                        {{ $keluarga->total_tagihan_sebelum_diskon_formatted }}
+                                    </td>
+                                    <td class="px-3 py-2 text-right text-red-600">
+                                        -{{ $keluarga->total_diskon_formatted }}
+                                    </td>
+                                    <td class="px-3 py-2 text-right text-yellow-700">
+                                        {{ $keluarga->total_tagihan_setelah_diskon_formatted }}
+                                    </td>
+                                    <td class="px-3 py-2 text-right text-green-700">
+                                        {{ $keluarga->total_dibayar_formatted }}
+                                    </td>
+                                    <td></td>
+                                </tr>
+                            </tfoot>
                         </table>
                     </div>
                 </div>
 
                 <!-- Form Pembayaran -->
                 <form action="{{ route('transaksional.keluarga.bayar', $keluarga->id_keluarga) }}" method="POST"
-                    enctype="multipart/form-data">
+                    enctype="multipart/form-data" id="formPembayaranKeluarga">
                     @csrf
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <!-- Metode Pembayaran -->
                         <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1.5">Metode Pembayaran *</label>
+                            <label class="block text-sm font-medium text-gray-700 mb-1.5">
+                                Metode Pembayaran <span class="text-red-500">*</span>
+                            </label>
                             <select name="id_metode_pembayaran"
                                 class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500"
                                 required>
@@ -174,11 +228,15 @@
                                     </optgroup>
                                 @endif
                             </select>
+                            @error('id_metode_pembayaran')
+                                <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+                            @enderror
                         </div>
 
-                        <!-- Jenis Transaksi -->
                         <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1.5">Jenis Transaksi *</label>
+                            <label class="block text-sm font-medium text-gray-700 mb-1.5">
+                                Jenis Transaksi <span class="text-red-500">*</span>
+                            </label>
                             <select name="id_jenis_transaksi"
                                 class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500"
                                 required>
@@ -190,22 +248,36 @@
                                     </option>
                                 @endforeach
                             </select>
+                            @error('id_jenis_transaksi')
+                                <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+                            @enderror
                         </div>
                     </div>
 
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-4">
                         <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1.5">Tanggal Transaksi *</label>
+                            <label class="block text-sm font-medium text-gray-700 mb-1.5">
+                                Tanggal Transaksi <span class="text-red-500">*</span>
+                            </label>
                             <input type="date" name="tanggal_transaksi"
                                 value="{{ old('tanggal_transaksi', date('Y-m-d')) }}"
                                 class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500"
                                 required>
+                            @error('tanggal_transaksi')
+                                <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+                            @enderror
                         </div>
                         <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1.5">Jumlah Bayar *</label>
-                            <input type="number" name="jumlah_bayar" id="jumlah_bayar"
-                                class="w-full px-4 py-3 border border-gray-200 rounded-xl text-lg focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500"
-                                placeholder="0" min="1" required>
+                            <label class="block text-sm font-medium text-gray-700 mb-1.5">
+                                Jumlah Bayar <span class="text-red-500">*</span>
+                            </label>
+                            <div class="relative">
+                                <span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm">Rp</span>
+                                <input type="text" name="jumlah_bayar" id="jumlah_bayar"
+                                    value="{{ old('jumlah_bayar') ? number_format(old('jumlah_bayar'), 0, ',', '.') : '' }}"
+                                    class="w-full pl-10 pr-4 py-3 border border-gray-200 rounded-xl text-lg focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500"
+                                    placeholder="0" required oninput="formatRupiah(this)" autocomplete="off">
+                            </div>
                             <div class="mt-2 flex gap-2 flex-wrap">
                                 <button type="button" onclick="setJumlah(25)"
                                     class="px-3 py-1 bg-gray-100 text-gray-700 rounded-lg text-xs hover:bg-gray-200 transition">25%</button>
@@ -218,15 +290,33 @@
                                 <button type="button" onclick="setJumlahSisa()"
                                     class="px-3 py-1 bg-yellow-100 text-yellow-700 rounded-lg text-xs hover:bg-yellow-200 transition">Sisa</button>
                             </div>
+                            @error('jumlah_bayar')
+                                <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+                            @enderror
                         </div>
                     </div>
 
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-4">
                         <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1.5">Upload Bukti</label>
-                            <input type="file" name="bukti_pembayaran" accept="image/*,application/pdf"
-                                class="w-full px-3 py-2 border border-gray-200 rounded-xl focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500 text-sm file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-sm file:font-medium file:bg-yellow-50 file:text-yellow-700 hover:file:bg-yellow-100">
-                            <p class="text-xs text-gray-400 mt-1">Format: JPG, PNG, PDF (Max 2MB)</p>
+                            <label class="block text-sm font-medium text-gray-700 mb-1.5">
+                                Upload Bukti <span class="text-red-500">*</span>
+                            </label>
+                            <input type="file" name="bukti_pembayaran" id="bukti_pembayaran"
+                                accept="image/*,application/pdf" required
+                                class="w-full px-3 py-2 border border-gray-200 rounded-xl focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500 text-sm file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-sm file:font-medium file:bg-yellow-50 file:text-yellow-700 hover:file:bg-yellow-100"
+                                onchange="previewBukti(this)">
+                            <p class="text-xs text-gray-400 mt-1">
+                                <span class="text-red-500 font-medium">Wajib diisi.</span>
+                                Format: JPG, PNG, PDF (Max 2MB)
+                            </p>
+                            <div id="previewBukti" class="mt-2 hidden">
+                                <img id="previewImage" src="#" alt="Preview Bukti"
+                                    class="w-20 h-20 object-cover rounded-lg border border-gray-200">
+                                <p id="previewName" class="text-xs text-gray-500 mt-1"></p>
+                            </div>
+                            @error('bukti_pembayaran')
+                                <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+                            @enderror
                         </div>
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-1.5">Keterangan</label>
@@ -255,14 +345,87 @@
         const sisaTagihan = {{ $keluarga->sisa_tagihan }};
         const totalTagihan = {{ $keluarga->total_tagihan_setelah_diskon }};
 
+        function formatRupiah(input) {
+            let value = input.value.replace(/[^\d]/g, '');
+            if (value === '') {
+                input.value = '';
+                return;
+            }
+            let number = parseInt(value);
+            if (isNaN(number)) {
+                input.value = '';
+                return;
+            }
+            input.value = number.toLocaleString('id-ID');
+        }
+
+        function getRawValue(input) {
+            return parseInt(input.value.replace(/[^\d]/g, '')) || 0;
+        }
+
         function setJumlah(persen) {
             let jumlah = Math.round((totalTagihan * persen) / 100);
             if (persen === 100) jumlah = sisaTagihan;
-            document.getElementById('jumlah_bayar').value = jumlah;
+            document.getElementById('jumlah_bayar').value = jumlah.toLocaleString('id-ID');
         }
 
         function setJumlahSisa() {
-            document.getElementById('jumlah_bayar').value = sisaTagihan;
+            document.getElementById('jumlah_bayar').value = sisaTagihan.toLocaleString('id-ID');
         }
+
+        function previewBukti(input) {
+            const preview = document.getElementById('previewBukti');
+            const image = document.getElementById('previewImage');
+            const name = document.getElementById('previewName');
+
+            if (input.files && input.files[0]) {
+                const file = input.files[0];
+                const allowed = ['image/jpeg', 'image/jpg', 'image/png', 'application/pdf'];
+                if (!allowed.includes(file.type)) {
+                    alert('Format file harus JPG, PNG, atau PDF!');
+                    input.value = '';
+                    preview.classList.add('hidden');
+                    return;
+                }
+                if (file.size > 2 * 1024 * 1024) {
+                    alert('Ukuran file maksimal 2MB!');
+                    input.value = '';
+                    preview.classList.add('hidden');
+                    return;
+                }
+                if (file.type === 'application/pdf') {
+                    preview.classList.remove('hidden');
+                    image.classList.add('hidden');
+                    name.textContent = file.name + ' (PDF)';
+                } else {
+                    const reader = new FileReader();
+                    reader.onload = function(e) {
+                        preview.classList.remove('hidden');
+                        image.classList.remove('hidden');
+                        image.src = e.target.result;
+                        name.textContent = file.name;
+                    };
+                    reader.readAsDataURL(file);
+                }
+            } else {
+                preview.classList.add('hidden');
+            }
+        }
+
+        document.getElementById('formPembayaranKeluarga').addEventListener('submit', function(e) {
+            const buktiInput = document.getElementById('bukti_pembayaran');
+            if (!buktiInput.files || buktiInput.files.length === 0) {
+                e.preventDefault();
+                alert('⚠️ Bukti pembayaran WAJIB diupload sebelum memproses pembayaran!');
+                buktiInput.scrollIntoView({
+                    behavior: 'smooth',
+                    block: 'center'
+                });
+                buktiInput.focus();
+                return false;
+            }
+            const jumlahInput = document.getElementById('jumlah_bayar');
+            jumlahInput.value = getRawValue(jumlahInput);
+        });
     </script>
 @endpush

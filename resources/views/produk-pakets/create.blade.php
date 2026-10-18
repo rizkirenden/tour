@@ -252,8 +252,14 @@
                                         <div>
                                             <label class="block text-xs font-medium text-gray-600 mb-1">Flyer</label>
                                             <input type="file" name="harga_bulanan[{{ $index }}][flyer]"
-                                                accept="image/*"
+                                                accept="image/*" onchange="previewFlyer(this)"
                                                 class="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-yellow-500 file:mr-2 file:py-1 file:px-3 file:rounded-lg file:border-0 file:text-sm file:bg-yellow-50 file:text-yellow-700 hover:file:bg-yellow-100">
+                                            <div class="flyer-preview mt-2 hidden">
+                                                <div class="p-1 bg-white rounded border border-gray-200 inline-block">
+                                                    <img src="" alt="Preview Flyer" class="max-h-24 rounded">
+                                                </div>
+                                                <p class="flyer-preview-name text-xs text-gray-500 mt-1 truncate"></p>
+                                            </div>
                                             <p class="text-xs text-gray-400 mt-1">PNG, JPG, JPEG, SVG (max 2MB)</p>
                                         </div>
                                         <div class="flex items-center gap-2">
@@ -317,7 +323,14 @@
                                     <div>
                                         <label class="block text-xs font-medium text-gray-600 mb-1">Flyer</label>
                                         <input type="file" name="harga_bulanan[0][flyer]" accept="image/*"
+                                            onchange="previewFlyer(this)"
                                             class="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-yellow-500 file:mr-2 file:py-1 file:px-3 file:rounded-lg file:border-0 file:text-sm file:bg-yellow-50 file:text-yellow-700 hover:file:bg-yellow-100">
+                                        <div class="flyer-preview mt-2 hidden">
+                                            <div class="p-1 bg-white rounded border border-gray-200 inline-block">
+                                                <img src="" alt="Preview Flyer" class="max-h-24 rounded">
+                                            </div>
+                                            <p class="flyer-preview-name text-xs text-gray-500 mt-1 truncate"></p>
+                                        </div>
                                         <p class="text-xs text-gray-400 mt-1">PNG, JPG, JPEG, SVG (max 2MB)</p>
                                     </div>
                                     <div class="flex items-center gap-2">
@@ -539,6 +552,45 @@
             element.value = value;
         }
 
+        /* ============ PREVIEW FLYER ============ */
+        function previewFlyer(input) {
+            const wrapper = input.closest('div').querySelector('.flyer-preview');
+            const img = wrapper ? wrapper.querySelector('img') : null;
+            const nameEl = wrapper ? wrapper.querySelector('.flyer-preview-name') : null;
+
+            if (!wrapper || !img) return;
+
+            if (input.files && input.files[0]) {
+                const file = input.files[0];
+
+                if (!file.type.startsWith('image/')) {
+                    alert('File harus berupa gambar!');
+                    input.value = '';
+                    wrapper.classList.add('hidden');
+                    return;
+                }
+
+                if (file.size > 2 * 1024 * 1024) {
+                    alert('Ukuran file maksimal 2MB!');
+                    input.value = '';
+                    wrapper.classList.add('hidden');
+                    return;
+                }
+
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    img.src = e.target.result;
+                    if (nameEl) nameEl.textContent = file.name;
+                    wrapper.classList.remove('hidden');
+                };
+                reader.readAsDataURL(file);
+            } else {
+                img.src = '';
+                if (nameEl) nameEl.textContent = '';
+                wrapper.classList.add('hidden');
+            }
+        }
+
         function addKeberangkatan() {
             const container = document.getElementById('keberangkatanList');
             const row = document.createElement('div');
@@ -636,7 +688,14 @@
                 <div>
                     <label class="block text-xs font-medium text-gray-600 mb-1">Flyer</label>
                     <input type="file" name="harga_bulanan[${hargaIndex}][flyer]" accept="image/*"
+                        onchange="previewFlyer(this)"
                         class="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-yellow-500 file:mr-2 file:py-1 file:px-3 file:rounded-lg file:border-0 file:text-sm file:bg-yellow-50 file:text-yellow-700 hover:file:bg-yellow-100">
+                    <div class="flyer-preview mt-2 hidden">
+                        <div class="p-1 bg-white rounded border border-gray-200 inline-block">
+                            <img src="" alt="Preview Flyer" class="max-h-24 rounded">
+                        </div>
+                        <p class="flyer-preview-name text-xs text-gray-500 mt-1 truncate"></p>
+                    </div>
                     <p class="text-xs text-gray-400 mt-1">PNG, JPG, JPEG, SVG (max 2MB)</p>
                 </div>
                 <div class="flex items-center gap-2">

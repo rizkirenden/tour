@@ -341,7 +341,7 @@ class JamaahController extends Controller
             'id_jenis_transaksi' => 'required|exists:jenis_transaksis,id_jenis',
             'tanggal_transaksi' => 'required|date',
             'jumlah_bayar' => 'required|integer|min:1',
-            'bukti_pembayaran' => 'nullable|file|mimes:jpeg,png,jpg,pdf|max:2048',
+            'bukti_pembayaran' => 'required|file|mimes:jpeg,png,jpg,pdf|max:2048',
             'keterangan' => 'nullable|string'
         ]);
 

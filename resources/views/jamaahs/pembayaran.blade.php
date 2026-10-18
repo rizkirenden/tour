@@ -97,13 +97,32 @@
                         <span class="ml-2 text-xs text-gray-400">(per orang)</span>
                     </h6>
 
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                    {{-- ==========================================
+                         BREAKDOWN: HARGA PRODUK + PASSport = KOTOR
+                         ========================================== --}}
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
                         <div class="bg-white rounded-lg p-3 border border-gray-200">
                             <p class="text-xs text-gray-500">Harga Produk</p>
+                            <p class="text-sm font-bold text-gray-800">
+                                {{ $jamaah->harga_produk_formatted }}
+                            </p>
+                        </div>
+                        <div class="bg-white rounded-lg p-3 border border-purple-200">
+                            <p class="text-xs text-gray-500">Pembuatan Passport</p>
+                            <p class="text-sm font-bold text-purple-600">
+                                {{ $jamaah->total_pembuatan_passport_formatted }}
+                            </p>
+                            <p class="text-xs text-gray-400">Fee Pendamping + Fee Petugas</p>
+                        </div>
+                        <div class="bg-white rounded-lg p-3 border border-gray-300">
+                            <p class="text-xs text-gray-500">Harga Asli (Kotor)</p>
                             <p class="text-sm font-bold text-gray-800">
                                 {{ $jamaah->total_tagihan_sebelum_diskon_formatted }}
                             </p>
                         </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                         <div class="bg-white rounded-lg p-3 border border-gray-200">
                             <p class="text-xs text-gray-500">Diskon</p>
                             <p class="text-sm font-bold text-red-600">{{ $jamaah->total_diskon_formatted }}</p>
@@ -111,15 +130,23 @@
                                 <p class="text-xs text-gray-400">{{ $jamaah->keterangan_diskon }}</p>
                             @endif
                         </div>
+                        <div class="bg-green-50 rounded-lg p-3 border border-green-200">
+                            <p class="text-xs text-gray-500">Total Setelah Diskon</p>
+                            <p class="text-sm font-bold text-green-700">
+                                {{ $jamaah->total_tagihan_setelah_diskon_formatted }}
+                            </p>
+                        </div>
                     </div>
 
-                    <!-- Agent & Pendampingan -->
+                    <!-- Agent & Pembuatan Passport -->
                     <div class="border-t border-gray-200 pt-4 mt-2">
-                        <p class="text-xs text-gray-400 mb-3">
-                            <i class="fas fa-info-circle mr-1"></i>
-                            Fee Agent & Pendampingan adalah informasi tambahan dan <span
-                                class="text-red-500 font-medium">TIDAK</span> termasuk dalam total tagihan
+                        <p class="text-xs text-gray-500 mb-3 bg-yellow-50 rounded-lg p-2 border border-yellow-200">
+                            <i class="fas fa-info-circle text-yellow-600 mr-1"></i>
+                            <span class="text-green-600 font-medium">✓</span>
+                            Pembuatan Passport <span class="font-medium">SUDAH</span> termasuk dalam total tagihan.
+                            Fee Agent <span class="text-red-500 font-medium">TIDAK</span> termasuk.
                         </p>
+
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div class="bg-blue-50 rounded-lg p-3 border border-blue-200">
                                 <p class="text-xs font-semibold text-blue-600 mb-2">
@@ -135,9 +162,9 @@
                                 </div>
                             </div>
 
-                            <div class="bg-green-50 rounded-lg p-3 border border-green-200">
-                                <p class="text-xs font-semibold text-green-600 mb-2">
-                                    <i class="fas fa-users mr-1"></i> Pendampingan
+                            <div class="bg-purple-50 rounded-lg p-3 border border-purple-200">
+                                <p class="text-xs font-semibold text-purple-600 mb-2">
+                                    <i class="fas fa-passport mr-1"></i> Pembuatan Passport
                                 </p>
                                 <div class="flex justify-between text-sm">
                                     <span class="text-gray-500">Nama Pendamping</span>
@@ -154,23 +181,38 @@
                                     <span
                                         class="font-medium text-purple-600">{{ $jamaah->pendampingan_fee_petugas_formatted }}</span>
                                 </div>
+                                <div class="flex justify-between text-sm mt-2 pt-2 border-t border-purple-200">
+                                    <span class="text-gray-600 font-medium">Total Passport</span>
+                                    <span
+                                        class="font-bold text-purple-700">{{ $jamaah->total_pembuatan_passport_formatted }}</span>
+                                </div>
                             </div>
                         </div>
                     </div>
 
+                    {{-- Footer total --}}
                     <div
                         class="mt-4 text-sm text-gray-500 border-t border-gray-200 pt-3 flex flex-wrap items-center justify-between gap-2">
                         <span>
-                            <span class="font-medium">Total Sebelum Diskon:</span>
+                            <span class="font-medium">Harga Produk:</span>
+                            <span class="font-bold text-gray-700">{{ $jamaah->harga_produk_formatted }}</span>
+                        </span>
+                        <span>
+                            <span class="font-medium">Passport:</span>
                             <span
-                                class="font-bold text-gray-700">{{ $jamaah->total_tagihan_sebelum_diskon_formatted }}</span>
+                                class="font-bold text-purple-600">{{ $jamaah->total_pembuatan_passport_formatted }}</span>
+                        </span>
+                        <span>
+                            <span class="font-medium">Kotor:</span>
+                            <span
+                                class="font-bold text-gray-800">{{ $jamaah->total_tagihan_sebelum_diskon_formatted }}</span>
                         </span>
                         <span>
                             <span class="font-medium">Diskon:</span>
                             <span class="font-bold text-red-600">{{ $jamaah->total_diskon_formatted }}</span>
                         </span>
                         <span>
-                            <span class="font-medium">Total Setelah Diskon:</span>
+                            <span class="font-medium">Total:</span>
                             <span
                                 class="font-bold text-yellow-600">{{ $jamaah->total_tagihan_setelah_diskon_formatted }}</span>
                         </span>
@@ -359,7 +401,7 @@
                             @enderror
                         </div>
 
-                        <!-- Jenis Transaksi - Dropdown -->
+                        <!-- Jenis Transaksi -->
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-1.5">
                                 Jenis Transaksi <span class="text-red-500">*</span>
@@ -441,13 +483,19 @@
                     </div>
 
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-4">
+                        {{-- UPLOAD BUKTI PEMBAYARAN — WAJIB --}}
                         <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1.5">Upload Bukti Pembayaran</label>
+                            <label class="block text-sm font-medium text-gray-700 mb-1.5">
+                                Upload Bukti Pembayaran <span class="text-red-500">*</span>
+                            </label>
                             <input type="file" name="bukti_pembayaran" id="bukti_pembayaran"
-                                accept="image/*,application/pdf"
+                                accept="image/*,application/pdf" required
                                 class="w-full px-3 py-2 border border-gray-200 rounded-xl focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500 text-sm file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-sm file:font-medium file:bg-yellow-50 file:text-yellow-700 hover:file:bg-yellow-100"
                                 onchange="previewBukti(this)">
-                            <p class="text-xs text-gray-400 mt-1">Format: JPG, PNG, PDF (Max 2MB)</p>
+                            <p class="text-xs text-gray-400 mt-1">
+                                <span class="text-red-500 font-medium">Wajib diisi.</span>
+                                Format: JPG, PNG, PDF (Max 2MB)
+                            </p>
                             <div id="previewBukti" class="mt-2 hidden">
                                 <img id="previewImage" src="#" alt="Preview Bukti"
                                     class="w-20 h-20 object-cover rounded-lg border border-gray-200">
@@ -484,37 +532,24 @@
 
 @push('scripts')
     <script>
-        // ==========================================
-        // FORMAT RUPIAH
-        // ==========================================
         function formatRupiah(input) {
-            // Hapus semua karakter kecuali angka
             let value = input.value.replace(/[^\d]/g, '');
-
             if (value === '') {
                 input.value = '';
                 return;
             }
-
-            // Konversi ke number
             let number = parseInt(value);
             if (isNaN(number)) {
                 input.value = '';
                 return;
             }
-
-            // Format dengan titik ribuan
             input.value = number.toLocaleString('id-ID');
         }
 
         function getRawValue(input) {
-            // Ambil nilai numerik dari input yang diformat
             return parseInt(input.value.replace(/[^\d]/g, '')) || 0;
         }
 
-        // ==========================================
-        // PREVIEW BUKTI
-        // ==========================================
         function previewBukti(input) {
             const preview = document.getElementById('previewBukti');
             const image = document.getElementById('previewImage');
@@ -522,34 +557,46 @@
 
             if (input.files && input.files[0]) {
                 const file = input.files[0];
-                const reader = new FileReader();
-
-                reader.onload = function(e) {
+                const allowed = ['image/jpeg', 'image/jpg', 'image/png', 'application/pdf'];
+                if (!allowed.includes(file.type)) {
+                    alert('Format file harus JPG, PNG, atau PDF!');
+                    input.value = '';
+                    preview.classList.add('hidden');
+                    return;
+                }
+                if (file.size > 2 * 1024 * 1024) {
+                    alert('Ukuran file maksimal 2MB!');
+                    input.value = '';
+                    preview.classList.add('hidden');
+                    return;
+                }
+                if (file.type === 'application/pdf') {
                     preview.classList.remove('hidden');
-                    image.src = e.target.result;
-                    name.textContent = file.name;
-                };
-
-                reader.readAsDataURL(file);
+                    image.classList.add('hidden');
+                    name.textContent = file.name + ' (PDF)';
+                } else {
+                    const reader = new FileReader();
+                    reader.onload = function(e) {
+                        preview.classList.remove('hidden');
+                        image.classList.remove('hidden');
+                        image.src = e.target.result;
+                        name.textContent = file.name;
+                    };
+                    reader.readAsDataURL(file);
+                }
             } else {
                 preview.classList.add('hidden');
             }
         }
 
-        // ==========================================
-        // DELETE TRANSACTION
-        // ==========================================
         function confirmDeleteTransaksi(id) {
             if (confirm(
                     'Yakin ingin menghapus transaksi pembayaran ini?\n\nData yang dihapus:\n- Jumlah pembayaran akan dikembalikan\n- Status pembayaran akan diperbarui otomatis\n- Bukti pembayaran akan dihapus'
-                    )) {
+                )) {
                 document.getElementById('delete-transaksi-form-' + id).submit();
             }
         }
 
-        // ==========================================
-        // JENIS TRANSAKSI INFO
-        // ==========================================
         document.getElementById('id_jenis_transaksi').addEventListener('change', function() {
             const selectedOption = this.options[this.selectedIndex];
             const kode = selectedOption.dataset.kode || '';
@@ -569,21 +616,15 @@
             }
         });
 
-        // ==========================================
-        // SET JUMLAH BAYAR
-        // ==========================================
         function setJumlahBayar(persen) {
             const totalTagihan = {{ $jamaah->total_tagihan_setelah_diskon }};
             const sisaTagihan = {{ $jamaah->sisa_tagihan }};
             let jumlah = Math.round((totalTagihan * persen) / 100);
-
             if (persen === 100) {
                 jumlah = sisaTagihan;
             }
-
             const input = document.getElementById('jumlah_bayar');
             input.value = jumlah.toLocaleString('id-ID');
-
             document.getElementById('jumlahInfo').innerHTML =
                 '<i class="fas fa-info-circle mr-1"></i> ' +
                 persen + '% dari total tagihan: <span class="font-bold">Rp ' +
@@ -594,38 +635,38 @@
             const sisa = {{ $jamaah->sisa_tagihan }};
             const input = document.getElementById('jumlah_bayar');
             input.value = sisa.toLocaleString('id-ID');
-
             document.getElementById('jumlahInfo').innerHTML =
                 '<i class="fas fa-info-circle mr-1"></i> ' +
                 'Sisa tagihan: <span class="font-bold">Rp ' +
                 sisa.toLocaleString('id-ID') + '</span>';
         }
 
-        // ==========================================
-        // DOM READY
-        // ==========================================
         document.addEventListener('DOMContentLoaded', function() {
-            // Trigger change event for jenis transaksi
             const oldJenis = '{{ old('id_jenis_transaksi') }}';
             if (oldJenis) {
                 document.getElementById('id_jenis_transaksi').value = oldJenis;
                 document.getElementById('id_jenis_transaksi').dispatchEvent(new Event('change'));
             }
-
-            // Format old value if exists
             const jumlahBayarInput = document.getElementById('jumlah_bayar');
             if (jumlahBayarInput.value) {
                 formatRupiah(jumlahBayarInput);
             }
         });
 
-        // ==========================================
-        // FORM SUBMIT - Convert formatted to raw
-        // ==========================================
         document.getElementById('formPembayaran').addEventListener('submit', function(e) {
+            const buktiInput = document.getElementById('bukti_pembayaran');
+            if (!buktiInput.files || buktiInput.files.length === 0) {
+                e.preventDefault();
+                alert('⚠️ Bukti pembayaran WAJIB diupload sebelum memproses pembayaran!');
+                buktiInput.scrollIntoView({
+                    behavior: 'smooth',
+                    block: 'center'
+                });
+                buktiInput.focus();
+                return false;
+            }
             const input = document.getElementById('jumlah_bayar');
             const rawValue = getRawValue(input);
-            // Update input value to raw number before submit
             input.value = rawValue;
         });
     </script>

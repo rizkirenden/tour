@@ -121,6 +121,28 @@ class Keluarga extends Model
     }
 
     // ==========================================
+    // DISKON & TAGIHAN
+    // ==========================================
+
+    /** Total diskon kelompok (misal: Rp 2.000.000) */
+    public function getTotalDiskonFormattedAttribute()
+    {
+        return 'Rp ' . number_format($this->total_diskon ?? 0, 0, ',', '.');
+    }
+
+    /** Diskon per orang (hasil pembagian) */
+    public function getDiskonPerOrangFormattedAttribute()
+    {
+        return 'Rp ' . number_format($this->nilai_diskon ?? 0, 0, ',', '.');
+    }
+
+    /** Harga kotor sebelum diskon (total kelompok) */
+    public function getTotalTagihanSebelumDiskonFormattedAttribute()
+    {
+        return 'Rp ' . number_format($this->total_tagihan_sebelum_diskon ?? 0, 0, ',', '.');
+    }
+
+    // ==========================================
     // KEBERANGKATAN & HARGA
     // ==========================================
 
