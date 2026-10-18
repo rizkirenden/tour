@@ -125,6 +125,10 @@ Route::prefix('transaksional')->name('transaksional.')->group(function () {
     // ==========================================
     Route::resource('departure', DepartureController::class);
 
+    // ---- PRINT MANIFEST (HARUS SEBELUM wildcard /{id} yang menangkap) ----
+    Route::get('departure/{id}/manifest', [DepartureController::class, 'printManifest'])
+        ->name('departure.manifest');
+
     Route::post('departure/{id}/add-jamaah', [DepartureController::class, 'addJamaah'])
         ->name('departure.add-jamaah');
     Route::delete('departure/{departureId}/remove-jamaah/{jamaahId}', [DepartureController::class, 'removeJamaah'])
@@ -218,6 +222,9 @@ Route::prefix('transaksional')->name('transaksional.')->group(function () {
     Route::post('departure/{id}/sync-jamaahs', [DepartureController::class, 'syncJamaahs'])
         ->name('departure.sync-jamaahs');
 
+    // ==========================================
+    // AJAX HELPER ROUTES
+    // ==========================================
     Route::get('get-jamaah-by-produk/{id_produk}', [DepartureController::class, 'getJamaahByProduk'])
         ->name('get-jamaah-by-produk');
     Route::get('get-kamars-by-hotel/{idHotel}', [DepartureController::class, 'getKamarsByHotel'])

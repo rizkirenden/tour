@@ -87,7 +87,9 @@ class KeluargaController extends Controller
             'jamaahs.*.file_vaksin' => 'nullable|file|mimes:jpeg,png,jpg,pdf|max:2048',
             'jamaahs.*.file_visa' => 'nullable|file|mimes:jpeg,png,jpg,pdf|max:2048',
             'jamaahs.*.file_paspor' => 'nullable|file|mimes:jpeg,png,jpg,pdf|max:2048',
-            'jamaahs.*.pendampingan_nama' => 'nullable|string|max:100',
+
+            // === PEMBUATAN PASSPORT ===
+            'jamaahs.*.is_pembuatan_passport' => 'nullable|boolean',
             'jamaahs.*.pendampingan_fee' => 'nullable|integer|min:0',
             'jamaahs.*.pendampingan_fee_petugas' => 'nullable|integer|min:0',
         ]);
@@ -183,7 +185,9 @@ class KeluargaController extends Controller
             'jamaahs.*.file_vaksin' => 'nullable|file|mimes:jpeg,png,jpg,pdf|max:2048',
             'jamaahs.*.file_visa' => 'nullable|file|mimes:jpeg,png,jpg,pdf|max:2048',
             'jamaahs.*.file_paspor' => 'nullable|file|mimes:jpeg,png,jpg,pdf|max:2048',
-            'jamaahs.*.pendampingan_nama' => 'nullable|string|max:100',
+
+            // === PEMBUATAN PASSPORT ===
+            'jamaahs.*.is_pembuatan_passport' => 'nullable|boolean',
             'jamaahs.*.pendampingan_fee' => 'nullable|integer|min:0',
             'jamaahs.*.pendampingan_fee_petugas' => 'nullable|integer|min:0',
         ]);
@@ -323,56 +327,49 @@ class KeluargaController extends Controller
             ->with('success', "Pembayaran keluarga sebesar Rp " . number_format($jumlahBayar, 0, ',', '.') . " berhasil dan telah masuk ke riwayat pembayaran jamaah masing-masing!");
     }
 
-    // ==========================================
-// HAPUS SATU TRANSAKSI PEMBAYARAN KELUARGA
-// ==========================================
-public function hapusTransaksi($idTransaksi)
-{
-    return DB::transaction(function () use ($idTransaksi) {
-        $transaksi = TransaksiPembayaran::findOrFail($idTransaksi);
+    public function hapusTransaksi($idTransaksi)
+    {
+        return DB::transaction(function () use ($idTransaksi) {
+            $transaksi = TransaksiPembayaran::findOrFail($idTransaksi);
 
-        $jamaah = \App\Models\Jamaah::find($transaksi->id_jamaah);
-        $keluarga = $jamaah ? \App\Models\Keluarga::find($jamaah->id_keluarga) : null;
+            $jamaah = \App\Models\Jamaah::find($transaksi->id_jamaah);
+            $keluarga = $jamaah ? \App\Models\Keluarga::find($jamaah->id_keluarga) : null;
 
-        // 1. Kembalikan total dibayar & sisa tagihan jamaah
-        if ($jamaah) {
-            $totalDibayarBaru = max(0, $jamaah->total_dibayar - $transaksi->jumlah_bayar);
-            $sisaTagihanBaru = $jamaah->total_tagihan_setelah_diskon - $totalDibayarBaru;
+            if ($jamaah) {
+                $totalDibayarBaru = max(0, $jamaah->total_dibayar - $transaksi->jumlah_bayar);
+                $sisaTagihanBaru = $jamaah->total_tagihan_setelah_diskon - $totalDibayarBaru;
 
-            if ($sisaTagihanBaru <= 0) {
-                $statusJamaah = 'Lunas';
-            } elseif ($totalDibayarBaru == 0) {
-                $statusJamaah = 'Belum Bayar';
-            } elseif ($totalDibayarBaru >= $jamaah->total_tagihan_setelah_diskon * 0.5) {
-                $statusJamaah = 'Setoran';
-            } else {
-                $statusJamaah = 'DP';
+                if ($sisaTagihanBaru <= 0) {
+                    $statusJamaah = 'Lunas';
+                } elseif ($totalDibayarBaru == 0) {
+                    $statusJamaah = 'Belum Bayar';
+                } elseif ($totalDibayarBaru >= $jamaah->total_tagihan_setelah_diskon * 0.5) {
+                    $statusJamaah = 'Setoran';
+                } else {
+                    $statusJamaah = 'DP';
+                }
+
+                $jamaah->update([
+                    'total_dibayar' => $totalDibayarBaru,
+                    'sisa_tagihan' => $sisaTagihanBaru,
+                    'status_pembayaran' => $statusJamaah,
+                ]);
             }
 
-            $jamaah->update([
-                'total_dibayar' => $totalDibayarBaru,
-                'sisa_tagihan' => $sisaTagihanBaru,
-                'status_pembayaran' => $statusJamaah,
-            ]);
-        }
+            if ($transaksi->bukti_pembayaran && Storage::disk('public')->exists($transaksi->bukti_pembayaran)) {
+                Storage::disk('public')->delete($transaksi->bukti_pembayaran);
+            }
 
-        // 2. Hapus file bukti dari storage
-        if ($transaksi->bukti_pembayaran && Storage::disk('public')->exists($transaksi->bukti_pembayaran)) {
-            Storage::disk('public')->delete($transaksi->bukti_pembayaran);
-        }
+            $transaksi->delete();
 
-        // 3. Hapus baris transaksi
-        $transaksi->delete();
+            if ($keluarga) {
+                $this->service->recalculateKeluarga($keluarga->id_keluarga);
+            }
 
-        // 4. Recalculate keluarga (total, sisa, status)
-        if ($keluarga) {
-            $this->service->recalculateKeluarga($keluarga->id_keluarga);
-        }
-
-        return redirect()->route('transaksional.keluarga.show', $keluarga->id_keluarga ?? null)
-            ->with('success', 'Transaksi pembayaran berhasil dihapus dan total tagihan telah diperbarui.');
-    });
-}
+            return redirect()->route('transaksional.keluarga.show', $keluarga->id_keluarga ?? null)
+                ->with('success', 'Transaksi pembayaran berhasil dihapus dan total tagihan telah diperbarui.');
+        });
+    }
 
     public function cetakPembayaran($id)
     {

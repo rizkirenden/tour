@@ -328,12 +328,13 @@
                         </div>
                     </div>
 
-                    <!-- Agent & Pendampingan -->
+                    <!-- Agent & Pembuatan passport -->
                     <div class="border-b border-gray-200 pb-4">
                         <h6 class="text-sm font-semibold text-gray-700 mb-4 flex items-center">
                             <i class="fas fa-handshake text-yellow-500 mr-2"></i> Agent & Pembuatan passport
                         </h6>
 
+                        {{-- AGENT --}}
                         <div class="mb-4 bg-blue-50 rounded-xl p-4 border border-blue-100">
                             <h6 class="text-xs font-semibold text-blue-700 mb-3 flex items-center">
                                 <i class="fas fa-user-tie text-blue-500 mr-1"></i> Agent
@@ -360,71 +361,74 @@
                             </div>
                         </div>
 
+                        {{-- PEMBUATAN PASSPORT --}}
                         <div class="bg-green-50 rounded-xl p-4 border border-green-100">
                             <h6 class="text-xs font-semibold text-green-700 mb-3 flex items-center">
-                                <i class="fas fa-users text-green-500 mr-1"></i> Pembuatan Passport
+                                <i class="fas fa-passport text-green-500 mr-1"></i> Pembuatan Passport
                             </h6>
 
-                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                <div>
-                                    <label class="block text-sm font-medium text-gray-700 mb-1.5">
-                                        Nama Pendamping Pembuatan passport
+                            {{-- Pilihan YA / TIDAK --}}
+                            <div class="mb-4">
+                                <label class="block text-sm font-medium text-gray-700 mb-1.5">
+                                    Apakah ada Pembuatan Passport? <span class="text-red-500">*</span>
+                                </label>
+                                <div class="flex items-center gap-6">
+                                    <label class="inline-flex items-center gap-2 cursor-pointer">
+                                        <input type="radio" name="is_pembuatan_passport" value="1"
+                                            class="w-4 h-4 text-green-500 focus:ring-green-500"
+                                            {{ old('is_pembuatan_passport', $jamaah->is_pembuatan_passport) == '1' ? 'checked' : '' }}
+                                            onchange="togglePembuatanPassport()">
+                                        <span class="text-sm font-medium text-gray-700">YA</span>
                                     </label>
-                                    <input type="text" name="pendampingan_nama" id="pendampingan_nama"
-                                        value="{{ old('pendampingan_nama', $jamaah->pendampingan_nama) }}"
-                                        class="w-full px-4 py-2 border border-gray-200 rounded-xl focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500 text-sm"
-                                        placeholder="Nama Pendamping (kosongkan jika tidak ada)">
-                                </div>
-                                <div>
-                                    <label class="block text-sm font-medium text-gray-700 mb-1.5">
-                                        Pembayaran passport
+                                    <label class="inline-flex items-center gap-2 cursor-pointer">
+                                        <input type="radio" name="is_pembuatan_passport" value="0"
+                                            class="w-4 h-4 text-red-500 focus:ring-red-500"
+                                            {{ old('is_pembuatan_passport', $jamaah->is_pembuatan_passport) == '0' ? 'checked' : '' }}
+                                            onchange="togglePembuatanPassport()">
+                                        <span class="text-sm font-medium text-gray-700">TIDAK</span>
                                     </label>
-                                    <div class="relative">
-                                        <span
-                                            class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm">Rp</span>
-                                        <input type="text" name="pendampingan_fee" id="pendampingan_fee"
-                                            value="{{ old('pendampingan_fee', number_format($jamaah->pendampingan_fee, 0, ',', '.')) }}"
-                                            class="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-xl focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500 text-sm"
-                                            placeholder="0" oninput="formatRupiah(this); updateTotalPendampingan();"
-                                            onfocus="clearZero(this)">
-                                    </div>
+                                </div>
+                                <p class="text-xs text-gray-400 mt-1">
+                                    <i class="fas fa-info-circle mr-1"></i>
+                                    Pilih <b>YA</b> jika ada pendapatan perusahaan dari pembuatan passport.
+                                    Pilih <b>TIDAK</b> jika jamaah sudah punya passport (biaya bisa dikosongkan).
+                                </p>
+                            </div>
+
+                            {{-- Pembayaran Passport (selalu tampil, boleh kosong) --}}
+                            <div class="mb-3">
+                                <label class="block text-sm font-medium text-gray-700 mb-1.5">
+                                    Pembayaran Passport
+                                    <span class="text-xs text-gray-400 font-normal">(kosongkan jika jamaah sudah punya
+                                        passport)</span>
+                                </label>
+                                <div class="relative">
+                                    <span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm">Rp</span>
+                                    <input type="text" name="pendampingan_fee" id="pendampingan_fee"
+                                        value="{{ old('pendampingan_fee', number_format($jamaah->pendampingan_fee, 0, ',', '.')) }}"
+                                        class="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-xl focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500 text-sm"
+                                        placeholder="0" oninput="formatRupiah(this); updateTotalPendampingan();"
+                                        onfocus="clearZero(this)">
                                 </div>
                             </div>
 
-                            <div class="mt-3 pt-3 border-t border-green-200">
-                                <button type="button" id="btnShowFeePetugas" onclick="showFeePetugas()"
-                                    class="inline-flex items-center px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition text-sm font-medium
-                                    {{ $jamaah->pendampingan_fee_petugas > 0 ? 'hidden' : '' }}">
-                                    <i class="fas fa-plus mr-2"></i> Tambah Pendapatan Perusahaan
-                                </button>
-                                <button type="button" id="btnHideFeePetugas" onclick="hideFeePetugas()"
-                                    class="inline-flex items-center px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition text-sm font-medium
-                                    {{ $jamaah->pendampingan_fee_petugas > 0 ? '' : 'hidden' }}">
-                                    <i class="fas fa-times mr-2"></i> Hapus Pendapatan Perusahaan
-                                </button>
-                            </div>
-
-                            <div id="feePetugasContainer" class="mt-3"
-                                style="display: {{ $jamaah->pendampingan_fee_petugas > 0 ? 'block' : 'none' }};">
-                                <div class="grid grid-cols-1 gap-4">
-                                    <div>
-                                        <label class="block text-sm font-medium text-gray-700 mb-1.5">
-                                            Pendapatan perusahaan
-                                        </label>
-                                        <div class="relative">
-                                            <span
-                                                class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm">Rp</span>
-                                            <input type="text" name="pendampingan_fee_petugas"
-                                                id="pendampingan_fee_petugas"
-                                                value="{{ old('pendampingan_fee_petugas', number_format($jamaah->pendampingan_fee_petugas, 0, ',', '.')) }}"
-                                                class="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-xl focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500 text-sm"
-                                                placeholder="0" oninput="formatRupiah(this); updateTotalPendampingan();"
-                                                onfocus="clearZero(this)">
-                                        </div>
-                                    </div>
+                            {{-- Pendapatan Perusahaan (hanya muncul jika YA) --}}
+                            <div id="feePetugasContainer"
+                                class="mb-3 {{ old('is_pembuatan_passport', $jamaah->is_pembuatan_passport) == '1' ? '' : 'hidden' }}">
+                                <label class="block text-sm font-medium text-gray-700 mb-1.5">
+                                    Pendapatan Perusahaan
+                                </label>
+                                <div class="relative">
+                                    <span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm">Rp</span>
+                                    <input type="text" name="pendampingan_fee_petugas" id="pendampingan_fee_petugas"
+                                        value="{{ old('pendampingan_fee_petugas', number_format($jamaah->pendampingan_fee_petugas, 0, ',', '.')) }}"
+                                        class="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-xl focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500 text-sm"
+                                        placeholder="0" oninput="formatRupiah(this); updateTotalPendampingan();"
+                                        onfocus="clearZero(this)">
                                 </div>
                             </div>
 
+                            {{-- Total --}}
                             <div class="mt-3 pt-3 border-t border-green-200">
                                 <div class="flex items-center justify-between">
                                     <p class="text-sm font-medium text-gray-700">
@@ -658,7 +662,7 @@
         var globalSelectedData = @json(old('keberangkatan_data', $selectedKeberangkatan ?? []));
 
         // ==========================================
-        // FORMAT RUPIAH — kosong tetap kosong, leading zero dihapus
+        // FORMAT RUPIAH
         // ==========================================
         function formatRupiah(element) {
             let raw = element.value.replace(/[^,\d]/g, '');
@@ -673,9 +677,6 @@
             element.value = raw.replace(/\B(?=(\d{3})+(?!\d))/g, '.');
         }
 
-        // ==========================================
-        // HAPUS '0' saat field difokuskan
-        // ==========================================
         function clearZero(element) {
             if (element.value === '0' || element.value === '0.000' || element.value === '') {
                 element.value = '';
@@ -738,21 +739,21 @@
         }
 
         // ==========================================
-        // SHOW/HIDE FEE PETUGAS
+        // TOGGLE PEMBUATAN PASSPORT (YA / TIDAK)
         // ==========================================
-        function showFeePetugas() {
-            document.getElementById('feePetugasContainer').style.display = 'block';
-            document.getElementById('btnShowFeePetugas').classList.add('hidden');
-            document.getElementById('btnHideFeePetugas').classList.remove('hidden');
-            document.getElementById('pendampingan_fee_petugas').focus();
-            updateTotalPendampingan();
-        }
+        function togglePembuatanPassport() {
+            var isYa = document.querySelector('input[name="is_pembuatan_passport"]:checked');
+            var container = document.getElementById('feePetugasContainer');
+            var petugasInput = document.getElementById('pendampingan_fee_petugas');
 
-        function hideFeePetugas() {
-            document.getElementById('feePetugasContainer').style.display = 'none';
-            document.getElementById('btnShowFeePetugas').classList.remove('hidden');
-            document.getElementById('btnHideFeePetugas').classList.add('hidden');
-            document.getElementById('pendampingan_fee_petugas').value = '0';
+            if (isYa && isYa.value === '1') {
+                container.classList.remove('hidden');
+                container.style.display = 'block';
+            } else {
+                container.classList.add('hidden');
+                container.style.display = 'none';
+                if (petugasInput) petugasInput.value = '0';
+            }
             updateTotalPendampingan();
         }
 
@@ -760,12 +761,12 @@
             var feeInput = document.getElementById('pendampingan_fee');
             var petugasInput = document.getElementById('pendampingan_fee_petugas');
             var totalDisplay = document.getElementById('totalPendampinganDisplay');
-            var container = document.getElementById('feePetugasContainer');
+            var isYa = document.querySelector('input[name="is_pembuatan_passport"]:checked');
 
             if (feeInput && totalDisplay) {
                 var fee = parseInt(feeInput.value.replace(/\./g, '')) || 0;
                 var petugas = 0;
-                if (container.style.display !== 'none') {
+                if (isYa && isYa.value === '1' && petugasInput) {
                     petugas = parseInt(petugasInput.value.replace(/\./g, '')) || 0;
                 }
                 totalDisplay.textContent = 'Rp ' + (fee + petugas).toLocaleString('id-ID');
@@ -832,7 +833,8 @@
             tahunSelect.innerHTML = '<option value="">-- Memuat... --</option>';
 
             fetch(
-                    `{{ route('transaksional.jamaah.keberangkatan-by-produk') }}?produk_paket=${encodeURIComponent(produkPaket.value)}`)
+                    `{{ route('transaksional.jamaah.keberangkatan-by-produk') }}?produk_paket=${encodeURIComponent(produkPaket.value)}`
+                    )
                 .then(res => res.json())
                 .then(data => {
                     if (!data.success || !data.keberangkatan || data.keberangkatan.length === 0) {
@@ -1059,9 +1061,6 @@
             }
         }
 
-        // ==========================================
-        // HANDLE KEBERANGKATAN CHANGE
-        // ==========================================
         function handleKeberangkatanChange(e) {
             var radio = e.target;
             if (!radio) return;
@@ -1087,9 +1086,6 @@
             });
         }
 
-        // ==========================================
-        // HANDLE HARGA BULANAN CHANGE
-        // ==========================================
         function handleHargaBulananChange(e) {
             var sel = e.target;
             var keberangkatanId = sel.dataset.keberangkatanId;
@@ -1173,9 +1169,6 @@
             document.getElementById('bandara_keberangkatan').value = selectedOption.dataset.bandara || '';
         });
 
-        // ==========================================
-        // LIVE REMOVE WARNING SAAT USER MENGISI
-        // ==========================================
         document.addEventListener('input', function(e) {
             if (e.target.classList.contains('wajib-pribadi') && e.target.value.trim() !== '') {
                 e.target.classList.remove('border-red-500', 'ring-2', 'ring-red-300');
@@ -1206,6 +1199,8 @@
                 loadKeberangkatan();
             }
 
+            // Init toggle pembuatan passport
+            togglePembuatanPassport();
             updateTotalPendampingan();
 
             var form = document.getElementById('jamaahForm');
@@ -1241,7 +1236,8 @@
                         if (isFullRadio || selectedHargaFull) {
                             e.preventDefault();
                             alert(
-                                '⚠️ Kuota bulan/tahun yang dipilih sudah PENUH!\n\nSilakan pilih bulan/tahun lain.');
+                                '⚠️ Kuota bulan/tahun yang dipilih sudah PENUH!\n\nSilakan pilih bulan/tahun lain.'
+                                );
                             return false;
                         }
 

@@ -71,7 +71,6 @@
                             </div>
                         </div>
 
-                        <!-- PILIH TAHUN DULU, BARU KEBERANGKATAN & HARGA -->
                         <div class="mt-4">
                             <div id="placeholder-belum-pilih"
                                 class="bg-gray-50 rounded-xl p-4 border border-gray-200 text-center">
@@ -229,7 +228,6 @@
                             </div>
                         </div>
 
-                        {{-- Panel Preview Diskon --}}
                         <div id="infoDiskonContainer"
                             class="mt-3 bg-green-50 rounded-xl p-3 border border-green-200 hidden">
                             <div class="grid grid-cols-1 md:grid-cols-3 gap-2 text-sm">
@@ -467,24 +465,50 @@
                                             </label>
                                         </div>
 
-                                        <!-- Pendampingan -->
+                                        <!-- Pembuatan Passport (TOMBOL YA/TIDAK) -->
                                         <div class="mt-3 pt-3 border-t border-gray-200">
-                                            <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
-                                                <div>
-                                                    <label class="block text-xs font-medium text-gray-600 mb-1">
-                                                        Nama Pendamping
-                                                        <span class="text-gray-400 text-xs">(Pembuatan passport)</span>
-                                                    </label>
-                                                    <input type="text"
-                                                        name="jamaahs[{{ $index }}][pendampingan_nama]"
-                                                        value="{{ $jamaah['pendampingan_nama'] ?? '' }}"
-                                                        class="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-yellow-500 text-sm"
-                                                        placeholder="Kosongkan jika tidak ada">
+                                            @php
+                                                $isPassport = ($jamaah['is_pembuatan_passport'] ?? 0) == 1;
+                                            @endphp
+                                            <div class="mb-3">
+                                                <label class="block text-xs font-medium text-gray-600 mb-1.5">
+                                                    Apakah ada Pembuatan Passport? <span class="text-red-500">*</span>
+                                                </label>
+
+                                                {{-- TOMBOL YA / TIDAK --}}
+                                                <div class="inline-flex rounded-lg overflow-hidden border border-gray-300">
+                                                    <button type="button"
+                                                        onclick="setPembuatanPassportKeluarga({{ $index }}, 1)"
+                                                        id="btnYa-{{ $index }}"
+                                                        class="px-6 py-2 text-sm font-medium transition-colors
+                                                        {{ $isPassport ? 'bg-green-500 text-white' : 'bg-white text-gray-600 hover:bg-gray-50' }}">
+                                                        <i class="fas fa-check mr-1"></i> YA
+                                                    </button>
+                                                    <button type="button"
+                                                        onclick="setPembuatanPassportKeluarga({{ $index }}, 0)"
+                                                        id="btnTidak-{{ $index }}"
+                                                        class="px-6 py-2 text-sm font-medium transition-colors border-l border-gray-300
+                                                        {{ !$isPassport ? 'bg-red-500 text-white' : 'bg-white text-gray-600 hover:bg-gray-50' }}">
+                                                        <i class="fas fa-times mr-1"></i> TIDAK
+                                                    </button>
                                                 </div>
+                                                <input type="hidden"
+                                                    name="jamaahs[{{ $index }}][is_pembuatan_passport]"
+                                                    id="is_pembuatan_passport-{{ $index }}"
+                                                    value="{{ $isPassport ? 1 : 0 }}">
+
+                                                <p class="text-xs text-gray-400 mt-1">
+                                                    <i class="fas fa-info-circle mr-1"></i>
+                                                    Pilih <b>YA</b> jika ada pendapatan perusahaan. Pilih <b>TIDAK</b>
+                                                    jika jamaah sudah punya passport.
+                                                </p>
+                                            </div>
+
+                                            <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
                                                 <div>
                                                     <label class="block text-xs font-medium text-gray-600 mb-1">
-                                                        Fee Pendamping
-                                                        <span class="text-gray-400 text-xs">(Pembayaran passport)</span>
+                                                        Pembayaran Passport <span class="text-gray-400 text-xs">(boleh
+                                                            kosong)</span>
                                                     </label>
                                                     <div class="relative">
                                                         <span
@@ -498,63 +522,40 @@
                                                             placeholder="0">
                                                     </div>
                                                 </div>
-                                                <div>
-                                                    <div class="flex items-center gap-2 pt-2">
-                                                        <button type="button"
-                                                            onclick="showFeePetugas({{ $index }})"
-                                                            id="btnShowFeePetugas-{{ $index }}"
-                                                            class="inline-flex items-center px-3 py-1.5 bg-green-500 text-white text-xs rounded-lg hover:bg-green-600 transition"
-                                                            style="{{ isset($jamaah['pendampingan_fee_petugas']) && $jamaah['pendampingan_fee_petugas'] > 0 ? 'display:none;' : '' }}">
-                                                            <i class="fas fa-plus mr-1"></i> Tambah Fee Petugas
-                                                        </button>
-                                                        <button type="button"
-                                                            onclick="hideFeePetugas({{ $index }})"
-                                                            id="btnHideFeePetugas-{{ $index }}"
-                                                            class="inline-flex items-center px-3 py-1.5 bg-red-500 text-white text-xs rounded-lg hover:bg-red-600 transition"
-                                                            style="{{ isset($jamaah['pendampingan_fee_petugas']) && $jamaah['pendampingan_fee_petugas'] > 0 ? '' : 'display:none;' }}">
-                                                            <i class="fas fa-times mr-1"></i> Hapus
-                                                        </button>
+
+                                                <div id="feePetugasContainer-{{ $index }}"
+                                                    class="{{ $isPassport ? '' : 'hidden' }}">
+                                                    <label class="block text-xs font-medium text-gray-600 mb-1">
+                                                        Pendapatan Perusahaan
+                                                        <span class="text-gray-400 text-xs">(fee petugas)</span>
+                                                    </label>
+                                                    <div class="relative">
+                                                        <span
+                                                            class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-xs">Rp</span>
+                                                        <input type="text"
+                                                            name="jamaahs[{{ $index }}][pendampingan_fee_petugas]"
+                                                            id="pendampingan_fee_petugas-{{ $index }}"
+                                                            value="{{ $jamaah['pendampingan_fee_petugas'] ?? 0 }}"
+                                                            oninput="formatRupiah(this); updateTotalPendampingan({{ $index }})"
+                                                            onfocus="handleZeroFocus(this)" onblur="handleZeroBlur(this)"
+                                                            class="w-full pl-8 pr-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-yellow-500 text-sm"
+                                                            placeholder="0">
                                                     </div>
                                                 </div>
                                             </div>
 
-                                            <div id="feePetugasContainer-{{ $index }}" class="mt-3"
-                                                style="display: {{ isset($jamaah['pendampingan_fee_petugas']) && $jamaah['pendampingan_fee_petugas'] > 0 ? 'block' : 'none' }};">
-                                                <div class="grid grid-cols-1 md:grid-cols-1 gap-3">
-                                                    <div>
-                                                        <label class="block text-xs font-medium text-gray-600 mb-1">
-                                                            Fee Petugas
-                                                            <span class="text-gray-400 text-xs">(Pendapatan
-                                                                perusahaan)</span>
-                                                        </label>
-                                                        <div class="relative">
-                                                            <span
-                                                                class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-xs">Rp</span>
-                                                            <input type="text"
-                                                                name="jamaahs[{{ $index }}][pendampingan_fee_petugas]"
-                                                                id="pendampingan_fee_petugas-{{ $index }}"
-                                                                value="{{ $jamaah['pendampingan_fee_petugas'] ?? 0 }}"
-                                                                oninput="formatRupiah(this); updateTotalPendampingan({{ $index }})"
-                                                                onfocus="handleZeroFocus(this)"
-                                                                onblur="handleZeroBlur(this)"
-                                                                class="w-full pl-8 pr-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-yellow-500 text-sm"
-                                                                placeholder="0">
-                                                        </div>
-                                                    </div>
-                                                </div>
+                                            <div class="mt-2 text-xs text-gray-500">
+                                                Total Pembuatan Passport:
+                                                <span class="font-bold text-blue-600"
+                                                    id="total-pendampingan-{{ $index }}">
+                                                    Rp
+                                                    {{ isset($jamaah['pendampingan_fee']) && isset($jamaah['pendampingan_fee_petugas']) ? number_format($jamaah['pendampingan_fee'] + $jamaah['pendampingan_fee_petugas'], 0, ',', '.') : '0' }}
+                                                </span>
+                                                <span class="text-gray-400">(Pembayaran + Pendapatan Perusahaan)</span>
                                             </div>
                                         </div>
 
-                                        <div class="mt-2 text-xs text-gray-500">
-                                            Total Pendampingan:
-                                            <span class="font-bold text-blue-600"
-                                                id="total-pendampingan-{{ $index }}">
-                                                Rp
-                                                {{ isset($jamaah['pendampingan_fee']) && isset($jamaah['pendampingan_fee_petugas']) ? number_format($jamaah['pendampingan_fee'] + $jamaah['pendampingan_fee_petugas'], 0, ',', '.') : '0' }}
-                                            </span>
-                                            <span class="text-gray-400">(Fee Pendamping + Fee Petugas)</span>
-                                        </div>
-
+                                        <!-- File Upload -->
                                         <div
                                             class="grid grid-cols-1 md:grid-cols-4 gap-3 mt-3 pt-3 border-t border-gray-200">
                                             <div>
@@ -753,21 +754,40 @@
                                         </label>
                                     </div>
 
+                                    <!-- Pembuatan Passport (TOMBOL YA/TIDAK) - default TIDAK -->
                                     <div class="mt-3 pt-3 border-t border-gray-200">
-                                        <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
-                                            <div>
-                                                <label class="block text-xs font-medium text-gray-600 mb-1">
-                                                    Nama Pendamping
-                                                    <span class="text-gray-400 text-xs">(Pembuatan passport)</span>
-                                                </label>
-                                                <input type="text" name="jamaahs[0][pendampingan_nama]"
-                                                    class="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-yellow-500 text-sm"
-                                                    placeholder="Kosongkan jika tidak ada">
+                                        <div class="mb-3">
+                                            <label class="block text-xs font-medium text-gray-600 mb-1.5">
+                                                Apakah ada Pembuatan Passport? <span class="text-red-500">*</span>
+                                            </label>
+
+                                            <div class="inline-flex rounded-lg overflow-hidden border border-gray-300">
+                                                <button type="button" onclick="setPembuatanPassportKeluarga(0, 1)"
+                                                    id="btnYa-0"
+                                                    class="px-6 py-2 text-sm font-medium bg-white text-gray-600 hover:bg-gray-50 transition-colors">
+                                                    <i class="fas fa-check mr-1"></i> YA
+                                                </button>
+                                                <button type="button" onclick="setPembuatanPassportKeluarga(0, 0)"
+                                                    id="btnTidak-0"
+                                                    class="px-6 py-2 text-sm font-medium bg-red-500 text-white transition-colors border-l border-gray-300">
+                                                    <i class="fas fa-times mr-1"></i> TIDAK
+                                                </button>
                                             </div>
+                                            <input type="hidden" name="jamaahs[0][is_pembuatan_passport]"
+                                                id="is_pembuatan_passport-0" value="0">
+
+                                            <p class="text-xs text-gray-400 mt-1">
+                                                <i class="fas fa-info-circle mr-1"></i>
+                                                Pilih <b>YA</b> jika ada pendapatan perusahaan. Pilih <b>TIDAK</b>
+                                                jika jamaah sudah punya passport.
+                                            </p>
+                                        </div>
+
+                                        <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
                                             <div>
                                                 <label class="block text-xs font-medium text-gray-600 mb-1">
-                                                    Fee Pendamping
-                                                    <span class="text-gray-400 text-xs">(Pembayaran passport)</span>
+                                                    Pembayaran Passport <span class="text-gray-400 text-xs">(boleh
+                                                        kosong)</span>
                                                 </label>
                                                 <div class="relative">
                                                     <span
@@ -780,50 +800,29 @@
                                                         placeholder="0">
                                                 </div>
                                             </div>
-                                            <div>
-                                                <div class="flex items-center gap-2 pt-2">
-                                                    <button type="button" onclick="showFeePetugas(0)"
-                                                        id="btnShowFeePetugas-0"
-                                                        class="inline-flex items-center px-3 py-1.5 bg-green-500 text-white text-xs rounded-lg hover:bg-green-600 transition">
-                                                        <i class="fas fa-plus mr-1"></i> Tambah Fee Petugas
-                                                    </button>
-                                                    <button type="button" onclick="hideFeePetugas(0)"
-                                                        id="btnHideFeePetugas-0"
-                                                        class="inline-flex items-center px-3 py-1.5 bg-red-500 text-white text-xs rounded-lg hover:bg-red-600 transition"
-                                                        style="display:none;">
-                                                        <i class="fas fa-times mr-1"></i> Hapus
-                                                    </button>
+                                            <div id="feePetugasContainer-0" class="hidden">
+                                                <label class="block text-xs font-medium text-gray-600 mb-1">
+                                                    Pendapatan Perusahaan
+                                                    <span class="text-gray-400 text-xs">(fee petugas)</span>
+                                                </label>
+                                                <div class="relative">
+                                                    <span
+                                                        class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-xs">Rp</span>
+                                                    <input type="text" name="jamaahs[0][pendampingan_fee_petugas]"
+                                                        id="pendampingan_fee_petugas-0" value="0"
+                                                        oninput="formatRupiah(this); updateTotalPendampingan(0)"
+                                                        onfocus="handleZeroFocus(this)" onblur="handleZeroBlur(this)"
+                                                        class="w-full pl-8 pr-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-yellow-500 text-sm"
+                                                        placeholder="0">
                                                 </div>
                                             </div>
                                         </div>
 
-                                        <div id="feePetugasContainer-0" class="mt-3" style="display:none;">
-                                            <div class="grid grid-cols-1 md:grid-cols-1 gap-3">
-                                                <div>
-                                                    <label class="block text-xs font-medium text-gray-600 mb-1">
-                                                        Fee Petugas
-                                                        <span class="text-gray-400 text-xs">(Pendapatan
-                                                            perusahaan)</span>
-                                                    </label>
-                                                    <div class="relative">
-                                                        <span
-                                                            class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-xs">Rp</span>
-                                                        <input type="text" name="jamaahs[0][pendampingan_fee_petugas]"
-                                                            id="pendampingan_fee_petugas-0" value="0"
-                                                            oninput="formatRupiah(this); updateTotalPendampingan(0)"
-                                                            onfocus="handleZeroFocus(this)" onblur="handleZeroBlur(this)"
-                                                            class="w-full pl-8 pr-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-yellow-500 text-sm"
-                                                            placeholder="0">
-                                                    </div>
-                                                </div>
-                                            </div>
+                                        <div class="mt-2 text-xs text-gray-500">
+                                            Total Pembuatan Passport:
+                                            <span class="font-bold text-blue-600" id="total-pendampingan-0">Rp 0</span>
+                                            <span class="text-gray-400">(Pembayaran + Pendapatan Perusahaan)</span>
                                         </div>
-                                    </div>
-
-                                    <div class="mt-2 text-xs text-gray-500">
-                                        Total Pendampingan:
-                                        <span class="font-bold text-blue-600" id="total-pendampingan-0">Rp 0</span>
-                                        <span class="text-gray-400">(Fee Pendamping + Fee Petugas)</span>
                                     </div>
 
                                     <div class="grid grid-cols-1 md:grid-cols-4 gap-3 mt-3 pt-3 border-t border-gray-200">
@@ -868,7 +867,6 @@
                             class="w-full px-4 py-2 border border-gray-200 rounded-xl focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500 text-sm">{{ old('catatan_tambahan') }}</textarea>
                     </div>
 
-                    <!-- Buttons -->
                     <div class="flex items-center justify-end gap-3 pt-4">
                         <a href="{{ route('transaksional.keluarga.index') }}"
                             class="px-4 py-2 bg-gray-200 text-gray-700 rounded-xl hover:bg-gray-300 transition-colors text-sm font-medium">
@@ -886,9 +884,6 @@
 
     @push('scripts')
         <script>
-            // ==========================================
-            // GLOBAL DATA
-            // ==========================================
             var globalKeberangkatanList = [];
             var globalHargaBulananList = [];
 
@@ -898,9 +893,6 @@
                 element.value = value;
             }
 
-            // ==========================================
-            // HANDLE ZERO (hilangkan 0 saat fokus, kembalikan saat blur kosong)
-            // ==========================================
             function handleZeroFocus(element) {
                 if (element.value === '0' || element.value === '') {
                     element.value = '';
@@ -917,8 +909,57 @@
             let jamaahIndex = {{ count(old('jamaahs', [0])) }};
 
             // ==========================================
-            // HITUNG DISKON KELOMPOK
+            // SET PEMBUATAN PASSPORT (TOMBOL YA/TIDAK)
             // ==========================================
+            function setPembuatanPassportKeluarga(index, value) {
+                var hidden = document.getElementById('is_pembuatan_passport-' + index);
+                var btnYa = document.getElementById('btnYa-' + index);
+                var btnTidak = document.getElementById('btnTidak-' + index);
+                var container = document.getElementById('feePetugasContainer-' + index);
+                var petugasInput = document.getElementById('pendampingan_fee_petugas-' + index);
+
+                if (!hidden || !btnYa || !btnTidak) return;
+
+                hidden.value = value;
+
+                if (value === 1) {
+                    // Aktifkan tombol YA
+                    btnYa.className = 'px-6 py-2 text-sm font-medium bg-green-500 text-white transition-colors';
+                    btnTidak.className =
+                        'px-6 py-2 text-sm font-medium bg-white text-gray-600 hover:bg-gray-50 transition-colors border-l border-gray-300';
+                    if (container) {
+                        container.classList.remove('hidden');
+                    }
+                } else {
+                    // Aktifkan tombol TIDAK
+                    btnYa.className = 'px-6 py-2 text-sm font-medium bg-white text-gray-600 hover:bg-gray-50 transition-colors';
+                    btnTidak.className =
+                        'px-6 py-2 text-sm font-medium bg-red-500 text-white transition-colors border-l border-gray-300';
+                    if (container) {
+                        container.classList.add('hidden');
+                    }
+                    if (petugasInput) petugasInput.value = '0';
+                }
+
+                updateTotalPendampingan(index);
+            }
+
+            function updateTotalPendampingan(index) {
+                var feeInput = document.querySelector('input[name="jamaahs[' + index + '][pendampingan_fee]"]');
+                var petugasInput = document.getElementById('pendampingan_fee_petugas-' + index);
+                var totalSpan = document.getElementById('total-pendampingan-' + index);
+                var hidden = document.getElementById('is_pembuatan_passport-' + index);
+
+                if (feeInput && totalSpan) {
+                    var fee = parseInt(feeInput.value.replace(/\./g, '')) || 0;
+                    var petugas = 0;
+                    if (hidden && hidden.value === '1' && petugasInput) {
+                        petugas = parseInt(petugasInput.value.replace(/\./g, '')) || 0;
+                    }
+                    totalSpan.textContent = 'Rp ' + (fee + petugas).toLocaleString('id-ID');
+                }
+            }
+
             function hitungDiskonKelompok() {
                 var selectDiskon = document.getElementById('id_diskon');
                 if (!selectDiskon) return;
@@ -946,9 +987,6 @@
                 }
             }
 
-            // ==========================================
-            // VALIDASI JAMAAH
-            // ==========================================
             function validateJamaahForm() {
                 var labels = {
                     nama_lengkap: 'Nama Lengkap',
@@ -1015,52 +1053,6 @@
                 }
             });
 
-            // ==========================================
-            // TOGGLE FEE PETUGAS
-            // ==========================================
-            function showFeePetugas(index) {
-                var container = document.getElementById('feePetugasContainer-' + index);
-                var btnShow = document.getElementById('btnShowFeePetugas-' + index);
-                var btnHide = document.getElementById('btnHideFeePetugas-' + index);
-                var input = document.getElementById('pendampingan_fee_petugas-' + index);
-                container.style.display = 'block';
-                btnShow.style.display = 'none';
-                btnHide.style.display = 'inline-flex';
-                if (input && (input.value === '0' || input.value === '')) input.value = '';
-                if (input) input.focus();
-                updateTotalPendampingan(index);
-            }
-
-            function hideFeePetugas(index) {
-                var container = document.getElementById('feePetugasContainer-' + index);
-                var btnShow = document.getElementById('btnShowFeePetugas-' + index);
-                var btnHide = document.getElementById('btnHideFeePetugas-' + index);
-                var input = document.getElementById('pendampingan_fee_petugas-' + index);
-                container.style.display = 'none';
-                btnShow.style.display = 'inline-flex';
-                btnHide.style.display = 'none';
-                if (input) input.value = '0';
-                updateTotalPendampingan(index);
-            }
-
-            function updateTotalPendampingan(index) {
-                var feeInput = document.querySelector('input[name="jamaahs[' + index + '][pendampingan_fee]"]');
-                var petugasInput = document.getElementById('pendampingan_fee_petugas-' + index);
-                var totalSpan = document.getElementById('total-pendampingan-' + index);
-                var container = document.getElementById('feePetugasContainer-' + index);
-                if (feeInput && totalSpan) {
-                    var fee = parseInt(feeInput.value.replace(/\./g, '')) || 0;
-                    var petugas = 0;
-                    if (container && container.style.display !== 'none' && petugasInput) {
-                        petugas = parseInt(petugasInput.value.replace(/\./g, '')) || 0;
-                    }
-                    totalSpan.textContent = 'Rp ' + (fee + petugas).toLocaleString('id-ID');
-                }
-            }
-
-            // ==========================================
-            // LOAD KEBERANGKATAN
-            // ==========================================
             function loadKeberangkatan() {
                 var produkPaket = document.getElementById('produk_paket');
                 var tahunSelect = document.getElementById('filter-tahun');
@@ -1086,7 +1078,7 @@
 
                 fetch(
                         `{{ route('transaksional.keluarga.keberangkatan-by-produk') }}?produk_paket=${encodeURIComponent(produkPaket.value)}`
-                        )
+                    )
                     .then(res => res.json())
                     .then(data => {
                         if (!data.success || !data.keberangkatan || data.keberangkatan.length === 0) {
@@ -1117,9 +1109,6 @@
                     });
             }
 
-            // ==========================================
-            // RENDER KEBERANGKATAN
-            // ==========================================
             function renderKeberangkatanByTahun(tahun) {
                 var step2Container = document.getElementById('step-2-container');
                 var container = document.getElementById('keberangkatan-container');
@@ -1376,9 +1365,6 @@
                 return namaBulan[parseInt(bulan) - 1] || bulan;
             }
 
-            // ==========================================
-            // EVENT LISTENERS
-            // ==========================================
             document.getElementById('filter-tahun').addEventListener('change', function() {
                 renderKeberangkatanByTahun(this.value);
             });
@@ -1405,9 +1391,6 @@
                 }
             });
 
-            // ==========================================
-            // ADD / REMOVE JAMAAH
-            // ==========================================
             function addJamaah() {
                 const container = document.getElementById('jamaahContainer');
                 const row = document.createElement('div');
@@ -1541,61 +1524,63 @@
                     </div>
 
                     <div class="mt-3 pt-3 border-t border-gray-200">
-                        <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
-                            <div>
-                                <label class="block text-xs font-medium text-gray-600 mb-1">Nama Pendamping</label>
-                                <input type="text" name="jamaahs[${jamaahIndex}][pendampingan_nama]"
-                                    class="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-yellow-500 text-sm"
-                                    placeholder="Kosongkan jika tidak ada">
+                        <div class="mb-3">
+                            <label class="block text-xs font-medium text-gray-600 mb-1.5">
+                                Apakah ada Pembuatan Passport? <span class="text-red-500">*</span>
+                            </label>
+
+                            <div class="inline-flex rounded-lg overflow-hidden border border-gray-300">
+                                <button type="button" onclick="setPembuatanPassportKeluarga(${jamaahIndex}, 1)"
+                                    id="btnYa-${jamaahIndex}"
+                                    class="px-6 py-2 text-sm font-medium bg-white text-gray-600 hover:bg-gray-50 transition-colors">
+                                    <i class="fas fa-check mr-1"></i> YA
+                                </button>
+                                <button type="button" onclick="setPembuatanPassportKeluarga(${jamaahIndex}, 0)"
+                                    id="btnTidak-${jamaahIndex}"
+                                    class="px-6 py-2 text-sm font-medium bg-red-500 text-white transition-colors border-l border-gray-300">
+                                    <i class="fas fa-times mr-1"></i> TIDAK
+                                </button>
                             </div>
+                            <input type="hidden" name="jamaahs[${jamaahIndex}][is_pembuatan_passport]"
+                                id="is_pembuatan_passport-${jamaahIndex}" value="0">
+
+                            <p class="text-xs text-gray-400 mt-1">
+                                <i class="fas fa-info-circle mr-1"></i>
+                                Pilih <b>YA</b> jika ada pendapatan perusahaan. Pilih <b>TIDAK</b> jika jamaah sudah punya passport.
+                            </p>
+                        </div>
+
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
                             <div>
-                                <label class="block text-xs font-medium text-gray-600 mb-1">Fee Pendamping</label>
+                                <label class="block text-xs font-medium text-gray-600 mb-1">Pembayaran Passport <span class="text-gray-400 text-xs">(boleh kosong)</span></label>
                                 <div class="relative">
                                     <span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-xs">Rp</span>
-                                    <input type="text" name="jamaahs[${jamaahIndex}][pendampingan_fee]"
-                                        value="0" oninput="formatRupiah(this); updateTotalPendampingan(${jamaahIndex})"
+                                    <input type="text" name="jamaahs[${jamaahIndex}][pendampingan_fee]" value="0"
+                                        oninput="formatRupiah(this); updateTotalPendampingan(${jamaahIndex})"
                                         onfocus="handleZeroFocus(this)" onblur="handleZeroBlur(this)"
                                         class="w-full pl-8 pr-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-yellow-500 text-sm"
                                         placeholder="0">
                                 </div>
                             </div>
-                            <div>
-                                <div class="flex items-center gap-2 pt-2">
-                                    <button type="button" onclick="showFeePetugas(${jamaahIndex})"
-                                        id="btnShowFeePetugas-${jamaahIndex}"
-                                        class="inline-flex items-center px-3 py-1.5 bg-green-500 text-white text-xs rounded-lg hover:bg-green-600 transition">
-                                        <i class="fas fa-plus mr-1"></i> Tambah Fee Petugas
-                                    </button>
-                                    <button type="button" onclick="hideFeePetugas(${jamaahIndex})"
-                                        id="btnHideFeePetugas-${jamaahIndex}"
-                                        class="inline-flex items-center px-3 py-1.5 bg-red-500 text-white text-xs rounded-lg hover:bg-red-600 transition"
-                                        style="display:none;">
-                                        <i class="fas fa-times mr-1"></i> Hapus
-                                    </button>
+                            <div id="feePetugasContainer-${jamaahIndex}" class="hidden">
+                                <label class="block text-xs font-medium text-gray-600 mb-1">Pendapatan Perusahaan <span class="text-gray-400 text-xs">(fee petugas)</span></label>
+                                <div class="relative">
+                                    <span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-xs">Rp</span>
+                                    <input type="text" name="jamaahs[${jamaahIndex}][pendampingan_fee_petugas]"
+                                        id="pendampingan_fee_petugas-${jamaahIndex}" value="0"
+                                        oninput="formatRupiah(this); updateTotalPendampingan(${jamaahIndex})"
+                                        onfocus="handleZeroFocus(this)" onblur="handleZeroBlur(this)"
+                                        class="w-full pl-8 pr-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-yellow-500 text-sm"
+                                        placeholder="0">
                                 </div>
                             </div>
                         </div>
-                        <div id="feePetugasContainer-${jamaahIndex}" class="mt-3" style="display:none;">
-                            <div class="grid grid-cols-1 md:grid-cols-1 gap-3">
-                                <div>
-                                    <label class="block text-xs font-medium text-gray-600 mb-1">Fee Petugas</label>
-                                    <div class="relative">
-                                        <span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-xs">Rp</span>
-                                        <input type="text" name="jamaahs[${jamaahIndex}][pendampingan_fee_petugas]"
-                                            id="pendampingan_fee_petugas-${jamaahIndex}" value="0"
-                                            oninput="formatRupiah(this); updateTotalPendampingan(${jamaahIndex})"
-                                            onfocus="handleZeroFocus(this)" onblur="handleZeroBlur(this)"
-                                            class="w-full pl-8 pr-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-yellow-500 text-sm"
-                                            placeholder="0">
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
 
-                    <div class="mt-2 text-xs text-gray-500">
-                        Total Pendampingan:
-                        <span class="font-bold text-blue-600" id="total-pendampingan-${jamaahIndex}">Rp 0</span>
+                        <div class="mt-2 text-xs text-gray-500">
+                            Total Pembuatan Passport:
+                            <span class="font-bold text-blue-600" id="total-pendampingan-${jamaahIndex}">Rp 0</span>
+                            <span class="text-gray-400">(Pembayaran + Pendapatan Perusahaan)</span>
+                        </div>
                     </div>
 
                     <div class="grid grid-cols-1 md:grid-cols-4 gap-3 mt-3 pt-3 border-t border-gray-200">
@@ -1646,9 +1631,6 @@
                 }
             }
 
-            // ==========================================
-            // DOM READY
-            // ==========================================
             document.addEventListener('DOMContentLoaded', function() {
                 document.querySelectorAll('.kota-asal-select').forEach(select => {
                     if (select.value) select.dispatchEvent(new Event('change'));

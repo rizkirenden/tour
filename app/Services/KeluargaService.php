@@ -103,12 +103,15 @@ class KeluargaService
             // ==========================================
             // HITUNG TOTAL TAGIHAN KELOMPOK
             // Total = Σ(harga_produk + passport_fee) - diskon
+            // passport_fee = pendampingan_fee + pendampingan_fee_petugas
             // ==========================================
             $totalTagihanKotor = 0;
             $totalPassport = 0;
             if (!empty($data['jamaahs'])) {
                 foreach ($data['jamaahs'] as $j) {
-                    $passportFee = (int) (($j['pendampingan_fee'] ?? 0) + ($j['pendampingan_fee_petugas'] ?? 0));
+                    $isPassport = !empty($j['is_pembuatan_passport']) && $j['is_pembuatan_passport'] == 1;
+                    $feePetugas = $isPassport ? (int) ($j['pendampingan_fee_petugas'] ?? 0) : 0;
+                    $passportFee = (int) ($j['pendampingan_fee'] ?? 0) + $feePetugas;
                     $totalPassport += $passportFee;
                     $totalTagihanKotor += $hargaProduk + $passportFee;
                 }
@@ -136,8 +139,6 @@ class KeluargaService
             // CREATE JAMAAH ANGGOTA
             // ==========================================
             if (!empty($data['jamaahs'])) {
-                $produkKeluarga = ProdukPaket::where('nama_produk', $data['produk_paket'])->first();
-
                 foreach ($data['jamaahs'] as $index => $jamaahData) {
                     $jamaahData['id_keluarga'] = $keluarga->id_keluarga;
                     $jamaahData['is_kepala_keluarga'] = $jamaahData['is_kepala_keluarga'] ?? false;
@@ -146,9 +147,17 @@ class KeluargaService
                     $jamaahData['fee_agent'] = (int) ($data['fee_agent'] ?? 0);
                     $jamaahData['agent_name'] = $data['agent'] ?? null;
 
-                    $jamaahData['pendampingan_nama'] = $jamaahData['pendampingan_nama'] ?? null;
+                    // ==========================================
+                    // PEMBUATAN PASSPORT — YA/TIDAK
+                    // ==========================================
+                    $jamaahData['is_pembuatan_passport'] = (bool) ($jamaahData['is_pembuatan_passport'] ?? false);
                     $jamaahData['pendampingan_fee'] = (int) ($jamaahData['pendampingan_fee'] ?? 0);
                     $jamaahData['pendampingan_fee_petugas'] = (int) ($jamaahData['pendampingan_fee_petugas'] ?? 0);
+
+                    // Jika TIDAK pembuatan passport, paksa fee petugas = 0
+                    if (!$jamaahData['is_pembuatan_passport']) {
+                        $jamaahData['pendampingan_fee_petugas'] = 0;
+                    }
 
                     $jamaahData = $this->handleFileUploads($jamaahData, $index);
 
@@ -300,8 +309,6 @@ class KeluargaService
                 $existingIds = collect($data['jamaahs'])->pluck('id_jamaah')->filter()->toArray();
                 $keluarga->jamaahs()->whereNotIn('id_jamaah', $existingIds)->delete();
 
-                $produkKeluarga = ProdukPaket::where('nama_produk', $data['produk_paket'])->first();
-
                 foreach ($data['jamaahs'] as $index => $jamaahData) {
                     $jamaahData['id_keluarga'] = $keluarga->id_keluarga;
                     $jamaahData['produk_paket'] = $data['produk_paket'];
@@ -309,9 +316,17 @@ class KeluargaService
                     $jamaahData['fee_agent'] = (int) ($data['fee_agent'] ?? 0);
                     $jamaahData['agent_name'] = $data['agent'] ?? null;
 
-                    $jamaahData['pendampingan_nama'] = $jamaahData['pendampingan_nama'] ?? null;
+                    // ==========================================
+                    // PEMBUATAN PASSPORT — YA/TIDAK
+                    // ==========================================
+                    $jamaahData['is_pembuatan_passport'] = (bool) ($jamaahData['is_pembuatan_passport'] ?? false);
                     $jamaahData['pendampingan_fee'] = (int) ($jamaahData['pendampingan_fee'] ?? 0);
                     $jamaahData['pendampingan_fee_petugas'] = (int) ($jamaahData['pendampingan_fee_petugas'] ?? 0);
+
+                    // Jika TIDAK pembuatan passport, paksa fee petugas = 0
+                    if (!$jamaahData['is_pembuatan_passport']) {
+                        $jamaahData['pendampingan_fee_petugas'] = 0;
+                    }
 
                     $jamaahData = $this->handleFileUploads($jamaahData, $index, $jamaahData['id_jamaah'] ?? null);
 

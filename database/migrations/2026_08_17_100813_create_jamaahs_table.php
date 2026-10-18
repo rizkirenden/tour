@@ -41,7 +41,7 @@ return new class extends Migration
             $table->string('kota_asal', 50)->nullable();
             $table->string('pulau', 20)->nullable();
             $table->string('bandara_keberangkatan', 50)->nullable();
-             $table->integer('bulan_harga')->nullable();
+            $table->integer('bulan_harga')->nullable();
             $table->integer('tahun_harga')->nullable();
             $table->integer('bulan_keberangkatan')->nullable();
             $table->integer('tahun_keberangkatan')->nullable();
@@ -59,11 +59,16 @@ return new class extends Migration
             $table->string('agent_name', 100)->nullable()->comment('Nama Agent');
             $table->bigInteger('fee_agent')->default(0)->comment('Fee Agent');
 
-            // === PENDAMPINGAN ===
-            $table->string('jenis_pendampingan', 30)->nullable()->comment('VIP, Premium, Reguler, Ekonomi');
-            $table->string('pendampingan_nama', 100)->nullable()->comment('Nama Pendamping');
-            $table->bigInteger('pendampingan_fee')->default(0)->comment('Fee Pendamping');
-            $table->bigInteger('pendampingan_fee_petugas')->default(0)->comment('Fee Petugas Pendamping');
+            // === PEMBUATAN PASSPORT ===
+            $table->boolean('is_pembuatan_passport')
+                ->default(false)
+                ->comment('YA = ada pendapatan perusahaan, TIDAK = hanya pembayaran passport (bisa kosong)');
+            $table->bigInteger('pendampingan_fee')
+                ->default(0)
+                ->comment('Pembayaran passport (bisa 0 jika jamaah sudah punya passport)');
+            $table->bigInteger('pendampingan_fee_petugas')
+                ->default(0)
+                ->comment('Pendapatan perusahaan (hanya diisi jika is_pembuatan_passport = YA)');
 
             // === TIKET ===
             $table->bigInteger('harga_tiket_pergi_domestik')->default(0);

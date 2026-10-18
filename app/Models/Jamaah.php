@@ -43,10 +43,9 @@ class Jamaah extends Model
         'file_visa',
         'file_paspor',
         'encryption_key',
-        'jenis_pendampingan',
         'agent_name',
         'fee_agent',
-        'pendampingan_nama',
+        'is_pembuatan_passport',
         'pendampingan_fee',
         'pendampingan_fee_petugas',
         'harga_tiket_pergi_domestik',
@@ -74,6 +73,7 @@ class Jamaah extends Model
         'paspor_expired' => 'date',
         'paspor_terbit' => 'date',
         'fee_agent' => 'integer',
+        'is_pembuatan_passport' => 'boolean',
         'pendampingan_fee' => 'integer',
         'pendampingan_fee_petugas' => 'integer',
         'harga_tiket_pergi_domestik' => 'integer',
@@ -129,10 +129,6 @@ class Jamaah extends Model
         return $this->hasMany(DepartureJamaah::class, 'id_jamaah', 'id_jamaah');
     }
 
-    /**
-     * Relasi multiple keberangkatan (bulan & tahun)
-     * Pivot table: jamaah_keberangkatans
-     */
     public function keberangkatan()
     {
         return $this->belongsToMany(
@@ -207,7 +203,7 @@ class Jamaah extends Model
     }
 
     // ==========================================
-    // ACCESSORS - AGENT & PENDAMPINGAN
+    // ACCESSORS - AGENT
     // ==========================================
 
     public function getAgentNameFormattedAttribute()
@@ -220,9 +216,21 @@ class Jamaah extends Model
         return 'Rp ' . number_format($this->fee_agent, 0, ',', '.');
     }
 
-    public function getPendampinganNamaFormattedAttribute()
+    // ==========================================
+    // ACCESSORS - PEMBUATAN PASSPORT
+    // ==========================================
+
+    public function getIsPembuatanPassportLabelAttribute()
     {
-        return $this->pendampingan_nama ?? '-';
+        return $this->is_pembuatan_passport ? 'YA' : 'TIDAK';
+    }
+
+    public function getIsPembuatanPassportBadgeAttribute()
+    {
+        if ($this->is_pembuatan_passport) {
+            return '<span class="px-2 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-700">YA</span>';
+        }
+        return '<span class="px-2 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-700">TIDAK</span>';
     }
 
     public function getPendampinganFeeFormattedAttribute()
@@ -253,6 +261,93 @@ class Jamaah extends Model
     public function getTotalFeeAgentPendampinganFormattedAttribute()
     {
         return 'Rp ' . number_format($this->total_fee_agent_pendampingan, 0, ',', '.');
+    }
+
+    // ==========================================
+    // ACCESSORS - FEE PASSPORT (untuk Departure)
+    // ==========================================
+
+    /**
+     * Apakah jamaah ini EFEKTIF punya pembuatan passport?
+     * - YA (is_pembuatan_passport = true) → true
+     * - TIDAK tapi ada pembayaran passport (pendampingan_fee > 0) → true
+     * - TIDAK dan tidak ada pembayaran passport → false
+     */
+    public function getIsPembuatanPassportEfektifAttribute()
+    {
+        if ($this->is_pembuatan_passport) {
+            return true;
+        }
+        return ($this->pendampingan_fee ?? 0) > 0;
+    }
+
+    /**
+     * Total fee passport per jamaah = pendampingan_fee + pendampingan_fee_petugas
+     * Dihitung jika is_pembuatan_passport_efektif = true
+     */
+    public function getFeePassportAttribute()
+    {
+        if (!$this->is_pembuatan_passport_efektif) {
+            return 0;
+        }
+        return ($this->pendampingan_fee ?? 0) + ($this->pendampingan_fee_petugas ?? 0);
+    }
+
+    public function getFeePassportFormattedAttribute()
+    {
+        return 'Rp ' . number_format($this->fee_passport, 0, ',', '.');
+    }
+
+    /**
+     * Pembayaran passport yang masuk ke PENGELUARAN departure
+     * Hanya jika efektif = true
+     */
+    public function getPembayaranPassportUntukPengeluaranAttribute()
+    {
+        if (!$this->is_pembuatan_passport_efektif) {
+            return 0;
+        }
+        return $this->pendampingan_fee ?? 0;
+    }
+
+    /**
+     * Pendapatan perusahaan yang masuk ke PENDAPATAN departure
+     * Hanya jika efektif = true
+     */
+    public function getPendapatanPerusahaanUntukPendapatanAttribute()
+    {
+        if (!$this->is_pembuatan_passport_efektif) {
+            return 0;
+        }
+        return $this->pendampingan_fee_petugas ?? 0;
+    }
+
+    public function getHasPembuatanPassportAttribute()
+    {
+        return $this->is_pembuatan_passport_efektif;
+    }
+
+    public function getPembuatanPassportBadgeAttribute()
+    {
+        if ($this->is_pembuatan_passport) {
+            return '<span class="px-2 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-700">YA</span>';
+        }
+        if ($this->is_pembuatan_passport_efektif) {
+            return '<span class="px-2 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-700" title="Pilihan TIDAK namun ada pembayaran passport">YA (efektif)</span>';
+        }
+        return '<span class="px-2 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-700">TIDAK</span>';
+    }
+
+    public function getFeePassportBreakdownAttribute()
+    {
+        if (!$this->is_pembuatan_passport_efektif) {
+            return null;
+        }
+        return [
+            'pembayaran_passport' => $this->pendampingan_fee ?? 0,
+            'pendapatan_perusahaan' => $this->pendampingan_fee_petugas ?? 0,
+            'total' => $this->fee_passport,
+        ];
     }
 
     // ==========================================
@@ -411,7 +506,6 @@ class Jamaah extends Model
             ->sortBy(['pivot.tahun_keberangkatan', 'pivot.bulan_keberangkatan'])
             ->map(function ($k) use ($bulanNama) {
                 $text = $bulanNama[$k->pivot->bulan_keberangkatan] . ' ' . $k->pivot->tahun_keberangkatan;
-                // Jika harga beda bulan/tahun
                 if ($k->pivot->bulan_harga && $k->pivot->tahun_harga) {
                     if ($k->pivot->bulan_harga != $k->pivot->bulan_keberangkatan ||
                         $k->pivot->tahun_harga != $k->pivot->tahun_keberangkatan) {
@@ -446,7 +540,6 @@ class Jamaah extends Model
                 $html .= '<i class="fas fa-plane text-[10px]"></i>';
                 $html .= $bulanNama[$k->pivot->bulan_keberangkatan] . ' ' . $k->pivot->tahun_keberangkatan;
 
-                // Jika harga beda bulan/tahun
                 if ($k->pivot->bulan_harga && $k->pivot->tahun_harga) {
                     if ($k->pivot->bulan_harga != $k->pivot->bulan_keberangkatan ||
                         $k->pivot->tahun_harga != $k->pivot->tahun_keberangkatan) {
@@ -555,40 +648,41 @@ class Jamaah extends Model
     }
 
     // ==========================================
-// PEMBUATAN PASSPORT (Fee Pendamping + Fee Petugas)
-// ==========================================
-public function getTotalPembuatanPassportAttribute()
-{
-    return ($this->pendampingan_fee ?? 0) + ($this->pendampingan_fee_petugas ?? 0);
-}
+    // PEMBUATAN PASSPORT
+    // ==========================================
 
-public function getTotalPembuatanPassportFormattedAttribute()
-{
-    return 'Rp ' . number_format($this->total_pembuatan_passport, 0, ',', '.');
-}
-
-// ==========================================
-// HARGA PRODUK (dari pivot keberangkatan)
-// ==========================================
-public function getHargaProdukAttribute()
-{
-    if ($this->relationLoaded('keberangkatan') && $this->keberangkatan->isNotEmpty()) {
-        return (int) ($this->keberangkatan->first()->pivot->harga ?? 0);
+    public function getTotalPembuatanPassportAttribute()
+    {
+        return ($this->pendampingan_fee ?? 0) + ($this->pendampingan_fee_petugas ?? 0);
     }
 
-    if ($this->keberangkatan()->exists()) {
-        $first = $this->keberangkatan()->first();
-        return (int) ($first->pivot->harga ?? 0);
+    public function getTotalPembuatanPassportFormattedAttribute()
+    {
+        return 'Rp ' . number_format($this->total_pembuatan_passport, 0, ',', '.');
     }
 
-    // Fallback: harga_produk = total_tagihan_sebelum_diskon - passport fee
-    return max(0, ($this->total_tagihan_sebelum_diskon ?? 0) - $this->total_pembuatan_passport);
-}
+    // ==========================================
+    // HARGA PRODUK (dari pivot keberangkatan)
+    // ==========================================
 
-public function getHargaProdukFormattedAttribute()
-{
-    return 'Rp ' . number_format($this->harga_produk, 0, ',', '.');
-}
+    public function getHargaProdukAttribute()
+    {
+        if ($this->relationLoaded('keberangkatan') && $this->keberangkatan->isNotEmpty()) {
+            return (int) ($this->keberangkatan->first()->pivot->harga ?? 0);
+        }
+
+        if ($this->keberangkatan()->exists()) {
+            $first = $this->keberangkatan()->first();
+            return (int) ($first->pivot->harga ?? 0);
+        }
+
+        return max(0, ($this->total_tagihan_sebelum_diskon ?? 0) - $this->total_pembuatan_passport);
+    }
+
+    public function getHargaProdukFormattedAttribute()
+    {
+        return 'Rp ' . number_format($this->harga_produk, 0, ',', '.');
+    }
 
     // ==========================================
     // SCOPES
@@ -602,8 +696,7 @@ public function getHargaProdukFormattedAttribute()
                 ->orWhere('id_keberangkatan', 'like', '%' . $search . '%')
                 ->orWhere('produk_paket', 'like', '%' . $search . '%')
                 ->orWhere('nik', 'like', '%' . $search . '%')
-                ->orWhere('agent_name', 'like', '%' . $search . '%')
-                ->orWhere('pendampingan_nama', 'like', '%' . $search . '%');
+                ->orWhere('agent_name', 'like', '%' . $search . '%');
         });
 
         $query->when($filters['status_pembayaran'] ?? null, function ($query, $status) {

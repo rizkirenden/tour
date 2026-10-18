@@ -111,11 +111,23 @@
                     </div>
                 </div>
 
+                {{-- 1. PENDAPATAN --}}
+                <div class="mb-6">
+                    <h6 class="text-sm font-semibold text-gray-700 mb-3 flex items-center">
+                        <i class="fas fa-money-bill-wave text-green-500 mr-2"></i> Pendapatan
+                    </h6>
+                </div>
+
                 {{-- 1. RINGKASAN PENDAPATAN --}}
                 <div class="bg-gray-50 rounded-xl p-5 border border-gray-100 mb-6">
                     <h6 class="text-sm font-semibold text-gray-700 mb-4 flex items-center">
                         <i class="fas fa-money-bill-wave text-green-500 mr-2"></i> Ringkasan Pendapatan
                     </h6>
+
+                    @php
+                        $pendapatanPerusahaanPassport = $departure->total_pendapatan_perusahaan_passport;
+                        $pembayaranPassport = $departure->total_pembayaran_passport;
+                    @endphp
 
                     <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
                         <div class="bg-white rounded-lg p-3 border border-gray-200 text-center">
@@ -127,10 +139,10 @@
                             <p class="text-xs text-gray-500">Total Diskon</p>
                             <p class="text-sm font-bold text-red-600">{{ $departure->total_diskon_formatted }}</p>
                         </div>
-                        <div class="bg-white rounded-lg p-3 border border-gray-200 text-center">
-                            <p class="text-xs text-gray-500">Pendapatan Bersih</p>
-                            <p class="text-sm font-bold text-yellow-600">
-                                {{ $departure->total_pendapatan_bersih_formatted }}</p>
+                        <div class="bg-white rounded-lg p-3 border border-purple-200 text-center">
+                            <p class="text-xs text-gray-500">Pendapatan Perusahaan Passport</p>
+                            <p class="text-sm font-bold text-purple-600">
+                                {{ $departure->total_pendapatan_perusahaan_passport_formatted }}</p>
                         </div>
                         <div class="bg-white rounded-lg p-3 border border-gray-200 text-center">
                             <p class="text-xs text-gray-500">Total Pendapatan</p>
@@ -139,19 +151,52 @@
                         </div>
                     </div>
 
+                    @if ($pendapatanPerusahaanPassport > 0 || $pembayaranPassport > 0)
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-3 mb-4">
+                            <div class="bg-green-50 rounded-lg p-3 border-2 border-green-300">
+                                <div class="flex items-center justify-between">
+                                    <div>
+                                        <p class="text-xs text-green-700 font-semibold">
+                                            <i class="fas fa-arrow-up mr-1"></i>Pendapatan Perusahaan Passport
+                                        </p>
+                                        <p class="text-[10px] text-green-600 mt-0.5">
+                                            Masuk ke PENDAPATAN (fee petugas dari jamaah efektif YA)
+                                        </p>
+                                    </div>
+                                    <p class="text-lg font-bold text-green-700">
+                                        Rp {{ number_format($pendapatanPerusahaanPassport, 0, ',', '.') }}
+                                    </p>
+                                </div>
+                            </div>
+                            <div class="bg-red-50 rounded-lg p-3 border-2 border-red-300">
+                                <div class="flex items-center justify-between">
+                                    <div>
+                                        <p class="text-xs text-red-700 font-semibold">
+                                            <i class="fas fa-arrow-down mr-1"></i>Pembayaran Passport
+                                        </p>
+                                        <p class="text-[10px] text-red-600 mt-0.5">
+                                            Masuk ke PENGELUARAN (biaya pembuatan passport)
+                                        </p>
+                                    </div>
+                                    <p class="text-lg font-bold text-red-700">
+                                        Rp {{ number_format($pembayaranPassport, 0, ',', '.') }}
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    @endif
+
                     <div class="grid grid-cols-2 gap-4 mb-4">
+                        <div class="bg-white rounded-lg p-3 border border-gray-200 text-center">
+                            <p class="text-xs text-gray-500">Pendapatan Bersih</p>
+                            <p class="text-sm font-bold text-yellow-600">
+                                {{ $departure->total_pendapatan_bersih_formatted }}</p>
+                        </div>
                         <div class="bg-white rounded-lg p-3 border border-gray-200 text-center">
                             <p class="text-xs text-gray-500">Keuntungan</p>
                             <p
                                 class="text-lg font-bold {{ $departure->keuntungan > 0 ? 'text-green-600' : 'text-red-600' }}">
                                 {{ $departure->keuntungan_formatted }}
-                            </p>
-                        </div>
-                        <div class="bg-white rounded-lg p-3 border border-gray-200 text-center">
-                            <p class="text-xs text-gray-500">Margin Laba</p>
-                            <p
-                                class="text-lg font-bold {{ $departure->margin_laba > 0 ? 'text-green-600' : 'text-red-600' }}">
-                                {{ $departure->margin_laba_formatted }}
                             </p>
                         </div>
                     </div>
@@ -164,7 +209,7 @@
                                     TOTAL KESELURUHAN PENDAPATAN
                                 </p>
                                 <p class="text-[10px] text-green-600 mt-0.5">
-                                    Pendapatan Kotor + Diskon = Total Pendapatan Bersih
+                                    Pendapatan Kotor + Pendapatan Perusahaan Passport
                                 </p>
                             </div>
                             <div class="text-right">
@@ -181,8 +226,9 @@
                                     class="font-bold text-green-800">{{ $departure->total_pendapatan_kotor_formatted }}</span>
                             </div>
                             <div class="flex justify-between">
-                                <span class="text-green-700">Diskon:</span>
-                                <span class="font-bold text-red-600">{{ $departure->total_diskon_formatted }}</span>
+                                <span class="text-green-700">Passport Perusahaan:</span>
+                                <span
+                                    class="font-bold text-purple-600">{{ $departure->total_pendapatan_perusahaan_passport_formatted }}</span>
                             </div>
                             <div class="flex justify-between">
                                 <span class="text-green-700">Bersih:</span>
@@ -224,14 +270,11 @@
                         12 => 'Desember',
                     ];
 
-                    $totalFeePassport = $departure->jamaahs->sum(function ($j) {
-                        return $j->fee_passport ?? 0;
-                    });
-                    $jamaahDenganPassport = $departure->jamaahs
-                        ->filter(function ($j) {
-                            return ($j->fee_passport ?? 0) > 0;
-                        })
-                        ->count();
+                    $totalFeePassport = $departure->total_fee_passport;
+                    $totalPembayaranPassport = $departure->total_pembayaran_passport;
+                    $totalPendapatanPerusahaanPassport = $departure->total_pendapatan_perusahaan_passport;
+                    $jamaahDenganPassport = $departure->jamaah_dengan_passport;
+                    $jamaahTanpaPassport = $departure->jamaah_tanpa_passport;
                 @endphp
 
                 <div class="bg-gray-50 rounded-xl p-5 border border-gray-100 mb-6">
@@ -261,20 +304,39 @@
                         </div>
                     </div>
 
-                    <div class="grid grid-cols-2 md:grid-cols-3 gap-3 mb-4">
+                    {{-- Ringkasan 5 kotak --}}
+                    <div class="grid grid-cols-2 md:grid-cols-5 gap-3 mb-4">
                         <div class="bg-white rounded-lg p-3 border border-purple-200 text-center">
                             <p class="text-xs text-gray-500">Total Fee Passport</p>
                             <p class="text-lg font-bold text-purple-600">
                                 Rp {{ number_format($totalFeePassport, 0, ',', '.') }}
                             </p>
+                            <p class="text-[10px] text-gray-400 mt-0.5">
+                                Bayar + Perusahaan
+                            </p>
                         </div>
-                        <div class="bg-white rounded-lg p-3 border border-purple-200 text-center">
-                            <p class="text-xs text-gray-500">Jamaah dengan Passport</p>
-                            <p class="text-lg font-bold text-purple-600">{{ $jamaahDenganPassport }} orang</p>
+                        <div class="bg-white rounded-lg p-3 border border-red-200 text-center">
+                            <p class="text-xs text-gray-500">→ Pengeluaran</p>
+                            <p class="text-lg font-bold text-red-600">Rp
+                                {{ number_format($totalPembayaranPassport, 0, ',', '.') }}</p>
+                            <p class="text-[10px] text-gray-400 mt-0.5">Pembayaran Passport</p>
                         </div>
-                        <div class="bg-white rounded-lg p-3 border border-purple-200 text-center">
+                        <div class="bg-white rounded-lg p-3 border border-green-200 text-center">
+                            <p class="text-xs text-gray-500">→ Pendapatan</p>
+                            <p class="text-lg font-bold text-green-600">Rp
+                                {{ number_format($totalPendapatanPerusahaanPassport, 0, ',', '.') }}</p>
+                            <p class="text-[10px] text-gray-400 mt-0.5">Pendapatan Perusahaan</p>
+                        </div>
+                        <div class="bg-white rounded-lg p-3 border border-green-300 text-center">
+                            <p class="text-xs text-gray-500">Jamaah Efektif (YA)</p>
+                            <p class="text-lg font-bold text-green-700">{{ $jamaahDenganPassport }} orang</p>
+                            <p class="text-[10px] text-gray-400 mt-0.5">YA + TIDAK tapi ada bayar</p>
+                        </div>
+                        <div class="bg-white rounded-lg p-3 border border-blue-200 text-center">
                             <p class="text-xs text-gray-500">Total Jamaah</p>
                             <p class="text-lg font-bold text-gray-700">{{ $departure->jamaahs->count() }} orang</p>
+                            <p class="text-[10px] text-gray-400 mt-0.5">TIDAK murni:
+                                {{ $jamaahTanpaPassport }} orang</p>
                         </div>
                     </div>
 
@@ -290,6 +352,10 @@
                         <span class="inline-flex items-center gap-1.5">
                             <span class="w-3 h-3 rounded-full bg-purple-500"></span>
                             <span class="text-gray-600">Fee Passport</span>
+                        </span>
+                        <span class="inline-flex items-center gap-1.5">
+                            <span class="w-3 h-3 rounded-full bg-green-600"></span>
+                            <span class="text-gray-600">Pembuatan Passport YA</span>
                         </span>
                     </div>
 
@@ -322,7 +388,11 @@
                                     $jamaahKeberangkatanInfo = '';
                                     $jamaahHargaInfo = '';
                                     $jamaahHargaLabel = 'Harga';
-                                    $jamaahFeePassport = $jamaah->fee_passport ?? 0;
+                                    $jamaahFeePassport = $jamaah->fee_passport;
+                                    $jamaahIsPembuatanPassport = $jamaah->is_pembuatan_passport_efektif;
+                                    $jamaahPembayaranPassport = $jamaah->pendampingan_fee ?? 0;
+                                    $jamaahPendapatanPerusahaan = $jamaah->pendampingan_fee_petugas ?? 0;
+                                    $jamaahPilihanAsli = $jamaah->is_pembuatan_passport;
 
                                     if ($jamaah->keberangkatan && $jamaah->keberangkatan->count() > 0) {
                                         $firstK = $jamaah->keberangkatan->first();
@@ -383,11 +453,18 @@
                                                     class="px-1.5 py-0.5 rounded-full text-[10px] font-bold {{ $badgeClass }}">
                                                     {{ $badgeText }}
                                                 </span>
-                                                @if ($jamaahFeePassport > 0)
+                                                @if ($jamaahIsPembuatanPassport)
                                                     <span
-                                                        class="px-1.5 py-0.5 rounded-full text-[10px] font-bold bg-purple-500 text-white">
-                                                        FEE PASS {{ number_format($jamaahFeePassport, 0, ',', '.') }}
+                                                        class="px-1.5 py-0.5 rounded-full text-[10px] font-bold bg-green-600 text-white">
+                                                        <i class="fas fa-passport mr-0.5"></i>
+                                                        {{ $jamaahPilihanAsli ? 'PASSPORT YA' : 'PASSPORT YA (EFEKTIF)' }}
                                                     </span>
+                                                    @if ($jamaahFeePassport > 0)
+                                                        <span
+                                                            class="px-1.5 py-0.5 rounded-full text-[10px] font-bold bg-purple-500 text-white">
+                                                            FEE PASS {{ number_format($jamaahFeePassport, 0, ',', '.') }}
+                                                        </span>
+                                                    @endif
                                                 @endif
                                             </div>
 
@@ -411,19 +488,37 @@
                                                 </p>
                                             @endif
 
-                                            @if ($jamaahFeePassport > 0)
+                                            @if ($jamaahIsPembuatanPassport)
                                                 <p class="text-[11px] text-purple-600 font-semibold mt-0.5">
                                                     <i class="fas fa-passport mr-0.5"></i>
                                                     Fee Passport:
                                                     <strong>Rp
                                                         {{ number_format($jamaahFeePassport, 0, ',', '.') }}</strong>
                                                 </p>
+                                                @if ($jamaahPembayaranPassport > 0)
+                                                    <p class="text-[10px] text-red-600 ml-3">
+                                                        → Pengeluaran (Bayar): Rp
+                                                        {{ number_format($jamaahPembayaranPassport, 0, ',', '.') }}
+                                                    </p>
+                                                @endif
+                                                @if ($jamaahPendapatanPerusahaan > 0)
+                                                    <p class="text-[10px] text-green-600 ml-3">
+                                                        → Pendapatan (Perusahaan): Rp
+                                                        {{ number_format($jamaahPendapatanPerusahaan, 0, ',', '.') }}
+                                                    </p>
+                                                @endif
+                                                @if (!$jamaahPilihanAsli && $jamaahPembayaranPassport > 0)
+                                                    <p class="text-[10px] text-yellow-600 ml-3 italic">
+                                                        <i class="fas fa-info-circle mr-0.5"></i>
+                                                        Pilihan TIDAK tapi ada pembayaran passport → dihitung sebagai YA
+                                                    </p>
+                                                @endif
                                             @endif
 
-                                            @if ($jamaah->agent)
+                                            @if ($jamaah->agent_name)
                                                 <p class="text-[11px] text-purple-600 mt-0.5">
                                                     <i class="fas fa-user-tie mr-0.5"></i>
-                                                    {{ $jamaah->agent->nama_agent ?? 'Agent' }}
+                                                    {{ $jamaah->agent_name }}
                                                 </p>
                                             @endif
                                         </div>
@@ -462,10 +557,25 @@
                                 </span>
                             </div>
                             <div class="flex items-center justify-between text-sm text-gray-500 mt-1">
-                                <span><i class="fas fa-passport text-purple-500 mr-1"></i> Total Fee Passport</span>
+                                <span>
+                                    <i class="fas fa-passport text-purple-500 mr-1"></i>
+                                    Total Fee Passport ({{ $jamaahDenganPassport }} jamaah efektif YA)
+                                </span>
                                 <span class="font-bold text-purple-600">
                                     Rp {{ number_format($totalFeePassport, 0, ',', '.') }}
                                 </span>
+                            </div>
+                            <div class="flex items-center justify-between text-xs text-red-600 mt-0.5">
+                                <span class="ml-4"><i class="fas fa-arrow-right mr-1"></i>Pembayaran Passport (masuk
+                                    pengeluaran)</span>
+                                <span class="font-medium">Rp
+                                    {{ number_format($totalPembayaranPassport, 0, ',', '.') }}</span>
+                            </div>
+                            <div class="flex items-center justify-between text-xs text-green-600">
+                                <span class="ml-4"><i class="fas fa-arrow-right mr-1"></i>Pendapatan Perusahaan (masuk
+                                    pendapatan)</span>
+                                <span class="font-medium">Rp
+                                    {{ number_format($totalPendapatanPerusahaanPassport, 0, ',', '.') }}</span>
                             </div>
                         </div>
                     @else
@@ -668,7 +778,8 @@
                                             @foreach ($hotelTransitDetails as $detail)
                                                 <div class="bg-white rounded-lg p-3 border border-gray-200 hotel-detail-item"
                                                     data-hotel="transit">
-                                                    <p class="text-sm font-medium text-gray-700">{{ $detail->tipe_kamar }}
+                                                    <p class="text-sm font-medium text-gray-700">
+                                                        {{ $detail->tipe_kamar }}
                                                     </p>
                                                     <p class="text-xs text-gray-500">
                                                         {{ $detail->jumlah_kamar }} Kamar ×
@@ -1414,7 +1525,7 @@
 
                     @php
                         $totalFeeAgent = $departure->jamaahs->sum('fee_agent');
-                        $totalFeePassport = $departure->jamaahs->sum('fee_passport');
+                        $totalPembayaranPassport = $departure->total_pembayaran_passport;
                     @endphp
 
                     <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-4">
@@ -1443,10 +1554,13 @@
                             <p class="text-sm font-bold text-gray-700">{{ $departure->total_jenis_transaksi_formatted }}
                             </p>
                         </div>
-                        <div class="bg-white rounded-lg p-3 border border-gray-200 text-center">
-                            <p class="text-xs text-gray-500">Fee Passport</p>
-                            <p class="text-sm font-bold text-purple-600">Rp
-                                {{ number_format($totalFeePassport, 0, ',', '.') }}</p>
+                        <div class="bg-white rounded-lg p-3 border border-red-200 text-center">
+                            <p class="text-xs text-gray-500">Pembayaran Passport</p>
+                            <p class="text-sm font-bold text-red-600">Rp
+                                {{ number_format($totalPembayaranPassport, 0, ',', '.') }}</p>
+                            <p class="text-[10px] text-gray-400 mt-0.5">
+                                {{ $jamaahDenganPassport }} jamaah efektif YA
+                            </p>
                         </div>
                         <div class="bg-white rounded-lg p-3 border border-gray-200 text-center">
                             <p class="text-xs text-gray-500">Fee Agent</p>
@@ -1470,8 +1584,8 @@
                                     TOTAL KESELURUHAN PENGELUARAN
                                 </p>
                                 <p class="text-[10px] text-red-600 mt-0.5">
-                                    Maskapai + Hotel + Hotel Tour + Perlengkapan + Jenis Transaksi + Fee Passport + Fee
-                                    Agent
+                                    Maskapai + Hotel + Hotel Tour + Perlengkapan + Jenis Transaksi + Pembayaran Passport
+                                    + Fee Agent
                                 </p>
                             </div>
                             <div class="text-right">
@@ -1509,9 +1623,10 @@
                                     class="font-bold text-red-800">{{ $departure->total_jenis_transaksi_formatted }}</span>
                             </div>
                             <div class="flex justify-between">
-                                <span class="text-red-700">Fee Passport:</span>
+                                <span class="text-red-700">Pembayaran Passport ({{ $jamaahDenganPassport }} YA
+                                    efektif):</span>
                                 <span class="font-bold text-red-800">Rp
-                                    {{ number_format($totalFeePassport, 0, ',', '.') }}</span>
+                                    {{ number_format($totalPembayaranPassport, 0, ',', '.') }}</span>
                             </div>
                             <div class="flex justify-between md:col-span-2">
                                 <span class="text-red-700">Fee Agent:</span>
@@ -2109,8 +2224,8 @@
                     <i class="fas fa-times text-xl"></i>
                 </button>
             </div>
-            <form action="{{ route('transaksional.departure.update-jamaah', $departure->id_departure) }}" method="POST"
-                class="p-6">
+            <form action="{{ route('transaksional.departure.update-jamaah', $departure->id_departure) }}"
+                method="POST" class="p-6">
                 @csrf
                 @method('PUT')
 
@@ -2228,6 +2343,7 @@
                         @php
                             $isLunas = $jamaah->status_pembayaran == 'Lunas';
                             $isRegistered = in_array($jamaah->id_jamaah, $selectedJamaahs);
+                            $hasPassport = $jamaah->is_pembuatan_passport_efektif;
 
                             if ($isRegistered) {
                                 $borderClass = 'border-2 border-blue-400';
@@ -2249,7 +2365,7 @@
                             $jamaahKeberangkatanInfo = '';
                             $jamaahHargaInfo = '';
                             $jamaahHargaLabel = 'Harga';
-                            $jamaahFeePassport = $jamaah->fee_passport ?? 0;
+                            $jamaahFeePassport = $jamaah->fee_passport;
 
                             if ($jamaah->keberangkatan && $jamaah->keberangkatan->count() > 0) {
                                 $firstK = $jamaah->keberangkatan->first();
@@ -2329,10 +2445,13 @@
                                     </p>
                                 @endif
 
-                                @if ($jamaahFeePassport > 0)
-                                    <p class="text-[10px] text-purple-600 font-semibold truncate mt-0.5">
-                                        <i class="fas fa-passport mr-0.5"></i> Fee Passport: Rp
-                                        {{ number_format($jamaahFeePassport, 0, ',', '.') }}
+                                @if ($hasPassport)
+                                    <p class="text-[10px] text-green-600 font-semibold truncate mt-0.5">
+                                        <i class="fas fa-passport mr-0.5"></i>
+                                        {{ $jamaah->is_pembuatan_passport ? 'PASSPORT YA' : 'PASSPORT YA (EFEKTIF)' }}
+                                        @if ($jamaahFeePassport > 0)
+                                            · Fee: Rp {{ number_format($jamaahFeePassport, 0, ',', '.') }}
+                                        @endif
                                     </p>
                                 @endif
 
@@ -2752,9 +2871,6 @@
 @push('scripts')
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-            // ============================================
-            // SEARCH FUNCTIONS
-            // ============================================
             const searchMaskapai = document.getElementById('searchMaskapai');
             if (searchMaskapai) {
                 searchMaskapai.addEventListener('keyup', function() {
@@ -2894,9 +3010,6 @@
                 });
             }
 
-            // ============================================
-            // INITIAL EVENT LISTENERS
-            // ============================================
             document.querySelectorAll('.hotel-tour-item .hotel-tour-checkbox').forEach(function(checkbox) {
                 checkbox.addEventListener('change', function() {
                     const parent = this.closest('.hotel-tour-item');
@@ -2954,9 +3067,6 @@
             });
         });
 
-        // ============================================
-        // PAKET TOUR HOTEL FUNCTIONS
-        // ============================================
         function openPaketTourHotelModal() {
             document.getElementById('paketTourHotelModal').classList.remove('hidden');
             loadAllKamarsForHotelTour();
@@ -3068,7 +3178,7 @@
                             const kamarCheckbox = kamarItem.querySelector('.kamar-checkbox');
                             if (kamarCheckbox && kamarCheckbox.checked) {
                                 const jumlah = parseInt(kamarItem.querySelector('.kamar-jumlah').value) ||
-                                0;
+                                    0;
                                 const hargaInput = kamarItem.querySelector('.kamar-harga');
                                 let harga = 0;
                                 if (hargaInput) {
@@ -3077,7 +3187,7 @@
                                     harga = parseInt(rawValue) || 0;
                                 }
                                 const durasi = parseInt(kamarItem.querySelector('.kamar-durasi').value) ||
-                                1;
+                                    1;
                                 grandTotal += jumlah * harga * durasi;
                             }
                         });
@@ -3101,9 +3211,6 @@
             calculateHotelTourTotal(index);
         }
 
-        // ============================================
-        // MASKAPAI FUNCTIONS
-        // ============================================
         function openMaskapaiModal() {
             document.getElementById('maskapaiModal').classList.remove('hidden');
             document.querySelectorAll('.maskapai-harga').forEach(function(input) {
@@ -3118,9 +3225,6 @@
             document.getElementById('maskapaiModal').classList.add('hidden');
         }
 
-        // ============================================
-        // HOTEL FUNCTIONS
-        // ============================================
         function openHotelModal() {
             document.getElementById('hotelModal').classList.remove('hidden');
             loadKamarsWithSelected('id_hotel_mekkah', 'kamarContainerMekkah', 'totalHotelMekkah');
@@ -3209,9 +3313,6 @@
             return total;
         }
 
-        // ============================================
-        // JAMAAH FUNCTIONS
-        // ============================================
         function openJamaahModal() {
             document.getElementById('jamaahModal').classList.remove('hidden');
             document.getElementById('searchJamaahModal').value = '';
@@ -3259,9 +3360,6 @@
             });
         }
 
-        // ============================================
-        // PERLENGKAPAN FUNCTIONS
-        // ============================================
         function openPerlengkapanModal() {
             document.getElementById('perlengkapanModal').classList.remove('hidden');
         }
@@ -3291,7 +3389,7 @@
                 .then(data => {
                     content.innerHTML = data.html;
                     document.getElementById('perlengkapanDetailTitle').textContent = 'Detail: ' + data
-                    .nama_perlengkapan;
+                        .nama_perlengkapan;
 
                     const checkAll = document.getElementById(`perlengkapan-check-all-${perlengkapanId}`);
                     if (checkAll) {
@@ -3329,9 +3427,6 @@
             document.getElementById('perlengkapanDetailModal').classList.add('hidden');
         }
 
-        // ============================================
-        // JENIS TRANSAKSI FUNCTIONS
-        // ============================================
         function openJenisTransaksiModal() {
             document.getElementById('jenisTransaksiModal').classList.remove('hidden');
             document.getElementById('searchJenisTransaksiModal').value = '';
@@ -3484,12 +3579,8 @@
             document.getElementById('jenisTransaksiDetailModal').classList.add('hidden');
         }
 
-        // ============================================
-        // AJAX STATUS UPDATE (MODAL TETAP TERBUKA)
-        // ============================================
         const CSRF_TOKEN = '{{ csrf_token() }}';
 
-        // ---------- PERLENGKAPAN ----------
         function togglePerlengkapanStatusJamaah(departurePerlengkapanId, jamaahId, currentStatus) {
             const newStatus = currentStatus === 'Sudah Diterima' ? 'Belum Diterima' : 'Sudah Diterima';
 
@@ -3560,7 +3651,6 @@
                 });
         }
 
-        // ---------- JENIS TRANSAKSI ----------
         function toggleJenisTransaksiStatusJamaah(departureJenisTransaksiId, jamaahId, currentStatus) {
             const newStatus = currentStatus === 'Sudah Diterima' ? 'Belum Diterima' : 'Sudah Diterima';
 
@@ -3631,7 +3721,6 @@
                 });
         }
 
-        // ---------- TOAST ----------
         function showToast(message, type = 'success') {
             const colors = {
                 success: 'bg-green-500',
@@ -3659,9 +3748,6 @@
             }, 3000);
         }
 
-        // ============================================
-        // CATATAN FUNCTIONS
-        // ============================================
         function openCatatanModal() {
             document.getElementById('catatanModal').classList.remove('hidden');
         }
@@ -3670,18 +3756,12 @@
             document.getElementById('catatanModal').classList.add('hidden');
         }
 
-        // ============================================
-        // RECALCULATE
-        // ============================================
         function recalculate(id) {
             if (confirm('Yakin ingin menghitung ulang data keuangan?')) {
                 document.getElementById('recalculate-form').submit();
             }
         }
 
-        // ============================================
-        // FORMAT RUPIAH FUNCTIONS
-        // ============================================
         function formatRupiahMaskapai(input, hiddenId) {
             let value = input.value.replace(/[^,\d]/g, '').replace(/^Rp\s*/, '').replace(/\./g, '').replace(/,/g, '.');
             if (value === '' || isNaN(value)) value = '0';

@@ -417,7 +417,7 @@ class Departure extends Model
     }
 
     // ==========================================
-    // ACCESSORS - PERLENGKAPAN (HANYA YANG SUDAH DITERIMA)
+    // ACCESSORS - PERLENGKAPAN
     // ==========================================
 
     public function getTotalHargaPerlengkapanAttribute()
@@ -529,6 +529,58 @@ class Departure extends Model
     }
 
     // ==========================================
+    // ACCESSORS - FEE PASSPORT
+    // ==========================================
+
+    public function getTotalPembayaranPassportAttribute()
+    {
+        return $this->jamaahs->sum(function ($jamaah) {
+            return $jamaah->pembayaran_passport_untuk_pengeluaran;
+        });
+    }
+
+    public function getTotalPembayaranPassportFormattedAttribute()
+    {
+        return 'Rp ' . number_format($this->total_pembayaran_passport, 0, ',', '.');
+    }
+
+    public function getTotalPendapatanPerusahaanPassportAttribute()
+    {
+        return $this->jamaahs->sum(function ($jamaah) {
+            return $jamaah->pendapatan_perusahaan_untuk_pendapatan;
+        });
+    }
+
+    public function getTotalPendapatanPerusahaanPassportFormattedAttribute()
+    {
+        return 'Rp ' . number_format($this->total_pendapatan_perusahaan_passport, 0, ',', '.');
+    }
+
+    public function getTotalFeePassportAttribute()
+    {
+        return $this->total_pembayaran_passport + $this->total_pendapatan_perusahaan_passport;
+    }
+
+    public function getTotalFeePassportFormattedAttribute()
+    {
+        return 'Rp ' . number_format($this->total_fee_passport, 0, ',', '.');
+    }
+
+    public function getJamaahDenganPassportAttribute()
+    {
+        return $this->jamaahs->filter(function ($jamaah) {
+            return $jamaah->is_pembuatan_passport_efektif;
+        })->count();
+    }
+
+    public function getJamaahTanpaPassportAttribute()
+    {
+        return $this->jamaahs->filter(function ($jamaah) {
+            return !$jamaah->is_pembuatan_passport_efektif;
+        })->count();
+    }
+
+    // ==========================================
     // ACCESSORS - STATUS
     // ==========================================
 
@@ -596,10 +648,20 @@ class Departure extends Model
             foreach ($this->jamaahs as $jamaah) {
                 $totalPendapatanKotor += $jamaah->total_tagihan_setelah_diskon ?? 0;
             }
+
+            // ==========================================
+            // 1b. PENDAPATAN PERUSAHAAN PASSPORT
+            // (fee petugas dari jamaah efektif YA)
+            // ==========================================
+            $totalPendapatanPerusahaanPassport = 0;
+            foreach ($this->jamaahs as $jamaah) {
+                $totalPendapatanPerusahaanPassport += $jamaah->pendapatan_perusahaan_untuk_pendapatan;
+            }
+
             $this->total_pendapatan_kotor = $totalPendapatanKotor;
 
             // ==========================================
-            // 2. TOTAL DISKON (dari jamaah)
+            // 2. TOTAL DISKON
             // ==========================================
             $totalDiskon = 0;
             foreach ($this->jamaahs as $jamaah) {
@@ -608,14 +670,14 @@ class Departure extends Model
             $this->total_diskon = $totalDiskon;
 
             // ==========================================
-            // 3. TOTAL PENDAPATAN (kotor + diskon)
+            // 3. TOTAL PENDAPATAN
             // ==========================================
-            $this->total_pendapatan = $totalPendapatanKotor + $totalDiskon;
+            $this->total_pendapatan = $totalPendapatanKotor + $totalDiskon + $totalPendapatanPerusahaanPassport;
 
             // ==========================================
             // 4. TOTAL PENDAPATAN BERSIH
             // ==========================================
-            $this->total_pendapatan_bersih = $totalPendapatanKotor;
+            $this->total_pendapatan_bersih = $totalPendapatanKotor + $totalPendapatanPerusahaanPassport;
 
             // ==========================================
             // 5. TOTAL PENGELUARAN
@@ -628,7 +690,7 @@ class Departure extends Model
             $totalPengeluaran += $this->harga_maskapai_internasional_berangkat ?? 0;
             $totalPengeluaran += $this->harga_maskapai_internasional_pulang ?? 0;
 
-            // 5b. Harga Hotel (Mekkah, Madinah, Transit)
+            // 5b. Harga Hotel
             foreach ($this->hotelMekkahDetails as $detail) {
                 $totalPengeluaran += $detail->total_harga;
             }
@@ -639,12 +701,12 @@ class Departure extends Model
                 $totalPengeluaran += $detail->total_harga;
             }
 
-            // 5c. Harga Hotel Tour (Paket Tour)
+            // 5c. Harga Hotel Tour
             foreach ($this->departurePaketTourHotels as $item) {
                 $totalPengeluaran += $item->total_harga;
             }
 
-            // 5d. Harga Perlengkapan (HANYA yang Sudah Diterima)
+            // 5d. Harga Perlengkapan (hanya Sudah Diterima)
             foreach ($this->departurePerlengkapan as $perlengkapan) {
                 foreach ($perlengkapan->perlengkapanJamaahs as $pj) {
                     if ($pj->status_terima === 'Sudah Diterima') {
@@ -653,7 +715,7 @@ class Departure extends Model
                 }
             }
 
-            // 5e. Harga Jenis Transaksi (HANYA yang Sudah Diterima)
+            // 5e. Harga Jenis Transaksi (hanya Sudah Diterima)
             foreach ($this->departureJenisTransaksis as $item) {
                 foreach ($item->departureJenisTransaksiJamaahs as $jtj) {
                     if ($jtj->status_terima === 'Sudah Diterima') {
@@ -667,22 +729,29 @@ class Departure extends Model
                 $totalPengeluaran += $jamaah->fee_agent ?? 0;
             }
 
+            // ==========================================
+            // 5g. PEMBAYARAN PASSPORT (masuk PENGELUARAN)
+            // ==========================================
+            foreach ($this->jamaahs as $jamaah) {
+                $totalPengeluaran += $jamaah->pembayaran_passport_untuk_pengeluaran;
+            }
+
             $this->total_pengeluaran = $totalPengeluaran;
 
             // ==========================================
             // 6. KEUNTUNGAN
             // ==========================================
-            $this->keuntungan = $totalPendapatanKotor - $totalPengeluaran;
+            $this->keuntungan = $this->total_pendapatan_bersih - $totalPengeluaran;
 
             // ==========================================
             // 7. MARGIN LABA
             // ==========================================
-            $this->margin_laba = $totalPendapatanKotor > 0
-                ? round(($this->keuntungan / $totalPendapatanKotor) * 100, 2)
+            $this->margin_laba = $this->total_pendapatan_bersih > 0
+                ? round(($this->keuntungan / $this->total_pendapatan_bersih) * 100, 2)
                 : 0;
 
             // ==========================================
-            // 8. UPDATE STATUS COMPLETION
+            // 8. STATUS COMPLETION
             // ==========================================
             $this->is_jamaah_complete = $this->jamaahs()->count() > 0;
             $this->is_perlengkapan_complete = $this->departurePerlengkapan()->count() > 0;
@@ -728,17 +797,11 @@ class Departure extends Model
     }
 
     // ==========================================
-    // JAMAAH METHODS (FIXED)
+    // JAMAAH METHODS
     // ==========================================
 
-    /**
-     * Tambah jamaah ke departure.
-     * - Cek duplikat & kuota
-     * - Setelah attach, hitung ulang jamaah_terdaftar dari DB
-     */
     public function addJamaah($jamaahId, $catatan = null)
     {
-        // Cek duplikat
         $exists = DepartureJamaah::where('id_departure', $this->id_departure)
             ->where('id_jamaah', $jamaahId)
             ->exists();
@@ -747,18 +810,15 @@ class Departure extends Model
             throw new \Exception('Jamaah sudah terdaftar di departure ini.');
         }
 
-        // Cek kuota
         if ($this->kuota > 0 && $this->jamaah_terdaftar >= $this->kuota) {
             throw new \Exception('Kuota sudah penuh! (Kuota: ' . $this->kuota . ', Terdaftar: ' . $this->jamaah_terdaftar . ')');
         }
 
-        // Attach relasi
         $this->jamaahs()->attach($jamaahId, [
             'status_keberangkatan' => 'Terdaftar',
             'catatan' => $catatan,
         ]);
 
-        // ✅ Hitung ulang jumlah jamaah dari DB (bukan increment manual)
         $this->jamaah_terdaftar = $this->jamaahs()->count();
         $this->is_jamaah_complete = $this->jamaah_terdaftar > 0;
         $this->save();
@@ -768,11 +828,6 @@ class Departure extends Model
         return $this;
     }
 
-    /**
-     * Hapus jamaah dari departure.
-     * - Hapus record pivot eksplisit
-     * - Hitung ulang jamaah_terdaftar dari DB
-     */
     public function removeJamaah($jamaahId)
     {
         $deleted = DepartureJamaah::where('id_departure', $this->id_departure)
@@ -780,11 +835,9 @@ class Departure extends Model
             ->delete();
 
         if (!$deleted) {
-            // Record tidak ada, tidak perlu ubah state
             return $this;
         }
 
-        // ✅ Hitung ulang jumlah jamaah dari DB
         $this->jamaah_terdaftar = $this->jamaahs()->count();
         $this->is_jamaah_complete = $this->jamaah_terdaftar > 0;
         $this->save();
@@ -834,7 +887,6 @@ class Departure extends Model
 
             if ($exists) continue;
 
-            // Harga satuan = harga total ÷ jumlah jamaah
             $hargaSatuan = round($hargaTotal / $totalJamaah);
 
             $departureJenisTransaksi = DepartureJenisTransaksi::create([
@@ -845,7 +897,6 @@ class Departure extends Model
                 'catatan' => $catatan,
             ]);
 
-            // Buat record per jamaah
             foreach ($this->jamaahs as $jamaah) {
                 DepartureJenisTransaksiJamaah::create([
                     'id_departure_jenis_transaksi' => $departureJenisTransaksi->id,
@@ -875,7 +926,6 @@ class Departure extends Model
             ->first();
 
         if ($departureJenisTransaksi) {
-            // Hapus detail per jamaah dulu
             $departureJenisTransaksi->departureJenisTransaksiJamaahs()->delete();
             $departureJenisTransaksi->delete();
         }
@@ -896,7 +946,6 @@ class Departure extends Model
             ->where('id_jenis_transaksi', $jenisTransaksiId)
             ->firstOrFail();
 
-        // Harga satuan = harga total ÷ jumlah jamaah
         $hargaSatuan = round($hargaTotal / $totalJamaah);
 
         $pivot->update([
@@ -904,7 +953,6 @@ class Departure extends Model
             'total_harga' => $hargaTotal,
         ]);
 
-        // Update harga di record per jamaah
         $pivot->departureJenisTransaksiJamaahs()->update([
             'harga_satuan' => $hargaSatuan,
             'total_harga' => $hargaSatuan,

@@ -15,9 +15,12 @@ use App\Models\DepartureJenisTransaksi;
 use App\Models\DeparturePaketTourHotel;
 use App\Models\Hotel;
 use App\Models\JenisTransaksi;
+use App\Models\DokumenPerusahaan;
 use Illuminate\Http\Request;
 use App\Models\DepartureJenisTransaksiJamaah;
 use Illuminate\Validation\Rule;
+use Barryvdh\DomPDF\Facade\Pdf;
+use Illuminate\Support\Facades\Auth;
 
 class DepartureController extends Controller
 {
@@ -1032,5 +1035,134 @@ class DepartureController extends Controller
     {
         $hotels = $this->service->getPaketTourHotelsByDeparture($id);
         return response()->json($hotels);
+    }
+
+    // ==========================================
+    // PRINT MANIFEST
+    // ==========================================
+
+    /**
+     * Print manifest jamaah keberangkatan
+     */
+    public function printManifest($id)
+    {
+        $departure = $this->service->getById($id);
+
+        // Load jamaah dengan relasi keluarga
+        $jamaahList = $departure->jamaahs()
+            ->with(['keluarga', 'keberangkatan'])
+            ->orderBy('is_kepala_keluarga', 'desc')
+            ->orderBy('nama_lengkap', 'asc')
+            ->get();
+
+        // Kelompokkan per keluarga
+        $groupedByKeluarga = $jamaahList->groupBy(function ($jamaah) {
+            return $jamaah->id_keluarga ?? 'mandiri_' . $jamaah->id_jamaah;
+        });
+
+        // Info perusahaan (logo, ttd, cap)
+        $ttdData = $this->loadDokumenTTD();
+
+        $data = [
+            'departure'          => $departure,
+            'jamaahList'         => $jamaahList,
+            'groupedByKeluarga'  => $groupedByKeluarga,
+            'totalJamaah'        => $jamaahList->count(),
+            'totalLakiLaki'      => $jamaahList->where('jenis_kelamin', 'L')->count(),
+            'totalPerempuan'     => $jamaahList->where('jenis_kelamin', 'P')->count(),
+            'tanggal_cetak'      => now()->format('d/m/Y H:i'),
+            'dicetak_oleh'       => Auth::user()->name ?? 'System',
+            'logoBase64'         => $this->loadDokumenBase64('logo'),
+            'ttdBase64'          => $ttdData['base64'],
+            'ttdNama'            => $ttdData['nama'],
+            'ttdJabatan'         => $ttdData['jabatan'],
+            'capBase64'          => $this->loadDokumenBase64('cap'),
+        ];
+
+        $pdf = Pdf::loadView('departures.pdf-manifest', $data);
+        $pdf->setPaper('A4', 'landscape');
+
+        $pdf->setOptions([
+            'defaultFont' => 'sans-serif',
+            'isHtml5ParserEnabled' => true,
+            'isRemoteEnabled' => false,
+            'isPhpEnabled' => false,
+            'chroot' => public_path(),
+        ]);
+
+        return $pdf->download('Manifest_' . $departure->kode_keberangkatan . '_' . date('Ymd_His') . '.pdf');
+    }
+
+    // ==========================================
+    // HELPER DOKUMEN (untuk PDF)
+    // ==========================================
+
+    /**
+     * Load dokumen (logo / cap) jadi base64
+     *
+     * @param string $jenis  'logo' | 'cap'
+     * @return string|null
+     */
+    private function loadDokumenBase64($jenis)
+    {
+        $dokumen = DokumenPerusahaan::where('jenis', $jenis)->first();
+
+        if (!$dokumen || !$dokumen->path) {
+            // Fallback logo dari public/assets
+            if ($jenis == 'logo') {
+                $fallbackPath = public_path('assets/logo.PNG');
+                if (file_exists($fallbackPath) && filesize($fallbackPath) < 500000) {
+                    $data = file_get_contents($fallbackPath);
+                    return 'data:image/png;base64,' . base64_encode($data);
+                }
+            }
+            return null;
+        }
+
+        $fullPath = storage_path('app/public/' . $dokumen->path);
+        if (!file_exists($fullPath)) {
+            return null;
+        }
+
+        $data = file_get_contents($fullPath);
+        $finfo = finfo_open(FILEINFO_MIME_TYPE);
+        $mimeType = finfo_file($finfo, $fullPath);
+        finfo_close($finfo);
+
+        return 'data:' . $mimeType . ';base64,' . base64_encode($data);
+    }
+
+    /**
+     * Load dokumen TTD (tanda tangan) jadi base64 + nama + jabatan
+     *
+     * @return array
+     */
+    private function loadDokumenTTD()
+    {
+        $dokumen = DokumenPerusahaan::where('jenis', 'ttd')->first();
+
+        if (!$dokumen || !$dokumen->path) {
+            return ['base64' => null, 'nama' => null, 'jabatan' => null];
+        }
+
+        $fullPath = storage_path('app/public/' . $dokumen->path);
+        if (!file_exists($fullPath)) {
+            return [
+                'base64' => null,
+                'nama' => $dokumen->nama_penandatangan,
+                'jabatan' => $dokumen->jabatan,
+            ];
+        }
+
+        $data = file_get_contents($fullPath);
+        $finfo = finfo_open(FILEINFO_MIME_TYPE);
+        $mimeType = finfo_file($finfo, $fullPath);
+        finfo_close($finfo);
+
+        return [
+            'base64' => 'data:' . $mimeType . ';base64,' . base64_encode($data),
+            'nama' => $dokumen->nama_penandatangan,
+            'jabatan' => $dokumen->jabatan,
+        ];
     }
 }

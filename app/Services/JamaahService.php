@@ -25,8 +25,7 @@ class JamaahService
                     ->orWhere('id_keberangkatan', 'like', "%{$search}%")
                     ->orWhere('produk_paket', 'like', "%{$search}%")
                     ->orWhere('nik', 'like', "%{$search}%")
-                    ->orWhere('agent_name', 'like', "%{$search}%")
-                    ->orWhere('pendampingan_nama', 'like', "%{$search}%");
+                    ->orWhere('agent_name', 'like', "%{$search}%");
             });
         }
 
@@ -78,17 +77,31 @@ class JamaahService
                 $data['id_keberangkatan'] = $this->generateIdKeberangkatan($kodeProduk);
             }
 
-            $kota = KotaAsal::where('nama_kota', $data['kota_asal'])->first();
+            $kota = KotaAsal::where('nama_kota', $data['kota_asal'] ?? null)->first();
             if ($kota) {
                 $data['pulau'] = $kota->pulau;
                 $data['bandara_keberangkatan'] = $kota->bandara_terdekat;
             }
 
+            // ==========================================
+            // AGENT
+            // ==========================================
             $data['agent_name'] = $data['agent_name'] ?? null;
             $data['fee_agent'] = (int) ($data['fee_agent'] ?? 0);
-            $data['pendampingan_nama'] = $data['pendampingan_nama'] ?? null;
+
+            // ==========================================
+            // PEMBUATAN PASSPORT
+            // is_pembuatan_passport = YA → pendampingan_fee_petugas diisi
+            // is_pembuatan_passport = TIDAK → pendampingan_fee_petugas = 0
+            // pendampingan_fee boleh 0 (jamaah sudah punya passport)
+            // ==========================================
+            $data['is_pembuatan_passport'] = (bool) ($data['is_pembuatan_passport'] ?? false);
             $data['pendampingan_fee'] = (int) ($data['pendampingan_fee'] ?? 0);
             $data['pendampingan_fee_petugas'] = (int) ($data['pendampingan_fee_petugas'] ?? 0);
+
+            if (!$data['is_pembuatan_passport']) {
+                $data['pendampingan_fee_petugas'] = 0;
+            }
 
             $diskonData = null;
             $nilaiDiskon = 0;
@@ -197,17 +210,28 @@ class JamaahService
         return DB::transaction(function () use ($id, $data) {
             $jamaah = $this->getById($id);
 
-            $kota = KotaAsal::where('nama_kota', $data['kota_asal'])->first();
+            $kota = KotaAsal::where('nama_kota', $data['kota_asal'] ?? null)->first();
             if ($kota) {
                 $data['pulau'] = $kota->pulau;
                 $data['bandara_keberangkatan'] = $kota->bandara_terdekat;
             }
 
+            // ==========================================
+            // AGENT
+            // ==========================================
             $data['agent_name'] = $data['agent_name'] ?? null;
             $data['fee_agent'] = (int) ($data['fee_agent'] ?? 0);
-            $data['pendampingan_nama'] = $data['pendampingan_nama'] ?? null;
+
+            // ==========================================
+            // PEMBUATAN PASSPORT
+            // ==========================================
+            $data['is_pembuatan_passport'] = (bool) ($data['is_pembuatan_passport'] ?? false);
             $data['pendampingan_fee'] = (int) ($data['pendampingan_fee'] ?? 0);
             $data['pendampingan_fee_petugas'] = (int) ($data['pendampingan_fee_petugas'] ?? 0);
+
+            if (!$data['is_pembuatan_passport']) {
+                $data['pendampingan_fee_petugas'] = 0;
+            }
 
             $diskonData = null;
             $nilaiDiskon = 0;

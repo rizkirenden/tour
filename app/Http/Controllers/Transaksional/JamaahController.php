@@ -48,76 +48,84 @@ class JamaahController extends Controller
         return view('jamaahs.create', compact('produkPakets', 'kotaAsals', 'diskons'));
     }
 
-    public function store(Request $request)
-    {
-        $validated = $request->validate([
-            'id_keberangkatan' => 'nullable|string|max:100|unique:jamaahs,id_keberangkatan',
-            'id_keluarga' => 'nullable|exists:keluargas,id_keluarga',
-            'hubungan_keluarga' => 'nullable|string|max:30',
-            'is_kepala_keluarga' => 'nullable|boolean',
-            'produk_paket' => 'required|string|max:100|exists:produk_pakets,nama_produk',
-            'id_diskon' => 'nullable|exists:diskons,id_diskon',
-            'nama_lengkap' => 'required|string|max:100',
-            'nik' => 'nullable|string|max:20',
-            'nama_ayah' => 'nullable|string|max:100',
-            'pekerjaan' => 'nullable|string|max:100',
-            'telepon' => 'nullable|string|max:20',
-            'wa' => 'nullable|string|max:20',
-            'alamat' => 'nullable|string',
-            'nomor_paspor' => 'nullable|string|max:20',
-            'paspor_expired' => 'nullable|date',
-            'paspor_terbit' => 'nullable|date',
-            'paspor_diterbitkan_di' => 'nullable|string|max:100',
-            'tanggal_lahir' => 'nullable|date',
-            'tempat_lahir' => 'nullable|string|max:100',
-            'jenis_kelamin' => 'nullable|in:L,P',
-            'kota_asal' => 'required|string|max:50|exists:kota_asals,nama_kota',
-            'pulau' => 'nullable|string|max:20',
-            'bandara_keberangkatan' => 'nullable|string|max:50',
-            'bulan_keberangkatan' => 'nullable|integer|min:1|max:12',
-            'tahun_keberangkatan' => 'nullable|integer|min:2000|max:' . (date('Y') + 10),
+   public function store(Request $request)
+{
+    $validated = $request->validate([
+        'id_keberangkatan' => 'nullable|string|max:100|unique:jamaahs,id_keberangkatan',
+        'id_keluarga' => 'nullable|exists:keluargas,id_keluarga',
+        'hubungan_keluarga' => 'nullable|string|max:30',
+        'is_kepala_keluarga' => 'nullable|boolean',
+        'produk_paket' => 'required|string|max:100|exists:produk_pakets,nama_produk',
+        'id_diskon' => 'nullable|exists:diskons,id_diskon',
+        'nama_lengkap' => 'required|string|max:100',
+        'nik' => 'nullable|string|max:20',
+        'nama_ayah' => 'nullable|string|max:100',
+        'pekerjaan' => 'nullable|string|max:100',
+        'telepon' => 'nullable|string|max:20',
+        'wa' => 'nullable|string|max:20',
+        'alamat' => 'nullable|string',
+        'nomor_paspor' => 'nullable|string|max:20',
+        'paspor_expired' => 'nullable|date',
+        'paspor_terbit' => 'nullable|date',
+        'paspor_diterbitkan_di' => 'nullable|string|max:100',
+        'tanggal_lahir' => 'nullable|date',
+        'tempat_lahir' => 'nullable|string|max:100',
+        'jenis_kelamin' => 'nullable|in:L,P',
+        'kota_asal' => 'required|string|max:50|exists:kota_asals,nama_kota',
+        'pulau' => 'nullable|string|max:20',
+        'bandara_keberangkatan' => 'nullable|string|max:50',
+        'bulan_keberangkatan' => 'nullable|integer|min:1|max:12',
+        'tahun_keberangkatan' => 'nullable|integer|min:2000|max:' . (date('Y') + 10),
 
-            'keberangkatan_data' => 'nullable|array',
-            'keberangkatan_data.*.id_produk_keberangkatan' => 'required_with:keberangkatan_data|exists:produk_keberangkatans,id',
-            'keberangkatan_data.*.id_produk_harga_bulanan' => 'nullable|exists:produk_harga_bulanan,id',
-            'keberangkatan_data.*.bulan_harga' => 'nullable|integer|min:1|max:12',
-            'keberangkatan_data.*.tahun_harga' => 'nullable|integer|min:2000|max:' . (date('Y') + 10),
-            'keberangkatan_data.*.harga' => 'nullable|integer|min:0',
+        'keberangkatan_data' => 'nullable|array',
+        'keberangkatan_data.*.id_produk_keberangkatan' => 'required_with:keberangkatan_data|exists:produk_keberangkatans,id',
+        'keberangkatan_data.*.id_produk_harga_bulanan' => 'nullable|exists:produk_harga_bulanan,id',
+        'keberangkatan_data.*.bulan_harga' => 'nullable|integer|min:1|max:12',
+        'keberangkatan_data.*.tahun_harga' => 'nullable|integer|min:2000|max:' . (date('Y') + 10),
+        'keberangkatan_data.*.harga' => 'nullable|integer|min:0',
 
-            'file_ktp_kk' => 'nullable|file|mimes:jpeg,png,jpg,pdf|max:2048',
-            'file_vaksin' => 'nullable|file|mimes:jpeg,png,jpg,pdf|max:2048',
-            'file_visa' => 'nullable|file|mimes:jpeg,png,jpg,pdf|max:2048',
-            'file_paspor' => 'nullable|file|mimes:jpeg,png,jpg,pdf|max:2048',
-            'jenis_pendampingan' => 'nullable|string|max:30',
-            'agent_name' => 'nullable|string|max:100',
-            'fee_agent' => 'nullable|integer|min:0',
-            'pendampingan_nama' => 'nullable|string|max:100',
-            'pendampingan_fee' => 'nullable|integer|min:0',
-            'pendampingan_fee_petugas' => 'nullable|integer|min:0',
-            'keterangan_diskon' => 'nullable|string',
-            'catatan_tambahan' => 'nullable|string'
-        ]);
+        'file_ktp_kk' => 'nullable|file|mimes:jpeg,png,jpg,pdf|max:2048',
+        'file_vaksin' => 'nullable|file|mimes:jpeg,png,jpg,pdf|max:2048',
+        'file_visa' => 'nullable|file|mimes:jpeg,png,jpg,pdf|max:2048',
+        'file_paspor' => 'nullable|file|mimes:jpeg,png,jpg,pdf|max:2048',
 
-        $validated['fee_agent'] = (int) ($validated['fee_agent'] ?? 0);
-        $validated['pendampingan_fee'] = (int) ($validated['pendampingan_fee'] ?? 0);
-        $validated['pendampingan_fee_petugas'] = (int) ($validated['pendampingan_fee_petugas'] ?? 0);
+        'agent_name' => 'nullable|string|max:100',
+        'fee_agent' => 'nullable|integer|min:0',
 
-        $this->uploadFiles($request, $validated);
+        // === PEMBUATAN PASSPORT ===
+        'is_pembuatan_passport' => 'nullable|boolean',
+        'pendampingan_fee' => 'nullable|integer|min:0',
+        'pendampingan_fee_petugas' => 'nullable|integer|min:0',
 
-        try {
-            $jamaah = $this->service->create($validated);
+        'keterangan_diskon' => 'nullable|string',
+        'catatan_tambahan' => 'nullable|string'
+    ]);
 
-            return redirect()->route('transaksional.jamaah.index')
-                ->with('success', "Jamaah '{$jamaah->nama_lengkap}' berhasil ditambahkan!");
-        } catch (\Exception $e) {
-            // Rollback file upload jika ada
-            $this->cleanupFiles($validated);
+    $validated['fee_agent'] = (int) ($validated['fee_agent'] ?? 0);
+    $validated['is_pembuatan_passport'] = (bool) ($validated['is_pembuatan_passport'] ?? false);
+    $validated['pendampingan_fee'] = (int) ($validated['pendampingan_fee'] ?? 0);
+    $validated['pendampingan_fee_petugas'] = (int) ($validated['pendampingan_fee_petugas'] ?? 0);
 
-            return redirect()->back()
-                ->withInput()
-                ->with('error', $e->getMessage());
-        }
+    // Jika TIDAK pembuatan passport, paksa fee petugas = 0
+    if (!$validated['is_pembuatan_passport']) {
+        $validated['pendampingan_fee_petugas'] = 0;
     }
+
+    $this->uploadFiles($request, $validated);
+
+    try {
+        $jamaah = $this->service->create($validated);
+
+        return redirect()->route('transaksional.jamaah.index')
+            ->with('success', "Jamaah '{$jamaah->nama_lengkap}' berhasil ditambahkan!");
+    } catch (\Exception $e) {
+        $this->cleanupFiles($validated);
+
+        return redirect()->back()
+            ->withInput()
+            ->with('error', $e->getMessage());
+    }
+}
 
     public function show($id)
     {
@@ -166,92 +174,99 @@ class JamaahController extends Controller
     ));
 }
 
-    public function update(Request $request, $id)
-    {
-        $jamaah = $this->service->getById($id);
+  public function update(Request $request, $id)
+{
+    $jamaah = $this->service->getById($id);
 
-        $validated = $request->validate([
-            'id_keberangkatan' => ['nullable', 'string', 'max:100', Rule::unique('jamaahs', 'id_keberangkatan')->ignore($id, 'id_jamaah')],
-            'id_keluarga' => 'nullable|exists:keluargas,id_keluarga',
-            'hubungan_keluarga' => 'nullable|string|max:30',
-            'is_kepala_keluarga' => 'nullable|boolean',
-            'produk_paket' => 'required|string|max:100|exists:produk_pakets,nama_produk',
-            'id_diskon' => 'nullable|exists:diskons,id_diskon',
-            'nama_lengkap' => 'required|string|max:100',
-            'nik' => ['nullable', 'string', 'max:20'],
-            'nama_ayah' => 'nullable|string|max:100',
-            'pekerjaan' => 'nullable|string|max:100',
-            'telepon' => 'nullable|string|max:20',
-            'wa' => 'nullable|string|max:20',
-            'alamat' => 'nullable|string',
-            'nomor_paspor' => 'nullable|string|max:20',
-            'paspor_expired' => 'nullable|date',
-            'paspor_terbit' => 'nullable|date',
-            'paspor_diterbitkan_di' => 'nullable|string|max:100',
-            'tanggal_lahir' => 'nullable|date',
-            'tempat_lahir' => 'nullable|string|max:100',
-            'jenis_kelamin' => 'nullable|in:L,P',
-            'kota_asal' => 'required|string|max:50|exists:kota_asals,nama_kota',
-            'pulau' => 'nullable|string|max:20',
-            'bandara_keberangkatan' => 'nullable|string|max:50',
-            'bulan_keberangkatan' => 'nullable|integer|min:1|max:12',
-            'tahun_keberangkatan' => 'nullable|integer|min:2000|max:' . (date('Y') + 10),
+    $validated = $request->validate([
+        'id_keberangkatan' => ['nullable', 'string', 'max:100', Rule::unique('jamaahs', 'id_keberangkatan')->ignore($id, 'id_jamaah')],
+        'id_keluarga' => 'nullable|exists:keluargas,id_keluarga',
+        'hubungan_keluarga' => 'nullable|string|max:30',
+        'is_kepala_keluarga' => 'nullable|boolean',
+        'produk_paket' => 'required|string|max:100|exists:produk_pakets,nama_produk',
+        'id_diskon' => 'nullable|exists:diskons,id_diskon',
+        'nama_lengkap' => 'required|string|max:100',
+        'nik' => ['nullable', 'string', 'max:20'],
+        'nama_ayah' => 'nullable|string|max:100',
+        'pekerjaan' => 'nullable|string|max:100',
+        'telepon' => 'nullable|string|max:20',
+        'wa' => 'nullable|string|max:20',
+        'alamat' => 'nullable|string',
+        'nomor_paspor' => 'nullable|string|max:20',
+        'paspor_expired' => 'nullable|date',
+        'paspor_terbit' => 'nullable|date',
+        'paspor_diterbitkan_di' => 'nullable|string|max:100',
+        'tanggal_lahir' => 'nullable|date',
+        'tempat_lahir' => 'nullable|string|max:100',
+        'jenis_kelamin' => 'nullable|in:L,P',
+        'kota_asal' => 'required|string|max:50|exists:kota_asals,nama_kota',
+        'pulau' => 'nullable|string|max:20',
+        'bandara_keberangkatan' => 'nullable|string|max:50',
+        'bulan_keberangkatan' => 'nullable|integer|min:1|max:12',
+        'tahun_keberangkatan' => 'nullable|integer|min:2000|max:' . (date('Y') + 10),
 
-            'keberangkatan_data' => 'nullable|array',
-            'keberangkatan_data.*.id_produk_keberangkatan' => 'required_with:keberangkatan_data|exists:produk_keberangkatans,id',
-            'keberangkatan_data.*.id_produk_harga_bulanan' => 'nullable|exists:produk_harga_bulanan,id',
-            'keberangkatan_data.*.bulan_harga' => 'nullable|integer|min:1|max:12',
-            'keberangkatan_data.*.tahun_harga' => 'nullable|integer|min:2000|max:' . (date('Y') + 10),
-            'keberangkatan_data.*.harga' => 'nullable|integer|min:0',
+        'keberangkatan_data' => 'nullable|array',
+        'keberangkatan_data.*.id_produk_keberangkatan' => 'required_with:keberangkatan_data|exists:produk_keberangkatans,id',
+        'keberangkatan_data.*.id_produk_harga_bulanan' => 'nullable|exists:produk_harga_bulanan,id',
+        'keberangkatan_data.*.bulan_harga' => 'nullable|integer|min:1|max:12',
+        'keberangkatan_data.*.tahun_harga' => 'nullable|integer|min:2000|max:' . (date('Y') + 10),
+        'keberangkatan_data.*.harga' => 'nullable|integer|min:0',
 
-            'file_ktp_kk' => 'nullable|file|mimes:jpeg,png,jpg,pdf|max:2048',
-            'file_vaksin' => 'nullable|file|mimes:jpeg,png,jpg,pdf|max:2048',
-            'file_visa' => 'nullable|file|mimes:jpeg,png,jpg,pdf|max:2048',
-            'file_paspor' => 'nullable|file|mimes:jpeg,png,jpg,pdf|max:2048',
-            'jenis_pendampingan' => 'nullable|string|max:30',
-            'agent_name' => 'nullable|string|max:100',
-            'fee_agent' => 'nullable|integer|min:0',
-            'pendampingan_nama' => 'nullable|string|max:100',
-            'pendampingan_fee' => 'nullable|integer|min:0',
-            'pendampingan_fee_petugas' => 'nullable|integer|min:0',
-            'keterangan_diskon' => 'nullable|string',
-            'catatan_tambahan' => 'nullable|string'
-        ]);
+        'file_ktp_kk' => 'nullable|file|mimes:jpeg,png,jpg,pdf|max:2048',
+        'file_vaksin' => 'nullable|file|mimes:jpeg,png,jpg,pdf|max:2048',
+        'file_visa' => 'nullable|file|mimes:jpeg,png,jpg,pdf|max:2048',
+        'file_paspor' => 'nullable|file|mimes:jpeg,png,jpg,pdf|max:2048',
 
-        $validated['fee_agent'] = (int) ($validated['fee_agent'] ?? 0);
-        $validated['pendampingan_fee'] = (int) ($validated['pendampingan_fee'] ?? 0);
-        $validated['pendampingan_fee_petugas'] = (int) ($validated['pendampingan_fee_petugas'] ?? 0);
+        'agent_name' => 'nullable|string|max:100',
+        'fee_agent' => 'nullable|integer|min:0',
 
-        // Simpan path lama untuk rollback
-        $oldFiles = [
-            'file_ktp_kk' => $jamaah->file_ktp_kk,
-            'file_vaksin' => $jamaah->file_vaksin,
-            'file_visa' => $jamaah->file_visa,
-            'file_paspor' => $jamaah->file_paspor,
-        ];
+        // === PEMBUATAN PASSPORT ===
+        'is_pembuatan_passport' => 'nullable|boolean',
+        'pendampingan_fee' => 'nullable|integer|min:0',
+        'pendampingan_fee_petugas' => 'nullable|integer|min:0',
 
-        $this->handleFileUploads($request, $jamaah, $validated);
+        'keterangan_diskon' => 'nullable|string',
+        'catatan_tambahan' => 'nullable|string'
+    ]);
 
-        try {
-            $jamaah = $this->service->update($id, $validated);
+    $validated['fee_agent'] = (int) ($validated['fee_agent'] ?? 0);
+    $validated['is_pembuatan_passport'] = (bool) ($validated['is_pembuatan_passport'] ?? false);
+    $validated['pendampingan_fee'] = (int) ($validated['pendampingan_fee'] ?? 0);
+    $validated['pendampingan_fee_petugas'] = (int) ($validated['pendampingan_fee_petugas'] ?? 0);
 
-            return redirect()->route('transaksional.jamaah.index')
-                ->with('success', "Jamaah '{$jamaah->nama_lengkap}' berhasil diperbarui!");
-        } catch (\Exception $e) {
-            // Rollback file baru yang terupload (kembalikan ke file lama)
-            foreach (['file_ktp_kk', 'file_vaksin', 'file_visa', 'file_paspor'] as $field) {
-                if (isset($validated[$field]) && $validated[$field] !== $oldFiles[$field]) {
-                    if ($validated[$field] && Storage::disk('public')->exists($validated[$field])) {
-                        Storage::disk('public')->delete($validated[$field]);
-                    }
+    // Jika TIDAK pembuatan passport, paksa fee petugas = 0
+    if (!$validated['is_pembuatan_passport']) {
+        $validated['pendampingan_fee_petugas'] = 0;
+    }
+
+    $oldFiles = [
+        'file_ktp_kk' => $jamaah->file_ktp_kk,
+        'file_vaksin' => $jamaah->file_vaksin,
+        'file_visa' => $jamaah->file_visa,
+        'file_paspor' => $jamaah->file_paspor,
+    ];
+
+    $this->handleFileUploads($request, $jamaah, $validated);
+
+    try {
+        $jamaah = $this->service->update($id, $validated);
+
+        return redirect()->route('transaksional.jamaah.index')
+            ->with('success', "Jamaah '{$jamaah->nama_lengkap}' berhasil diperbarui!");
+    } catch (\Exception $e) {
+        foreach (['file_ktp_kk', 'file_vaksin', 'file_visa', 'file_paspor'] as $field) {
+            if (isset($validated[$field]) && $validated[$field] !== $oldFiles[$field]) {
+                if ($validated[$field] && Storage::disk('public')->exists($validated[$field])) {
+                    Storage::disk('public')->delete($validated[$field]);
                 }
             }
-
-            return redirect()->back()
-                ->withInput()
-                ->with('error', $e->getMessage());
         }
+
+        return redirect()->back()
+            ->withInput()
+            ->with('error', $e->getMessage());
     }
+}
 
     // ==========================================
     // CLEANUP FILE (jika create gagal)

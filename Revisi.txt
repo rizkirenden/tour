@@ -1,13 +1,8 @@
-45.bagian layout pemasukan di atas, pengeluaran di bawah (Pendapatan)
-46.passport masuk di pendapatan di departure yang pakai pendampingan
-47.pendampingan, fee passport 650 masuk ke pengeluaran, 100 masuk ke pendapatan
 50.upgrade hotel per jamaah atau keluarga
-53.Tambah di tabel depan pembuatan passport ya/tidak
 58.edit jamaah data harga tidak ter record
-59. urutan data dari yang awal ke terahir di menu keseluruhan.
-63. pembuatan paspor dimenu jamaah pilihannya hanya ( YA ATAU TIDAK), HIDE TABEL DIBAWAHNYA, HILANGKAN TULISAN NAMA
-72. STATUS KEBERANGKATAN DI MASUKKAN OPSI
-76. TAMBAHKAN INPUTAN PEMBAYARAN TAK TERDUGA DI KEBERANGKATAN
+59.urutan data dari yang awal ke terahir di menu keseluruhan.
+63.FILTER SELURUH MENU
+76.TAMBAHKAN INPUTAN PEMBAYARAN TAK TERDUGA DI KEBERANGKATAN
 ------------------------------------------------------------------------------------------------------------------------------------
 1. ada pembayaran langsung dengan uang real / cash - DONE
 2. Paket Tour diganti dengan Paket Umroh Plus - DONE
@@ -52,10 +47,14 @@
 42.Jenis Transaksi bukan per jamaah/ tapi masukkan harga total, lalu bagi per jamaah berapa - DONE
 43.Perlengkapan Departure nanti sudah di terima, baru hitung harganya masukkan ke total - DONE
 44.Jenis Transaksi, buat apakah sudah di terima jenis transaksi atau tidak samaa jaamaah - DONE
+45.bagian layout pemasukan di atas, pengeluaran di bawah (Pendapatan) - DONE
+46.passport masuk di pendapatan di departure yang pakai pendampingan - DONE
+47.pendampingan, fee passport 650 masuk ke pengeluaran, 100 masuk ke pendapatan - DONE
 48.pdf di keluarga _ DONE
 49.multiple input harga paket -> DONE
 51.Pendapingan (pembuatan passport) - nama pendampingan (di hilangkan ganti dengan Ya-Tidak tinggal centang) - fee Pendamping (Pembayaran passport) - fee petugas (Pendapatan perusahaan) - DONE
 52.hilangkan harga default di bulan keberangkatan - DONE
+53.pembuatan paspor dimenu jamaah pilihannya hanya ( YA ATAU TIDAK ATAU SUDAH PUNYA ), HIDE TABEL DIBAWAHNYA, HILANGKAN TULISAN NAMA - DONE
 54.Taruh Bulan dan Tahun keberangkatan di PDF - DONE
 55.Tambah Bulan Keberangkatan Di PRoduk Paket - Harga perbulan tetap - DONE
 56.Pilih Jamaah - Ambil Dari Harga Perbulan - DONE
@@ -71,6 +70,7 @@
 69. BUATKAN OPSI HAPUS PEMBAYARAN DI METODE PEBAYARAN KELUARGA - DONE
 70. TAMBAHKAN TAMPILAN PERBULAN KEBERANGKATAN DI MENU KEBERANGKATAN - DONE
 71. FILTER NAMA JAMAAH DI MENU KEBERANGKATAN DI SESUAIKAN BERDASARKAN PRODUK PAKET YANG JAMAAH DAFTAR. - DONE
+72. STATUS KEBERANGKATAN DI MASUKKAN OPSI - DONE
 73. DAFTAR JAMAAH DIKASIH MERAH JIKA MMG BELUM LUNAS, DAN YANG SUDAH LUNAS HIJAU
 75. BUAT MULTIPLE UBAH STATUS DI PERLENGKAPAN - DONE
 77. TAMBAH INFO MENGENAI HARGA BULAN YANG DI DAFTARKAN OLEH JAMAAH BERSANGKUTAN DI MENU KEBERANGKATAN. (ATUR DAFTAR JAMAAH) - DONE
@@ -78,5 +78,5 @@
 78. TAMBAH TAMPILAN JAMAAH UNTUK PENDAMPINGAN PASSPORT NOMINAL NYA
 80. PENDAPATAN DI ATAS FEE PASSPORT DAN DAFTAR ATUR JAMAAH - DAN YANG LAIN ATUR DI BAWAH KEARENA PENGELUARAN - DONE
 81. TOTAL PENDAPATAN JAMAAH, TOTAL PENDAPATAN PEMBUATAN PASPOR, DISKON, PENDAPATAN BERSIH, TOTAL PENGELUARAN - DONE
-
+82.TAMBAH INFO PENDAPATAN DI MENU SHOW KEBERANGKATAN, SEPERTI TULISAN PENGELUARAN - DONE
 ------------------------------------------------------------------------------------------------------------------------------------

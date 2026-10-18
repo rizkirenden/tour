@@ -115,15 +115,14 @@
 
                 <!-- Ringkasan Keuangan -->
                 <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 mb-6">
-                    {{-- ✅ TOTAL DISKON --}}
                     <div class="bg-rose-50 rounded-xl p-4 border border-rose-200 text-center">
                         <p class="text-xs text-gray-500">Total Diskon</p>
                         <p class="text-xl font-bold text-rose-600">- {{ $keluarga->total_diskon_formatted }}</p>
                     </div>
                     <div class="bg-green-50 rounded-xl p-4 border border-green-200 text-center">
                         <p class="text-xs text-gray-500">Total Tagihan</p>
-                        <p class="text-xl font-bold text-gray-800">{{ $keluarga->total_tagihan_setelah_diskon_formatted }}
-                        </p>
+                        <p class="text-xl font-bold text-gray-800">
+                            {{ $keluarga->total_tagihan_setelah_diskon_formatted }}</p>
                     </div>
                     <div class="bg-blue-50 rounded-xl p-4 border border-blue-200 text-center">
                         <p class="text-xs text-gray-500">Total Dibayar</p>
@@ -288,13 +287,12 @@
                 <div class="bg-gray-50 rounded-xl p-5 border border-gray-100 mb-6">
                     <h6 class="text-sm font-semibold text-gray-700 mb-4 flex items-center">
                         <i class="fas fa-passport text-yellow-500 mr-2"></i> Detail Pembuatan Passport Per Jamaah
-                        <span class="ml-2 text-xs text-gray-400">(Pembuatan Passport)</span>
                     </h6>
 
                     <div class="grid grid-cols-1 lg:grid-cols-2 gap-3">
                         @php $hasPendampinganData = false; @endphp
                         @foreach ($keluarga->jamaahs as $jamaah)
-                            @if (!empty($jamaah->pendampingan_nama) || $jamaah->pendampingan_fee > 0 || $jamaah->pendampingan_fee_petugas > 0)
+                            @if ($jamaah->is_pembuatan_passport || $jamaah->pendampingan_fee > 0 || $jamaah->pendampingan_fee_petugas > 0)
                                 @php $hasPendampinganData = true; @endphp
                                 <div class="bg-white rounded-lg p-4 border border-gray-200">
                                     <div class="flex items-center justify-between mb-2">
@@ -311,41 +309,28 @@
                                     </div>
 
                                     <dl class="space-y-1.5 text-sm">
-                                        @if (!empty($jamaah->pendampingan_nama))
+                                        <div class="flex justify-between">
+                                            <dt class="text-gray-500">Ada Pembuatan Passport?</dt>
+                                            <dd class="font-medium">{!! $jamaah->is_pembuatan_passport_badge !!}</dd>
+                                        </div>
+                                        <div class="flex justify-between">
+                                            <dt class="text-gray-500">Pembayaran Passport</dt>
+                                            <dd class="font-medium text-green-600">
+                                                {{ $jamaah->pendampingan_fee_formatted }}
+                                            </dd>
+                                        </div>
+                                        @if ($jamaah->is_pembuatan_passport)
                                             <div class="flex justify-between">
-                                                <dt class="text-gray-500">
-                                                    Nama Pembuat Passport
-                                                    <span class="text-gray-400 text-xs">(Pembuatan passport)</span>
-                                                </dt>
-                                                <dd class="font-medium text-gray-700">{{ $jamaah->pendampingan_nama }}
+                                                <dt class="text-gray-500">Pendapatan Perusahaan</dt>
+                                                <dd class="font-medium text-purple-600">
+                                                    {{ $jamaah->pendampingan_fee_petugas_formatted }}
                                                 </dd>
                                             </div>
                                         @endif
-                                        <div class="flex justify-between">
-                                            <dt class="text-gray-500">
-                                                Biaya Pembuatan Passport
-                                                <span class="text-gray-400 text-xs">(Pembayaran passport)</span>
-                                            </dt>
-                                            <dd class="font-medium text-green-600">
-                                                {{ $jamaah->pendampingan_fee_formatted }}</dd>
-                                        </div>
-                                        <div class="flex justify-between">
-                                            <dt class="text-gray-500">
-                                                Fee Petugas
-                                                <span class="text-gray-400 text-xs">(Pendapatan perusahaan)</span>
-                                            </dt>
-                                            <dd class="font-medium text-purple-600">
-                                                {{ $jamaah->pendampingan_fee_petugas_formatted }}
-                                            </dd>
-                                        </div>
                                         <div class="flex justify-between pt-1.5 border-t border-gray-100">
-                                            <dt class="text-gray-600 font-medium">
-                                                Total Pembuatan Passport
-                                                <span class="text-gray-400 text-xs">(Biaya + Fee Petugas)</span>
-                                            </dt>
+                                            <dt class="text-gray-600 font-medium">Total Pembuatan Passport</dt>
                                             <dd class="font-bold text-blue-600">
-                                                Rp
-                                                {{ number_format(($jamaah->pendampingan_fee ?? 0) + ($jamaah->pendampingan_fee_petugas ?? 0), 0, ',', '.') }}
+                                                {{ $jamaah->total_pembuatan_passport_formatted }}
                                             </dd>
                                         </div>
                                     </dl>

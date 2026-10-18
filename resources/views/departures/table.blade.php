@@ -69,16 +69,32 @@
                     </td>
                     <td class="px-4 py-3">
                         <div class="flex items-center justify-center gap-1.5">
+                            {{-- PRINT MANIFEST --}}
+                            <a href="{{ route('transaksional.departure.manifest', $item->id_departure) }}"
+                                target="_blank"
+                                class="p-2 text-green-600 hover:bg-green-50 rounded-lg transition-all duration-200"
+                                title="Print Manifest PDF">
+                                <i class="fas fa-file-pdf text-sm"></i>
+                            </a>
+
+                            {{-- DETAIL --}}
                             <a href="{{ route('transaksional.departure.show', $item->id_departure) }}"
-                                class="p-2 text-blue-500 hover:bg-blue-50 rounded-lg transition-all duration-200">
+                                class="p-2 text-blue-500 hover:bg-blue-50 rounded-lg transition-all duration-200"
+                                title="Detail">
                                 <i class="fas fa-eye text-sm"></i>
                             </a>
+
+                            {{-- EDIT --}}
                             <a href="{{ route('transaksional.departure.edit', $item->id_departure) }}"
-                                class="p-2 text-amber-500 hover:bg-amber-50 rounded-lg transition-all duration-200">
+                                class="p-2 text-amber-500 hover:bg-amber-50 rounded-lg transition-all duration-200"
+                                title="Edit">
                                 <i class="fas fa-edit text-sm"></i>
                             </a>
+
+                            {{-- DELETE --}}
                             <button onclick="confirmDelete({{ $item->id_departure }})"
-                                class="p-2 text-red-500 hover:bg-red-50 rounded-lg transition-all duration-200">
+                                class="p-2 text-red-500 hover:bg-red-50 rounded-lg transition-all duration-200"
+                                title="Hapus">
                                 <i class="fas fa-trash text-sm"></i>
                             </button>
                             <form id="delete-form-{{ $item->id_departure }}"

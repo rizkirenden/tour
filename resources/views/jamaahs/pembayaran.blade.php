@@ -97,9 +97,6 @@
                         <span class="ml-2 text-xs text-gray-400">(per orang)</span>
                     </h6>
 
-                    {{-- ==========================================
-                         BREAKDOWN: HARGA PRODUK + PASSport = KOTOR
-                         ========================================== --}}
                     <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
                         <div class="bg-white rounded-lg p-3 border border-gray-200">
                             <p class="text-xs text-gray-500">Harga Produk</p>
@@ -112,7 +109,7 @@
                             <p class="text-sm font-bold text-purple-600">
                                 {{ $jamaah->total_pembuatan_passport_formatted }}
                             </p>
-                            <p class="text-xs text-gray-400">Fee Pendamping + Fee Petugas</p>
+                            <p class="text-xs text-gray-400">Pembayaran + Pendapatan Perusahaan</p>
                         </div>
                         <div class="bg-white rounded-lg p-3 border border-gray-300">
                             <p class="text-xs text-gray-500">Harga Asli (Kotor)</p>
@@ -167,20 +164,21 @@
                                     <i class="fas fa-passport mr-1"></i> Pembuatan Passport
                                 </p>
                                 <div class="flex justify-between text-sm">
-                                    <span class="text-gray-500">Nama Pendamping</span>
-                                    <span
-                                        class="font-medium text-gray-700">{{ $jamaah->pendampingan_nama_formatted }}</span>
+                                    <span class="text-gray-500">Ada Pembuatan Passport?</span>
+                                    <span>{!! $jamaah->is_pembuatan_passport_badge !!}</span>
                                 </div>
                                 <div class="flex justify-between text-sm mt-1">
-                                    <span class="text-gray-500">Fee Pendamping</span>
+                                    <span class="text-gray-500">Pembayaran Passport</span>
                                     <span
                                         class="font-medium text-green-600">{{ $jamaah->pendampingan_fee_formatted }}</span>
                                 </div>
-                                <div class="flex justify-between text-sm mt-1">
-                                    <span class="text-gray-500">Fee Petugas</span>
-                                    <span
-                                        class="font-medium text-purple-600">{{ $jamaah->pendampingan_fee_petugas_formatted }}</span>
-                                </div>
+                                @if ($jamaah->is_pembuatan_passport)
+                                    <div class="flex justify-between text-sm mt-1">
+                                        <span class="text-gray-500">Pendapatan Perusahaan</span>
+                                        <span
+                                            class="font-medium text-purple-600">{{ $jamaah->pendampingan_fee_petugas_formatted }}</span>
+                                    </div>
+                                @endif
                                 <div class="flex justify-between text-sm mt-2 pt-2 border-t border-purple-200">
                                     <span class="text-gray-600 font-medium">Total Passport</span>
                                     <span
@@ -483,7 +481,6 @@
                     </div>
 
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-4">
-                        {{-- UPLOAD BUKTI PEMBAYARAN — WAJIB --}}
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-1.5">
                                 Upload Bukti Pembayaran <span class="text-red-500">*</span>
@@ -610,7 +607,7 @@
                     '<i class="fas fa-info-circle mr-1"></i> Angsuran: Pembayaran cicilan 50% - 99% dari total tagihan';
             } else if (kode === 'LUNAS') {
                 info.innerHTML =
-                '<i class="fas fa-info-circle mr-1"></i> Lunas: Pembayaran 100% dari total tagihan';
+                    '<i class="fas fa-info-circle mr-1"></i> Lunas: Pembayaran 100% dari total tagihan';
             } else {
                 info.innerHTML = '<i class="fas fa-info-circle mr-1"></i> Pilih jenis pembayaran yang sesuai';
             }
