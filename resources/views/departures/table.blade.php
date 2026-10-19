@@ -69,11 +69,11 @@
                     </td>
                     <td class="px-4 py-3">
                         <div class="flex items-center justify-center gap-1.5">
-                            {{-- PRINT MANIFEST --}}
+                            {{-- PRINT MANIFEST (PDF) --}}
                             <a href="{{ route('transaksional.departure.manifest', $item->id_departure) }}"
                                 target="_blank"
                                 class="p-2 text-green-600 hover:bg-green-50 rounded-lg transition-all duration-200"
-                                title="Print Manifest PDF">
+                                title="Cetak Manifest PDF">
                                 <i class="fas fa-file-pdf text-sm"></i>
                             </a>
 

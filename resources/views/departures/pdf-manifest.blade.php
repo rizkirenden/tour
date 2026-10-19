@@ -42,14 +42,8 @@
             padding: 0;
         }
 
-        .header-logo {
+        .header-side {
             width: 70px;
-            text-align: left;
-        }
-
-        .header-logo img {
-            max-height: 60px;
-            max-width: 70px;
         }
 
         .header-title {
@@ -274,37 +268,6 @@
             width: 100%;
         }
 
-        .footer-table {
-            width: 100%;
-            border-collapse: collapse;
-        }
-
-        .footer-table td {
-            vertical-align: top;
-            padding: 4px;
-        }
-
-        .ttd-box {
-            text-align: center;
-            width: 200px;
-        }
-
-        .ttd-space {
-            height: 55px;
-        }
-
-        .ttd-name {
-            border-top: 1px solid #1f2937;
-            padding-top: 3px;
-            font-weight: 600;
-            font-size: 9px;
-        }
-
-        .ttd-jabatan {
-            font-size: 7px;
-            color: #6b7280;
-        }
-
         .info-footer {
             text-align: left;
             font-size: 7px;
@@ -355,16 +318,12 @@
     <div class="header">
         <table class="header-table">
             <tr>
-                <td class="header-logo">
-                    @if ($logoBase64)
-                        <img src="{{ $logoBase64 }}" alt="Logo">
-                    @endif
-                </td>
+                <td class="header-side"></td>
                 <td class="header-title">
                     <h1>MANIFEST KEBERANGKATAN</h1>
                     <h2>{{ $departure->nama_keberangkatan }}</h2>
                 </td>
-                <td style="width: 70px;"></td>
+                <td class="header-side"></td>
             </tr>
         </table>
     </div>
@@ -590,40 +549,18 @@
         </div>
     @endif
 
-    {{-- FOOTER / TTD --}}
+    {{-- FOOTER --}}
     <div class="footer">
-        <table class="footer-table">
-            <tr>
-                <td class="info-footer">
-                    <p><strong>Catatan:</strong></p>
-                    <p>1. Manifest ini dibuat otomatis oleh sistem.</p>
-                    <p>2. Data jamaah sesuai dengan yang terdaftar di keberangkatan.</p>
-                    <p>3. Pastikan semua data passport masih berlaku minimal 6 bulan.</p>
-                    <p style="margin-top: 8px;">
-                        Total Jamaah: <strong>{{ $totalJamaah }} orang</strong>
-                        (L: {{ $totalLakiLaki }} · P: {{ $totalPerempuan }})
-                    </p>
-                </td>
-                <td class="ttd-box">
-                    <p style="font-size: 8px; color: #4b5563; margin-bottom: 2px;">
-                        {{ now()->translatedFormat('d F Y') }}
-                    </p>
-                    <p style="font-size: 8px; color: #4b5563; margin-bottom: 4px;">Hormat kami,</p>
-                    <div class="ttd-space" style="position: relative;">
-                        @if ($capBase64)
-                            <img src="{{ $capBase64 }}" alt="Cap"
-                                style="position: absolute; left: 50%; top: 0; transform: translateX(-50%); max-height: 55px; opacity: 0.85;">
-                        @endif
-                        @if ($ttdBase64)
-                            <img src="{{ $ttdBase64 }}" alt="TTD"
-                                style="position: absolute; left: 50%; top: 5px; transform: translateX(-50%); max-height: 45px;">
-                        @endif
-                    </div>
-                    <div class="ttd-name">{{ $ttdNama ?? '_________________' }}</div>
-                    <div class="ttd-jabatan">{{ $ttdJabatan ?? 'Jabatan' }}</div>
-                </td>
-            </tr>
-        </table>
+        <div class="info-footer">
+            <p><strong>Catatan:</strong></p>
+            <p>1. Manifest ini dibuat otomatis oleh sistem.</p>
+            <p>2. Data jamaah sesuai dengan yang terdaftar di keberangkatan.</p>
+            <p>3. Pastikan semua data passport masih berlaku minimal 6 bulan.</p>
+            <p style="margin-top: 8px;">
+                Total Jamaah: <strong>{{ $totalJamaah }} orang</strong>
+                (L: {{ $totalLakiLaki }} · P: {{ $totalPerempuan }})
+            </p>
+        </div>
     </div>
 
     {{-- =============================================
