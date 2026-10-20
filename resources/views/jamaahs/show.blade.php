@@ -50,24 +50,19 @@
                         <div>
                             <div class="flex items-center gap-3 flex-wrap">
                                 <h2 class="text-2xl font-bold text-gray-800">{{ $jamaah->nama_lengkap }}</h2>
-                                <span class="px-3 py-1 bg-blue-500 text-white text-xs font-medium rounded-full">
-                                    {{ $jamaah->id_keberangkatan }}
-                                </span>
+                                <span
+                                    class="px-3 py-1 bg-blue-500 text-white text-xs font-medium rounded-full">{{ $jamaah->id_keberangkatan }}</span>
                                 {!! $jamaah->status_pembayaran_badge !!}
                             </div>
                             <div class="flex flex-wrap items-center gap-3 mt-2">
-                                <p class="text-gray-500 text-sm">
-                                    <i class="fas fa-box mr-1"></i> Produk: {{ $jamaah->produk_paket }}
-                                </p>
-                                <p class="text-gray-500 text-sm">
-                                    <i class="fas fa-map-marker-alt mr-1"></i> Kota Asal: {{ $jamaah->kota_asal ?? '-' }}
-                                </p>
+                                <p class="text-gray-500 text-sm"><i class="fas fa-box mr-1"></i> Produk:
+                                    {{ $jamaah->produk_paket }}</p>
+                                <p class="text-gray-500 text-sm"><i class="fas fa-map-marker-alt mr-1"></i> Kota Asal:
+                                    {{ $jamaah->kota_asal ?? '-' }}</p>
                             </div>
                             <div class="flex flex-wrap items-center gap-3 mt-1">
-                                <span class="text-xs text-gray-500">Passport:</span>
-                                {!! $jamaah->status_passport['badge'] !!}
-                                <span class="text-xs text-gray-500">Dokumen:</span>
-                                {!! $jamaah->status_dokumen['badge'] !!}
+                                <span class="text-xs text-gray-500">Passport:</span>{!! $jamaah->status_passport['badge'] !!}
+                                <span class="text-xs text-gray-500">Dokumen:</span>{!! $jamaah->status_dokumen['badge'] !!}
                             </div>
                         </div>
                         <div class="text-right">
@@ -80,16 +75,13 @@
                     </div>
                 </div>
 
-                <!-- Grid Detail -->
                 <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
                     <!-- Informasi Pribadi -->
                     <div class="bg-gray-50 rounded-xl p-5 border border-gray-100">
                         <h6 class="text-sm font-semibold text-gray-700 mb-4 flex items-center">
                             <i class="fas fa-user text-yellow-500 mr-2"></i> Informasi Pribadi
                         </h6>
-                        @php
-                            $sumber = $jamaah->sumber_data;
-                        @endphp
+                        @php $sumber = $jamaah->sumber_data; @endphp
                         <dl class="space-y-3">
                             <div class="flex justify-between text-sm border-b border-gray-100 pb-2">
                                 <dt class="text-gray-500">Sumber Data</dt>
@@ -97,13 +89,10 @@
                                     <div class="flex items-center gap-2">
                                         {!! $sumber['badge'] !!}
                                         @if ($sumber['source'] == 'keluarga')
-                                            <span class="text-xs text-purple-600">
-                                                ({{ $sumber['nama_keluarga'] }})
-                                            </span>
+                                            <span class="text-xs text-purple-600">({{ $sumber['nama_keluarga'] }})</span>
                                             <a href="{{ $sumber['link'] }}"
-                                                class="text-purple-500 hover:text-purple-700 text-xs">
-                                                <i class="fas fa-external-link-alt"></i>
-                                            </a>
+                                                class="text-purple-500 hover:text-purple-700 text-xs"><i
+                                                    class="fas fa-external-link-alt"></i></a>
                                         @endif
                                     </div>
                                 </dd>
@@ -145,8 +134,6 @@
                                 <dt class="text-gray-500">Alamat</dt>
                                 <dd class="font-medium text-gray-700 text-right">{{ $jamaah->alamat ?? '-' }}</dd>
                             </div>
-
-                            {{-- ✅ NEW: Kota/Kabupaten, Kecamatan, Kelurahan --}}
                             <div class="flex justify-between text-sm border-b border-gray-100 pb-2">
                                 <dt class="text-gray-500">Kota / Kabupaten</dt>
                                 <dd class="font-medium text-gray-700">{{ $jamaah->kota_kabupaten ?? '-' }}</dd>
@@ -164,9 +151,8 @@
 
                     <!-- Informasi Passport -->
                     <div class="bg-gray-50 rounded-xl p-5 border border-gray-100">
-                        <h6 class="text-sm font-semibold text-gray-700 mb-4 flex items-center">
-                            <i class="fas fa-passport text-yellow-500 mr-2"></i> Informasi Passport
-                        </h6>
+                        <h6 class="text-sm font-semibold text-gray-700 mb-4 flex items-center"><i
+                                class="fas fa-passport text-yellow-500 mr-2"></i> Informasi Passport</h6>
                         <dl class="space-y-3">
                             <div class="flex justify-between text-sm border-b border-gray-100 pb-2">
                                 <dt class="text-gray-500">Nomor Passport</dt>
@@ -189,9 +175,8 @@
 
                     <!-- Informasi Keberangkatan -->
                     <div class="bg-gray-50 rounded-xl p-5 border border-gray-100">
-                        <h6 class="text-sm font-semibold text-gray-700 mb-4 flex items-center">
-                            <i class="fas fa-plane text-yellow-500 mr-2"></i> Informasi Keberangkatan
-                        </h6>
+                        <h6 class="text-sm font-semibold text-gray-700 mb-4 flex items-center"><i
+                                class="fas fa-plane text-yellow-500 mr-2"></i> Informasi Keberangkatan</h6>
                         <dl class="space-y-3">
                             <div class="flex justify-between text-sm border-b border-gray-100 pb-2">
                                 <dt class="text-gray-500">ID Keberangkatan</dt>
@@ -216,29 +201,11 @@
                         </dl>
                     </div>
 
-                    <!-- Keberangkatan & Harga (Multiple) -->
+                    <!-- Keberangkatan & Harga -->
                     <div class="bg-gray-50 rounded-xl p-5 border border-gray-100 lg:col-span-2">
-                        <h6 class="text-sm font-semibold text-gray-700 mb-4 flex items-center">
-                            <i class="fas fa-calendar-check text-yellow-500 mr-2"></i> Keberangkatan & Harga
-                        </h6>
-
-                        @php
-                            $bulanNama = [
-                                1 => 'Januari',
-                                2 => 'Februari',
-                                3 => 'Maret',
-                                4 => 'April',
-                                5 => 'Mei',
-                                6 => 'Juni',
-                                7 => 'Juli',
-                                8 => 'Agustus',
-                                9 => 'September',
-                                10 => 'Oktober',
-                                11 => 'November',
-                                12 => 'Desember',
-                            ];
-                        @endphp
-
+                        <h6 class="text-sm font-semibold text-gray-700 mb-4 flex items-center"><i
+                                class="fas fa-calendar-check text-yellow-500 mr-2"></i> Keberangkatan & Harga</h6>
+                        @php $bulanNama = [1=>'Januari',2=>'Februari',3=>'Maret',4=>'April',5=>'Mei',6=>'Juni',7=>'Juli',8=>'Agustus',9=>'September',10=>'Oktober',11=>'November',12=>'Desember']; @endphp
                         @if ($jamaah->keberangkatan->isEmpty())
                             <p class="text-sm text-gray-400 text-center py-3">Tidak ada data keberangkatan</p>
                         @else
@@ -260,36 +227,28 @@
                                         @foreach ($jamaah->keberangkatan->sortBy(['pivot.tahun_keberangkatan', 'pivot.bulan_keberangkatan']) as $index => $keb)
                                             <tr class="border-b border-gray-100 hover:bg-white">
                                                 <td class="px-3 py-2 text-gray-500">{{ $index + 1 }}</td>
-                                                <td class="px-3 py-2">
-                                                    <span
-                                                        class="inline-flex items-center gap-1 px-2 py-1 bg-blue-100 text-blue-700 rounded-lg text-xs font-medium">
-                                                        <i class="fas fa-plane text-[10px]"></i>
-                                                        {{ $bulanNama[$keb->pivot->bulan_keberangkatan] }}
-                                                        {{ $keb->pivot->tahun_keberangkatan }}
-                                                    </span>
-                                                </td>
+                                                <td class="px-3 py-2"><span
+                                                        class="inline-flex items-center gap-1 px-2 py-1 bg-blue-100 text-blue-700 rounded-lg text-xs font-medium"><i
+                                                            class="fas fa-plane text-[10px]"></i>{{ $bulanNama[$keb->pivot->bulan_keberangkatan] }}
+                                                        {{ $keb->pivot->tahun_keberangkatan }}</span></td>
                                                 <td class="px-3 py-2">
                                                     @if ($keb->pivot->bulan_harga && $keb->pivot->tahun_harga)
                                                         @if (
                                                             $keb->pivot->bulan_harga != $keb->pivot->bulan_keberangkatan ||
                                                                 $keb->pivot->tahun_harga != $keb->pivot->tahun_keberangkatan)
                                                             <span
-                                                                class="inline-flex items-center gap-1 px-2 py-1 bg-green-100 text-green-700 rounded-lg text-xs font-medium">
-                                                                <i class="fas fa-tag text-[10px]"></i>
-                                                                {{ $bulanNama[$keb->pivot->bulan_harga] }}
-                                                                {{ $keb->pivot->tahun_harga }}
-                                                            </span>
+                                                                class="inline-flex items-center gap-1 px-2 py-1 bg-green-100 text-green-700 rounded-lg text-xs font-medium"><i
+                                                                    class="fas fa-tag text-[10px]"></i>{{ $bulanNama[$keb->pivot->bulan_harga] }}
+                                                                {{ $keb->pivot->tahun_harga }}</span>
                                                         @else
                                                             <span class="text-xs text-gray-400 italic">Sama dengan
                                                                 keberangkatan</span>
                                                         @endif
-                                                    @else
-                                                        <span class="text-xs text-gray-400 italic">-</span>
+                                                    @else<span class="text-xs text-gray-400 italic">-</span>
                                                     @endif
                                                 </td>
-                                                <td class="px-3 py-2 text-right font-medium text-green-600">
-                                                    Rp {{ number_format($keb->pivot->harga, 0, ',', '.') }}
-                                                </td>
+                                                <td class="px-3 py-2 text-right font-medium text-green-600">Rp
+                                                    {{ number_format($keb->pivot->harga, 0, ',', '.') }}</td>
                                             </tr>
                                         @endforeach
                                     </tbody>
@@ -300,14 +259,11 @@
 
                     <!-- Agent & Pembuatan Passport -->
                     <div class="bg-gray-50 rounded-xl p-5 border border-gray-100">
-                        <h6 class="text-sm font-semibold text-gray-700 mb-4 flex items-center">
-                            <i class="fas fa-handshake text-yellow-500 mr-2"></i> Agent & Pembuatan Passport
-                        </h6>
-
+                        <h6 class="text-sm font-semibold text-gray-700 mb-4 flex items-center"><i
+                                class="fas fa-handshake text-yellow-500 mr-2"></i> Agent & Pembuatan Passport</h6>
                         <div class="mb-3 pb-3 border-b border-gray-200">
-                            <h6 class="text-xs font-semibold text-blue-600 mb-2 flex items-center">
-                                <i class="fas fa-user-tie mr-1"></i> Agent
-                            </h6>
+                            <h6 class="text-xs font-semibold text-blue-600 mb-2 flex items-center"><i
+                                    class="fas fa-user-tie mr-1"></i> Agent</h6>
                             <dl class="space-y-2">
                                 <div class="flex justify-between text-sm">
                                     <dt class="text-gray-500">Nama Agent</dt>
@@ -319,11 +275,9 @@
                                 </div>
                             </dl>
                         </div>
-
                         <div>
-                            <h6 class="text-xs font-semibold text-green-600 mb-2 flex items-center">
-                                <i class="fas fa-passport mr-1"></i> Pembuatan Passport
-                            </h6>
+                            <h6 class="text-xs font-semibold text-green-600 mb-2 flex items-center"><i
+                                    class="fas fa-passport mr-1"></i> Pembuatan Passport</h6>
                             <dl class="space-y-2">
                                 <div class="flex justify-between text-sm">
                                     <dt class="text-gray-500">Ada Pembuatan Passport?</dt>
@@ -331,8 +285,7 @@
                                 </div>
                                 <div class="flex justify-between text-sm">
                                     <dt class="text-gray-500">Pembayaran Passport</dt>
-                                    <dd class="font-medium text-green-600">{{ $jamaah->pendampingan_fee_formatted }}
-                                    </dd>
+                                    <dd class="font-medium text-green-600">{{ $jamaah->pendampingan_fee_formatted }}</dd>
                                 </div>
                                 @if ($jamaah->is_pembuatan_passport)
                                     <div class="flex justify-between text-sm">
@@ -343,27 +296,22 @@
                                 @endif
                                 <div class="flex justify-between text-sm pt-2 border-t border-gray-200">
                                     <dt class="text-gray-600 font-medium">Total Pembuatan Passport</dt>
-                                    <dd class="font-bold text-blue-600">
-                                        {{ $jamaah->total_pembuatan_passport_formatted }}
+                                    <dd class="font-bold text-blue-600">{{ $jamaah->total_pembuatan_passport_formatted }}
                                     </dd>
                                 </div>
                             </dl>
                         </div>
-
                         <div class="mt-3 pt-3 border-t border-gray-200">
-                            <p class="text-xs text-gray-400">
-                                <i class="fas fa-info-circle mr-1"></i>
-                                Fee Agent & Pembuatan Passport adalah informasi tambahan dan <span
-                                    class="text-red-500 font-medium">TIDAK</span> termasuk dalam total tagihan
-                            </p>
+                            <p class="text-xs text-gray-400"><i class="fas fa-info-circle mr-1"></i> Fee Agent & Pembuatan
+                                Passport adalah informasi tambahan dan <span class="text-red-500 font-medium">TIDAK</span>
+                                termasuk dalam total tagihan</p>
                         </div>
                     </div>
 
                     <!-- Keuangan -->
                     <div class="bg-gray-50 rounded-xl p-5 border border-gray-100">
-                        <h6 class="text-sm font-semibold text-gray-700 mb-4 flex items-center">
-                            <i class="fas fa-money-bill-wave text-yellow-500 mr-2"></i> Keuangan
-                        </h6>
+                        <h6 class="text-sm font-semibold text-gray-700 mb-4 flex items-center"><i
+                                class="fas fa-money-bill-wave text-yellow-500 mr-2"></i> Keuangan</h6>
                         <dl class="space-y-3">
                             <div class="flex justify-between text-sm border-b border-gray-100 pb-2">
                                 <dt class="text-gray-500">Status Pembayaran</dt>
@@ -372,8 +320,7 @@
                             <div class="flex justify-between text-sm border-b border-gray-100 pb-2">
                                 <dt class="text-gray-500">Total Tagihan</dt>
                                 <dd class="font-medium text-gray-700">
-                                    {{ $jamaah->total_tagihan_setelah_diskon_formatted }}
-                                </dd>
+                                    {{ $jamaah->total_tagihan_setelah_diskon_formatted }}</dd>
                             </div>
                             <div class="flex justify-between text-sm border-b border-gray-100 pb-2">
                                 <dt class="text-gray-500">Total Dibayar</dt>
@@ -387,11 +334,8 @@
                                 <dt class="text-gray-500">Diskon</dt>
                                 <dd class="font-medium text-gray-700">
                                     @if ($jamaah->diskon)
-                                        {{ $jamaah->diskon->nama_diskon }}
-                                        <span
-                                            class="text-yellow-600">(-{{ $jamaah->diskon->nilai_diskon_formatted }})</span>
-                                    @else
-                                        {{ $jamaah->nilai_diskon_formatted ?? 'Rp 0' }}
+                                        {{ $jamaah->diskon->nama_diskon }} <span
+                                            class="text-yellow-600">(-{{ $jamaah->diskon->nilai_diskon_formatted }})</span>@else{{ $jamaah->nilai_diskon_formatted ?? 'Rp 0' }}
                                     @endif
                                 </dd>
                             </div>
@@ -402,38 +346,122 @@
                         </dl>
                     </div>
 
+                    {{-- ============================================ --}}
+                    {{-- UPGRADE HOTEL --}}
+                    {{-- ============================================ --}}
+                    @if ($jamaah->upgradeHotels->count() > 0 || $jamaah->total_upgrade_hotel_gabungan > 0)
+                        <div class="bg-orange-50 rounded-xl p-5 border border-orange-200 lg:col-span-2">
+                            <h6 class="text-sm font-semibold text-gray-700 mb-4 flex items-center"><i
+                                    class="fas fa-hotel text-orange-500 mr-2"></i> Upgrade Hotel & Kamar</h6>
+
+                            <div class="grid grid-cols-1 md:grid-cols-3 gap-3 mb-4">
+                                <div class="bg-white rounded-lg p-3 border border-orange-200 text-center">
+                                    <p class="text-xs text-gray-500">Upgrade Personal</p>
+                                    <p class="text-sm font-bold text-orange-600">
+                                        {{ $jamaah->total_upgrade_hotel_formatted }}</p>
+                                </div>
+                                <div class="bg-white rounded-lg p-3 border border-purple-200 text-center">
+                                    <p class="text-xs text-gray-500">Share Keluarga</p>
+                                    <p class="text-sm font-bold text-purple-600">Rp
+                                        {{ number_format(max(0, $jamaah->total_upgrade_hotel_gabungan - $jamaah->total_upgrade_hotel), 0, ',', '.') }}
+                                    </p>
+                                </div>
+                                <div class="bg-white rounded-lg p-3 border border-blue-200 text-center">
+                                    <p class="text-xs text-gray-500">Total Gabungan</p>
+                                    <p class="text-sm font-bold text-blue-600">
+                                        {{ $jamaah->total_upgrade_hotel_gabungan_formatted }}</p>
+                                </div>
+                            </div>
+
+                            @if ($jamaah->upgradeHotels->count() > 0)
+                                <div class="mb-4">
+                                    <h6 class="text-xs font-semibold text-gray-600 mb-2 flex items-center"><i
+                                            class="fas fa-user mr-1 text-orange-500"></i> Upgrade Personal Jamaah</h6>
+                                    <div class="overflow-x-auto">
+                                        <table class="w-full text-sm bg-white rounded-lg overflow-hidden">
+                                            <thead class="bg-gray-100">
+                                                <tr>
+                                                    <th
+                                                        class="px-3 py-2 text-left text-xs font-semibold text-gray-500 uppercase">
+                                                        #</th>
+                                                    <th
+                                                        class="px-3 py-2 text-left text-xs font-semibold text-gray-500 uppercase">
+                                                        Hotel</th>
+                                                    <th
+                                                        class="px-3 py-2 text-left text-xs font-semibold text-gray-500 uppercase">
+                                                        Tipe Kamar</th>
+                                                    <th
+                                                        class="px-3 py-2 text-right text-xs font-semibold text-gray-500 uppercase">
+                                                        Jumlah</th>
+                                                    <th
+                                                        class="px-3 py-2 text-right text-xs font-semibold text-gray-500 uppercase">
+                                                        Harga/Malam</th>
+                                                    <th
+                                                        class="px-3 py-2 text-right text-xs font-semibold text-gray-500 uppercase">
+                                                        Malam</th>
+                                                    <th
+                                                        class="px-3 py-2 text-right text-xs font-semibold text-gray-500 uppercase">
+                                                        Subtotal</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody class="divide-y divide-gray-100">
+                                                @foreach ($jamaah->upgradeHotels as $idx => $upgrade)
+                                                    <tr class="hover:bg-gray-50">
+                                                        <td class="px-3 py-2 text-gray-500">{{ $idx + 1 }}</td>
+                                                        <td class="px-3 py-2"><span
+                                                                class="font-medium text-gray-700">{{ $upgrade->hotel->nama_hotel ?? '-' }}</span>
+                                                            <p class="text-xs text-gray-400">
+                                                                {{ $upgrade->hotel->kota ?? '' }}</p>
+                                                        </td>
+                                                        <td class="px-3 py-2 text-gray-600">
+                                                            {{ $upgrade->tipe_kamar ?? '-' }}</td>
+                                                        <td class="px-3 py-2 text-right text-gray-600">
+                                                            {{ $upgrade->jumlah_kamar }}</td>
+                                                        <td class="px-3 py-2 text-right text-gray-600">Rp
+                                                            {{ number_format($upgrade->harga_per_malam, 0, ',', '.') }}
+                                                        </td>
+                                                        <td class="px-3 py-2 text-right text-gray-600">
+                                                            {{ $upgrade->durasi_menginap }}</td>
+                                                        <td class="px-3 py-2 text-right font-bold text-orange-600">Rp
+                                                            {{ number_format($upgrade->total_harga, 0, ',', '.') }}</td>
+                                                    </tr>
+                                                @endforeach
+                                            </tbody>
+                                            <tfoot class="bg-orange-100 border-t-2 border-orange-300">
+                                                <tr>
+                                                    <td colspan="6"
+                                                        class="px-3 py-2 text-right font-bold text-gray-700">TOTAL PERSONAL
+                                                    </td>
+                                                    <td class="px-3 py-2 text-right font-bold text-orange-700">
+                                                        {{ $jamaah->total_upgrade_hotel_formatted }}</td>
+                                                </tr>
+                                            </tfoot>
+                                        </table>
+                                    </div>
+                                </div>
+                            @endif
+
+                            @if ($jamaah->id_keluarga && $jamaah->keluarga && $jamaah->keluarga->upgradeHotels->count() > 0)
+                                <div class="bg-purple-100 rounded-lg p-3 border border-purple-300">
+                                    <p class="text-xs text-purple-700"><i class="fas fa-info-circle mr-1"></i>
+                                        Upgrade hotel keluarga sebesar <span
+                                            class="font-bold">{{ $jamaah->keluarga->total_upgrade_hotel_formatted }}</span>
+                                        dibagi rata ke <span class="font-bold">{{ $jamaah->keluarga->jamaahs->count() }}
+                                            jamaah</span>.
+                                        Bagian Anda: <span
+                                            class="font-bold">{{ $jamaah->keluarga->upgrade_hotel_per_jamaah_formatted }}</span>
+                                    </p>
+                                </div>
+                            @endif
+                        </div>
+                    @endif
+
                     <!-- Dokumen -->
                     <div class="bg-gray-50 rounded-xl p-5 border border-gray-100 lg:col-span-2">
-                        <h6 class="text-sm font-semibold text-gray-700 mb-4 flex items-center">
-                            <i class="fas fa-folder-open text-yellow-500 mr-2"></i> Dokumen
-                        </h6>
-
+                        <h6 class="text-sm font-semibold text-gray-700 mb-4 flex items-center"><i
+                                class="fas fa-folder-open text-yellow-500 mr-2"></i> Dokumen</h6>
                         <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
-                            @php
-                                $docs = [
-                                    [
-                                        'label' => 'KTP / KK',
-                                        'url' => $jamaah->file_ktp_kk_url,
-                                        'type' => $jamaah->file_ktp_kk_type,
-                                    ],
-                                    [
-                                        'label' => 'Vaksin',
-                                        'url' => $jamaah->file_vaksin_url,
-                                        'type' => $jamaah->file_vaksin_type,
-                                    ],
-                                    [
-                                        'label' => 'Visa',
-                                        'url' => $jamaah->file_visa_url,
-                                        'type' => $jamaah->file_visa_type,
-                                    ],
-                                    [
-                                        'label' => 'Passport',
-                                        'url' => $jamaah->file_paspor_url,
-                                        'type' => $jamaah->file_paspor_type,
-                                    ],
-                                ];
-                            @endphp
-
+                            @php $docs = [['label' => 'KTP / KK', 'url' => $jamaah->file_ktp_kk_url, 'type' => $jamaah->file_ktp_kk_type], ['label' => 'Vaksin', 'url' => $jamaah->file_vaksin_url, 'type' => $jamaah->file_vaksin_type], ['label' => 'Visa', 'url' => $jamaah->file_visa_url, 'type' => $jamaah->file_visa_type], ['label' => 'Passport', 'url' => $jamaah->file_paspor_url, 'type' => $jamaah->file_paspor_type]]; @endphp
                             @foreach ($docs as $doc)
                                 <div class="bg-white rounded-lg p-3 border border-gray-200 text-center">
                                     <p class="text-xs text-gray-500 mb-2">{{ $doc['label'] }}</p>
@@ -441,23 +469,18 @@
                                         <a href="{{ $doc['url'] }}" target="_blank"
                                             class="inline-flex items-center justify-center w-24 h-24 bg-gray-100 rounded-lg mx-auto border border-gray-200 hover:shadow-lg transition">
                                             @if ($doc['type'] == 'pdf')
-                                                <i class="fas fa-file-pdf text-5xl text-red-500"></i>
-                                            @else
-                                                <img src="{{ $doc['url'] }}" alt="{{ $doc['label'] }}"
+                                            <i class="fas fa-file-pdf text-5xl text-red-500"></i>@else<img
+                                                    src="{{ $doc['url'] }}" alt="{{ $doc['label'] }}"
                                                     class="w-24 h-24 object-cover rounded-lg">
                                             @endif
                                         </a>
-                                        <p class="text-xs text-gray-400 mt-2">
-                                            <a href="{{ $doc['url'] }}" target="_blank"
-                                                class="text-blue-500 hover:text-blue-700">
-                                                <i class="fas fa-eye mr-1"></i> Lihat
-                                            </a>
-                                        </p>
+                                        <p class="text-xs text-gray-400 mt-2"><a href="{{ $doc['url'] }}"
+                                                target="_blank" class="text-blue-500 hover:text-blue-700"><i
+                                                    class="fas fa-eye mr-1"></i> Lihat</a></p>
                                     @else
                                         <div
                                             class="w-24 h-24 bg-gray-100 rounded-lg mx-auto flex items-center justify-center border border-gray-200">
-                                            <i class="fas fa-file text-4xl text-gray-300"></i>
-                                        </div>
+                                            <i class="fas fa-file text-4xl text-gray-300"></i></div>
                                         <p class="text-xs text-gray-400 mt-2">Tidak ada file</p>
                                     @endif
                                 </div>
@@ -465,39 +488,32 @@
                         </div>
                     </div>
 
-                    <!-- Catatan -->
                     @if ($jamaah->catatan_tambahan)
                         <div class="bg-gray-50 rounded-xl p-5 border border-gray-100 lg:col-span-2">
-                            <h6 class="text-sm font-semibold text-gray-700 mb-3 flex items-center">
-                                <i class="fas fa-align-left text-yellow-500 mr-2"></i> Catatan Tambahan
-                            </h6>
+                            <h6 class="text-sm font-semibold text-gray-700 mb-3 flex items-center"><i
+                                    class="fas fa-align-left text-yellow-500 mr-2"></i> Catatan Tambahan</h6>
                             <p class="text-sm text-gray-600 leading-relaxed">{{ $jamaah->catatan_tambahan }}</p>
                         </div>
                     @endif
 
-                    <!-- Informasi Sistem -->
                     <div class="bg-gray-50 rounded-xl p-5 border border-gray-100 lg:col-span-2">
-                        <h6 class="text-sm font-semibold text-gray-700 mb-4 flex items-center">
-                            <i class="fas fa-calendar-alt text-yellow-500 mr-2"></i> Informasi Sistem
-                        </h6>
+                        <h6 class="text-sm font-semibold text-gray-700 mb-4 flex items-center"><i
+                                class="fas fa-calendar-alt text-yellow-500 mr-2"></i> Informasi Sistem</h6>
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div class="flex justify-between text-sm">
                                 <dt class="text-gray-500">Dibuat Pada</dt>
                                 <dd class="font-medium text-gray-700">
-                                    {{ $jamaah->created_at ? $jamaah->created_at->format('d M Y H:i') : '-' }}
-                                </dd>
+                                    {{ $jamaah->created_at ? $jamaah->created_at->format('d M Y H:i') : '-' }}</dd>
                             </div>
                             <div class="flex justify-between text-sm">
                                 <dt class="text-gray-500">Terakhir Diperbarui</dt>
                                 <dd class="font-medium text-gray-700">
-                                    {{ $jamaah->updated_at ? $jamaah->updated_at->format('d M Y H:i') : '-' }}
-                                </dd>
+                                    {{ $jamaah->updated_at ? $jamaah->updated_at->format('d M Y H:i') : '-' }}</dd>
                             </div>
                         </div>
                     </div>
                 </div>
 
-                <!-- Aksi Bawah -->
                 <div class="mt-6 pt-6 border-t border-gray-100 flex flex-wrap items-center justify-end gap-3">
                     <button type="button" onclick="window.print()"
                         class="px-4 py-2 bg-gray-100 rounded-lg hover:bg-gray-200 transition">Cetak</button>

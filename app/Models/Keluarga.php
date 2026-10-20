@@ -79,6 +79,12 @@ class Keluarga extends Model
         return $this->belongsTo(ProdukHargaBulanan::class, 'id_produk_harga_bulanan', 'id');
     }
 
+    public function upgradeHotels()
+    {
+        return $this->hasMany(JamaahUpgradeHotel::class, 'id_keluarga', 'id_keluarga')
+            ->whereNull('id_jamaah');
+    }
+
     // ==========================================
     // ACCESSORS
     // ==========================================
@@ -118,6 +124,28 @@ class Keluarga extends Model
     public function getKodeKeluargaFormattedAttribute()
     {
         return $this->kode_keluarga ?? '-';
+    }
+
+           public function getTotalUpgradeHotelAttribute()
+    {
+        return $this->upgradeHotels->sum('total_harga');
+    }
+
+    public function getTotalUpgradeHotelFormattedAttribute()
+    {
+        return 'Rp ' . number_format($this->total_upgrade_hotel, 0, ',', '.');
+    }
+
+    public function getUpgradeHotelPerJamaahAttribute()
+    {
+        $jumlahJamaah = $this->jamaahs->count();
+        if ($jumlahJamaah <= 0) return 0;
+        return (int) round($this->total_upgrade_hotel / $jumlahJamaah);
+    }
+
+    public function getUpgradeHotelPerJamaahFormattedAttribute()
+    {
+        return 'Rp ' . number_format($this->upgrade_hotel_per_jamaah, 0, ',', '.');
     }
 
     // ==========================================

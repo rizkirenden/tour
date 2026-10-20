@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Models\Jamaah;
+use App\Models\JamaahUpgradeHotel;
 use App\Models\ProdukPaket;
 use App\Models\ProdukHargaBulanan;
 use App\Models\ProdukKeberangkatan;
@@ -15,7 +16,13 @@ class JamaahService
 {
     public function getAll(array $filters = [])
     {
-        $query = Jamaah::with(['diskon', 'keluarga', 'keberangkatan']);
+        $query = Jamaah::with([
+            'diskon',
+            'keluarga',
+            'keberangkatan',
+            'upgradeHotels.hotel',
+            'upgradeHotels.kamar',
+        ]);
 
         if (!empty($filters['search'])) {
             $search = $filters['search'];
@@ -50,23 +57,32 @@ class JamaahService
 
     public function getById($id)
     {
-        return Jamaah::with(['diskon', 'keluarga', 'keberangkatan'])->findOrFail($id);
+        return Jamaah::with([
+            'diskon',
+            'keluarga.upgradeHotels.hotel',
+            'keluarga.jamaahs',
+            'keberangkatan',
+            'upgradeHotels.hotel',
+            'upgradeHotels.kamar',
+        ])->findOrFail($id);
     }
 
     public function getByIdWithRelations($id)
     {
         return Jamaah::with([
-            'keluarga',
+            'keluarga.upgradeHotels.hotel',
+            'keluarga.jamaahs',
             'transaksis.metodePembayaran',
             'transaksis.jenisTransaksi',
             'diskon',
-            'keberangkatan'
+            'keberangkatan',
+            'upgradeHotels.hotel',
+            'upgradeHotels.kamar',
         ])->findOrFail($id);
     }
 
     // ==========================================
     // CREATE
-    // Total Tagihan = Harga Produk + Pembuatan Passport − Diskon
     // ==========================================
     public function create(array $data)
     {
@@ -83,15 +99,9 @@ class JamaahService
                 $data['bandara_keberangkatan'] = $kota->bandara_terdekat;
             }
 
-            // ==========================================
-            // AGENT
-            // ==========================================
             $data['agent_name'] = $data['agent_name'] ?? null;
             $data['fee_agent'] = (int) ($data['fee_agent'] ?? 0);
 
-            // ==========================================
-            // PEMBUATAN PASSPORT
-            // ==========================================
             $data['is_pembuatan_passport'] = (bool) ($data['is_pembuatan_passport'] ?? false);
             $data['pendampingan_fee'] = (int) ($data['pendampingan_fee'] ?? 0);
             $data['pendampingan_fee_petugas'] = (int) ($data['pendampingan_fee_petugas'] ?? 0);
@@ -113,6 +123,9 @@ class JamaahService
 
             $keberangkatanData = $data['keberangkatan_data'] ?? [];
             unset($data['keberangkatan_data']);
+
+            $upgradeHotels = $data['upgrade_hotels'] ?? [];
+            unset($data['upgrade_hotels']);
 
             $this->validateKuota($keberangkatanData);
 
@@ -139,8 +152,16 @@ class JamaahService
                 $hargaProduk = (int) ($keberangkatanData[0]['harga'] ?? 0);
             }
 
+            $totalUpgrade = 0;
+            foreach ($upgradeHotels as $up) {
+                $jk = max(1, (int) ($up['jumlah_kamar'] ?? 1));
+                $dd = max(1, (int) ($up['durasi_menginap'] ?? 1));
+                $hh = (int) ($up['harga_per_malam'] ?? 0);
+                $totalUpgrade += $jk * $hh * $dd;
+            }
+
             $passportFee = $data['pendampingan_fee'] + $data['pendampingan_fee_petugas'];
-            $totalTagihanKotor = $hargaProduk + $passportFee;
+            $totalTagihanKotor = $hargaProduk + $passportFee + $totalUpgrade;
             $totalTagihanSetelahDiskon = max(0, $totalTagihanKotor - $nilaiDiskon);
 
             $data['total_tagihan_sebelum_diskon'] = $totalTagihanKotor;
@@ -154,6 +175,8 @@ class JamaahService
             );
 
             $jamaah = Jamaah::create($data);
+
+            $this->saveUpgradeHotels($jamaah->id_jamaah, $upgradeHotels);
 
             if (!empty($keberangkatanData)) {
                 $pivotData = [];
@@ -190,6 +213,11 @@ class JamaahService
 
             if ($diskonData && $diskonData->is_available) {
                 $diskonData->increment('sudah_digunakan');
+            }
+
+            if ($jamaah->id_keluarga) {
+                $keluargaService = new \App\Services\KeluargaService();
+                $keluargaService->recalculateKeluarga($jamaah->id_keluarga);
             }
 
             return $jamaah->fresh();
@@ -243,7 +271,9 @@ class JamaahService
             $keberangkatanData = $data['keberangkatan_data'] ?? [];
             unset($data['keberangkatan_data']);
 
-            // ✅ EXCLUDE jamaah yang sedang diedit dari perhitungan kuota
+            $upgradeHotels = $data['upgrade_hotels'] ?? [];
+            unset($data['upgrade_hotels']);
+
             $this->validateKuota($keberangkatanData, $id);
 
             if (!empty($keberangkatanData)) {
@@ -269,8 +299,16 @@ class JamaahService
                 $hargaProduk = (int) ($keberangkatanData[0]['harga'] ?? 0);
             }
 
+            $totalUpgrade = 0;
+            foreach ($upgradeHotels as $up) {
+                $jk = max(1, (int) ($up['jumlah_kamar'] ?? 1));
+                $dd = max(1, (int) ($up['durasi_menginap'] ?? 1));
+                $hh = (int) ($up['harga_per_malam'] ?? 0);
+                $totalUpgrade += $jk * $hh * $dd;
+            }
+
             $passportFee = $data['pendampingan_fee'] + $data['pendampingan_fee_petugas'];
-            $totalTagihanKotor = $hargaProduk + $passportFee;
+            $totalTagihanKotor = $hargaProduk + $passportFee + $totalUpgrade;
             $totalTagihanSetelahDiskon = max(0, $totalTagihanKotor - $nilaiDiskon);
 
             $data['total_tagihan_sebelum_diskon'] = $totalTagihanKotor;
@@ -284,6 +322,8 @@ class JamaahService
             );
 
             $jamaah->update($data);
+
+            $this->saveUpgradeHotels($jamaah->id_jamaah, $upgradeHotels);
 
             if (!empty($keberangkatanData)) {
                 $pivotData = [];
@@ -331,6 +371,36 @@ class JamaahService
         });
     }
 
+    // ==========================================
+    // SAVE UPGRADE HOTELS
+    // ==========================================
+    private function saveUpgradeHotels($idJamaah, array $upgradeHotels)
+    {
+        JamaahUpgradeHotel::where('id_jamaah', $idJamaah)->delete();
+
+        foreach ($upgradeHotels as $item) {
+            $idHotel = $item['id_hotel'] ?? null;
+            if (!$idHotel) continue;
+
+            $jumlahKamar = max(1, (int) ($item['jumlah_kamar'] ?? 1));
+            $durasi = max(1, (int) ($item['durasi_menginap'] ?? 1));
+            $harga = (int) ($item['harga_per_malam'] ?? 0);
+
+            JamaahUpgradeHotel::create([
+                'id_jamaah' => $idJamaah,
+                'id_keluarga' => null,
+                'id_hotel' => $idHotel,
+                'id_kamar' => $item['id_kamar'] ?? null,
+                'tipe_kamar' => $item['tipe_kamar'] ?? null,
+                'jumlah_kamar' => $jumlahKamar,
+                'durasi_menginap' => $durasi,
+                'harga_per_malam' => $harga,
+                'total_harga' => $jumlahKamar * $harga * $durasi,
+                'catatan' => $item['catatan'] ?? null,
+            ]);
+        }
+    }
+
     public function delete($id)
     {
         return DB::transaction(function () use ($id) {
@@ -340,6 +410,8 @@ class JamaahService
                 $diskon = Diskon::find($jamaah->id_diskon);
                 if ($diskon) $diskon->decrement('sudah_digunakan');
             }
+
+            JamaahUpgradeHotel::where('id_jamaah', $id)->delete();
 
             $keluargaId = $jamaah->id_keluarga;
             $nama = $jamaah->nama_lengkap;
@@ -354,10 +426,6 @@ class JamaahService
         });
     }
 
-    /**
-     * Validasi kuota. Jika $excludeJamaahId diberikan, jamaah ini
-     * TIDAK dihitung dalam pemakaian kuota (untuk mode edit).
-     */
     private function validateKuota(array $keberangkatanData, $excludeJamaahId = null)
     {
         foreach ($keberangkatanData as $item) {
@@ -418,11 +486,6 @@ class JamaahService
         return Diskon::available()->orderBy('nama_diskon')->get();
     }
 
-    /**
-     * Ambil daftar keberangkatan & harga bulanan untuk produk.
-     * Jika $excludeJamaahId diberikan, jamaah tersebut TIDAK dihitung
-     * dalam pemakaian kuota (untuk mode edit).
-     */
     public function getKeberangkatanByProduk($namaProduk, $excludeJamaahId = null)
     {
         $produk = ProdukPaket::where('nama_produk', $namaProduk)->first();
@@ -439,7 +502,6 @@ class JamaahService
                 $query = DB::table('jamaah_keberangkatans')
                     ->where('id_produk_harga_bulanan', $h->id);
 
-                // ✅ EXCLUDE jamaah yang sedang diedit
                 if ($excludeJamaahId) {
                     $query->where('id_jamaah', '!=', $excludeJamaahId);
                 }

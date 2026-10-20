@@ -9,6 +9,8 @@ use App\Models\MetodePembayaran;
 use App\Models\ProdukPaket;
 use App\Models\ProdukKeberangkatan;
 use App\Models\ProdukHargaBulanan;
+use App\Models\Hotel;
+use App\Models\Kamar;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Auth;
@@ -43,7 +45,15 @@ class KeluargaController extends Controller
         $kotaAsals = $this->service->getKotaAsals();
         $hubunganOptions = $this->service->getHubunganOptions();
         $diskons = $this->service->getDiskons();
-        return view('keluargas.create', compact('produkPakets', 'kotaAsals', 'hubunganOptions', 'diskons'));
+        $hotelOptions = Hotel::orderBy('kota')->orderBy('nama_hotel')->get();
+
+        return view('keluargas.create', compact(
+            'produkPakets',
+            'kotaAsals',
+            'hubunganOptions',
+            'diskons',
+            'hotelOptions'
+        ));
     }
 
     public function store(Request $request)
@@ -77,9 +87,9 @@ class KeluargaController extends Controller
             'jamaahs.*.telepon' => 'required|string|max:20',
             'jamaahs.*.wa' => 'required|string|max:20',
             'jamaahs.*.alamat' => 'nullable|string',
-            'jamaahs.*.kota_kabupaten' => 'nullable|string|max:100',   // ✅ NEW
-            'jamaahs.*.kecamatan' => 'nullable|string|max:100',        // ✅ NEW
-            'jamaahs.*.kelurahan' => 'nullable|string|max:100',        // ✅ NEW
+            'jamaahs.*.kota_kabupaten' => 'nullable|string|max:100',
+            'jamaahs.*.kecamatan' => 'nullable|string|max:100',
+            'jamaahs.*.kelurahan' => 'nullable|string|max:100',
             'jamaahs.*.kota_asal' => 'nullable|string|max:50|exists:kota_asals,nama_kota',
             'jamaahs.*.pulau' => 'nullable|string|max:20',
             'jamaahs.*.bandara_keberangkatan' => 'nullable|string|max:50',
@@ -94,6 +104,24 @@ class KeluargaController extends Controller
             'jamaahs.*.is_pembuatan_passport' => 'nullable|boolean',
             'jamaahs.*.pendampingan_fee' => 'nullable|integer|min:0',
             'jamaahs.*.pendampingan_fee_petugas' => 'nullable|integer|min:0',
+
+            'upgrade_hotels' => 'nullable|array',
+            'upgrade_hotels.*.id_hotel' => 'required_with:upgrade_hotels|exists:hotels,id_hotel',
+            'upgrade_hotels.*.id_kamar' => 'nullable|exists:kamars,id_kamar',
+            'upgrade_hotels.*.tipe_kamar' => 'nullable|string|max:100',
+            'upgrade_hotels.*.jumlah_kamar' => 'nullable|integer|min:1',
+            'upgrade_hotels.*.durasi_menginap' => 'nullable|integer|min:1',
+            'upgrade_hotels.*.harga_per_malam' => 'nullable|integer|min:0',
+            'upgrade_hotels.*.catatan' => 'nullable|string',
+
+            'jamaahs.*.upgrade_hotels' => 'nullable|array',
+            'jamaahs.*.upgrade_hotels.*.id_hotel' => 'required_with:jamaahs.*.upgrade_hotels|exists:hotels,id_hotel',
+            'jamaahs.*.upgrade_hotels.*.id_kamar' => 'nullable|exists:kamars,id_kamar',
+            'jamaahs.*.upgrade_hotels.*.tipe_kamar' => 'nullable|string|max:100',
+            'jamaahs.*.upgrade_hotels.*.jumlah_kamar' => 'nullable|integer|min:1',
+            'jamaahs.*.upgrade_hotels.*.durasi_menginap' => 'nullable|integer|min:1',
+            'jamaahs.*.upgrade_hotels.*.harga_per_malam' => 'nullable|integer|min:0',
+            'jamaahs.*.upgrade_hotels.*.catatan' => 'nullable|string',
         ]);
 
         try {
@@ -142,7 +170,16 @@ class KeluargaController extends Controller
         $kotaAsals = $this->service->getKotaAsals();
         $hubunganOptions = $this->service->getHubunganOptions();
         $diskons = $this->service->getDiskons();
-        return view('keluargas.edit', compact('keluarga', 'produkPakets', 'kotaAsals', 'hubunganOptions', 'diskons'));
+        $hotelOptions = Hotel::orderBy('kota')->orderBy('nama_hotel')->get();
+
+        return view('keluargas.edit', compact(
+            'keluarga',
+            'produkPakets',
+            'kotaAsals',
+            'hubunganOptions',
+            'diskons',
+            'hotelOptions'
+        ));
     }
 
     public function update(Request $request, $id)
@@ -177,9 +214,9 @@ class KeluargaController extends Controller
             'jamaahs.*.telepon' => 'required|string|max:20',
             'jamaahs.*.wa' => 'required|string|max:20',
             'jamaahs.*.alamat' => 'nullable|string',
-            'jamaahs.*.kota_kabupaten' => 'nullable|string|max:100',   // ✅ NEW
-            'jamaahs.*.kecamatan' => 'nullable|string|max:100',        // ✅ NEW
-            'jamaahs.*.kelurahan' => 'nullable|string|max:100',        // ✅ NEW
+            'jamaahs.*.kota_kabupaten' => 'nullable|string|max:100',
+            'jamaahs.*.kecamatan' => 'nullable|string|max:100',
+            'jamaahs.*.kelurahan' => 'nullable|string|max:100',
             'jamaahs.*.kota_asal' => 'nullable|string|max:50|exists:kota_asals,nama_kota',
             'jamaahs.*.pulau' => 'nullable|string|max:20',
             'jamaahs.*.bandara_keberangkatan' => 'nullable|string|max:50',
@@ -194,6 +231,24 @@ class KeluargaController extends Controller
             'jamaahs.*.is_pembuatan_passport' => 'nullable|boolean',
             'jamaahs.*.pendampingan_fee' => 'nullable|integer|min:0',
             'jamaahs.*.pendampingan_fee_petugas' => 'nullable|integer|min:0',
+
+            'upgrade_hotels' => 'nullable|array',
+            'upgrade_hotels.*.id_hotel' => 'required_with:upgrade_hotels|exists:hotels,id_hotel',
+            'upgrade_hotels.*.id_kamar' => 'nullable|exists:kamars,id_kamar',
+            'upgrade_hotels.*.tipe_kamar' => 'nullable|string|max:100',
+            'upgrade_hotels.*.jumlah_kamar' => 'nullable|integer|min:1',
+            'upgrade_hotels.*.durasi_menginap' => 'nullable|integer|min:1',
+            'upgrade_hotels.*.harga_per_malam' => 'nullable|integer|min:0',
+            'upgrade_hotels.*.catatan' => 'nullable|string',
+
+            'jamaahs.*.upgrade_hotels' => 'nullable|array',
+            'jamaahs.*.upgrade_hotels.*.id_hotel' => 'required_with:jamaahs.*.upgrade_hotels|exists:hotels,id_hotel',
+            'jamaahs.*.upgrade_hotels.*.id_kamar' => 'nullable|exists:kamars,id_kamar',
+            'jamaahs.*.upgrade_hotels.*.tipe_kamar' => 'nullable|string|max:100',
+            'jamaahs.*.upgrade_hotels.*.jumlah_kamar' => 'nullable|integer|min:1',
+            'jamaahs.*.upgrade_hotels.*.durasi_menginap' => 'nullable|integer|min:1',
+            'jamaahs.*.upgrade_hotels.*.harga_per_malam' => 'nullable|integer|min:0',
+            'jamaahs.*.upgrade_hotels.*.catatan' => 'nullable|string',
         ]);
 
         try {
@@ -565,5 +620,81 @@ class KeluargaController extends Controller
             'success' => false,
             'error' => 'Harga tidak tersedia untuk bulan/tahun ini'
         ], 404);
+    }
+
+    /**
+     * Ambil daftar kamar berdasarkan hotel — untuk fitur upgrade hotel.
+     * Return HTML inline (tanpa file partial).
+     */
+    public function getKamarsByHotel($idHotel)
+    {
+        $hotel = Hotel::findOrFail($idHotel);
+        $kamars = Kamar::where('id_hotel', $idHotel)->orderBy('tipe_kamar')->get();
+
+        if ($kamars->isEmpty()) {
+            return response()->json([
+                'html' => '<p class="text-sm text-gray-400 col-span-2 text-center py-3">Hotel ini belum memiliki data kamar.</p>',
+                'count' => 0,
+                'hotel' => [
+                    'nama' => $hotel->nama_hotel,
+                    'kota' => $hotel->kota,
+                ],
+            ]);
+        }
+
+        $html = '';
+        foreach ($kamars as $kamar) {
+            $kamarId = $kamar->id_kamar ?? $kamar->id;
+            $tipeKamar = e($kamar->tipe_kamar);
+            $harga = (int) ($kamar->harga ?? 0);
+            $hargaFormatted = 'Rp ' . number_format($harga, 0, ',', '.');
+
+            $html .= '<div class="kamar-item bg-white border border-gray-200 rounded-lg p-2">'
+                . '<label class="flex items-start gap-2 cursor-pointer">'
+                . '<input type="checkbox" '
+                . 'class="kamar-checkbox w-4 h-4 text-orange-500 border-gray-300 rounded focus:ring-orange-500 mt-0.5" '
+                . 'value="' . $kamarId . '" '
+                . 'data-tipe="' . $tipeKamar . '" '
+                . 'data-harga="' . $harga . '">'
+                . '<div class="flex-1">'
+                . '<div class="flex items-center justify-between">'
+                . '<p class="text-xs font-medium text-gray-700">' . $tipeKamar . '</p>'
+                . '<p class="text-xs font-bold text-orange-600">' . $hargaFormatted . '</p>'
+                . '</div>'
+                . '<div class="grid grid-cols-3 gap-1 mt-1">'
+                . '<div>'
+                . '<label class="block text-[10px] text-gray-500">Kamar</label>'
+                . '<input type="number" '
+                . 'class="kamar-jumlah w-full px-1.5 py-1 border border-gray-200 rounded text-xs disabled:opacity-50 disabled:bg-gray-50" '
+                . 'value="1" min="1" disabled>'
+                . '</div>'
+                . '<div>'
+                . '<label class="block text-[10px] text-gray-500">Harga/Malam</label>'
+                . '<input type="text" '
+                . 'class="kamar-harga w-full px-1.5 py-1 border border-gray-200 rounded text-xs disabled:opacity-50 disabled:bg-gray-50" '
+                . 'value="' . $hargaFormatted . '" '
+                . 'oninput="formatRupiahKamar(this)" '
+                . 'onblur="formatRupiahKamar(this)" disabled>'
+                . '</div>'
+                . '<div>'
+                . '<label class="block text-[10px] text-gray-500">Malam</label>'
+                . '<input type="number" '
+                . 'class="kamar-durasi w-full px-1.5 py-1 border border-gray-200 rounded text-xs disabled:opacity-50 disabled:bg-gray-50" '
+                . 'value="1" min="1" disabled>'
+                . '</div>'
+                . '</div>'
+                . '</div>'
+                . '</label>'
+                . '</div>';
+        }
+
+        return response()->json([
+            'html' => $html,
+            'count' => $kamars->count(),
+            'hotel' => [
+                'nama' => $hotel->nama_hotel,
+                'kota' => $hotel->kota,
+            ],
+        ]);
     }
 }

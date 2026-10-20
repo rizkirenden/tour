@@ -43,6 +43,9 @@ class Departure extends Model
         'total_pengeluaran',
         'keuntungan',
         'margin_laba',
+        'harga_asli_upgrade_total',
+        'total_upgrade_hotel',
+        'selisih_upgrade_hotel',
         'catatan',
         'is_maskapai_complete',
         'is_hotel_complete',
@@ -67,6 +70,9 @@ class Departure extends Model
         'total_pengeluaran' => 'integer',
         'keuntungan' => 'integer',
         'margin_laba' => 'decimal:2',
+        'harga_asli_upgrade_total' => 'integer',
+        'total_upgrade_hotel' => 'integer',
+        'selisih_upgrade_hotel' => 'integer',
         'is_maskapai_complete' => 'boolean',
         'is_hotel_complete' => 'boolean',
         'is_jamaah_complete' => 'boolean',
@@ -131,26 +137,19 @@ class Departure extends Model
     public function hotelMekkahDetails()
     {
         return $this->hasMany(DepartureHotelDetail::class, 'id_departure', 'id_departure')
-            ->whereHas('hotel', function ($q) {
-                $q->where('kota', 'Mekkah');
-            });
+            ->whereHas('hotel', fn($q) => $q->where('kota', 'Mekkah'));
     }
 
     public function hotelMadinahDetails()
     {
         return $this->hasMany(DepartureHotelDetail::class, 'id_departure', 'id_departure')
-            ->whereHas('hotel', function ($q) {
-                $q->where('kota', 'Madinah');
-            });
+            ->whereHas('hotel', fn($q) => $q->where('kota', 'Madinah'));
     }
 
     public function hotelTransitDetails()
     {
         return $this->hasMany(DepartureHotelDetail::class, 'id_departure', 'id_departure')
-            ->whereHas('hotel', function ($q) {
-                $q->where('kota', '!=', 'Mekkah')
-                    ->where('kota', '!=', 'Madinah');
-            });
+            ->whereHas('hotel', fn($q) => $q->where('kota', '!=', 'Mekkah')->where('kota', '!=', 'Madinah'));
     }
 
     public function jamaahs()
@@ -165,10 +164,6 @@ class Departure extends Model
         return $this->hasMany(DepartureJamaah::class, 'id_departure', 'id_departure');
     }
 
-    // ==========================================
-    // PERLENGKAPAN RELATIONSHIPS
-    // ==========================================
-
     public function departurePerlengkapan()
     {
         return $this->hasMany(DeparturePerlengkapan::class, 'id_departure', 'id_departure');
@@ -180,10 +175,6 @@ class Departure extends Model
             ->withPivot('jumlah_per_jamaah', 'harga_satuan', 'total_harga', 'keterangan', 'is_active')
             ->withTimestamps();
     }
-
-    // ==========================================
-    // JENIS TRANSAKSI RELATIONSHIPS
-    // ==========================================
 
     public function departureJenisTransaksis()
     {
@@ -197,10 +188,6 @@ class Departure extends Model
             ->withTimestamps();
     }
 
-    // ==========================================
-    // PAKET TOUR HOTEL RELATIONSHIPS
-    // ==========================================
-
     public function departurePaketTourHotels()
     {
         return $this->hasMany(DeparturePaketTourHotel::class, 'id_departure', 'id_departure');
@@ -211,6 +198,11 @@ class Departure extends Model
         return $this->belongsToMany(Hotel::class, 'departure_paket_tour_hotels', 'id_departure', 'id_hotel')
             ->withPivot('id_kamar', 'id_paket_tour', 'urutan', 'harga_per_malam', 'durasi_menginap', 'jumlah_kamar', 'tipe_kamar', 'catatan')
             ->withTimestamps();
+    }
+
+    public function pembayaranTakTerduga()
+    {
+        return $this->hasMany(DeparturePembayaranTakTerduga::class, 'id_departure', 'id_departure');
     }
 
     // ==========================================
@@ -256,13 +248,11 @@ class Departure extends Model
     {
         $total = 5;
         $completed = 0;
-
         if ($this->is_maskapai_complete) $completed++;
         if ($this->is_hotel_complete) $completed++;
         if ($this->is_jamaah_complete) $completed++;
         if ($this->is_catatan_complete) $completed++;
         if ($this->is_perlengkapan_complete) $completed++;
-
         return round(($completed / $total) * 100);
     }
 
@@ -309,11 +299,6 @@ class Departure extends Model
         return number_format($this->margin_laba ?? 0, 2) . '%';
     }
 
-    public function getKeuntunganAttribute()
-    {
-        return ($this->total_pendapatan_bersih ?? 0) - ($this->total_pengeluaran ?? 0);
-    }
-
     public function getKeuntunganFormattedAttribute()
     {
         return 'Rp ' . number_format($this->keuntungan ?? 0, 0, ',', '.');
@@ -325,30 +310,22 @@ class Departure extends Model
 
     public function getHargaMaskapaiDomestikBerangkatFormattedAttribute()
     {
-        return $this->harga_maskapai_domestik_berangkat ?
-            'Rp ' . number_format($this->harga_maskapai_domestik_berangkat, 0, ',', '.') :
-            'Rp 0';
+        return 'Rp ' . number_format($this->harga_maskapai_domestik_berangkat ?? 0, 0, ',', '.');
     }
 
     public function getHargaMaskapaiDomestikPulangFormattedAttribute()
     {
-        return $this->harga_maskapai_domestik_pulang ?
-            'Rp ' . number_format($this->harga_maskapai_domestik_pulang, 0, ',', '.') :
-            'Rp 0';
+        return 'Rp ' . number_format($this->harga_maskapai_domestik_pulang ?? 0, 0, ',', '.');
     }
 
     public function getHargaMaskapaiInternasionalBerangkatFormattedAttribute()
     {
-        return $this->harga_maskapai_internasional_berangkat ?
-            'Rp ' . number_format($this->harga_maskapai_internasional_berangkat, 0, ',', '.') :
-            'Rp 0';
+        return 'Rp ' . number_format($this->harga_maskapai_internasional_berangkat ?? 0, 0, ',', '.');
     }
 
     public function getHargaMaskapaiInternasionalPulangFormattedAttribute()
     {
-        return $this->harga_maskapai_internasional_pulang ?
-            'Rp ' . number_format($this->harga_maskapai_internasional_pulang, 0, ',', '.') :
-            'Rp 0';
+        return 'Rp ' . number_format($this->harga_maskapai_internasional_pulang ?? 0, 0, ',', '.');
     }
 
     public function getTotalHargaMaskapaiAttribute()
@@ -370,30 +347,22 @@ class Departure extends Model
 
     public function getTotalHargaHotelMekkahAttribute()
     {
-        return $this->hotelMekkahDetails->sum(function ($detail) {
-            return $detail->harga_per_malam * $detail->durasi_menginap * $detail->jumlah_kamar;
-        });
+        return $this->hotelMekkahDetails->sum(fn($d) => $d->harga_per_malam * $d->durasi_menginap * $d->jumlah_kamar);
     }
 
     public function getTotalHargaHotelMadinahAttribute()
     {
-        return $this->hotelMadinahDetails->sum(function ($detail) {
-            return $detail->harga_per_malam * $detail->durasi_menginap * $detail->jumlah_kamar;
-        });
+        return $this->hotelMadinahDetails->sum(fn($d) => $d->harga_per_malam * $d->durasi_menginap * $d->jumlah_kamar);
     }
 
     public function getTotalHargaHotelTransitAttribute()
     {
-        return $this->hotelTransitDetails->sum(function ($detail) {
-            return $detail->harga_per_malam * $detail->durasi_menginap * $detail->jumlah_kamar;
-        });
+        return $this->hotelTransitDetails->sum(fn($d) => $d->harga_per_malam * $d->durasi_menginap * $d->jumlah_kamar);
     }
 
     public function getTotalHargaHotelAllAttribute()
     {
-        return $this->total_harga_hotel_mekkah +
-            $this->total_harga_hotel_madinah +
-            $this->total_harga_hotel_transit;
+        return $this->total_harga_hotel_mekkah + $this->total_harga_hotel_madinah + $this->total_harga_hotel_transit;
     }
 
     public function getTotalHargaHotelMekkahFormattedAttribute()
@@ -423,7 +392,6 @@ class Departure extends Model
     public function getTotalHargaPerlengkapanAttribute()
     {
         $total = 0;
-
         foreach ($this->departurePerlengkapan as $perlengkapan) {
             foreach ($perlengkapan->perlengkapanJamaahs as $pj) {
                 if ($pj->status_terima === 'Sudah Diterima') {
@@ -431,7 +399,6 @@ class Departure extends Model
                 }
             }
         }
-
         return $total;
     }
 
@@ -452,16 +419,12 @@ class Departure extends Model
 
     public function getTotalPerlengkapanDiterimaAttribute()
     {
-        return $this->departurePerlengkapan->sum(function ($p) {
-            return $p->perlengkapanJamaahs->where('status_terima', 'Sudah Diterima')->count();
-        });
+        return $this->departurePerlengkapan->sum(fn($p) => $p->perlengkapanJamaahs->where('status_terima', 'Sudah Diterima')->count());
     }
 
     public function getTotalPerlengkapanItemAttribute()
     {
-        return $this->departurePerlengkapan->sum(function ($p) {
-            return $p->perlengkapanJamaahs->count();
-        });
+        return $this->departurePerlengkapan->sum(fn($p) => $p->perlengkapanJamaahs->count());
     }
 
     // ==========================================
@@ -471,7 +434,6 @@ class Departure extends Model
     public function getTotalJenisTransaksiAttribute()
     {
         $total = 0;
-
         foreach ($this->departureJenisTransaksis as $item) {
             foreach ($item->departureJenisTransaksiJamaahs as $jtj) {
                 if ($jtj->status_terima === 'Sudah Diterima') {
@@ -479,7 +441,6 @@ class Departure extends Model
                 }
             }
         }
-
         return $total;
     }
 
@@ -500,16 +461,12 @@ class Departure extends Model
 
     public function getTotalJenisTransaksiDiterimaAttribute()
     {
-        return $this->departureJenisTransaksis->sum(function ($jt) {
-            return $jt->departureJenisTransaksiJamaahs->where('status_terima', 'Sudah Diterima')->count();
-        });
+        return $this->departureJenisTransaksis->sum(fn($jt) => $jt->departureJenisTransaksiJamaahs->where('status_terima', 'Sudah Diterima')->count());
     }
 
     public function getTotalJenisTransaksiItemAttribute()
     {
-        return $this->departureJenisTransaksis->sum(function ($jt) {
-            return $jt->departureJenisTransaksiJamaahs->count();
-        });
+        return $this->departureJenisTransaksis->sum(fn($jt) => $jt->departureJenisTransaksiJamaahs->count());
     }
 
     // ==========================================
@@ -518,9 +475,7 @@ class Departure extends Model
 
     public function getTotalHargaPaketTourHotelAttribute()
     {
-        return $this->departurePaketTourHotels->sum(function ($item) {
-            return $item->total_harga;
-        });
+        return $this->departurePaketTourHotels->sum(fn($item) => $item->total_harga);
     }
 
     public function getTotalHargaPaketTourHotelFormattedAttribute()
@@ -534,9 +489,7 @@ class Departure extends Model
 
     public function getTotalPembayaranPassportAttribute()
     {
-        return $this->jamaahs->sum(function ($jamaah) {
-            return $jamaah->pembayaran_passport_untuk_pengeluaran;
-        });
+        return $this->jamaahs->sum(fn($j) => $j->pembayaran_passport_untuk_pengeluaran);
     }
 
     public function getTotalPembayaranPassportFormattedAttribute()
@@ -546,9 +499,7 @@ class Departure extends Model
 
     public function getTotalPendapatanPerusahaanPassportAttribute()
     {
-        return $this->jamaahs->sum(function ($jamaah) {
-            return $jamaah->pendapatan_perusahaan_untuk_pendapatan;
-        });
+        return $this->jamaahs->sum(fn($j) => $j->pendapatan_perusahaan_untuk_pendapatan);
     }
 
     public function getTotalPendapatanPerusahaanPassportFormattedAttribute()
@@ -568,16 +519,12 @@ class Departure extends Model
 
     public function getJamaahDenganPassportAttribute()
     {
-        return $this->jamaahs->filter(function ($jamaah) {
-            return $jamaah->is_pembuatan_passport_efektif;
-        })->count();
+        return $this->jamaahs->filter(fn($j) => $j->is_pembuatan_passport_efektif)->count();
     }
 
     public function getJamaahTanpaPassportAttribute()
     {
-        return $this->jamaahs->filter(function ($jamaah) {
-            return !$jamaah->is_pembuatan_passport_efektif;
-        })->count();
+        return $this->jamaahs->filter(fn($j) => !$j->is_pembuatan_passport_efektif)->count();
     }
 
     // ==========================================
@@ -614,6 +561,122 @@ class Departure extends Model
     }
 
     // ==========================================
+    // ACCESSORS - UPGRADE HOTEL
+    // ==========================================
+
+    public function getTotalUpgradeHotelPersonalAttribute()
+    {
+        return $this->jamaahs->sum(fn($j) => $j->upgradeHotels->sum('total_harga'));
+    }
+
+    public function getTotalUpgradeHotelPersonalFormattedAttribute()
+    {
+        return 'Rp ' . number_format($this->total_upgrade_hotel_personal, 0, ',', '.');
+    }
+
+    public function getTotalUpgradeHotelKeluargaAttribute()
+    {
+        $total = 0;
+        $processedKeluarga = [];
+
+        foreach ($this->jamaahs as $jamaah) {
+            if (!$jamaah->id_keluarga) continue;
+            if (in_array($jamaah->id_keluarga, $processedKeluarga)) continue;
+
+            $keluarga = $jamaah->keluarga;
+            if (!$keluarga) continue;
+
+            $processedKeluarga[] = $jamaah->id_keluarga;
+            $jumlahJamaahKeluarga = $keluarga->jamaahs->count();
+            if ($jumlahJamaahKeluarga <= 0) continue;
+
+            $sharePerJamaah = (int) round($keluarga->upgradeHotels->sum('total_harga') / $jumlahJamaahKeluarga);
+            $jamaahKeluargaDiDeparture = $this->jamaahs
+                ->where('id_keluarga', $jamaah->id_keluarga)
+                ->count();
+
+            $total += $sharePerJamaah * $jamaahKeluargaDiDeparture;
+        }
+
+        return $total;
+    }
+
+    public function getTotalUpgradeHotelKeluargaFormattedAttribute()
+    {
+        return 'Rp ' . number_format($this->total_upgrade_hotel_keluarga, 0, ',', '.');
+    }
+
+    public function getTotalUpgradeHotelGabunganAttribute()
+    {
+        return $this->total_upgrade_hotel_personal + $this->total_upgrade_hotel_keluarga;
+    }
+
+    public function getTotalUpgradeHotelGabunganFormattedAttribute()
+    {
+        return 'Rp ' . number_format($this->total_upgrade_hotel_gabungan, 0, ',', '.');
+    }
+
+    public function getHargaAsliUpgradeTotalFormattedAttribute()
+    {
+        return 'Rp ' . number_format($this->harga_asli_upgrade_total ?? 0, 0, ',', '.');
+    }
+
+    public function getSelisihUpgradeHotelAttribute()
+    {
+        return $this->total_upgrade_hotel_gabungan - ($this->harga_asli_upgrade_total ?? 0);
+    }
+
+    public function getSelisihUpgradeHotelFormattedAttribute()
+    {
+        $selisih = $this->selisih_upgrade_hotel;
+        $prefix = $selisih >= 0 ? '+' : '−';
+        return $prefix . ' Rp ' . number_format(abs($selisih), 0, ',', '.');
+    }
+
+    public function getSelisihUpgradeHotelStatusAttribute()
+    {
+        $selisih = $this->selisih_upgrade_hotel;
+        if ($selisih > 0) {
+            return [
+                'status' => 'profit',
+                'label' => 'Masuk Pendapatan',
+                'badge' => '<span class="px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-700"><i class="fas fa-arrow-up mr-1"></i> Profit</span>',
+                'color' => 'text-green-600',
+                'description' => 'Dibayar jamaah lebih besar dari modal → masuk pendapatan',
+            ];
+        } elseif ($selisih < 0) {
+            return [
+                'status' => 'minus',
+                'label' => 'Minus (Rugi)',
+                'badge' => '<span class="px-2 py-1 rounded-full text-xs font-medium bg-red-100 text-red-700"><i class="fas fa-arrow-down mr-1"></i> Minus</span>',
+                'color' => 'text-red-600',
+                'description' => 'Dibayar jamaah lebih kecil dari modal → masuk pengeluaran (perusahaan nombok)',
+            ];
+        }
+        return [
+            'status' => 'sama',
+            'label' => 'Sama',
+            'badge' => '<span class="px-2 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-700">Sama</span>',
+            'color' => 'text-gray-500',
+            'description' => 'Dibayar jamaah sama dengan modal',
+        ];
+    }
+
+    // ==========================================
+    // ACCESSORS - PEMBAYARAN TAK TERDUGA
+    // ==========================================
+
+    public function getTotalPembayaranTakTerdugaAttribute()
+    {
+        return $this->pembayaranTakTerduga->sum('total_pembayaran');
+    }
+
+    public function getTotalPembayaranTakTerdugaFormattedAttribute()
+    {
+        return 'Rp ' . number_format($this->total_pembayaran_tak_terduga, 0, ',', '.');
+    }
+
+    // ==========================================
     // METHODS
     // ==========================================
 
@@ -632,6 +695,9 @@ class Departure extends Model
             $this->load([
                 'jamaahs',
                 'jamaahs.diskon',
+                'jamaahs.upgradeHotels',
+                'jamaahs.keluarga.upgradeHotels',
+                'jamaahs.keluarga.jamaahs',
                 'departurePerlengkapan.perlengkapanJamaahs',
                 'departureJenisTransaksis.departureJenisTransaksiJamaahs',
                 'departureJenisTransaksis',
@@ -639,20 +705,15 @@ class Departure extends Model
                 'hotelMekkahDetails',
                 'hotelMadinahDetails',
                 'hotelTransitDetails',
+                'pembayaranTakTerduga',
             ]);
 
-            // ==========================================
-            // 1. TOTAL PENDAPATAN KOTOR (dari jamaah)
-            // ==========================================
+            // 1. TOTAL PENDAPATAN KOTOR
             $totalPendapatanKotor = 0;
             foreach ($this->jamaahs as $jamaah) {
                 $totalPendapatanKotor += $jamaah->total_tagihan_setelah_diskon ?? 0;
             }
 
-            // ==========================================
-            // 1b. PENDAPATAN PERUSAHAAN PASSPORT
-            // (fee petugas dari jamaah efektif YA)
-            // ==========================================
             $totalPendapatanPerusahaanPassport = 0;
             foreach ($this->jamaahs as $jamaah) {
                 $totalPendapatanPerusahaanPassport += $jamaah->pendapatan_perusahaan_untuk_pendapatan;
@@ -660,53 +721,37 @@ class Departure extends Model
 
             $this->total_pendapatan_kotor = $totalPendapatanKotor;
 
-            // ==========================================
-            // 2. TOTAL DISKON
-            // ==========================================
+            // 2. Total Diskon
             $totalDiskon = 0;
             foreach ($this->jamaahs as $jamaah) {
                 $totalDiskon += $jamaah->total_diskon ?? 0;
             }
             $this->total_diskon = $totalDiskon;
 
-            // ==========================================
-            // 3. TOTAL PENDAPATAN
-            // ==========================================
+            // 3. Total Pendapatan
             $this->total_pendapatan = $totalPendapatanKotor + $totalDiskon + $totalPendapatanPerusahaanPassport;
 
-            // ==========================================
-            // 4. TOTAL PENDAPATAN BERSIH
-            // ==========================================
+            // 4. Total Pendapatan Bersih
             $this->total_pendapatan_bersih = $totalPendapatanKotor + $totalPendapatanPerusahaanPassport;
 
-            // ==========================================
             // 5. TOTAL PENGELUARAN
-            // ==========================================
             $totalPengeluaran = 0;
 
-            // 5a. Harga Maskapai
+            // Maskapai
             $totalPengeluaran += $this->harga_maskapai_domestik_berangkat ?? 0;
             $totalPengeluaran += $this->harga_maskapai_domestik_pulang ?? 0;
             $totalPengeluaran += $this->harga_maskapai_internasional_berangkat ?? 0;
             $totalPengeluaran += $this->harga_maskapai_internasional_pulang ?? 0;
 
-            // 5b. Harga Hotel
-            foreach ($this->hotelMekkahDetails as $detail) {
-                $totalPengeluaran += $detail->total_harga;
-            }
-            foreach ($this->hotelMadinahDetails as $detail) {
-                $totalPengeluaran += $detail->total_harga;
-            }
-            foreach ($this->hotelTransitDetails as $detail) {
-                $totalPengeluaran += $detail->total_harga;
-            }
+            // Hotel
+            foreach ($this->hotelMekkahDetails as $detail) $totalPengeluaran += $detail->total_harga;
+            foreach ($this->hotelMadinahDetails as $detail) $totalPengeluaran += $detail->total_harga;
+            foreach ($this->hotelTransitDetails as $detail) $totalPengeluaran += $detail->total_harga;
 
-            // 5c. Harga Hotel Tour
-            foreach ($this->departurePaketTourHotels as $item) {
-                $totalPengeluaran += $item->total_harga;
-            }
+            // Hotel Tour
+            foreach ($this->departurePaketTourHotels as $item) $totalPengeluaran += $item->total_harga;
 
-            // 5d. Harga Perlengkapan (hanya Sudah Diterima)
+            // Perlengkapan (diterima)
             foreach ($this->departurePerlengkapan as $perlengkapan) {
                 foreach ($perlengkapan->perlengkapanJamaahs as $pj) {
                     if ($pj->status_terima === 'Sudah Diterima') {
@@ -715,7 +760,7 @@ class Departure extends Model
                 }
             }
 
-            // 5e. Harga Jenis Transaksi (hanya Sudah Diterima)
+            // Jenis Transaksi (diterima)
             foreach ($this->departureJenisTransaksis as $item) {
                 foreach ($item->departureJenisTransaksiJamaahs as $jtj) {
                     if ($jtj->status_terima === 'Sudah Diterima') {
@@ -724,35 +769,70 @@ class Departure extends Model
                 }
             }
 
-            // 5f. FEE AGENT
+            // Fee Agent
             foreach ($this->jamaahs as $jamaah) {
                 $totalPengeluaran += $jamaah->fee_agent ?? 0;
             }
 
-            // ==========================================
-            // 5g. PEMBAYARAN PASSPORT (masuk PENGELUARAN)
-            // ==========================================
+            // Pembayaran Passport
             foreach ($this->jamaahs as $jamaah) {
                 $totalPengeluaran += $jamaah->pembayaran_passport_untuk_pengeluaran;
             }
 
+            // PEMBAYARAN TAK TERDUGA (masuk pengeluaran)
+            foreach ($this->pembayaranTakTerduga as $ptt) {
+                $totalPengeluaran += $ptt->total_pembayaran ?? 0;
+            }
+
             $this->total_pengeluaran = $totalPengeluaran;
 
-            // ==========================================
-            // 6. KEUNTUNGAN
-            // ==========================================
-            $this->keuntungan = $this->total_pendapatan_bersih - $totalPengeluaran;
+            // UPGRADE HOTEL — Selisih = Dibayar jamaah − Modal
+            $totalUpgradePersonal = $this->jamaahs->sum(fn($j) => $j->upgradeHotels->sum('total_harga'));
+            $totalUpgradeKeluarga = 0;
+            $processedKeluarga = [];
 
-            // ==========================================
+            foreach ($this->jamaahs as $jamaah) {
+                if (!$jamaah->id_keluarga) continue;
+                if (in_array($jamaah->id_keluarga, $processedKeluarga)) continue;
+
+                $keluarga = $jamaah->keluarga;
+                if (!$keluarga) continue;
+
+                $processedKeluarga[] = $jamaah->id_keluarga;
+                $jumlahJamaahKeluarga = $keluarga->jamaahs->count();
+                if ($jumlahJamaahKeluarga <= 0) continue;
+
+                $sharePerJamaah = (int) round($keluarga->upgradeHotels->sum('total_harga') / $jumlahJamaahKeluarga);
+                $jamaahKeluargaDiDeparture = $this->jamaahs
+                    ->where('id_keluarga', $jamaah->id_keluarga)
+                    ->count();
+
+                $totalUpgradeKeluarga += $sharePerJamaah * $jamaahKeluargaDiDeparture;
+            }
+
+            $totalUpgrade = $totalUpgradePersonal + $totalUpgradeKeluarga;
+            $this->total_upgrade_hotel = $totalUpgrade;
+
+            $selisih = $totalUpgrade - ($this->harga_asli_upgrade_total ?? 0);
+            $this->selisih_upgrade_hotel = $selisih;
+
+            if ($selisih > 0) {
+                $this->total_pendapatan_kotor += $selisih;
+                $this->total_pendapatan_bersih += $selisih;
+            }
+            if ($selisih < 0) {
+                $this->total_pengeluaran += abs($selisih);
+            }
+
+            // 6. KEUNTUNGAN
+            $this->keuntungan = $this->total_pendapatan_bersih - $this->total_pengeluaran;
+
             // 7. MARGIN LABA
-            // ==========================================
             $this->margin_laba = $this->total_pendapatan_bersih > 0
                 ? round(($this->keuntungan / $this->total_pendapatan_bersih) * 100, 2)
                 : 0;
 
-            // ==========================================
             // 8. STATUS COMPLETION
-            // ==========================================
             $this->is_jamaah_complete = $this->jamaahs()->count() > 0;
             $this->is_perlengkapan_complete = $this->departurePerlengkapan()->count() > 0;
 
@@ -762,38 +842,9 @@ class Departure extends Model
         return $this;
     }
 
-    public function calculatePengeluaran($totalJamaah = null)
+    public function scopeActive($query)
     {
-        if ($totalJamaah === null) {
-            $totalJamaah = $this->jamaahs->count();
-        }
-
-        if ($totalJamaah == 0) {
-            $totalJamaah = 1;
-        }
-
-        $totalPengeluaran = 0;
-
-        foreach ($this->jamaahs as $jamaah) {
-            $totalPengeluaran += ($jamaah->total_tiket_domestik ?? 0) +
-                ($jamaah->total_tiket_international ?? 0);
-        }
-
-        $totalPengeluaran += ($this->harga_maskapai_domestik_berangkat ?? 0) +
-            ($this->harga_maskapai_domestik_pulang ?? 0) +
-            ($this->harga_maskapai_internasional_berangkat ?? 0) +
-            ($this->harga_maskapai_internasional_pulang ?? 0);
-
-        $totalPengeluaran += $this->total_harga_hotel_mekkah +
-            $this->total_harga_hotel_madinah +
-            $this->total_harga_hotel_transit;
-
-        $totalPengeluaran += $this->total_harga_perlengkapan;
-
-        $totalPengeluaran += $this->total_jenis_transaksi;
-        $totalPengeluaran += $this->total_harga_paket_tour_hotel;
-
-        return $totalPengeluaran;
+        return $query->whereHas('statusKeberangkatan', fn($q) => $q->whereIn('nama_status', ['Aktif', 'Berangkat']));
     }
 
     // ==========================================
@@ -806,9 +857,7 @@ class Departure extends Model
             ->where('id_jamaah', $jamaahId)
             ->exists();
 
-        if ($exists) {
-            throw new \Exception('Jamaah sudah terdaftar di departure ini.');
-        }
+        if ($exists) throw new \Exception('Jamaah sudah terdaftar di departure ini.');
 
         if ($this->kuota > 0 && $this->jamaah_terdaftar >= $this->kuota) {
             throw new \Exception('Kuota sudah penuh! (Kuota: ' . $this->kuota . ', Terdaftar: ' . $this->jamaah_terdaftar . ')');
@@ -824,7 +873,6 @@ class Departure extends Model
         $this->save();
 
         $this->recalculate();
-
         return $this;
     }
 
@@ -834,131 +882,19 @@ class Departure extends Model
             ->where('id_jamaah', $jamaahId)
             ->delete();
 
-        if (!$deleted) {
-            return $this;
-        }
+        if (!$deleted) return $this;
 
         $this->jamaah_terdaftar = $this->jamaahs()->count();
         $this->is_jamaah_complete = $this->jamaah_terdaftar > 0;
         $this->save();
 
         $this->recalculate();
-
         return $this;
-    }
-
-    public function scopeActive($query)
-    {
-        return $query->whereHas('statusKeberangkatan', function ($q) {
-            $q->whereIn('nama_status', ['Aktif', 'Berangkat']);
-        });
     }
 
     public function updateJamaahStatus($jamaahId, $status)
     {
-        $this->jamaahs()->updateExistingPivot($jamaahId, [
-            'status_keberangkatan' => $status
-        ]);
-        return $this;
-    }
-
-    // ==========================================
-    // JENIS TRANSAKSI METHODS
-    // ==========================================
-
-    public function addMultipleJenisTransaksi(array $jenisTransaksiData)
-    {
-        $totalJamaah = $this->jamaahs->count();
-
-        if ($totalJamaah == 0) {
-            throw new \Exception('Tidak ada jamaah terdaftar.');
-        }
-
-        $added = [];
-
-        foreach ($jenisTransaksiData as $data) {
-            $jenisTransaksiId = $data['id_jenis_transaksi'];
-            $hargaTotal = $data['harga_total'] ?? 0;
-            $catatan = $data['catatan'] ?? null;
-
-            $exists = DepartureJenisTransaksi::where('id_departure', $this->id_departure)
-                ->where('id_jenis_transaksi', $jenisTransaksiId)
-                ->exists();
-
-            if ($exists) continue;
-
-            $hargaSatuan = round($hargaTotal / $totalJamaah);
-
-            $departureJenisTransaksi = DepartureJenisTransaksi::create([
-                'id_departure' => $this->id_departure,
-                'id_jenis_transaksi' => $jenisTransaksiId,
-                'harga_satuan' => $hargaSatuan,
-                'total_harga' => $hargaTotal,
-                'catatan' => $catatan,
-            ]);
-
-            foreach ($this->jamaahs as $jamaah) {
-                DepartureJenisTransaksiJamaah::create([
-                    'id_departure_jenis_transaksi' => $departureJenisTransaksi->id,
-                    'id_jamaah' => $jamaah->id_jamaah,
-                    'jumlah' => 1,
-                    'harga_satuan' => $hargaSatuan,
-                    'total_harga' => $hargaSatuan,
-                    'status_terima' => 'Belum Diterima',
-                    'keterangan' => $catatan,
-                ]);
-            }
-
-            $added[] = $departureJenisTransaksi;
-        }
-
-        if (count($added) > 0) {
-            $this->recalculate();
-        }
-
-        return $added;
-    }
-
-    public function removeJenisTransaksi($jenisTransaksiId)
-    {
-        $departureJenisTransaksi = DepartureJenisTransaksi::where('id_departure', $this->id_departure)
-            ->where('id_jenis_transaksi', $jenisTransaksiId)
-            ->first();
-
-        if ($departureJenisTransaksi) {
-            $departureJenisTransaksi->departureJenisTransaksiJamaahs()->delete();
-            $departureJenisTransaksi->delete();
-        }
-
-        $this->recalculate();
-        return $this;
-    }
-
-    public function updateJenisTransaksiHarga($jenisTransaksiId, $hargaTotal)
-    {
-        $totalJamaah = $this->jamaahs->count();
-
-        if ($totalJamaah == 0) {
-            throw new \Exception('Tidak ada jamaah terdaftar.');
-        }
-
-        $pivot = DepartureJenisTransaksi::where('id_departure', $this->id_departure)
-            ->where('id_jenis_transaksi', $jenisTransaksiId)
-            ->firstOrFail();
-
-        $hargaSatuan = round($hargaTotal / $totalJamaah);
-
-        $pivot->update([
-            'harga_satuan' => $hargaSatuan,
-            'total_harga' => $hargaTotal,
-        ]);
-
-        $pivot->departureJenisTransaksiJamaahs()->update([
-            'harga_satuan' => $hargaSatuan,
-            'total_harga' => $hargaSatuan,
-        ]);
-
-        $this->recalculate();
+        $this->jamaahs()->updateExistingPivot($jamaahId, ['status_keberangkatan' => $status]);
         return $this;
     }
 }

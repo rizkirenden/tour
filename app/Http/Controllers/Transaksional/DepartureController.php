@@ -1,5 +1,4 @@
 <?php
-// app/Http/Controllers/Transaksional/DepartureController.php
 
 namespace App\Http\Controllers\Transaksional;
 
@@ -141,9 +140,28 @@ class DepartureController extends Controller
             ->with('success', "Keberangkatan '{$nama}' berhasil dihapus!");
     }
 
-    // ==========================================
-    // SYNC METHODS
-    // ==========================================
+    public function updateHargaAsliUpgrade(Request $request, $id)
+    {
+        $jumlahRaw = preg_replace('/[^\d]/', '', $request->input('harga_asli_upgrade_total'));
+        $request->merge(['harga_asli_upgrade_total' => (int) $jumlahRaw]);
+
+        $validated = $request->validate([
+            'harga_asli_upgrade_total' => 'required|integer|min:0',
+        ]);
+
+        try {
+            $departure = $this->service->updateHargaAsliUpgrade($id, $validated['harga_asli_upgrade_total']);
+
+            $selisih = $departure->selisih_upgrade_hotel;
+            $status = $selisih > 0 ? 'PROFIT' : ($selisih < 0 ? 'MINUS' : 'SAMA');
+
+            return redirect()->route('transaksional.departure.show', $id)
+                ->with('success', "Harga asli upgrade berhasil disimpan! Selisih: {$status} Rp " . number_format(abs($selisih), 0, ',', '.'));
+        } catch (\Exception $e) {
+            return redirect()->back()
+                ->with('error', 'Gagal menyimpan harga asli: ' . $e->getMessage());
+        }
+    }
 
     public function syncAll($id)
     {
@@ -182,10 +200,6 @@ class DepartureController extends Controller
                 ->with('error', 'Gagal sync jamaah: ' . $e->getMessage());
         }
     }
-
-    // ==========================================
-    // AJAX METHODS
-    // ==========================================
 
     public function getJamaahByProduk($idProduk)
     {
@@ -645,10 +659,6 @@ class DepartureController extends Controller
         ]);
     }
 
-    // ==========================================
-    // UPDATE METHODS
-    // ==========================================
-
     public function updateMaskapai(Request $request, $id)
     {
         $validated = $request->validate([
@@ -740,7 +750,6 @@ class DepartureController extends Controller
             ->with('success', "Perlengkapan berhasil {$status}!");
     }
 
-    // Form lama (non-AJAX)
     public function updatePerlengkapanStatusJamaah(Request $request, $departurePerlengkapanId, $jamaahId)
     {
         $validated = $request->validate([
@@ -757,7 +766,6 @@ class DepartureController extends Controller
             ->with('success', 'Status penerimaan perlengkapan berhasil diperbarui!');
     }
 
-    // AJAX — single toggle perlengkapan
     public function updatePerlengkapanStatusJamaahAjax(Request $request, $departurePerlengkapanId, $jamaahId)
     {
         $validated = $request->validate([
@@ -781,7 +789,6 @@ class DepartureController extends Controller
         }
     }
 
-    // AJAX — bulk update perlengkapan
     public function bulkUpdatePerlengkapanStatusJamaah(Request $request, $departureId, $departurePerlengkapanId)
     {
         $validated = $request->validate([
@@ -809,10 +816,6 @@ class DepartureController extends Controller
             return response()->json(['success' => false, 'message' => $e->getMessage()], 500);
         }
     }
-
-    // ==========================================
-    // JENIS TRANSAKSI
-    // ==========================================
 
     public function updateJenisTransaksi(Request $request, $id)
     {
@@ -865,7 +868,6 @@ class DepartureController extends Controller
             ->with('success', 'Harga total jenis transaksi berhasil diperbarui!');
     }
 
-    // Form lama (non-AJAX)
     public function updateJenisTransaksiStatusJamaah(Request $request, $departureJenisTransaksiId, $jamaahId)
     {
         $validated = $request->validate([
@@ -882,7 +884,6 @@ class DepartureController extends Controller
             ->with('success', 'Status penerimaan jenis transaksi berhasil diperbarui!');
     }
 
-    // AJAX — single toggle jenis transaksi
     public function updateJenisTransaksiStatusJamaahAjax(Request $request, $departureJenisTransaksiId, $jamaahId)
     {
         $validated = $request->validate([
@@ -906,7 +907,6 @@ class DepartureController extends Controller
         }
     }
 
-    // AJAX — bulk update jenis transaksi
     public function bulkUpdateJenisTransaksiStatusJamaah(Request $request, $departureId, $departureJenisTransaksiId)
     {
         $validated = $request->validate([
@@ -934,10 +934,6 @@ class DepartureController extends Controller
             return response()->json(['success' => false, 'message' => $e->getMessage()], 500);
         }
     }
-
-    // ==========================================
-    // OTHER
-    // ==========================================
 
     public function updateCatatan(Request $request, $id)
     {
@@ -1036,25 +1032,16 @@ class DepartureController extends Controller
         return response()->json($hotels);
     }
 
-    // ==========================================
-    // PRINT MANIFEST
-    // ==========================================
-
-    /**
-     * Print manifest jamaah keberangkatan
-     */
     public function printManifest($id)
     {
         $departure = $this->service->getById($id);
 
-        // Load jamaah dengan relasi keluarga
         $jamaahList = $departure->jamaahs()
             ->with(['keluarga', 'keberangkatan'])
             ->orderBy('is_kepala_keluarga', 'desc')
             ->orderBy('nama_lengkap', 'asc')
             ->get();
 
-        // Kelompokkan per keluarga
         $groupedByKeluarga = $jamaahList->groupBy(function ($jamaah) {
             return $jamaah->id_keluarga ?? 'mandiri_' . $jamaah->id_jamaah;
         });
@@ -1082,5 +1069,66 @@ class DepartureController extends Controller
         ]);
 
         return $pdf->download('Manifest_' . $departure->kode_keberangkatan . '_' . date('Ymd_His') . '.pdf');
+    }
+
+    // ==========================================
+    // PEMBAYARAN TAK TERDUGA
+    // ==========================================
+
+    public function storePembayaranTakTerduga(Request $request, $id)
+    {
+        $jumlahRaw = preg_replace('/[^\d]/', '', $request->input('total_pembayaran'));
+        $request->merge(['total_pembayaran' => (int) $jumlahRaw]);
+
+        $validated = $request->validate([
+            'nama_pembayaran' => 'required|string|max:150',
+            'total_pembayaran' => 'required|integer|min:1',
+            'keterangan' => 'nullable|string',
+        ]);
+
+        try {
+            $this->service->addPembayaranTakTerduga($id, $validated);
+
+            return redirect()->route('transaksional.departure.show', $id)
+                ->with('success', "Pembayaran tak terduga '{$validated['nama_pembayaran']}' berhasil ditambahkan! Total: Rp " . number_format($validated['total_pembayaran'], 0, ',', '.'));
+        } catch (\Exception $e) {
+            return redirect()->back()
+                ->with('error', 'Gagal menambahkan pembayaran tak terduga: ' . $e->getMessage());
+        }
+    }
+
+    public function updatePembayaranTakTerduga(Request $request, $departureId, $pembayaranId)
+    {
+        $jumlahRaw = preg_replace('/[^\d]/', '', $request->input('total_pembayaran'));
+        $request->merge(['total_pembayaran' => (int) $jumlahRaw]);
+
+        $validated = $request->validate([
+            'nama_pembayaran' => 'required|string|max:150',
+            'total_pembayaran' => 'required|integer|min:1',
+            'keterangan' => 'nullable|string',
+        ]);
+
+        try {
+            $this->service->updatePembayaranTakTerduga($departureId, $pembayaranId, $validated);
+
+            return redirect()->route('transaksional.departure.show', $departureId)
+                ->with('success', 'Pembayaran tak terduga berhasil diperbarui!');
+        } catch (\Exception $e) {
+            return redirect()->back()
+                ->with('error', 'Gagal memperbarui pembayaran tak terduga: ' . $e->getMessage());
+        }
+    }
+
+    public function removePembayaranTakTerduga($departureId, $pembayaranId)
+    {
+        try {
+            $this->service->removePembayaranTakTerduga($departureId, $pembayaranId);
+
+            return redirect()->route('transaksional.departure.show', $departureId)
+                ->with('success', 'Pembayaran tak terduga berhasil dihapus!');
+        } catch (\Exception $e) {
+            return redirect()->back()
+                ->with('error', 'Gagal menghapus pembayaran tak terduga: ' . $e->getMessage());
+        }
     }
 }

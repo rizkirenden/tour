@@ -82,6 +82,10 @@ Route::prefix('transaksional')->name('transaksional.')->group(function () {
     Route::get('keluarga/harga-produk-by-bulan', [KeluargaController::class, 'getHargaProdukByBulan'])
         ->name('keluarga.harga-produk-by-bulan');
 
+    // AJAX get kamar by hotel — fitur upgrade hotel keluarga
+    Route::get('keluarga/get-kamars-by-hotel/{idHotel}', [KeluargaController::class, 'getKamarsByHotel'])
+        ->name('keluarga.get-kamars-by-hotel');
+
     // ==========================================
     // KELUARGA - ACTION ROUTES (SEBELUM resource!)
     // ==========================================
@@ -98,13 +102,17 @@ Route::prefix('transaksional')->name('transaksional.')->group(function () {
     Route::resource('keluarga', KeluargaController::class);
 
     // ==========================================
-    // JAMAAH - AJAX ROUTES
+    // JAMAAH - AJAX ROUTES (SEBELUM resource!)
     // ==========================================
     Route::get('get-harga-produk-by-bulan', [JamaahController::class, 'getHargaProdukByBulan'])
         ->name('get-harga-produk-by-bulan');
 
     Route::get('jamaah/keberangkatan-by-produk', [JamaahController::class, 'getKeberangkatanByProduk'])
         ->name('jamaah.keberangkatan-by-produk');
+
+    // AJAX get kamar by hotel — fitur upgrade hotel Jamaah
+    Route::get('jamaah/get-kamars-by-hotel/{idHotel}', [JamaahController::class, 'getKamarsByHotel'])
+        ->name('jamaah.get-kamars-by-hotel');
 
     // ==========================================
     // JAMAAH - PEMBAYARAN ROUTES
@@ -125,7 +133,7 @@ Route::prefix('transaksional')->name('transaksional.')->group(function () {
     // ==========================================
     Route::resource('departure', DepartureController::class);
 
-    // ---- PRINT MANIFEST (HARUS SEBELUM wildcard /{id} yang menangkap) ----
+    // ---- PRINT MANIFEST (HARUS SEBELUM wildcard /{id}) ----
     Route::get('departure/{id}/manifest', [DepartureController::class, 'printManifest'])
         ->name('departure.manifest');
 
@@ -143,6 +151,22 @@ Route::prefix('transaksional')->name('transaksional.')->group(function () {
         ->name('departure.update-hotel');
 
     // ==========================================
+    // HARGA ASLI UPGRADE HOTEL
+    // ==========================================
+    Route::post('departure/{id}/harga-asli-upgrade', [DepartureController::class, 'updateHargaAsliUpgrade'])
+        ->name('departure.update-harga-asli-upgrade');
+
+    // ==========================================
+    // PEMBAYARAN TAK TERDUGA
+    // ==========================================
+    Route::post('departure/{id}/pembayaran-tak-terduga', [DepartureController::class, 'storePembayaranTakTerduga'])
+        ->name('departure.store-pembayaran-tak-terduga');
+    Route::put('departure/{departureId}/pembayaran-tak-terduga/{pembayaranId}', [DepartureController::class, 'updatePembayaranTakTerduga'])
+        ->name('departure.update-pembayaran-tak-terduga');
+    Route::delete('departure/{departureId}/pembayaran-tak-terduga/{pembayaranId}', [DepartureController::class, 'removePembayaranTakTerduga'])
+        ->name('departure.remove-pembayaran-tak-terduga');
+
+    // ==========================================
     // PERLENGKAPAN
     // ==========================================
     Route::put('departure/{id}/update-perlengkapan', [DepartureController::class, 'updatePerlengkapan'])
@@ -158,7 +182,7 @@ Route::prefix('transaksional')->name('transaksional.')->group(function () {
     Route::post('departure/perlengkapan-status-jamaah/{departurePerlengkapanId}/{jamaahId}/ajax', [DepartureController::class, 'updatePerlengkapanStatusJamaahAjax'])
         ->name('departure.update-perlengkapan-status-jamaah-ajax');
 
-    // ---- Status Jamaah Perlengkapan (single toggle - form lama, tetap dipertahankan) ----
+    // ---- Status Jamaah Perlengkapan (single toggle - form lama) ----
     Route::patch('departure/update-perlengkapan-status-jamaah/{departurePerlengkapanId}/{jamaahId}', [DepartureController::class, 'updatePerlengkapanStatusJamaah'])
         ->name('departure.update-perlengkapan-status-jamaah');
 
@@ -223,7 +247,7 @@ Route::prefix('transaksional')->name('transaksional.')->group(function () {
         ->name('departure.sync-jamaahs');
 
     // ==========================================
-    // AJAX HELPER ROUTES
+    // AJAX HELPER ROUTES (untuk Departure)
     // ==========================================
     Route::get('get-jamaah-by-produk/{id_produk}', [DepartureController::class, 'getJamaahByProduk'])
         ->name('get-jamaah-by-produk');

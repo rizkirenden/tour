@@ -217,6 +217,101 @@
                     </div>
                 </div>
 
+                {{-- ============================================ --}}
+                {{-- SECTION BARU: UPGRADE HOTEL --}}
+                {{-- ============================================ --}}
+                @if (
+                    $jamaah->upgradeHotels->count() > 0 ||
+                        ($jamaah->id_keluarga && $jamaah->keluarga && $jamaah->keluarga->upgradeHotels->count() > 0))
+                    <div class="bg-orange-50 rounded-xl p-5 border border-orange-200 mb-6">
+                        <h6 class="text-sm font-semibold text-gray-700 mb-4 flex items-center">
+                            <i class="fas fa-hotel text-orange-500 mr-2"></i> Upgrade Hotel & Kamar
+                            <span class="ml-2 text-xs text-gray-400">(sudah termasuk total tagihan)</span>
+                        </h6>
+
+                        {{-- Ringkasan --}}
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-3 mb-4">
+                            <div class="bg-white rounded-lg p-3 border border-orange-200 text-center">
+                                <p class="text-xs text-gray-500">Upgrade Personal</p>
+                                <p class="text-sm font-bold text-orange-600">{{ $jamaah->total_upgrade_hotel_formatted }}
+                                </p>
+                            </div>
+                            <div class="bg-white rounded-lg p-3 border border-purple-200 text-center">
+                                <p class="text-xs text-gray-500">Share Keluarga</p>
+                                <p class="text-sm font-bold text-purple-600">
+                                    Rp
+                                    {{ number_format(max(0, $jamaah->total_upgrade_hotel_gabungan - $jamaah->total_upgrade_hotel), 0, ',', '.') }}
+                                </p>
+                            </div>
+                            <div class="bg-white rounded-lg p-3 border border-blue-200 text-center">
+                                <p class="text-xs text-gray-500">Total Gabungan</p>
+                                <p class="text-sm font-bold text-blue-600">
+                                    {{ $jamaah->total_upgrade_hotel_gabungan_formatted }}</p>
+                            </div>
+                        </div>
+
+                        {{-- Detail Personal --}}
+                        @if ($jamaah->upgradeHotels->count() > 0)
+                            <div class="overflow-x-auto mb-3">
+                                <table class="w-full text-sm bg-white rounded-lg overflow-hidden">
+                                    <thead class="bg-gray-100">
+                                        <tr>
+                                            <th class="px-3 py-2 text-left text-xs font-semibold text-gray-500 uppercase">
+                                                Hotel</th>
+                                            <th class="px-3 py-2 text-left text-xs font-semibold text-gray-500 uppercase">
+                                                Tipe Kamar</th>
+                                            <th class="px-3 py-2 text-right text-xs font-semibold text-gray-500 uppercase">
+                                                Jumlah</th>
+                                            <th class="px-3 py-2 text-right text-xs font-semibold text-gray-500 uppercase">
+                                                Harga/Malam</th>
+                                            <th class="px-3 py-2 text-right text-xs font-semibold text-gray-500 uppercase">
+                                                Malam</th>
+                                            <th class="px-3 py-2 text-right text-xs font-semibold text-gray-500 uppercase">
+                                                Subtotal</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody class="divide-y divide-gray-100">
+                                        @foreach ($jamaah->upgradeHotels as $upgrade)
+                                            <tr>
+                                                <td class="px-3 py-2">
+                                                    <span
+                                                        class="font-medium text-gray-700">{{ $upgrade->hotel->nama_hotel ?? '-' }}</span>
+                                                    <p class="text-xs text-gray-400">{{ $upgrade->hotel->kota ?? '' }}</p>
+                                                </td>
+                                                <td class="px-3 py-2 text-gray-600">{{ $upgrade->tipe_kamar ?? '-' }}</td>
+                                                <td class="px-3 py-2 text-right text-gray-600">
+                                                    {{ $upgrade->jumlah_kamar }}</td>
+                                                <td class="px-3 py-2 text-right text-gray-600">
+                                                    Rp {{ number_format($upgrade->harga_per_malam, 0, ',', '.') }}
+                                                </td>
+                                                <td class="px-3 py-2 text-right text-gray-600">
+                                                    {{ $upgrade->durasi_menginap }}</td>
+                                                <td class="px-3 py-2 text-right font-bold text-orange-600">
+                                                    Rp {{ number_format($upgrade->total_harga, 0, ',', '.') }}
+                                                </td>
+                                            </tr>
+                                        @endforeach
+                                    </tbody>
+                                </table>
+                            </div>
+                        @endif
+
+                        {{-- Info Share Keluarga --}}
+                        @if ($jamaah->id_keluarga && $jamaah->keluarga && $jamaah->keluarga->upgradeHotels->count() > 0)
+                            <div class="bg-purple-100 rounded-lg p-3 border border-purple-300">
+                                <p class="text-xs text-purple-700">
+                                    <i class="fas fa-users mr-1"></i>
+                                    Termasuk share upgrade hotel keluarga:
+                                    <span
+                                        class="font-bold">{{ $jamaah->keluarga->upgrade_hotel_per_jamaah_formatted }}</span>
+                                    (total keluarga {{ $jamaah->keluarga->total_upgrade_hotel_formatted }} ÷
+                                    {{ $jamaah->keluarga->jamaahs->count() }} jamaah)
+                                </p>
+                            </div>
+                        @endif
+                    </div>
+                @endif
+
                 <!-- Riwayat Transaksi -->
                 <div class="bg-gray-50 rounded-xl p-5 border border-gray-100 mb-6">
                     <div class="flex items-center justify-between mb-4">
@@ -518,8 +613,7 @@
                         </a>
                         <button type="submit"
                             class="px-6 py-3 bg-yellow-500 text-white rounded-xl hover:bg-yellow-600 transition-colors text-sm font-medium shadow-sm hover:shadow">
-                            <i class="fas fa-check-circle mr-2"></i> Proses Pembayaran
-                        </button>
+                            <i class="fas fa-check-circle mr-2"></i> Proses Pembayaran </button>
                     </div>
                 </form>
             </div>

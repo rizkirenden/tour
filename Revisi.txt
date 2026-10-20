@@ -1,9 +1,7 @@
-50.upgrade hotel dan kamar per jamaah atau keluarga - bayar full - buat input baru di daftar hotel
+
 
 59.urutan data dari yang awal ke terahir di menu keseluruhan.
 63.FILTER SELURUH MENU
-76.TAMBAHKAN INPUTAN PEMBAYARAN TAK TERDUGA DI KEBERANGKATAN
-
 84. rekom passport per jamaah.
 ------------------------------------------------------------------------------------------------------------------------------------
 1. ada pembayaran langsung dengan uang real / cash - DONE
@@ -54,6 +52,7 @@
 47.pendampingan, fee passport 650 masuk ke pengeluaran, 100 masuk ke pendapatan - DONE
 48.pdf di keluarga _ DONE
 49.multiple input harga paket -> DONE
+50.upgrade hotel dan kamar per jamaah atau keluarga - bayar full - buat input baru di daftar hotel - DONE
 51.Pendapingan (pembuatan passport) - nama pendampingan (di hilangkan ganti dengan Ya-Tidak tinggal centang) - fee Pendamping (Pembayaran passport) - fee petugas (Pendapatan perusahaan) - DONE
 52.hilangkan harga default di bulan keberangkatan - DONE
 53.pembuatan paspor dimenu jamaah pilihannya hanya ( YA ATAU TIDAK ATAU SUDAH PUNYA ), HIDE TABEL DIBAWAHNYA, HILANGKAN TULISAN NAMA - DONE
@@ -76,6 +75,7 @@
 72. STATUS KEBERANGKATAN DI MASUKKAN OPSI - DONE
 73. DAFTAR JAMAAH DIKASIH MERAH JIKA MMG BELUM LUNAS, DAN YANG SUDAH LUNAS HIJAU
 75. BUAT MULTIPLE UBAH STATUS DI PERLENGKAPAN - DONE
+76.TAMBAHKAN INPUTAN PEMBAYARAN TAK TERDUGA DI KEBERANGKATAN - DONE
 77. TAMBAH INFO MENGENAI HARGA BULAN YANG DI DAFTARKAN OLEH JAMAAH BERSANGKUTAN DI MENU KEBERANGKATAN. (ATUR DAFTAR JAMAAH) - DONE
 79. PERBAIKI KETIKA HAPUS JAMAAH DI DAFTAR JAMAAH, KETIKA MAU DI TAMBAHKAN ULANG JAMAAH NYA SUDAH TIDAK ADA - DONE
 78. TAMBAH TAMPILAN JAMAAH UNTUK PENDAMPINGAN PASSPORT NOMINAL NYA

@@ -171,6 +171,135 @@
                     </div>
                 </div>
 
+                {{-- ============================================ --}}
+                {{-- SECTION BARU: UPGRADE HOTEL KELUARGA --}}
+                {{-- ============================================ --}}
+                @if (
+                    $keluarga->upgradeHotels->count() > 0 ||
+                        $keluarga->jamaahs->sum(fn($j) => $j->upgradeHotels->sum('total_harga')) > 0)
+                    <div class="bg-orange-50 rounded-xl p-5 border border-orange-200 mb-6">
+                        <h6 class="text-sm font-semibold text-gray-700 mb-4 flex items-center justify-between">
+                            <span>
+                                <i class="fas fa-hotel text-orange-500 mr-2"></i> Upgrade Hotel & Kamar
+                            </span>
+                            <span class="text-xs bg-orange-100 text-orange-800 px-2 py-0.5 rounded-full">
+                                Total Keluarga: {{ $keluarga->total_upgrade_hotel_formatted }}
+                            </span>
+                        </h6>
+
+                        <div class="bg-blue-50 rounded-lg p-3 border border-blue-200 mb-4">
+                            <p class="text-xs text-blue-700">
+                                <i class="fas fa-info-circle mr-1"></i>
+                                Upgrade hotel <strong>sudah termasuk</strong> dalam total tagihan.
+                                Upgrade keluarga dibagi rata, upgrade personal dibebankan ke jamaah masing-masing.
+                            </p>
+                        </div>
+
+                        {{-- Ringkasan --}}
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-3 mb-4">
+                            <div class="bg-white rounded-lg p-3 border border-orange-200 text-center">
+                                <p class="text-xs text-gray-500">Upgrade Keluarga</p>
+                                <p class="text-sm font-bold text-orange-600">{{ $keluarga->total_upgrade_hotel_formatted }}
+                                </p>
+                            </div>
+                            <div class="bg-white rounded-lg p-3 border border-blue-200 text-center">
+                                <p class="text-xs text-gray-500">Jamaah</p>
+                                <p class="text-sm font-bold text-blue-600">{{ $keluarga->jamaahs->count() }} Orang</p>
+                            </div>
+                            <div class="bg-white rounded-lg p-3 border border-purple-200 text-center">
+                                <p class="text-xs text-gray-500">Per Jamaah</p>
+                                <p class="text-sm font-bold text-purple-600">
+                                    {{ $keluarga->upgrade_hotel_per_jamaah_formatted }}</p>
+                            </div>
+                        </div>
+
+                        {{-- Detail Upgrade Keluarga --}}
+                        @if ($keluarga->upgradeHotels->count() > 0)
+                            <div class="overflow-x-auto mb-3">
+                                <table class="w-full text-sm bg-white rounded-lg overflow-hidden">
+                                    <thead class="bg-gray-100">
+                                        <tr>
+                                            <th class="px-3 py-2 text-left text-xs font-semibold text-gray-500 uppercase">
+                                                Hotel</th>
+                                            <th class="px-3 py-2 text-left text-xs font-semibold text-gray-500 uppercase">
+                                                Tipe Kamar</th>
+                                            <th class="px-3 py-2 text-right text-xs font-semibold text-gray-500 uppercase">
+                                                Jumlah</th>
+                                            <th class="px-3 py-2 text-right text-xs font-semibold text-gray-500 uppercase">
+                                                Harga/Malam</th>
+                                            <th class="px-3 py-2 text-right text-xs font-semibold text-gray-500 uppercase">
+                                                Malam</th>
+                                            <th class="px-3 py-2 text-right text-xs font-semibold text-gray-500 uppercase">
+                                                Subtotal</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody class="divide-y divide-gray-100">
+                                        @foreach ($keluarga->upgradeHotels as $upgrade)
+                                            <tr>
+                                                <td class="px-3 py-2">
+                                                    <span
+                                                        class="font-medium text-gray-700">{{ $upgrade->hotel->nama_hotel ?? '-' }}</span>
+                                                    <p class="text-xs text-gray-400">{{ $upgrade->hotel->kota ?? '' }}</p>
+                                                </td>
+                                                <td class="px-3 py-2 text-gray-600">{{ $upgrade->tipe_kamar ?? '-' }}</td>
+                                                <td class="px-3 py-2 text-right text-gray-600">
+                                                    {{ $upgrade->jumlah_kamar }}</td>
+                                                <td class="px-3 py-2 text-right text-gray-600">
+                                                    Rp {{ number_format($upgrade->harga_per_malam, 0, ',', '.') }}
+                                                </td>
+                                                <td class="px-3 py-2 text-right text-gray-600">
+                                                    {{ $upgrade->durasi_menginap }}</td>
+                                                <td class="px-3 py-2 text-right font-bold text-orange-600">
+                                                    Rp {{ number_format($upgrade->total_harga, 0, ',', '.') }}
+                                                </td>
+                                            </tr>
+                                        @endforeach
+                                    </tbody>
+                                    <tfoot class="bg-orange-100 border-t-2 border-orange-300">
+                                        <tr>
+                                            <td colspan="5" class="px-3 py-2 text-right font-bold text-gray-700">TOTAL
+                                            </td>
+                                            <td class="px-3 py-2 text-right font-bold text-orange-700">
+                                                {{ $keluarga->total_upgrade_hotel_formatted }}
+                                            </td>
+                                        </tr>
+                                    </tfoot>
+                                </table>
+                            </div>
+                        @endif
+
+                        {{-- Detail Upgrade Personal per Jamaah --}}
+                        @php
+                            $jamaahWithUpgrade = $keluarga->jamaahs->filter(fn($j) => $j->upgradeHotels->count() > 0);
+                        @endphp
+
+                        @if ($jamaahWithUpgrade->count() > 0)
+                            <div class="mt-3 pt-3 border-t border-orange-200">
+                                <h6 class="text-xs font-semibold text-gray-600 mb-2">
+                                    <i class="fas fa-user mr-1 text-blue-500"></i> Upgrade Personal per Jamaah
+                                </h6>
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-2">
+                                    @foreach ($jamaahWithUpgrade as $jamaah)
+                                        <div
+                                            class="bg-white rounded-lg p-2 border border-blue-200 flex justify-between items-center">
+                                            <div>
+                                                <span
+                                                    class="font-medium text-gray-700 text-sm">{{ $jamaah->nama_lengkap }}</span>
+                                                <p class="text-xs text-gray-400">
+                                                    {{ $jamaah->upgradeHotels->count() }} item upgrade
+                                                </p>
+                                            </div>
+                                            <span class="text-sm font-bold text-blue-600">
+                                                {{ $jamaah->total_upgrade_hotel_formatted }}
+                                            </span>
+                                        </div>
+                                    @endforeach
+                                </div>
+                            </div>
+                        @endif
+                    </div>
+                @endif
+
                 <!-- Form Pembayaran -->
                 <form action="{{ route('transaksional.keluarga.bayar', $keluarga->id_keluarga) }}" method="POST"
                     enctype="multipart/form-data" id="formPembayaranKeluarga">

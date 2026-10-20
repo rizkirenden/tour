@@ -454,6 +454,70 @@
                         </div>
                     </div>
 
+                    <!-- UPGRADE HOTEL -->
+                    <div class="border-b border-gray-200 pb-4">
+                        <div class="flex items-center justify-between mb-2">
+                            <h6 class="text-sm font-semibold text-gray-700 flex items-center">
+                                <i class="fas fa-hotel text-orange-500 mr-2"></i>
+                                Upgrade Hotel & Kamar
+                                <span class="ml-2 text-xs text-gray-400 font-normal">(opsional)</span>
+                            </h6>
+                            <button type="button" onclick="toggleUpgradeHotel()"
+                                class="text-xs text-blue-500 hover:text-blue-700 font-medium">
+                                <i class="fas fa-plus mr-1"></i> Atur Hotel
+                            </button>
+                        </div>
+
+                        <div id="upgradeHotelContainer"
+                            class="hidden bg-orange-50 rounded-lg p-3 border border-orange-200">
+                            <p class="text-xs text-orange-700 mb-2">
+                                <i class="fas fa-info-circle mr-1"></i>
+                                Biaya upgrade hotel akan ditambahkan ke total tagihan jamaah.
+                            </p>
+
+                            <div class="max-h-64 overflow-y-auto border border-gray-200 rounded-lg bg-white p-2 space-y-2">
+                                @foreach ($hotelOptions as $hotel)
+                                    <div class="hotel-upgrade-item border border-gray-200 rounded-lg"
+                                        data-hotel-id="{{ $hotel->id_hotel }}">
+                                        <label
+                                            class="flex items-center gap-2 p-2 cursor-pointer hover:bg-gray-50 rounded-t-lg">
+                                            <input type="checkbox"
+                                                class="upgrade-hotel-checkbox w-4 h-4 text-orange-500 border-gray-300 rounded focus:ring-orange-500"
+                                                data-hotel-id="{{ $hotel->id_hotel }}"
+                                                onchange="toggleHotelDetail({{ $hotel->id_hotel }})">
+                                            <div class="flex-1">
+                                                <p class="text-sm font-medium text-gray-700">{{ $hotel->nama_hotel }}</p>
+                                                <p class="text-xs text-gray-500">
+                                                    <i class="fas fa-map-marker-alt mr-1"></i>
+                                                    {{ $hotel->kota ?? '-' }}
+                                                    @if ($hotel->bintang)
+                                                        · {{ $hotel->bintang_text }}
+                                                    @endif
+                                                </p>
+                                            </div>
+                                        </label>
+
+                                        <div id="hotelDetailContainer-{{ $hotel->id_hotel }}"
+                                            class="hidden border-t border-gray-100 p-2 space-y-2">
+                                            <div class="text-xs text-gray-400 text-center py-2">
+                                                <i class="fas fa-spinner fa-spin mr-1"></i> Memuat tipe kamar...
+                                            </div>
+                                        </div>
+                                    </div>
+                                @endforeach
+                            </div>
+
+                            <div
+                                class="mt-2 flex items-center justify-between bg-white rounded-lg border border-orange-200 px-3 py-2">
+                                <span class="text-xs font-medium text-gray-700">
+                                    <i class="fas fa-calculator mr-1 text-orange-500"></i>
+                                    Total Upgrade Hotel:
+                                </span>
+                                <span id="totalUpgradeHotel" class="text-sm font-bold text-orange-600">Rp 0</span>
+                            </div>
+                        </div>
+                    </div>
+
                     <!-- Bagian Diskon -->
                     <div class="border-b border-gray-200 pb-4">
                         <h6 class="text-sm font-semibold text-gray-700 mb-4 flex items-center">
@@ -611,6 +675,9 @@
         var globalHargaBulananList = [];
         var globalOldData = [];
 
+        // ==========================================
+        // FORMAT RUPIAH
+        // ==========================================
         function formatRupiah(element) {
             let raw = element.value.replace(/[^,\d]/g, '');
             if (raw === '') {
@@ -627,6 +694,16 @@
             }
         }
 
+        function formatRupiahKamar(input) {
+            let value = input.value.replace(/[^,\d]/g, '').replace(/^Rp\s*/, '').replace(/\./g, '');
+            if (value === '' || isNaN(value)) value = '0';
+            const number = parseInt(value);
+            input.value = 'Rp ' + number.toLocaleString('id-ID');
+        }
+
+        // ==========================================
+        // VALIDASI INFORMASI PRIBADI
+        // ==========================================
         function validateInformasiPribadi() {
             var fields = document.querySelectorAll('.wajib-pribadi');
             var labels = {
@@ -640,9 +717,9 @@
                 tempat_lahir: 'Tempat Lahir',
                 tanggal_lahir: 'Tanggal Lahir',
                 alamat: 'Alamat',
-                kota_kabupaten: 'Kota / Kabupaten', // ✅ NEW
-                kecamatan: 'Kecamatan', // ✅ NEW
-                kelurahan: 'Kelurahan / Desa' // ✅ NEW
+                kota_kabupaten: 'Kota / Kabupaten',
+                kecamatan: 'Kecamatan',
+                kelurahan: 'Kelurahan / Desa'
             };
             var missing = [];
 
@@ -679,6 +756,9 @@
             return true;
         }
 
+        // ==========================================
+        // TOGGLE PEMBUATAN PASSPORT
+        // ==========================================
         function togglePembuatanPassport() {
             var isYa = document.querySelector('input[name="is_pembuatan_passport"]:checked');
             var container = document.getElementById('feePetugasContainer');
@@ -749,6 +829,9 @@
             }
         }
 
+        // ==========================================
+        // LOAD KEBERANGKATAN
+        // ==========================================
         function loadKeberangkatan() {
             var produkPaket = document.getElementById('produk_paket');
             var tahunSelect = document.getElementById('filter-tahun');
@@ -1088,6 +1171,156 @@
             }
         });
 
+        // ==========================================
+        // UPGRADE HOTEL
+        // ==========================================
+        function toggleUpgradeHotel() {
+            const container = document.getElementById('upgradeHotelContainer');
+            container.classList.toggle('hidden');
+        }
+
+        function toggleHotelDetail(hotelId) {
+            const checkbox = document.querySelector(
+                `.upgrade-hotel-checkbox[data-hotel-id="${hotelId}"]`
+            );
+            const container = document.getElementById(`hotelDetailContainer-${hotelId}`);
+
+            if (!checkbox || !container) return;
+
+            if (checkbox.checked) {
+                container.classList.remove('hidden');
+                loadKamarsUpgrade(hotelId, container);
+            } else {
+                container.classList.add('hidden');
+                container.innerHTML =
+                    '<div class="text-xs text-gray-400 text-center py-2">Pilih hotel untuk memuat kamar</div>';
+                removeUpgradeHiddenInputs(hotelId);
+                updateTotalUpgradeHotel();
+            }
+        }
+
+        function updateTotalUpgradeHotel() {
+            const container = document.getElementById('upgradeHotelContainer');
+            if (!container) return;
+
+            let total = 0;
+            container.querySelectorAll('.hotel-upgrade-item').forEach(hotelItem => {
+                const hotelCheckbox = hotelItem.querySelector('.upgrade-hotel-checkbox');
+                if (!hotelCheckbox || !hotelCheckbox.checked) return;
+
+                hotelItem.querySelectorAll('.kamar-item').forEach(item => {
+                    const cb = item.querySelector('.kamar-checkbox');
+                    if (!cb || !cb.checked) return;
+
+                    const jumlah = parseInt(item.querySelector('.kamar-jumlah').value) || 1;
+                    const harga = parseInt((item.querySelector('.kamar-harga').value || '')
+                        .replace(/^Rp\s*/, '').replace(/\./g, '')) || 0;
+                    const durasi = parseInt(item.querySelector('.kamar-durasi').value) || 1;
+                    total += jumlah * harga * durasi;
+                });
+            });
+
+            const totalEl = document.getElementById('totalUpgradeHotel');
+            if (totalEl) totalEl.textContent = 'Rp ' + total.toLocaleString('id-ID');
+        }
+
+        function loadKamarsUpgrade(hotelId, container) {
+            container.innerHTML =
+                '<div class="text-xs text-gray-400 text-center py-2"><i class="fas fa-spinner fa-spin mr-1"></i> Memuat tipe kamar...</div>';
+
+            fetch(`{{ url('/transaksional/jamaah/get-kamars-by-hotel') }}/${hotelId}`)
+                .then(res => res.json())
+                .then(data => {
+                    if (data.count === 0) {
+                        container.innerHTML =
+                            '<div class="text-xs text-gray-400 text-center py-2">Hotel ini belum memiliki data kamar.</div>';
+                        return;
+                    }
+
+                    container.innerHTML = '<div class="grid grid-cols-1 gap-2">' + data.html + '</div>' +
+                        `<div class="mt-1 flex items-center justify-between bg-orange-50 rounded px-2 py-1">
+                            <span class="text-[10px] font-medium text-gray-600">Subtotal hotel ini:</span>
+                            <span class="text-xs font-bold text-orange-600 subtotal-hotel-${hotelId}">Rp 0</span>
+                        </div>`;
+
+                    container.querySelectorAll('.kamar-checkbox').forEach(cb => {
+                        cb.addEventListener('change', () => {
+                            const parent = cb.closest('.kamar-item');
+                            const inputs = parent.querySelectorAll('input:not(.kamar-checkbox)');
+                            inputs.forEach(input => {
+                                input.disabled = !cb.checked;
+                                input.classList.toggle('opacity-50', !cb.checked);
+                                input.classList.toggle('bg-gray-50', !cb.checked);
+                            });
+                            updateUpgradeHiddenInputs(hotelId, container);
+                            updateTotalUpgradeHotel();
+                        });
+                    });
+
+                    container.querySelectorAll('.kamar-jumlah, .kamar-harga, .kamar-durasi').forEach(input => {
+                        input.addEventListener('change', () => {
+                            updateUpgradeHiddenInputs(hotelId, container);
+                            updateTotalUpgradeHotel();
+                        });
+                        input.addEventListener('keyup', () => {
+                            updateUpgradeHiddenInputs(hotelId, container);
+                            updateTotalUpgradeHotel();
+                        });
+                    });
+                })
+                .catch(err => {
+                    console.error(err);
+                    container.innerHTML =
+                    '<div class="text-xs text-red-500 text-center py-2">Gagal memuat kamar.</div>';
+                });
+        }
+
+        function updateUpgradeHiddenInputs(hotelId, container) {
+            removeUpgradeHiddenInputs(hotelId);
+
+            const parentForm = document.getElementById('jamaahForm');
+            if (!parentForm) return;
+
+            let subtotal = 0;
+
+            container.querySelectorAll('.kamar-item').forEach(item => {
+                const cb = item.querySelector('.kamar-checkbox');
+                if (!cb || !cb.checked) return;
+
+                const jumlah = parseInt(item.querySelector('.kamar-jumlah').value) || 1;
+                const harga = parseInt((item.querySelector('.kamar-harga').value || '')
+                    .replace(/^Rp\s*/, '').replace(/\./g, '')) || 0;
+                const durasi = parseInt(item.querySelector('.kamar-durasi').value) || 1;
+                subtotal += jumlah * harga * durasi;
+
+                const uniqueKey = `upgrade_hotels[${hotelId}_${cb.value}]`;
+                const grp = document.createElement('div');
+                grp.className = 'upgrade-hidden-group';
+                grp.dataset.hotelId = hotelId;
+                grp.innerHTML = `
+                    <input type="hidden" name="${uniqueKey}[id_hotel]" value="${hotelId}">
+                    <input type="hidden" name="${uniqueKey}[id_kamar]" value="${cb.value}">
+                    <input type="hidden" name="${uniqueKey}[tipe_kamar]" value="${cb.dataset.tipe}">
+                    <input type="hidden" name="${uniqueKey}[jumlah_kamar]" value="${jumlah}">
+                    <input type="hidden" name="${uniqueKey}[durasi_menginap]" value="${durasi}">
+                    <input type="hidden" name="${uniqueKey}[harga_per_malam]" value="${harga}">
+                `;
+                parentForm.appendChild(grp);
+            });
+
+            const subtotalEl = container.querySelector(`.subtotal-hotel-${hotelId}`);
+            if (subtotalEl) subtotalEl.textContent = 'Rp ' + subtotal.toLocaleString('id-ID');
+        }
+
+        function removeUpgradeHiddenInputs(hotelId) {
+            const parentForm = document.getElementById('jamaahForm');
+            if (!parentForm) return;
+            parentForm.querySelectorAll(`.upgrade-hidden-group[data-hotel-id="${hotelId}"]`).forEach(el => el.remove());
+        }
+
+        // ==========================================
+        // DOM CONTENT LOADED
+        // ==========================================
         document.addEventListener('DOMContentLoaded', function() {
             var kotaAsal = document.getElementById('kota_asal');
             if (kotaAsal.value) {

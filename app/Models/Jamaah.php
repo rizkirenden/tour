@@ -132,6 +132,11 @@ class Jamaah extends Model
         return $this->hasMany(DepartureJamaah::class, 'id_jamaah', 'id_jamaah');
     }
 
+        public function upgradeHotels()
+    {
+        return $this->hasMany(JamaahUpgradeHotel::class, 'id_jamaah', 'id_jamaah');
+    }
+
     public function keberangkatan()
     {
         return $this->belongsToMany(
@@ -561,6 +566,37 @@ class Jamaah extends Model
                 return $html;
             })
             ->implode(' ');
+    }
+
+           public function getTotalUpgradeHotelAttribute()
+    {
+        return $this->upgradeHotels->sum('total_harga');
+    }
+
+    public function getTotalUpgradeHotelFormattedAttribute()
+    {
+        return 'Rp ' . number_format($this->total_upgrade_hotel, 0, ',', '.');
+    }
+
+    public function getTotalUpgradeHotelGabunganAttribute()
+    {
+        $personal = $this->upgradeHotels->sum('total_harga');
+
+        $keluargaUpgrade = 0;
+        if ($this->id_keluarga && $this->relationLoaded('keluarga') && $this->keluarga) {
+            $totalKeluarga = $this->keluarga->upgradeHotels->sum('total_harga');
+            $jumlahJamaah = $this->keluarga->jamaahs->count();
+            if ($jumlahJamaah > 0) {
+                $keluargaUpgrade = (int) round($totalKeluarga / $jumlahJamaah);
+            }
+        }
+
+        return $personal + $keluargaUpgrade;
+    }
+
+    public function getTotalUpgradeHotelGabunganFormattedAttribute()
+    {
+        return 'Rp ' . number_format($this->total_upgrade_hotel_gabungan, 0, ',', '.');
     }
 
     // ==========================================
