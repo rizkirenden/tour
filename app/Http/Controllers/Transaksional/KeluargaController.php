@@ -77,6 +77,9 @@ class KeluargaController extends Controller
             'jamaahs.*.telepon' => 'required|string|max:20',
             'jamaahs.*.wa' => 'required|string|max:20',
             'jamaahs.*.alamat' => 'nullable|string',
+            'jamaahs.*.kota_kabupaten' => 'nullable|string|max:100',   // ✅ NEW
+            'jamaahs.*.kecamatan' => 'nullable|string|max:100',        // ✅ NEW
+            'jamaahs.*.kelurahan' => 'nullable|string|max:100',        // ✅ NEW
             'jamaahs.*.kota_asal' => 'nullable|string|max:50|exists:kota_asals,nama_kota',
             'jamaahs.*.pulau' => 'nullable|string|max:20',
             'jamaahs.*.bandara_keberangkatan' => 'nullable|string|max:50',
@@ -88,7 +91,6 @@ class KeluargaController extends Controller
             'jamaahs.*.file_visa' => 'nullable|file|mimes:jpeg,png,jpg,pdf|max:2048',
             'jamaahs.*.file_paspor' => 'nullable|file|mimes:jpeg,png,jpg,pdf|max:2048',
 
-            // === PEMBUATAN PASSPORT ===
             'jamaahs.*.is_pembuatan_passport' => 'nullable|boolean',
             'jamaahs.*.pendampingan_fee' => 'nullable|integer|min:0',
             'jamaahs.*.pendampingan_fee_petugas' => 'nullable|integer|min:0',
@@ -175,6 +177,9 @@ class KeluargaController extends Controller
             'jamaahs.*.telepon' => 'required|string|max:20',
             'jamaahs.*.wa' => 'required|string|max:20',
             'jamaahs.*.alamat' => 'nullable|string',
+            'jamaahs.*.kota_kabupaten' => 'nullable|string|max:100',   // ✅ NEW
+            'jamaahs.*.kecamatan' => 'nullable|string|max:100',        // ✅ NEW
+            'jamaahs.*.kelurahan' => 'nullable|string|max:100',        // ✅ NEW
             'jamaahs.*.kota_asal' => 'nullable|string|max:50|exists:kota_asals,nama_kota',
             'jamaahs.*.pulau' => 'nullable|string|max:20',
             'jamaahs.*.bandara_keberangkatan' => 'nullable|string|max:50',
@@ -186,7 +191,6 @@ class KeluargaController extends Controller
             'jamaahs.*.file_visa' => 'nullable|file|mimes:jpeg,png,jpg,pdf|max:2048',
             'jamaahs.*.file_paspor' => 'nullable|file|mimes:jpeg,png,jpg,pdf|max:2048',
 
-            // === PEMBUATAN PASSPORT ===
             'jamaahs.*.is_pembuatan_passport' => 'nullable|boolean',
             'jamaahs.*.pendampingan_fee' => 'nullable|integer|min:0',
             'jamaahs.*.pendampingan_fee_petugas' => 'nullable|integer|min:0',
@@ -502,9 +506,19 @@ class KeluargaController extends Controller
     {
         $request->validate([
             'produk_paket' => 'required|string|exists:produk_pakets,nama_produk',
+            'exclude_jamaah_ids' => 'nullable|string',
         ]);
 
-        $data = $this->service->getKeberangkatanByProduk($request->produk_paket);
+        $excludeIds = [];
+        if ($request->filled('exclude_jamaah_ids')) {
+            $excludeIds = collect(explode(',', $request->exclude_jamaah_ids))
+                ->map(fn($v) => (int) trim($v))
+                ->filter(fn($v) => $v > 0)
+                ->values()
+                ->toArray();
+        }
+
+        $data = $this->service->getKeberangkatanByProduk($request->produk_paket, $excludeIds);
 
         return response()->json([
             'success' => true,

@@ -24,7 +24,12 @@ return new class extends Migration
             $table->string('pekerjaan', 100)->nullable()->comment('Pekerjaan jamaah');
             $table->string('telepon', 20)->nullable();
             $table->string('wa', 20)->nullable()->comment('Nomor WhatsApp');
+
+            // === ALAMAT LENGKAP ===
             $table->text('alamat')->nullable();
+            $table->string('kota_kabupaten', 100)->nullable()->comment('Kota/Kabupaten domisili');
+            $table->string('kecamatan', 100)->nullable()->comment('Kecamatan domisili');
+            $table->string('kelurahan', 100)->nullable()->comment('Kelurahan/Desa domisili');
 
             // === DATA PASSPORT ===
             $table->string('nomor_paspor', 20)->nullable();
@@ -98,14 +103,14 @@ return new class extends Migration
 
             // === FOREIGN KEYS ===
             $table->foreign('id_keluarga')
-                  ->references('id_keluarga')
-                  ->on('keluargas')
-                  ->onDelete('set null');
+                ->references('id_keluarga')
+                ->on('keluargas')
+                ->onDelete('set null');
 
             $table->foreign('id_diskon')
-                  ->references('id_diskon')
-                  ->on('diskons')
-                  ->onDelete('set null');
+                ->references('id_diskon')
+                ->on('diskons')
+                ->onDelete('set null');
 
             // === INDEX ===
             $table->index('nik', 'idx_jamaah_nik');

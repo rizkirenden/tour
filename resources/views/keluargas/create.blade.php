@@ -385,210 +385,279 @@
                                             </div>
                                         </div>
 
-                                        <!-- Baris 4 -->
-                                        <div class="grid grid-cols-1 md:grid-cols-3 gap-3 mt-3">
-                                            <div>
-                                                <label class="block text-xs font-medium text-gray-600 mb-1">Hubungan
-                                                    Keluarga</label>
-                                                <select name="jamaahs[{{ $index }}][hubungan_keluarga]"
-                                                    class="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-yellow-500 text-sm">
-                                                    <option value="">-- Pilih Hubungan --</option>
-                                                    @foreach ($hubunganOptions as $option)
-                                                        <option value="{{ $option }}"
-                                                            {{ ($jamaah['hubungan_keluarga'] ?? '') == $option ? 'selected' : '' }}>
-                                                            {{ $option }}
-                                                        </option>
-                                                    @endforeach
-                                                </select>
-                                            </div>
-                                            <div>
-                                                <label class="block text-xs font-medium text-gray-600 mb-1">Alamat</label>
-                                                <input type="text" name="jamaahs[{{ $index }}][alamat]"
-                                                    value="{{ $jamaah['alamat'] ?? '' }}"
-                                                    class="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-yellow-500 text-sm"
-                                                    placeholder="Alamat lengkap">
-                                            </div>
-                                            <div>
-                                                <label class="block text-xs font-medium text-gray-600 mb-1">Kota
-                                                    Asal</label>
-                                                <select name="jamaahs[{{ $index }}][kota_asal]"
-                                                    class="kota-asal-select w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-yellow-500 text-sm">
-                                                    <option value="">-- Pilih Kota Asal --</option>
-                                                    @foreach ($kotaAsals as $kota)
-                                                        <option value="{{ $kota->nama_kota }}"
-                                                            data-pulau="{{ $kota->pulau }}"
-                                                            data-bandara="{{ $kota->bandara_terdekat }}"
-                                                            {{ ($jamaah['kota_asal'] ?? '') == $kota->nama_kota ? 'selected' : '' }}>
-                                                            {{ $kota->nama_kota }} - {{ $kota->provinsi ?? '' }}
-                                                        </option>
-                                                    @endforeach
-                                                </select>
-                                            </div>
-                                        </div>
-
-                                        <!-- Baris 5 -->
-                                        <div class="grid grid-cols-1 md:grid-cols-3 gap-3 mt-3">
-                                            <div>
-                                                <label class="block text-xs font-medium text-gray-600 mb-1">Nomor
-                                                    Paspor</label>
-                                                <input type="text" name="jamaahs[{{ $index }}][nomor_paspor]"
-                                                    value="{{ $jamaah['nomor_paspor'] ?? '' }}"
-                                                    class="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-yellow-500 text-sm">
-                                            </div>
-                                            <div>
-                                                <label class="block text-xs font-medium text-gray-600 mb-1">Pulau</label>
-                                                <input type="text" name="jamaahs[{{ $index }}][pulau]"
-                                                    value="{{ $jamaah['pulau'] ?? '' }}"
-                                                    class="w-full px-3 py-2 border border-gray-200 rounded-lg bg-gray-100 text-sm cursor-not-allowed"
-                                                    readonly>
-                                            </div>
-                                            <div>
-                                                <label class="block text-xs font-medium text-gray-600 mb-1">Bandara
-                                                    Keberangkatan</label>
-                                                <input type="text"
-                                                    name="jamaahs[{{ $index }}][bandara_keberangkatan]"
-                                                    value="{{ $jamaah['bandara_keberangkatan'] ?? '' }}"
-                                                    class="w-full px-3 py-2 border border-gray-200 rounded-lg bg-gray-100 text-sm cursor-not-allowed"
-                                                    readonly>
-                                            </div>
-                                        </div>
-
-                                        <!-- Baris 6: Kepala Keluarga -->
-                                        <div class="mt-3">
-                                            <label class="flex items-center gap-2 text-sm text-gray-700 cursor-pointer">
-                                                <input type="checkbox"
-                                                    name="jamaahs[{{ $index }}][is_kepala_keluarga]"
-                                                    value="1"
-                                                    {{ $jamaah['is_kepala_keluarga'] ?? false ? 'checked' : '' }}
-                                                    class="w-4 h-4 text-yellow-500 border-gray-300 rounded focus:ring-yellow-500">
-                                                <span>Kepala Keluarga / Kelompok</span>
-                                            </label>
-                                        </div>
-
-                                        <!-- Pembuatan Passport (TOMBOL YA/TIDAK) -->
+                                        {{-- ============================================ --}}
+                                        {{-- SECTION: ALAMAT DOMISILI --}}
+                                        {{-- ============================================ --}}
                                         <div class="mt-3 pt-3 border-t border-gray-200">
-                                            @php
-                                                $isPassport = ($jamaah['is_pembuatan_passport'] ?? 0) == 1;
-                                            @endphp
-                                            <div class="mb-3">
-                                                <label class="block text-xs font-medium text-gray-600 mb-1.5">
-                                                    Apakah ada Pembuatan Passport? <span class="text-red-500">*</span>
-                                                </label>
-
-                                                {{-- TOMBOL YA / TIDAK --}}
-                                                <div class="inline-flex rounded-lg overflow-hidden border border-gray-300">
-                                                    <button type="button"
-                                                        onclick="setPembuatanPassportKeluarga({{ $index }}, 1)"
-                                                        id="btnYa-{{ $index }}"
-                                                        class="px-6 py-2 text-sm font-medium transition-colors
-                                                        {{ $isPassport ? 'bg-green-500 text-white' : 'bg-white text-gray-600 hover:bg-gray-50' }}">
-                                                        <i class="fas fa-check mr-1"></i> YA
-                                                    </button>
-                                                    <button type="button"
-                                                        onclick="setPembuatanPassportKeluarga({{ $index }}, 0)"
-                                                        id="btnTidak-{{ $index }}"
-                                                        class="px-6 py-2 text-sm font-medium transition-colors border-l border-gray-300
-                                                        {{ !$isPassport ? 'bg-red-500 text-white' : 'bg-white text-gray-600 hover:bg-gray-50' }}">
-                                                        <i class="fas fa-times mr-1"></i> TIDAK
-                                                    </button>
-                                                </div>
-                                                <input type="hidden"
-                                                    name="jamaahs[{{ $index }}][is_pembuatan_passport]"
-                                                    id="is_pembuatan_passport-{{ $index }}"
-                                                    value="{{ $isPassport ? 1 : 0 }}">
-
-                                                <p class="text-xs text-gray-400 mt-1">
-                                                    <i class="fas fa-info-circle mr-1"></i>
-                                                    Pilih <b>YA</b> jika ada pendapatan perusahaan. Pilih <b>TIDAK</b>
-                                                    jika jamaah sudah punya passport.
-                                                </p>
-                                            </div>
+                                            <h6 class="text-xs font-semibold text-gray-700 mb-2 flex items-center">
+                                                <i class="fas fa-map-marker-alt text-yellow-500 mr-1.5"></i>
+                                                Alamat Domisili
+                                            </h6>
 
                                             <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
                                                 <div>
-                                                    <label class="block text-xs font-medium text-gray-600 mb-1">
-                                                        Pembayaran Passport <span class="text-gray-400 text-xs">(boleh
-                                                            kosong)</span>
-                                                    </label>
-                                                    <div class="relative">
-                                                        <span
-                                                            class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-xs">Rp</span>
-                                                        <input type="text"
-                                                            name="jamaahs[{{ $index }}][pendampingan_fee]"
-                                                            value="{{ $jamaah['pendampingan_fee'] ?? 0 }}"
-                                                            oninput="formatRupiah(this); updateTotalPendampingan({{ $index }})"
-                                                            onfocus="handleZeroFocus(this)" onblur="handleZeroBlur(this)"
-                                                            class="w-full pl-8 pr-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-yellow-500 text-sm"
-                                                            placeholder="0">
-                                                    </div>
+                                                    <label class="block text-xs font-medium text-gray-600 mb-1">Hubungan
+                                                        Keluarga</label>
+                                                    <select name="jamaahs[{{ $index }}][hubungan_keluarga]"
+                                                        class="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-yellow-500 text-sm">
+                                                        <option value="">-- Pilih Hubungan --</option>
+                                                        @foreach ($hubunganOptions as $option)
+                                                            <option value="{{ $option }}"
+                                                                {{ ($jamaah['hubungan_keluarga'] ?? '') == $option ? 'selected' : '' }}>
+                                                                {{ $option }}
+                                                            </option>
+                                                        @endforeach
+                                                    </select>
                                                 </div>
-
-                                                <div id="feePetugasContainer-{{ $index }}"
-                                                    class="{{ $isPassport ? '' : 'hidden' }}">
-                                                    <label class="block text-xs font-medium text-gray-600 mb-1">
-                                                        Pendapatan Perusahaan
-                                                        <span class="text-gray-400 text-xs">(fee petugas)</span>
-                                                    </label>
-                                                    <div class="relative">
-                                                        <span
-                                                            class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-xs">Rp</span>
-                                                        <input type="text"
-                                                            name="jamaahs[{{ $index }}][pendampingan_fee_petugas]"
-                                                            id="pendampingan_fee_petugas-{{ $index }}"
-                                                            value="{{ $jamaah['pendampingan_fee_petugas'] ?? 0 }}"
-                                                            oninput="formatRupiah(this); updateTotalPendampingan({{ $index }})"
-                                                            onfocus="handleZeroFocus(this)" onblur="handleZeroBlur(this)"
-                                                            class="w-full pl-8 pr-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-yellow-500 text-sm"
-                                                            placeholder="0">
-                                                    </div>
+                                                <div>
+                                                    <label
+                                                        class="block text-xs font-medium text-gray-600 mb-1">Alamat</label>
+                                                    <input type="text" name="jamaahs[{{ $index }}][alamat]"
+                                                        value="{{ $jamaah['alamat'] ?? '' }}"
+                                                        class="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-yellow-500 text-sm"
+                                                        placeholder="Jl. / RT / RW / No.">
                                                 </div>
                                             </div>
 
-                                            <div class="mt-2 text-xs text-gray-500">
-                                                Total Pembuatan Passport:
-                                                <span class="font-bold text-blue-600"
-                                                    id="total-pendampingan-{{ $index }}">
-                                                    Rp
-                                                    {{ isset($jamaah['pendampingan_fee']) && isset($jamaah['pendampingan_fee_petugas']) ? number_format($jamaah['pendampingan_fee'] + $jamaah['pendampingan_fee_petugas'], 0, ',', '.') : '0' }}
-                                                </span>
-                                                <span class="text-gray-400">(Pembayaran + Pendapatan Perusahaan)</span>
+                                            <div class="grid grid-cols-1 md:grid-cols-3 gap-3 mt-3">
+                                                <div>
+                                                    <label class="block text-xs font-medium text-gray-600 mb-1">Kota /
+                                                        Kabupaten</label>
+                                                    <input type="text"
+                                                        name="jamaahs[{{ $index }}][kota_kabupaten]"
+                                                        value="{{ $jamaah['kota_kabupaten'] ?? '' }}"
+                                                        class="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-yellow-500 text-sm"
+                                                        placeholder="Kota/Kabupaten">
+                                                </div>
+                                                <div>
+                                                    <label
+                                                        class="block text-xs font-medium text-gray-600 mb-1">Kecamatan</label>
+                                                    <input type="text" name="jamaahs[{{ $index }}][kecamatan]"
+                                                        value="{{ $jamaah['kecamatan'] ?? '' }}"
+                                                        class="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-yellow-500 text-sm"
+                                                        placeholder="Kecamatan">
+                                                </div>
+                                                <div>
+                                                    <label class="block text-xs font-medium text-gray-600 mb-1">Kelurahan
+                                                        / Desa</label>
+                                                    <input type="text" name="jamaahs[{{ $index }}][kelurahan]"
+                                                        value="{{ $jamaah['kelurahan'] ?? '' }}"
+                                                        class="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-yellow-500 text-sm"
+                                                        placeholder="Kelurahan/Desa">
+                                                </div>
                                             </div>
                                         </div>
 
-                                        <!-- File Upload -->
-                                        <div
-                                            class="grid grid-cols-1 md:grid-cols-4 gap-3 mt-3 pt-3 border-t border-gray-200">
-                                            <div>
-                                                <label class="block text-xs font-medium text-gray-600 mb-1">File
-                                                    KTP/KK</label>
-                                                <input type="file" name="jamaahs[{{ $index }}][file_ktp_kk]"
-                                                    accept=".pdf,.jpg,.jpeg,.png"
-                                                    class="w-full px-3 py-1.5 border border-gray-200 rounded-lg focus:ring-2 focus:ring-yellow-500 text-sm file:mr-2 file:py-1 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-medium file:bg-yellow-50 file:text-yellow-700 hover:file:bg-yellow-100">
-                                                <p class="text-xs text-gray-400 mt-1">PDF/JPG/PNG Max 2MB</p>
+                                        {{-- ============================================ --}}
+                                        {{-- SECTION: KEBERANGKATAN --}}
+                                        {{-- ============================================ --}}
+                                        <div class="mt-3 pt-3 border-t border-gray-200">
+                                            <div class="bg-blue-50 rounded-lg p-3 border border-blue-100">
+                                                <h6 class="text-xs font-semibold text-blue-700 mb-2 flex items-center">
+                                                    <i class="fas fa-plane text-blue-500 mr-1.5"></i>
+                                                    Keberangkatan
+                                                </h6>
+
+                                                <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+                                                    <div>
+                                                        <label class="block text-xs font-medium text-gray-600 mb-1">Kota
+                                                            Asal</label>
+                                                        <select name="jamaahs[{{ $index }}][kota_asal]"
+                                                            class="kota-asal-select w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-yellow-500 text-sm bg-white">
+                                                            <option value="">-- Pilih Kota Asal --</option>
+                                                            @foreach ($kotaAsals as $kota)
+                                                                <option value="{{ $kota->nama_kota }}"
+                                                                    data-pulau="{{ $kota->pulau }}"
+                                                                    data-bandara="{{ $kota->bandara_terdekat }}"
+                                                                    {{ ($jamaah['kota_asal'] ?? '') == $kota->nama_kota ? 'selected' : '' }}>
+                                                                    {{ $kota->nama_kota }} - {{ $kota->provinsi ?? '' }}
+                                                                </option>
+                                                            @endforeach
+                                                        </select>
+                                                    </div>
+                                                    <div>
+                                                        <label
+                                                            class="block text-xs font-medium text-gray-600 mb-1">Pulau</label>
+                                                        <input type="text" name="jamaahs[{{ $index }}][pulau]"
+                                                            value="{{ $jamaah['pulau'] ?? '' }}"
+                                                            class="w-full px-3 py-2 border border-gray-200 rounded-lg bg-white text-sm cursor-not-allowed"
+                                                            readonly placeholder="Otomatis">
+                                                    </div>
+                                                    <div>
+                                                        <label class="block text-xs font-medium text-gray-600 mb-1">Bandara
+                                                            Keberangkatan</label>
+                                                        <input type="text"
+                                                            name="jamaahs[{{ $index }}][bandara_keberangkatan]"
+                                                            value="{{ $jamaah['bandara_keberangkatan'] ?? '' }}"
+                                                            class="w-full px-3 py-2 border border-gray-200 rounded-lg bg-white text-sm cursor-not-allowed"
+                                                            readonly placeholder="Otomatis">
+                                                    </div>
+                                                </div>
                                             </div>
-                                            <div>
-                                                <label class="block text-xs font-medium text-gray-600 mb-1">File
-                                                    Vaksin</label>
-                                                <input type="file" name="jamaahs[{{ $index }}][file_vaksin]"
-                                                    accept=".pdf,.jpg,.jpeg,.png"
-                                                    class="w-full px-3 py-1.5 border border-gray-200 rounded-lg focus:ring-2 focus:ring-yellow-500 text-sm file:mr-2 file:py-1 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-medium file:bg-yellow-50 file:text-yellow-700 hover:file:bg-yellow-100">
-                                                <p class="text-xs text-gray-400 mt-1">PDF/JPG/PNG Max 2MB</p>
+                                        </div>
+
+                                        {{-- ============================================ --}}
+                                        {{-- SECTION: PASSPORT & DOKUMEN --}}
+                                        {{-- ============================================ --}}
+                                        <div class="mt-3 pt-3 border-t border-gray-200">
+                                            <h6 class="text-xs font-semibold text-gray-700 mb-2 flex items-center">
+                                                <i class="fas fa-passport text-yellow-500 mr-1.5"></i>
+                                                Passport & Dokumen
+                                            </h6>
+
+                                            <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                                                <div>
+                                                    <label class="block text-xs font-medium text-gray-600 mb-1">Nomor
+                                                        Paspor</label>
+                                                    <input type="text"
+                                                        name="jamaahs[{{ $index }}][nomor_paspor]"
+                                                        value="{{ $jamaah['nomor_paspor'] ?? '' }}"
+                                                        class="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-yellow-500 text-sm">
+                                                </div>
+                                                <div>
+                                                    <label
+                                                        class="flex items-center gap-2 text-sm text-gray-700 cursor-pointer mt-6">
+                                                        <input type="checkbox"
+                                                            name="jamaahs[{{ $index }}][is_kepala_keluarga]"
+                                                            value="1"
+                                                            {{ $jamaah['is_kepala_keluarga'] ?? false ? 'checked' : '' }}
+                                                            class="w-4 h-4 text-yellow-500 border-gray-300 rounded focus:ring-yellow-500">
+                                                        <span>Kepala Keluarga / Kelompok</span>
+                                                    </label>
+                                                </div>
                                             </div>
-                                            <div>
-                                                <label class="block text-xs font-medium text-gray-600 mb-1">File
-                                                    Visa</label>
-                                                <input type="file" name="jamaahs[{{ $index }}][file_visa]"
-                                                    accept=".pdf,.jpg,.jpeg,.png"
-                                                    class="w-full px-3 py-1.5 border border-gray-200 rounded-lg focus:ring-2 focus:ring-yellow-500 text-sm file:mr-2 file:py-1 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-medium file:bg-yellow-50 file:text-yellow-700 hover:file:bg-yellow-100">
-                                                <p class="text-xs text-gray-400 mt-1">PDF/JPG/PNG Max 2MB</p>
+
+                                            <!-- Pembuatan Passport -->
+                                            <div class="mt-3 pt-3 border-t border-gray-200">
+                                                @php
+                                                    $isPassport = ($jamaah['is_pembuatan_passport'] ?? 0) == 1;
+                                                @endphp
+                                                <div class="mb-3">
+                                                    <label class="block text-xs font-medium text-gray-600 mb-1.5">
+                                                        Apakah ada Pembuatan Passport? <span class="text-red-500">*</span>
+                                                    </label>
+
+                                                    <div
+                                                        class="inline-flex rounded-lg overflow-hidden border border-gray-300">
+                                                        <button type="button"
+                                                            onclick="setPembuatanPassportKeluarga({{ $index }}, 1)"
+                                                            id="btnYa-{{ $index }}"
+                                                            class="px-6 py-2 text-sm font-medium transition-colors
+                                                            {{ $isPassport ? 'bg-green-500 text-white' : 'bg-white text-gray-600 hover:bg-gray-50' }}">
+                                                            <i class="fas fa-check mr-1"></i> YA
+                                                        </button>
+                                                        <button type="button"
+                                                            onclick="setPembuatanPassportKeluarga({{ $index }}, 0)"
+                                                            id="btnTidak-{{ $index }}"
+                                                            class="px-6 py-2 text-sm font-medium transition-colors border-l border-gray-300
+                                                            {{ !$isPassport ? 'bg-red-500 text-white' : 'bg-white text-gray-600 hover:bg-gray-50' }}">
+                                                            <i class="fas fa-times mr-1"></i> TIDAK
+                                                        </button>
+                                                    </div>
+                                                    <input type="hidden"
+                                                        name="jamaahs[{{ $index }}][is_pembuatan_passport]"
+                                                        id="is_pembuatan_passport-{{ $index }}"
+                                                        value="{{ $isPassport ? 1 : 0 }}">
+
+                                                    <p class="text-xs text-gray-400 mt-1">
+                                                        <i class="fas fa-info-circle mr-1"></i>
+                                                        Pilih <b>YA</b> jika ada pendapatan perusahaan. Pilih
+                                                        <b>TIDAK</b> jika jamaah sudah punya passport.
+                                                    </p>
+                                                </div>
+
+                                                <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                                                    <div>
+                                                        <label class="block text-xs font-medium text-gray-600 mb-1">
+                                                            Pembayaran Passport <span class="text-gray-400 text-xs">(boleh
+                                                                kosong)</span>
+                                                        </label>
+                                                        <div class="relative">
+                                                            <span
+                                                                class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-xs">Rp</span>
+                                                            <input type="text"
+                                                                name="jamaahs[{{ $index }}][pendampingan_fee]"
+                                                                value="{{ $jamaah['pendampingan_fee'] ?? 0 }}"
+                                                                oninput="formatRupiah(this); updateTotalPendampingan({{ $index }})"
+                                                                onfocus="handleZeroFocus(this)"
+                                                                onblur="handleZeroBlur(this)"
+                                                                class="w-full pl-8 pr-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-yellow-500 text-sm"
+                                                                placeholder="0">
+                                                        </div>
+                                                    </div>
+
+                                                    <div id="feePetugasContainer-{{ $index }}"
+                                                        class="{{ $isPassport ? '' : 'hidden' }}">
+                                                        <label class="block text-xs font-medium text-gray-600 mb-1">
+                                                            Pendapatan Perusahaan
+                                                            <span class="text-gray-400 text-xs">(fee petugas)</span>
+                                                        </label>
+                                                        <div class="relative">
+                                                            <span
+                                                                class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-xs">Rp</span>
+                                                            <input type="text"
+                                                                name="jamaahs[{{ $index }}][pendampingan_fee_petugas]"
+                                                                id="pendampingan_fee_petugas-{{ $index }}"
+                                                                value="{{ $jamaah['pendampingan_fee_petugas'] ?? 0 }}"
+                                                                oninput="formatRupiah(this); updateTotalPendampingan({{ $index }})"
+                                                                onfocus="handleZeroFocus(this)"
+                                                                onblur="handleZeroBlur(this)"
+                                                                class="w-full pl-8 pr-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-yellow-500 text-sm"
+                                                                placeholder="0">
+                                                        </div>
+                                                    </div>
+                                                </div>
+
+                                                <div class="mt-2 text-xs text-gray-500">
+                                                    Total Pembuatan Passport:
+                                                    <span class="font-bold text-blue-600"
+                                                        id="total-pendampingan-{{ $index }}">
+                                                        Rp
+                                                        {{ isset($jamaah['pendampingan_fee']) && isset($jamaah['pendampingan_fee_petugas']) ? number_format($jamaah['pendampingan_fee'] + $jamaah['pendampingan_fee_petugas'], 0, ',', '.') : '0' }}
+                                                    </span>
+                                                    <span class="text-gray-400">(Pembayaran + Pendapatan
+                                                        Perusahaan)</span>
+                                                </div>
                                             </div>
-                                            <div>
-                                                <label class="block text-xs font-medium text-gray-600 mb-1">File
-                                                    Paspor</label>
-                                                <input type="file" name="jamaahs[{{ $index }}][file_paspor]"
-                                                    accept=".pdf,.jpg,.jpeg,.png"
-                                                    class="w-full px-3 py-1.5 border border-gray-200 rounded-lg focus:ring-2 focus:ring-yellow-500 text-sm file:mr-2 file:py-1 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-medium file:bg-yellow-50 file:text-yellow-700 hover:file:bg-yellow-100">
-                                                <p class="text-xs text-gray-400 mt-1">PDF/JPG/PNG Max 2MB</p>
+
+                                            <!-- File Upload -->
+                                            <div
+                                                class="grid grid-cols-1 md:grid-cols-4 gap-3 mt-3 pt-3 border-t border-gray-200">
+                                                <div>
+                                                    <label class="block text-xs font-medium text-gray-600 mb-1">File
+                                                        KTP/KK</label>
+                                                    <input type="file"
+                                                        name="jamaahs[{{ $index }}][file_ktp_kk]"
+                                                        accept=".pdf,.jpg,.jpeg,.png"
+                                                        class="w-full px-3 py-1.5 border border-gray-200 rounded-lg focus:ring-2 focus:ring-yellow-500 text-sm file:mr-2 file:py-1 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-medium file:bg-yellow-50 file:text-yellow-700 hover:file:bg-yellow-100">
+                                                    <p class="text-xs text-gray-400 mt-1">PDF/JPG/PNG Max 2MB</p>
+                                                </div>
+                                                <div>
+                                                    <label class="block text-xs font-medium text-gray-600 mb-1">File
+                                                        Vaksin</label>
+                                                    <input type="file"
+                                                        name="jamaahs[{{ $index }}][file_vaksin]"
+                                                        accept=".pdf,.jpg,.jpeg,.png"
+                                                        class="w-full px-3 py-1.5 border border-gray-200 rounded-lg focus:ring-2 focus:ring-yellow-500 text-sm file:mr-2 file:py-1 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-medium file:bg-yellow-50 file:text-yellow-700 hover:file:bg-yellow-100">
+                                                    <p class="text-xs text-gray-400 mt-1">PDF/JPG/PNG Max 2MB</p>
+                                                </div>
+                                                <div>
+                                                    <label class="block text-xs font-medium text-gray-600 mb-1">File
+                                                        Visa</label>
+                                                    <input type="file" name="jamaahs[{{ $index }}][file_visa]"
+                                                        accept=".pdf,.jpg,.jpeg,.png"
+                                                        class="w-full px-3 py-1.5 border border-gray-200 rounded-lg focus:ring-2 focus:ring-yellow-500 text-sm file:mr-2 file:py-1 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-medium file:bg-yellow-50 file:text-yellow-700 hover:file:bg-yellow-100">
+                                                    <p class="text-xs text-gray-400 mt-1">PDF/JPG/PNG Max 2MB</p>
+                                                </div>
+                                                <div>
+                                                    <label class="block text-xs font-medium text-gray-600 mb-1">File
+                                                        Paspor</label>
+                                                    <input type="file"
+                                                        name="jamaahs[{{ $index }}][file_paspor]"
+                                                        accept=".pdf,.jpg,.jpeg,.png"
+                                                        class="w-full px-3 py-1.5 border border-gray-200 rounded-lg focus:ring-2 focus:ring-yellow-500 text-sm file:mr-2 file:py-1 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-medium file:bg-yellow-50 file:text-yellow-700 hover:file:bg-yellow-100">
+                                                    <p class="text-xs text-gray-400 mt-1">PDF/JPG/PNG Max 2MB</p>
+                                                </div>
                                             </div>
                                         </div>
                                     </div>
@@ -689,170 +758,232 @@
                                         </div>
                                     </div>
 
-                                    <div class="grid grid-cols-1 md:grid-cols-3 gap-3 mt-3">
-                                        <div>
-                                            <label class="block text-xs font-medium text-gray-600 mb-1">Hubungan
-                                                Keluarga</label>
-                                            <select name="jamaahs[0][hubungan_keluarga]"
-                                                class="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-yellow-500 text-sm">
-                                                <option value="">-- Pilih Hubungan --</option>
-                                                @foreach ($hubunganOptions as $option)
-                                                    <option value="{{ $option }}">{{ $option }}</option>
-                                                @endforeach
-                                            </select>
-                                        </div>
-                                        <div>
-                                            <label class="block text-xs font-medium text-gray-600 mb-1">Alamat</label>
-                                            <input type="text" name="jamaahs[0][alamat]"
-                                                class="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-yellow-500 text-sm"
-                                                placeholder="Alamat lengkap">
-                                        </div>
-                                        <div>
-                                            <label class="block text-xs font-medium text-gray-600 mb-1">Kota Asal</label>
-                                            <select name="jamaahs[0][kota_asal]"
-                                                class="kota-asal-select w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-yellow-500 text-sm">
-                                                <option value="">-- Pilih Kota Asal --</option>
-                                                @foreach ($kotaAsals as $kota)
-                                                    <option value="{{ $kota->nama_kota }}"
-                                                        data-pulau="{{ $kota->pulau }}"
-                                                        data-bandara="{{ $kota->bandara_terdekat }}">
-                                                        {{ $kota->nama_kota }} - {{ $kota->provinsi ?? '' }}
-                                                    </option>
-                                                @endforeach
-                                            </select>
-                                        </div>
-                                    </div>
-
-                                    <div class="grid grid-cols-1 md:grid-cols-3 gap-3 mt-3">
-                                        <div>
-                                            <label class="block text-xs font-medium text-gray-600 mb-1">Nomor
-                                                Paspor</label>
-                                            <input type="text" name="jamaahs[0][nomor_paspor]"
-                                                class="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-yellow-500 text-sm">
-                                        </div>
-                                        <div>
-                                            <label class="block text-xs font-medium text-gray-600 mb-1">Pulau</label>
-                                            <input type="text" name="jamaahs[0][pulau]"
-                                                class="w-full px-3 py-2 border border-gray-200 rounded-lg bg-gray-100 text-sm cursor-not-allowed"
-                                                readonly>
-                                        </div>
-                                        <div>
-                                            <label class="block text-xs font-medium text-gray-600 mb-1">Bandara
-                                                Keberangkatan</label>
-                                            <input type="text" name="jamaahs[0][bandara_keberangkatan]"
-                                                class="w-full px-3 py-2 border border-gray-200 rounded-lg bg-gray-100 text-sm cursor-not-allowed"
-                                                readonly>
-                                        </div>
-                                    </div>
-
-                                    <div class="mt-3">
-                                        <label class="flex items-center gap-2 text-sm text-gray-700 cursor-pointer">
-                                            <input type="checkbox" name="jamaahs[0][is_kepala_keluarga]" value="1"
-                                                checked
-                                                class="w-4 h-4 text-yellow-500 border-gray-300 rounded focus:ring-yellow-500">
-                                            <span>Kepala Keluarga / Kelompok</span>
-                                        </label>
-                                    </div>
-
-                                    <!-- Pembuatan Passport (TOMBOL YA/TIDAK) - default TIDAK -->
+                                    {{-- SECTION: ALAMAT DOMISILI --}}
                                     <div class="mt-3 pt-3 border-t border-gray-200">
-                                        <div class="mb-3">
-                                            <label class="block text-xs font-medium text-gray-600 mb-1.5">
-                                                Apakah ada Pembuatan Passport? <span class="text-red-500">*</span>
-                                            </label>
-
-                                            <div class="inline-flex rounded-lg overflow-hidden border border-gray-300">
-                                                <button type="button" onclick="setPembuatanPassportKeluarga(0, 1)"
-                                                    id="btnYa-0"
-                                                    class="px-6 py-2 text-sm font-medium bg-white text-gray-600 hover:bg-gray-50 transition-colors">
-                                                    <i class="fas fa-check mr-1"></i> YA
-                                                </button>
-                                                <button type="button" onclick="setPembuatanPassportKeluarga(0, 0)"
-                                                    id="btnTidak-0"
-                                                    class="px-6 py-2 text-sm font-medium bg-red-500 text-white transition-colors border-l border-gray-300">
-                                                    <i class="fas fa-times mr-1"></i> TIDAK
-                                                </button>
-                                            </div>
-                                            <input type="hidden" name="jamaahs[0][is_pembuatan_passport]"
-                                                id="is_pembuatan_passport-0" value="0">
-
-                                            <p class="text-xs text-gray-400 mt-1">
-                                                <i class="fas fa-info-circle mr-1"></i>
-                                                Pilih <b>YA</b> jika ada pendapatan perusahaan. Pilih <b>TIDAK</b>
-                                                jika jamaah sudah punya passport.
-                                            </p>
-                                        </div>
+                                        <h6 class="text-xs font-semibold text-gray-700 mb-2 flex items-center">
+                                            <i class="fas fa-map-marker-alt text-yellow-500 mr-1.5"></i>
+                                            Alamat Domisili
+                                        </h6>
 
                                         <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
                                             <div>
-                                                <label class="block text-xs font-medium text-gray-600 mb-1">
-                                                    Pembayaran Passport <span class="text-gray-400 text-xs">(boleh
-                                                        kosong)</span>
-                                                </label>
-                                                <div class="relative">
-                                                    <span
-                                                        class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-xs">Rp</span>
-                                                    <input type="text" name="jamaahs[0][pendampingan_fee]"
-                                                        value="0"
-                                                        oninput="formatRupiah(this); updateTotalPendampingan(0)"
-                                                        onfocus="handleZeroFocus(this)" onblur="handleZeroBlur(this)"
-                                                        class="w-full pl-8 pr-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-yellow-500 text-sm"
-                                                        placeholder="0">
-                                                </div>
+                                                <label class="block text-xs font-medium text-gray-600 mb-1">Hubungan
+                                                    Keluarga</label>
+                                                <select name="jamaahs[0][hubungan_keluarga]"
+                                                    class="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-yellow-500 text-sm">
+                                                    <option value="">-- Pilih Hubungan --</option>
+                                                    @foreach ($hubunganOptions as $option)
+                                                        <option value="{{ $option }}">{{ $option }}
+                                                        </option>
+                                                    @endforeach
+                                                </select>
                                             </div>
-                                            <div id="feePetugasContainer-0" class="hidden">
-                                                <label class="block text-xs font-medium text-gray-600 mb-1">
-                                                    Pendapatan Perusahaan
-                                                    <span class="text-gray-400 text-xs">(fee petugas)</span>
-                                                </label>
-                                                <div class="relative">
-                                                    <span
-                                                        class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-xs">Rp</span>
-                                                    <input type="text" name="jamaahs[0][pendampingan_fee_petugas]"
-                                                        id="pendampingan_fee_petugas-0" value="0"
-                                                        oninput="formatRupiah(this); updateTotalPendampingan(0)"
-                                                        onfocus="handleZeroFocus(this)" onblur="handleZeroBlur(this)"
-                                                        class="w-full pl-8 pr-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-yellow-500 text-sm"
-                                                        placeholder="0">
-                                                </div>
+                                            <div>
+                                                <label class="block text-xs font-medium text-gray-600 mb-1">Alamat</label>
+                                                <input type="text" name="jamaahs[0][alamat]"
+                                                    class="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-yellow-500 text-sm"
+                                                    placeholder="Jl. / RT / RW / No.">
                                             </div>
                                         </div>
 
-                                        <div class="mt-2 text-xs text-gray-500">
-                                            Total Pembuatan Passport:
-                                            <span class="font-bold text-blue-600" id="total-pendampingan-0">Rp 0</span>
-                                            <span class="text-gray-400">(Pembayaran + Pendapatan Perusahaan)</span>
+                                        <div class="grid grid-cols-1 md:grid-cols-3 gap-3 mt-3">
+                                            <div>
+                                                <label class="block text-xs font-medium text-gray-600 mb-1">Kota /
+                                                    Kabupaten</label>
+                                                <input type="text" name="jamaahs[0][kota_kabupaten]"
+                                                    class="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-yellow-500 text-sm"
+                                                    placeholder="Kota/Kabupaten">
+                                            </div>
+                                            <div>
+                                                <label
+                                                    class="block text-xs font-medium text-gray-600 mb-1">Kecamatan</label>
+                                                <input type="text" name="jamaahs[0][kecamatan]"
+                                                    class="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-yellow-500 text-sm"
+                                                    placeholder="Kecamatan">
+                                            </div>
+                                            <div>
+                                                <label class="block text-xs font-medium text-gray-600 mb-1">Kelurahan /
+                                                    Desa</label>
+                                                <input type="text" name="jamaahs[0][kelurahan]"
+                                                    class="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-yellow-500 text-sm"
+                                                    placeholder="Kelurahan/Desa">
+                                            </div>
                                         </div>
                                     </div>
 
-                                    <div class="grid grid-cols-1 md:grid-cols-4 gap-3 mt-3 pt-3 border-t border-gray-200">
-                                        <div>
-                                            <label class="block text-xs font-medium text-gray-600 mb-1">File KTP/KK</label>
-                                            <input type="file" name="jamaahs[0][file_ktp_kk]"
-                                                accept=".pdf,.jpg,.jpeg,.png"
-                                                class="w-full px-3 py-1.5 border border-gray-200 rounded-lg focus:ring-2 focus:ring-yellow-500 text-sm file:mr-2 file:py-1 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-medium file:bg-yellow-50 file:text-yellow-700 hover:file:bg-yellow-100">
-                                            <p class="text-xs text-gray-400 mt-1">PDF/JPG/PNG Max 2MB</p>
+                                    {{-- SECTION: KEBERANGKATAN --}}
+                                    <div class="mt-3 pt-3 border-t border-gray-200">
+                                        <div class="bg-blue-50 rounded-lg p-3 border border-blue-100">
+                                            <h6 class="text-xs font-semibold text-blue-700 mb-2 flex items-center">
+                                                <i class="fas fa-plane text-blue-500 mr-1.5"></i>
+                                                Keberangkatan
+                                            </h6>
+
+                                            <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+                                                <div>
+                                                    <label class="block text-xs font-medium text-gray-600 mb-1">Kota
+                                                        Asal</label>
+                                                    <select name="jamaahs[0][kota_asal]"
+                                                        class="kota-asal-select w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-yellow-500 text-sm bg-white">
+                                                        <option value="">-- Pilih Kota Asal --</option>
+                                                        @foreach ($kotaAsals as $kota)
+                                                            <option value="{{ $kota->nama_kota }}"
+                                                                data-pulau="{{ $kota->pulau }}"
+                                                                data-bandara="{{ $kota->bandara_terdekat }}">
+                                                                {{ $kota->nama_kota }} - {{ $kota->provinsi ?? '' }}
+                                                            </option>
+                                                        @endforeach
+                                                    </select>
+                                                </div>
+                                                <div>
+                                                    <label
+                                                        class="block text-xs font-medium text-gray-600 mb-1">Pulau</label>
+                                                    <input type="text" name="jamaahs[0][pulau]"
+                                                        class="w-full px-3 py-2 border border-gray-200 rounded-lg bg-white text-sm cursor-not-allowed"
+                                                        readonly placeholder="Otomatis">
+                                                </div>
+                                                <div>
+                                                    <label class="block text-xs font-medium text-gray-600 mb-1">Bandara
+                                                        Keberangkatan</label>
+                                                    <input type="text" name="jamaahs[0][bandara_keberangkatan]"
+                                                        class="w-full px-3 py-2 border border-gray-200 rounded-lg bg-white text-sm cursor-not-allowed"
+                                                        readonly placeholder="Otomatis">
+                                                </div>
+                                            </div>
                                         </div>
-                                        <div>
-                                            <label class="block text-xs font-medium text-gray-600 mb-1">File Vaksin</label>
-                                            <input type="file" name="jamaahs[0][file_vaksin]"
-                                                accept=".pdf,.jpg,.jpeg,.png"
-                                                class="w-full px-3 py-1.5 border border-gray-200 rounded-lg focus:ring-2 focus:ring-yellow-500 text-sm file:mr-2 file:py-1 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-medium file:bg-yellow-50 file:text-yellow-700 hover:file:bg-yellow-100">
-                                            <p class="text-xs text-gray-400 mt-1">PDF/JPG/PNG Max 2MB</p>
+                                    </div>
+
+                                    {{-- SECTION: PASSPORT & DOKUMEN --}}
+                                    <div class="mt-3 pt-3 border-t border-gray-200">
+                                        <h6 class="text-xs font-semibold text-gray-700 mb-2 flex items-center">
+                                            <i class="fas fa-passport text-yellow-500 mr-1.5"></i>
+                                            Passport & Dokumen
+                                        </h6>
+
+                                        <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                                            <div>
+                                                <label class="block text-xs font-medium text-gray-600 mb-1">Nomor
+                                                    Paspor</label>
+                                                <input type="text" name="jamaahs[0][nomor_paspor]"
+                                                    class="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-yellow-500 text-sm">
+                                            </div>
+                                            <div>
+                                                <label
+                                                    class="flex items-center gap-2 text-sm text-gray-700 cursor-pointer mt-6">
+                                                    <input type="checkbox" name="jamaahs[0][is_kepala_keluarga]"
+                                                        value="1" checked
+                                                        class="w-4 h-4 text-yellow-500 border-gray-300 rounded focus:ring-yellow-500">
+                                                    <span>Kepala Keluarga / Kelompok</span>
+                                                </label>
+                                            </div>
                                         </div>
-                                        <div>
-                                            <label class="block text-xs font-medium text-gray-600 mb-1">File Visa</label>
-                                            <input type="file" name="jamaahs[0][file_visa]"
-                                                accept=".pdf,.jpg,.jpeg,.png"
-                                                class="w-full px-3 py-1.5 border border-gray-200 rounded-lg focus:ring-2 focus:ring-yellow-500 text-sm file:mr-2 file:py-1 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-medium file:bg-yellow-50 file:text-yellow-700 hover:file:bg-yellow-100">
-                                            <p class="text-xs text-gray-400 mt-1">PDF/JPG/PNG Max 2MB</p>
+
+                                        <!-- Pembuatan Passport -->
+                                        <div class="mt-3 pt-3 border-t border-gray-200">
+                                            <div class="mb-3">
+                                                <label class="block text-xs font-medium text-gray-600 mb-1.5">
+                                                    Apakah ada Pembuatan Passport? <span class="text-red-500">*</span>
+                                                </label>
+
+                                                <div class="inline-flex rounded-lg overflow-hidden border border-gray-300">
+                                                    <button type="button" onclick="setPembuatanPassportKeluarga(0, 1)"
+                                                        id="btnYa-0"
+                                                        class="px-6 py-2 text-sm font-medium bg-white text-gray-600 hover:bg-gray-50 transition-colors">
+                                                        <i class="fas fa-check mr-1"></i> YA
+                                                    </button>
+                                                    <button type="button" onclick="setPembuatanPassportKeluarga(0, 0)"
+                                                        id="btnTidak-0"
+                                                        class="px-6 py-2 text-sm font-medium bg-red-500 text-white transition-colors border-l border-gray-300">
+                                                        <i class="fas fa-times mr-1"></i> TIDAK
+                                                    </button>
+                                                </div>
+                                                <input type="hidden" name="jamaahs[0][is_pembuatan_passport]"
+                                                    id="is_pembuatan_passport-0" value="0">
+
+                                                <p class="text-xs text-gray-400 mt-1">
+                                                    <i class="fas fa-info-circle mr-1"></i>
+                                                    Pilih <b>YA</b> jika ada pendapatan perusahaan. Pilih <b>TIDAK</b>
+                                                    jika jamaah sudah punya passport.
+                                                </p>
+                                            </div>
+
+                                            <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                                                <div>
+                                                    <label class="block text-xs font-medium text-gray-600 mb-1">
+                                                        Pembayaran Passport <span class="text-gray-400 text-xs">(boleh
+                                                            kosong)</span>
+                                                    </label>
+                                                    <div class="relative">
+                                                        <span
+                                                            class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-xs">Rp</span>
+                                                        <input type="text" name="jamaahs[0][pendampingan_fee]"
+                                                            value="0"
+                                                            oninput="formatRupiah(this); updateTotalPendampingan(0)"
+                                                            onfocus="handleZeroFocus(this)" onblur="handleZeroBlur(this)"
+                                                            class="w-full pl-8 pr-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-yellow-500 text-sm"
+                                                            placeholder="0">
+                                                    </div>
+                                                </div>
+                                                <div id="feePetugasContainer-0" class="hidden">
+                                                    <label class="block text-xs font-medium text-gray-600 mb-1">
+                                                        Pendapatan Perusahaan
+                                                        <span class="text-gray-400 text-xs">(fee petugas)</span>
+                                                    </label>
+                                                    <div class="relative">
+                                                        <span
+                                                            class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-xs">Rp</span>
+                                                        <input type="text" name="jamaahs[0][pendampingan_fee_petugas]"
+                                                            id="pendampingan_fee_petugas-0" value="0"
+                                                            oninput="formatRupiah(this); updateTotalPendampingan(0)"
+                                                            onfocus="handleZeroFocus(this)" onblur="handleZeroBlur(this)"
+                                                            class="w-full pl-8 pr-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-yellow-500 text-sm"
+                                                            placeholder="0">
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            <div class="mt-2 text-xs text-gray-500">
+                                                Total Pembuatan Passport:
+                                                <span class="font-bold text-blue-600" id="total-pendampingan-0">Rp
+                                                    0</span>
+                                                <span class="text-gray-400">(Pembayaran + Pendapatan Perusahaan)</span>
+                                            </div>
                                         </div>
-                                        <div>
-                                            <label class="block text-xs font-medium text-gray-600 mb-1">File Paspor</label>
-                                            <input type="file" name="jamaahs[0][file_paspor]"
-                                                accept=".pdf,.jpg,.jpeg,.png"
-                                                class="w-full px-3 py-1.5 border border-gray-200 rounded-lg focus:ring-2 focus:ring-yellow-500 text-sm file:mr-2 file:py-1 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-medium file:bg-yellow-50 file:text-yellow-700 hover:file:bg-yellow-100">
-                                            <p class="text-xs text-gray-400 mt-1">PDF/JPG/PNG Max 2MB</p>
+
+                                        <div
+                                            class="grid grid-cols-1 md:grid-cols-4 gap-3 mt-3 pt-3 border-t border-gray-200">
+                                            <div>
+                                                <label class="block text-xs font-medium text-gray-600 mb-1">File
+                                                    KTP/KK</label>
+                                                <input type="file" name="jamaahs[0][file_ktp_kk]"
+                                                    accept=".pdf,.jpg,.jpeg,.png"
+                                                    class="w-full px-3 py-1.5 border border-gray-200 rounded-lg focus:ring-2 focus:ring-yellow-500 text-sm file:mr-2 file:py-1 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-medium file:bg-yellow-50 file:text-yellow-700 hover:file:bg-yellow-100">
+                                                <p class="text-xs text-gray-400 mt-1">PDF/JPG/PNG Max 2MB</p>
+                                            </div>
+                                            <div>
+                                                <label class="block text-xs font-medium text-gray-600 mb-1">File
+                                                    Vaksin</label>
+                                                <input type="file" name="jamaahs[0][file_vaksin]"
+                                                    accept=".pdf,.jpg,.jpeg,.png"
+                                                    class="w-full px-3 py-1.5 border border-gray-200 rounded-lg focus:ring-2 focus:ring-yellow-500 text-sm file:mr-2 file:py-1 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-medium file:bg-yellow-50 file:text-yellow-700 hover:file:bg-yellow-100">
+                                                <p class="text-xs text-gray-400 mt-1">PDF/JPG/PNG Max 2MB</p>
+                                            </div>
+                                            <div>
+                                                <label class="block text-xs font-medium text-gray-600 mb-1">File
+                                                    Visa</label>
+                                                <input type="file" name="jamaahs[0][file_visa]"
+                                                    accept=".pdf,.jpg,.jpeg,.png"
+                                                    class="w-full px-3 py-1.5 border border-gray-200 rounded-lg focus:ring-2 focus:ring-yellow-500 text-sm file:mr-2 file:py-1 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-medium file:bg-yellow-50 file:text-yellow-700 hover:file:bg-yellow-100">
+                                                <p class="text-xs text-gray-400 mt-1">PDF/JPG/PNG Max 2MB</p>
+                                            </div>
+                                            <div>
+                                                <label class="block text-xs font-medium text-gray-600 mb-1">File
+                                                    Paspor</label>
+                                                <input type="file" name="jamaahs[0][file_paspor]"
+                                                    accept=".pdf,.jpg,.jpeg,.png"
+                                                    class="w-full px-3 py-1.5 border border-gray-200 rounded-lg focus:ring-2 focus:ring-yellow-500 text-sm file:mr-2 file:py-1 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-medium file:bg-yellow-50 file:text-yellow-700 hover:file:bg-yellow-100">
+                                                <p class="text-xs text-gray-400 mt-1">PDF/JPG/PNG Max 2MB</p>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
@@ -888,13 +1019,17 @@
             var globalHargaBulananList = [];
 
             function formatRupiah(element) {
-                let value = element.value.replace(/[^,\d]/g, '');
-                value = value.replace(/\B(?=(\d{3})+(?!\d))/g, '.');
-                element.value = value;
+                let raw = element.value.replace(/[^,\d]/g, '');
+                if (raw === '') {
+                    element.value = '';
+                    return;
+                }
+                raw = raw.replace(/^0+(?=\d)/, '');
+                element.value = raw.replace(/\B(?=(\d{3})+(?!\d))/g, '.');
             }
 
             function handleZeroFocus(element) {
-                if (element.value === '0' || element.value === '') {
+                if (element.value === '0' || element.value === '0.000' || element.value === '') {
                     element.value = '';
                 }
             }
@@ -908,9 +1043,6 @@
 
             let jamaahIndex = {{ count(old('jamaahs', [0])) }};
 
-            // ==========================================
-            // SET PEMBUATAN PASSPORT (TOMBOL YA/TIDAK)
-            // ==========================================
             function setPembuatanPassportKeluarga(index, value) {
                 var hidden = document.getElementById('is_pembuatan_passport-' + index);
                 var btnYa = document.getElementById('btnYa-' + index);
@@ -919,28 +1051,20 @@
                 var petugasInput = document.getElementById('pendampingan_fee_petugas-' + index);
 
                 if (!hidden || !btnYa || !btnTidak) return;
-
                 hidden.value = value;
 
                 if (value === 1) {
-                    // Aktifkan tombol YA
                     btnYa.className = 'px-6 py-2 text-sm font-medium bg-green-500 text-white transition-colors';
                     btnTidak.className =
                         'px-6 py-2 text-sm font-medium bg-white text-gray-600 hover:bg-gray-50 transition-colors border-l border-gray-300';
-                    if (container) {
-                        container.classList.remove('hidden');
-                    }
+                    if (container) container.classList.remove('hidden');
                 } else {
-                    // Aktifkan tombol TIDAK
                     btnYa.className = 'px-6 py-2 text-sm font-medium bg-white text-gray-600 hover:bg-gray-50 transition-colors';
                     btnTidak.className =
                         'px-6 py-2 text-sm font-medium bg-red-500 text-white transition-colors border-l border-gray-300';
-                    if (container) {
-                        container.classList.add('hidden');
-                    }
+                    if (container) container.classList.add('hidden');
                     if (petugasInput) petugasInput.value = '0';
                 }
-
                 updateTotalPendampingan(index);
             }
 
@@ -974,8 +1098,7 @@
 
                 var jumlahJamaah = document.querySelectorAll('.jamaah-row').length;
                 var diskonPerOrang = jumlahJamaah > 0 ?
-                    Math.round(totalDiskon / jumlahJamaah) :
-                    0;
+                    Math.round(totalDiskon / jumlahJamaah) : 0;
 
                 if (totalDiskon > 0 && jumlahJamaah > 0) {
                     container.classList.remove('hidden');
@@ -1133,148 +1256,215 @@
                     return;
                 }
 
-                var oldKeberangkatan = document.getElementById('id_produk_keberangkatan_hidden').value;
-                var oldHargaBulanan = document.getElementById('id_produk_harga_bulanan_hidden').value;
-                var html = '';
+                var selectedKeberangkatanId = document.getElementById('id_produk_keberangkatan_hidden').value;
+                var selectedHargaBulananId = document.getElementById('id_produk_harga_bulanan_hidden').value;
 
+                var selectedKeberangkatan = null;
+                if (selectedKeberangkatanId) {
+                    selectedKeberangkatan = filtered.find(k => parseInt(k.id) === parseInt(selectedKeberangkatanId)) || null;
+                }
+
+                var options = '<option value="">-- Pilih Keberangkatan --</option>';
                 filtered.forEach(function(k) {
-                    var isSelected = oldKeberangkatan && parseInt(oldKeberangkatan) === parseInt(k.id);
-                    var isChecked = isSelected ? 'checked' : '';
-                    var currentKuotaText = 'Tidak Terbatas';
-                    var currentKuotaColor = 'text-gray-500';
-                    var currentIdHarga = k.id_harga_default;
+                    var isCurrentlySelected = selectedKeberangkatan && parseInt(selectedKeberangkatan.id) === parseInt(k
+                        .id);
+                    var isFull = k.kuota_default_is_full ? true : false;
+                    var label = k.keberangkatan_formatted + ' — ' + k.harga_default_formatted;
+                    if (isFull && !isCurrentlySelected) label += ' (KUOTA PENUH)';
+                    var disabled = (isFull && !isCurrentlySelected) ? 'disabled' : '';
+                    var selected = isCurrentlySelected ? 'selected' : '';
+                    options += `<option value="${k.id}" ${selected} ${disabled}>${label}</option>`;
+                });
 
-                    if (isSelected && oldHargaBulanan) {
-                        currentIdHarga = oldHargaBulanan;
-                        var hargaMatch = globalHargaBulananList.find(h => parseInt(h.id) === parseInt(oldHargaBulanan));
-                        if (hargaMatch) {
-                            currentKuotaText = hargaMatch.kuota_formatted;
-                            currentKuotaColor = hargaMatch.is_full ? 'text-red-600' : (hargaMatch.kuota_sisa !== -1 &&
-                                hargaMatch.kuota_sisa <= 3 ? 'text-orange-600' : 'text-blue-600');
+                var hargaPanelHtml = '';
+                if (selectedKeberangkatan) {
+                    var k = selectedKeberangkatan;
+                    var currentIdHarga = selectedHargaBulananId || '';
+                    var currentHarga = parseInt(k.harga_default || 0);
+                    var currentBulanHarga = k.bulan;
+                    var currentTahunHarga = k.tahun;
+
+                    if (currentIdHarga) {
+                        var match = globalHargaBulananList.find(h => parseInt(h.id) === parseInt(currentIdHarga));
+                        if (match) {
+                            currentHarga = parseInt(match.harga);
+                            currentBulanHarga = match.bulan;
+                            currentTahunHarga = match.tahun;
                         }
-                    } else {
-                        currentKuotaText = k.kuota_default_formatted;
-                        currentKuotaColor = k.kuota_default_is_full ? 'text-red-600' : 'text-blue-600';
                     }
 
-                    var optionsHtml = '<option value="">-- Sama dengan keberangkatan (' + k.bulan_formatted +
-                        ') --</option>';
+                    var currentKuotaText = k.kuota_default_formatted;
+                    var currentKuotaColor = k.kuota_default_is_full ? 'text-red-600' : 'text-blue-600';
+                    if (currentIdHarga) {
+                        var match2 = globalHargaBulananList.find(h => parseInt(h.id) === parseInt(currentIdHarga));
+                        if (match2) {
+                            currentKuotaText = match2.kuota_formatted;
+                            currentKuotaColor = match2.is_full ? 'text-red-600' :
+                                (match2.kuota_sisa !== -1 && match2.kuota_sisa <= 3 ? 'text-orange-600' : 'text-blue-600');
+                        }
+                    }
+
+                    var hargaOptions = '<option value="">-- Sama dengan keberangkatan (' + k.bulan_formatted + ') --</option>';
                     globalHargaBulananList.forEach(function(h) {
-                        var selected = (parseInt(h.id) === parseInt(currentIdHarga)) ? 'selected' : '';
-                        var isFull = h.is_full ? true : false;
-                        var disabledAttr = isFull ? 'disabled' : '';
+                        var isCur = (parseInt(h.id) === parseInt(currentIdHarga));
+                        var sel = isCur ? 'selected' : '';
+                        var full = h.is_full ? true : false;
+                        var dis = (full && !isCur) ? 'disabled' : '';
                         var kuotaLabel = h.is_full ? 'PENUH (' + h.kuota + ')' : h.kuota_formatted;
-                        var styleAttr = isFull ? 'style="color:#ef4444;font-style:italic;"' : '';
-                        optionsHtml += '<option value="' + h.id +
-                            '" data-bulan="' + h.bulan +
-                            '" data-tahun="' + h.tahun +
-                            '" data-harga="' + h.harga +
-                            '" data-kuota="' + (h.kuota || 0) +
-                            '" data-is-full="' + (isFull ? '1' : '0') + '" ' +
-                            selected + ' ' + disabledAttr + ' ' + styleAttr + '>' +
-                            h.bulan_formatted + ' - ' + h.harga_formatted +
-                            ' (Kuota: ' + kuotaLabel + ')' + (isFull ? ' ⛔' : '') + '</option>';
+                        var styleAttr = full ? 'style="color:#ef4444;font-style:italic;"' : '';
+                        hargaOptions += `<option value="${h.id}"
+                            data-bulan="${h.bulan}" data-tahun="${h.tahun}"
+                            data-harga="${h.harga}" data-kuota="${h.kuota || 0}"
+                            data-is-full="${full ? '1' : '0'}"
+                            ${sel} ${dis} ${styleAttr}>
+                            ${h.bulan_formatted} - ${h.harga_formatted} (Kuota: ${kuotaLabel})${full ? ' ⛔' : ''}
+                        </option>`;
                     });
 
-                    var radioDisabled = k.kuota_default_is_full ? 'disabled' : '';
-                    var radioWarning = k.kuota_default_is_full ?
-                        '<p class="text-xs text-red-600 font-medium mt-1"><i class="fas fa-ban mr-1"></i>Kuota PENUH</p>' :
-                        '';
-
-                    html += `
-                        <div class="keberangkatan-item bg-white rounded-xl border border-gray-200 overflow-hidden" data-keberangkatan-id="${k.id}">
-                            <div class="flex items-start gap-3 p-3">
-                                <input type="radio"
-                                       name="keberangkatan_radio"
-                                       class="keberangkatan-radio mt-1 w-4 h-4 text-yellow-500 focus:ring-yellow-500"
-                                       value="${k.id}"
-                                       data-keberangkatan-id="${k.id}"
-                                       data-bulan="${k.bulan}"
-                                       data-tahun="${k.tahun}"
-                                       data-harga-default="${k.harga_default}"
-                                       data-kuota-default="${k.kuota_default || 0}"
-                                       data-kuota-default-is-full="${k.kuota_default_is_full ? '1' : '0'}"
-                                       ${isChecked}
-                                       ${radioDisabled}>
-                                <div class="flex-1">
-                                    <p class="text-sm font-semibold text-gray-700">
-                                        <i class="fas fa-plane text-blue-500 mr-1"></i>
-                                        ${k.keberangkatan_formatted}
-                                    </p>
-                                    <p class="text-xs text-gray-500">Harga default: ${k.harga_default_formatted}</p>
-                                    ${radioWarning}
-                                </div>
-                                <div class="text-right">
-                                    <p class="text-xs text-gray-400">Harga dipilih:</p>
-                                    <p class="text-sm font-bold text-green-600 harga-display-${k.id}">Rp ${k.harga_default.toLocaleString('id-ID')}</p>
-                                    <p class="text-xs ${currentKuotaColor} mt-0.5 kuota-display-${k.id}">
-                                        <i class="fas fa-users text-[10px]"></i> Kuota: ${currentKuotaText}
-                                    </p>
-                                </div>
+                    hargaPanelHtml = `
+                        <div class="keberangkatan-harga-section mt-3 bg-gray-50 rounded-xl p-3 border border-gray-200">
+                            <label class="block text-xs font-medium text-gray-600 mb-1.5">
+                                <i class="fas fa-tag text-yellow-500 mr-1"></i>
+                                Harga diambil dari bulan/tahun:
+                            </label>
+                            <select class="harga-bulanan-select w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500"
+                                    data-keberangkatan-id="${k.id}">
+                                ${hargaOptions}
+                            </select>
+                            <div class="flex items-center justify-between mt-1">
+                                <p class="text-xs text-gray-400">
+                                    <i class="fas fa-info-circle mr-1"></i>
+                                    Pilih harga dari bulan/tahun berbeda (opsional)
+                                </p>
+                                <p class="text-xs font-medium kuota-info-${k.id} ${currentKuotaColor}">
+                                    <i class="fas fa-users mr-1"></i>
+                                    Kuota: <span class="kuota-info-val-${k.id}">${currentKuotaText}</span>
+                                </p>
                             </div>
-
-                            <div class="keberangkatan-harga-section border-t border-gray-100 bg-gray-50 p-3" style="display: ${isSelected ? 'block' : 'none'};">
-                                <label class="block text-xs font-medium text-gray-600 mb-1.5">
-                                    <i class="fas fa-tag text-yellow-500 mr-1"></i>
-                                    Harga diambil dari bulan/tahun:
-                                </label>
-                                <select class="harga-bulanan-select w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-yellow-500"
-                                        data-keberangkatan-id="${k.id}">
-                                    ${optionsHtml}
-                                </select>
-                                <div class="flex items-center justify-between mt-1">
-                                    <p class="text-xs text-gray-400">
-                                        <i class="fas fa-info-circle mr-1"></i> Pilih harga dari bulan/tahun berbeda (opsional)
-                                    </p>
-                                    <p class="text-xs font-medium kuota-info-${k.id} ${currentKuotaColor}">
-                                        <i class="fas fa-users mr-1"></i>
-                                        Kuota: <span class="kuota-info-val-${k.id}">${currentKuotaText}</span>
-                                    </p>
-                                </div>
+                            <div class="flex items-center justify-between mt-2 pt-2 border-t border-gray-200">
+                                <p class="text-xs text-gray-500">Harga dipilih:</p>
+                                <p class="text-sm font-bold text-green-600 harga-display-${k.id}">
+                                    Rp ${parseInt(currentHarga || 0).toLocaleString('id-ID')}
+                                </p>
                             </div>
                         </div>
                     `;
-                });
+                }
 
-                container.innerHTML = html;
-                document.querySelectorAll('.keberangkatan-radio').forEach(radio => radio.addEventListener('change',
-                    handleKeberangkatanChange));
-                document.querySelectorAll('.harga-bulanan-select').forEach(sel => sel.addEventListener('change',
-                    handleHargaBulananChange));
+                container.innerHTML = `
+                    <select id="keberangkatan-select"
+                            class="w-full px-4 py-2 border border-gray-200 rounded-xl focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500 text-sm">
+                        ${options}
+                    </select>
+                    <div id="keberangkatan-harga-wrapper" class="mt-3">${hargaPanelHtml}</div>
+                `;
 
-                if (oldKeberangkatan) {
-                    var checked = document.querySelector('.keberangkatan-radio:checked');
-                    if (checked) handleKeberangkatanChange({
-                        target: checked
+                document.getElementById('keberangkatan-select').addEventListener('change', handleKeberangkatanSelectChange);
+                var hargaSel = container.querySelector('.harga-bulanan-select');
+                if (hargaSel) hargaSel.addEventListener('change', handleHargaBulananChange);
+
+                if (selectedKeberangkatan) {
+                    handleKeberangkatanSelectChange({
+                        target: {
+                            value: selectedKeberangkatan.id
+                        }
                     });
                 }
             }
 
-            function handleKeberangkatanChange(e) {
-                var radio = e.target;
-                if (!radio) return;
-                var selectedId = radio.dataset.keberangkatanId;
-                document.getElementById('id_produk_keberangkatan_hidden').value = selectedId;
-                document.getElementById('bulan_keberangkatan_hidden').value = radio.dataset.bulan;
-                document.getElementById('tahun_keberangkatan_hidden').value = radio.dataset.tahun;
+            function handleKeberangkatanSelectChange(e) {
+                var selectedId = e.target.value;
+                var wrapper = document.getElementById('keberangkatan-harga-wrapper');
 
-                document.querySelectorAll('.keberangkatan-item').forEach(item => {
-                    var itemId = item.dataset.keberangkatanId;
-                    var hargaSection = item.querySelector('.keberangkatan-harga-section');
-                    hargaSection.style.display = (itemId === selectedId) ? 'block' : 'none';
+                if (!selectedId) {
+                    wrapper.innerHTML = '';
+                    document.getElementById('id_produk_keberangkatan_hidden').value = '';
+                    document.getElementById('bulan_keberangkatan_hidden').value = '';
+                    document.getElementById('tahun_keberangkatan_hidden').value = '';
+                    document.getElementById('id_produk_harga_bulanan_hidden').value = '';
+                    document.getElementById('hargaInfo').classList.add('hidden');
+                    return;
+                }
+
+                var k = globalKeberangkatanList.find(item => parseInt(item.id) === parseInt(selectedId));
+                if (!k) {
+                    wrapper.innerHTML = '';
+                    return;
+                }
+
+                document.getElementById('id_produk_keberangkatan_hidden').value = k.id;
+                document.getElementById('bulan_keberangkatan_hidden').value = k.bulan;
+                document.getElementById('tahun_keberangkatan_hidden').value = k.tahun;
+                document.getElementById('id_produk_harga_bulanan_hidden').value = '';
+                document.getElementById('bulan_harga_hidden').value = k.bulan;
+                document.getElementById('tahun_harga_hidden').value = k.tahun;
+
+                var currentKuotaText = k.kuota_default_formatted;
+                var currentKuotaColor = k.kuota_default_is_full ? 'text-red-600' : 'text-blue-600';
+                var currentHarga = parseInt(k.harga_default || 0);
+
+                var hargaOptions = '<option value="">-- Sama dengan keberangkatan (' + k.bulan_formatted + ') --</option>';
+                globalHargaBulananList.forEach(function(h) {
+                    var full = h.is_full ? true : false;
+                    var dis = full ? 'disabled' : '';
+                    var kuotaLabel = h.is_full ? 'PENUH (' + h.kuota + ')' : h.kuota_formatted;
+                    var styleAttr = full ? 'style="color:#ef4444;font-style:italic;"' : '';
+                    hargaOptions += `<option value="${h.id}"
+                        data-bulan="${h.bulan}" data-tahun="${h.tahun}"
+                        data-harga="${h.harga}" data-kuota="${h.kuota || 0}"
+                        data-is-full="${full ? '1' : '0'}"
+                        ${dis} ${styleAttr}>
+                        ${h.bulan_formatted} - ${h.harga_formatted} (Kuota: ${kuotaLabel})${full ? ' ⛔' : ''}
+                    </option>`;
                 });
-                updateHargaDisplay(selectedId);
+
+                wrapper.innerHTML = `
+                    <div class="keberangkatan-harga-section mt-3 bg-gray-50 rounded-xl p-3 border border-gray-200">
+                        <label class="block text-xs font-medium text-gray-600 mb-1.5">
+                            <i class="fas fa-tag text-yellow-500 mr-1"></i>
+                            Harga diambil dari bulan/tahun:
+                        </label>
+                        <select class="harga-bulanan-select w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500"
+                                data-keberangkatan-id="${k.id}">
+                            ${hargaOptions}
+                        </select>
+                        <div class="flex items-center justify-between mt-1">
+                            <p class="text-xs text-gray-400">
+                                <i class="fas fa-info-circle mr-1"></i>
+                                Pilih harga dari bulan/tahun berbeda (opsional)
+                            </p>
+                            <p class="text-xs font-medium kuota-info-${k.id} ${currentKuotaColor}">
+                                <i class="fas fa-users mr-1"></i>
+                                Kuota: <span class="kuota-info-val-${k.id}">${currentKuotaText}</span>
+                            </p>
+                        </div>
+                        <div class="flex items-center justify-between mt-2 pt-2 border-t border-gray-200">
+                            <p class="text-xs text-gray-500">Harga dipilih:</p>
+                            <p class="text-sm font-bold text-green-600 harga-display-${k.id}">
+                                Rp ${currentHarga.toLocaleString('id-ID')}
+                            </p>
+                        </div>
+                    </div>
+                `;
+
+                var hargaSel = wrapper.querySelector('.harga-bulanan-select');
+                if (hargaSel) hargaSel.addEventListener('change', handleHargaBulananChange);
+
+                updateHargaInfo(k.bulan, k.tahun, currentHarga);
             }
 
             function handleHargaBulananChange(e) {
                 var sel = e.target;
-                var keberangkatanId = sel.dataset.keberangkatanId;
-                var item = sel.closest('.keberangkatan-item');
-                var radio = item.querySelector('.keberangkatan-radio');
+                var wrapper = sel.closest('.keberangkatan-harga-section');
                 var selectedOption = sel.options[sel.selectedIndex];
                 var hargaBulananId = sel.value;
-                var bulanHarga, tahunHarga, harga, kuota, isFull;
 
+                var keberangkatanSelect = document.getElementById('keberangkatan-select');
+                var keberangkatanId = keberangkatanSelect ? keberangkatanSelect.value : null;
+                var k = globalKeberangkatanList.find(item => parseInt(item.id) === parseInt(keberangkatanId));
+                if (!k) return;
+
+                var bulanHarga, tahunHarga, harga, kuota, isFull;
                 if (hargaBulananId) {
                     bulanHarga = selectedOption.dataset.bulan;
                     tahunHarga = selectedOption.dataset.tahun;
@@ -1282,33 +1472,27 @@
                     kuota = parseInt(selectedOption.dataset.kuota) || 0;
                     isFull = selectedOption.dataset.isFull === '1';
                 } else {
-                    bulanHarga = radio.dataset.bulan;
-                    tahunHarga = radio.dataset.tahun;
-                    harga = radio.dataset.hargaDefault;
-                    kuota = parseInt(radio.dataset.kuotaDefault) || 0;
-                    isFull = radio.dataset.kuotaDefaultIsFull === '1';
+                    bulanHarga = k.bulan;
+                    tahunHarga = k.tahun;
+                    harga = k.harga_default;
+                    kuota = parseInt(k.kuota_default) || 0;
+                    isFull = k.kuota_default_is_full;
                 }
 
                 if (isFull) {
-                    alert('⚠️ Kuota untuk bulan/tahun ini sudah PENUH!');
+                    alert('⚠️ Kuota untuk bulan/tahun ini sudah PENUH!\n\nSilakan pilih bulan/tahun lain.');
                     sel.value = '';
                     return;
                 }
 
-                if (hargaBulananId) {
-                    document.getElementById('id_produk_harga_bulanan_hidden').value = hargaBulananId;
-                    document.getElementById('bulan_harga_hidden').value = bulanHarga;
-                    document.getElementById('tahun_harga_hidden').value = tahunHarga;
-                    var bulanName = getBulanName(bulanHarga);
-                    document.getElementById('hargaBulanTahun').textContent = bulanName + ' ' + tahunHarga;
-                    document.getElementById('hargaProdukDisplay').textContent = 'Rp ' + parseInt(harga).toLocaleString('id-ID');
-                    document.getElementById('hargaInfo').classList.remove('hidden');
-                } else {
-                    document.getElementById('id_produk_harga_bulanan_hidden').value = '';
-                    document.getElementById('bulan_harga_hidden').value = bulanHarga;
-                    document.getElementById('tahun_harga_hidden').value = tahunHarga;
-                    updateHargaDisplay(keberangkatanId);
-                }
+                document.getElementById('id_produk_harga_bulanan_hidden').value = hargaBulananId || '';
+                document.getElementById('bulan_harga_hidden').value = bulanHarga;
+                document.getElementById('tahun_harga_hidden').value = tahunHarga;
+
+                var display = wrapper.querySelector('.harga-display-' + k.id);
+                if (display) display.textContent = 'Rp ' + parseInt(harga || 0).toLocaleString('id-ID');
+
+                updateHargaInfo(bulanHarga, tahunHarga, harga);
 
                 var kuotaText, kuotaColor;
                 if (kuota <= 0) {
@@ -1322,30 +1506,19 @@
                     kuotaColor = kuota <= 3 ? 'text-orange-600' : 'text-blue-600';
                 }
 
-                var kuotaDisplay = item.querySelector('.kuota-display-' + keberangkatanId);
-                if (kuotaDisplay) {
-                    kuotaDisplay.className = 'text-xs mt-0.5 kuota-display-' + keberangkatanId + ' ' + kuotaColor;
-                    kuotaDisplay.innerHTML = '<i class="fas fa-users text-[10px]"></i> Kuota: ' + kuotaText;
-                }
-                var kuotaInfoVal = item.querySelector('.kuota-info-val-' + keberangkatanId);
+                var kuotaInfoVal = wrapper.querySelector('.kuota-info-val-' + k.id);
                 if (kuotaInfoVal) {
                     kuotaInfoVal.textContent = kuotaText;
                     kuotaInfoVal.className = kuotaColor;
                 }
             }
 
-            function updateHargaDisplay(keberangkatanId) {
-                var radio = document.querySelector('.keberangkatan-radio[data-keberangkatan-id="' + keberangkatanId + '"]');
-                if (radio) {
-                    var harga = radio.dataset.hargaDefault;
-                    var bulanName = getBulanName(radio.dataset.bulan);
-                    document.getElementById('hargaBulanTahun').textContent = bulanName + ' ' + radio.dataset.tahun;
-                    document.getElementById('hargaProdukDisplay').textContent = 'Rp ' + parseInt(harga).toLocaleString('id-ID');
-                    document.getElementById('hargaInfo').classList.remove('hidden');
-                    document.getElementById('bulan_harga_hidden').value = radio.dataset.bulan;
-                    document.getElementById('tahun_harga_hidden').value = radio.dataset.tahun;
-                    document.getElementById('id_produk_harga_bulanan_hidden').value = '';
-                }
+            function updateHargaInfo(bulan, tahun, harga) {
+                var bulanName = getBulanName(bulan);
+                document.getElementById('hargaBulanTahun').textContent = bulanName + ' ' + tahun;
+                document.getElementById('hargaProdukDisplay').textContent = 'Rp ' + parseInt(harga || 0).toLocaleString(
+                    'id-ID');
+                document.getElementById('hargaInfo').classList.remove('hidden');
             }
 
             function resetHiddenInputs() {
@@ -1465,148 +1638,201 @@
                         </div>
                     </div>
 
-                    <div class="grid grid-cols-1 md:grid-cols-3 gap-3 mt-3">
-                        <div>
-                            <label class="block text-xs font-medium text-gray-600 mb-1">Hubungan Keluarga</label>
-                            <select name="jamaahs[${jamaahIndex}][hubungan_keluarga]"
-                                class="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-yellow-500 text-sm">
-                                <option value="">-- Pilih Hubungan --</option>
-                                @foreach ($hubunganOptions as $option)
-                                    <option value="{{ $option }}">{{ $option }}</option>
-                                @endforeach
-                            </select>
-                        </div>
-                        <div>
-                            <label class="block text-xs font-medium text-gray-600 mb-1">Alamat</label>
-                            <input type="text" name="jamaahs[${jamaahIndex}][alamat]"
-                                class="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-yellow-500 text-sm"
-                                placeholder="Alamat lengkap">
-                        </div>
-                        <div>
-                            <label class="block text-xs font-medium text-gray-600 mb-1">Kota Asal</label>
-                            <select name="jamaahs[${jamaahIndex}][kota_asal]"
-                                class="kota-asal-select w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-yellow-500 text-sm">
-                                <option value="">-- Pilih Kota Asal --</option>
-                                @foreach ($kotaAsals as $kota)
-                                    <option value="{{ $kota->nama_kota }}" data-pulau="{{ $kota->pulau }}"
-                                        data-bandara="{{ $kota->bandara_terdekat }}">
-                                        {{ $kota->nama_kota }} - {{ $kota->provinsi ?? '' }}
-                                    </option>
-                                @endforeach
-                            </select>
-                        </div>
-                    </div>
-
-                    <div class="grid grid-cols-1 md:grid-cols-3 gap-3 mt-3">
-                        <div>
-                            <label class="block text-xs font-medium text-gray-600 mb-1">Nomor Paspor</label>
-                            <input type="text" name="jamaahs[${jamaahIndex}][nomor_paspor]"
-                                class="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-yellow-500 text-sm">
-                        </div>
-                        <div>
-                            <label class="block text-xs font-medium text-gray-600 mb-1">Pulau</label>
-                            <input type="text" name="jamaahs[${jamaahIndex}][pulau]"
-                                class="w-full px-3 py-2 border border-gray-200 rounded-lg bg-gray-100 text-sm cursor-not-allowed" readonly>
-                        </div>
-                        <div>
-                            <label class="block text-xs font-medium text-gray-600 mb-1">Bandara Keberangkatan</label>
-                            <input type="text" name="jamaahs[${jamaahIndex}][bandara_keberangkatan]"
-                                class="w-full px-3 py-2 border border-gray-200 rounded-lg bg-gray-100 text-sm cursor-not-allowed" readonly>
-                        </div>
-                    </div>
-
-                    <div class="mt-3">
-                        <label class="flex items-center gap-2 text-sm text-gray-700 cursor-pointer">
-                            <input type="checkbox" name="jamaahs[${jamaahIndex}][is_kepala_keluarga]" value="1"
-                                class="w-4 h-4 text-yellow-500 border-gray-300 rounded focus:ring-yellow-500">
-                            <span>Kepala Keluarga / Kelompok</span>
-                        </label>
-                    </div>
-
+                    {{-- SECTION: ALAMAT DOMISILI --}}
                     <div class="mt-3 pt-3 border-t border-gray-200">
-                        <div class="mb-3">
-                            <label class="block text-xs font-medium text-gray-600 mb-1.5">
-                                Apakah ada Pembuatan Passport? <span class="text-red-500">*</span>
-                            </label>
-
-                            <div class="inline-flex rounded-lg overflow-hidden border border-gray-300">
-                                <button type="button" onclick="setPembuatanPassportKeluarga(${jamaahIndex}, 1)"
-                                    id="btnYa-${jamaahIndex}"
-                                    class="px-6 py-2 text-sm font-medium bg-white text-gray-600 hover:bg-gray-50 transition-colors">
-                                    <i class="fas fa-check mr-1"></i> YA
-                                </button>
-                                <button type="button" onclick="setPembuatanPassportKeluarga(${jamaahIndex}, 0)"
-                                    id="btnTidak-${jamaahIndex}"
-                                    class="px-6 py-2 text-sm font-medium bg-red-500 text-white transition-colors border-l border-gray-300">
-                                    <i class="fas fa-times mr-1"></i> TIDAK
-                                </button>
-                            </div>
-                            <input type="hidden" name="jamaahs[${jamaahIndex}][is_pembuatan_passport]"
-                                id="is_pembuatan_passport-${jamaahIndex}" value="0">
-
-                            <p class="text-xs text-gray-400 mt-1">
-                                <i class="fas fa-info-circle mr-1"></i>
-                                Pilih <b>YA</b> jika ada pendapatan perusahaan. Pilih <b>TIDAK</b> jika jamaah sudah punya passport.
-                            </p>
-                        </div>
+                        <h6 class="text-xs font-semibold text-gray-700 mb-2 flex items-center">
+                            <i class="fas fa-map-marker-alt text-yellow-500 mr-1.5"></i>
+                            Alamat Domisili
+                        </h6>
 
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
                             <div>
-                                <label class="block text-xs font-medium text-gray-600 mb-1">Pembayaran Passport <span class="text-gray-400 text-xs">(boleh kosong)</span></label>
-                                <div class="relative">
-                                    <span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-xs">Rp</span>
-                                    <input type="text" name="jamaahs[${jamaahIndex}][pendampingan_fee]" value="0"
-                                        oninput="formatRupiah(this); updateTotalPendampingan(${jamaahIndex})"
-                                        onfocus="handleZeroFocus(this)" onblur="handleZeroBlur(this)"
-                                        class="w-full pl-8 pr-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-yellow-500 text-sm"
-                                        placeholder="0">
-                                </div>
+                                <label class="block text-xs font-medium text-gray-600 mb-1">Hubungan Keluarga</label>
+                                <select name="jamaahs[${jamaahIndex}][hubungan_keluarga]"
+                                    class="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-yellow-500 text-sm">
+                                    <option value="">-- Pilih Hubungan --</option>
+                                    @foreach ($hubunganOptions as $option)
+                                        <option value="{{ $option }}">{{ $option }}</option>
+                                    @endforeach
+                                </select>
                             </div>
-                            <div id="feePetugasContainer-${jamaahIndex}" class="hidden">
-                                <label class="block text-xs font-medium text-gray-600 mb-1">Pendapatan Perusahaan <span class="text-gray-400 text-xs">(fee petugas)</span></label>
-                                <div class="relative">
-                                    <span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-xs">Rp</span>
-                                    <input type="text" name="jamaahs[${jamaahIndex}][pendampingan_fee_petugas]"
-                                        id="pendampingan_fee_petugas-${jamaahIndex}" value="0"
-                                        oninput="formatRupiah(this); updateTotalPendampingan(${jamaahIndex})"
-                                        onfocus="handleZeroFocus(this)" onblur="handleZeroBlur(this)"
-                                        class="w-full pl-8 pr-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-yellow-500 text-sm"
-                                        placeholder="0">
-                                </div>
+                            <div>
+                                <label class="block text-xs font-medium text-gray-600 mb-1">Alamat</label>
+                                <input type="text" name="jamaahs[${jamaahIndex}][alamat]"
+                                    class="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-yellow-500 text-sm"
+                                    placeholder="Jl. / RT / RW / No.">
                             </div>
                         </div>
 
-                        <div class="mt-2 text-xs text-gray-500">
-                            Total Pembuatan Passport:
-                            <span class="font-bold text-blue-600" id="total-pendampingan-${jamaahIndex}">Rp 0</span>
-                            <span class="text-gray-400">(Pembayaran + Pendapatan Perusahaan)</span>
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-3 mt-3">
+                            <div>
+                                <label class="block text-xs font-medium text-gray-600 mb-1">Kota / Kabupaten</label>
+                                <input type="text" name="jamaahs[${jamaahIndex}][kota_kabupaten]"
+                                    class="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-yellow-500 text-sm"
+                                    placeholder="Kota/Kabupaten">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-medium text-gray-600 mb-1">Kecamatan</label>
+                                <input type="text" name="jamaahs[${jamaahIndex}][kecamatan]"
+                                    class="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-yellow-500 text-sm"
+                                    placeholder="Kecamatan">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-medium text-gray-600 mb-1">Kelurahan / Desa</label>
+                                <input type="text" name="jamaahs[${jamaahIndex}][kelurahan]"
+                                    class="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-yellow-500 text-sm"
+                                    placeholder="Kelurahan/Desa">
+                            </div>
                         </div>
                     </div>
 
-                    <div class="grid grid-cols-1 md:grid-cols-4 gap-3 mt-3 pt-3 border-t border-gray-200">
-                        <div>
-                            <label class="block text-xs font-medium text-gray-600 mb-1">File KTP/KK</label>
-                            <input type="file" name="jamaahs[${jamaahIndex}][file_ktp_kk]" accept=".pdf,.jpg,.jpeg,.png"
-                                class="w-full px-3 py-1.5 border border-gray-200 rounded-lg focus:ring-2 focus:ring-yellow-500 text-sm file:mr-2 file:py-1 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-medium file:bg-yellow-50 file:text-yellow-700 hover:file:bg-yellow-100">
-                            <p class="text-xs text-gray-400 mt-1">PDF/JPG/PNG Max 2MB</p>
+                    {{-- SECTION: KEBERANGKATAN --}}
+                    <div class="mt-3 pt-3 border-t border-gray-200">
+                        <div class="bg-blue-50 rounded-lg p-3 border border-blue-100">
+                            <h6 class="text-xs font-semibold text-blue-700 mb-2 flex items-center">
+                                <i class="fas fa-plane text-blue-500 mr-1.5"></i>
+                                Keberangkatan
+                            </h6>
+
+                            <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+                                <div>
+                                    <label class="block text-xs font-medium text-gray-600 mb-1">Kota Asal</label>
+                                    <select name="jamaahs[${jamaahIndex}][kota_asal]"
+                                        class="kota-asal-select w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-yellow-500 text-sm bg-white">
+                                        <option value="">-- Pilih Kota Asal --</option>
+                                        @foreach ($kotaAsals as $kota)
+                                            <option value="{{ $kota->nama_kota }}" data-pulau="{{ $kota->pulau }}"
+                                                data-bandara="{{ $kota->bandara_terdekat }}">
+                                                {{ $kota->nama_kota }} - {{ $kota->provinsi ?? '' }}
+                                            </option>
+                                        @endforeach
+                                    </select>
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-medium text-gray-600 mb-1">Pulau</label>
+                                    <input type="text" name="jamaahs[${jamaahIndex}][pulau]"
+                                        class="w-full px-3 py-2 border border-gray-200 rounded-lg bg-white text-sm cursor-not-allowed"
+                                        readonly
+                                        placeholder="Otomatis">
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-medium text-gray-600 mb-1">Bandara Keberangkatan</label>
+                                    <input type="text" name="jamaahs[${jamaahIndex}][bandara_keberangkatan]"
+                                        class="w-full px-3 py-2 border border-gray-200 rounded-lg bg-white text-sm cursor-not-allowed"
+                                        readonly
+                                        placeholder="Otomatis">
+                                </div>
+                            </div>
                         </div>
-                        <div>
-                            <label class="block text-xs font-medium text-gray-600 mb-1">File Vaksin</label>
-                            <input type="file" name="jamaahs[${jamaahIndex}][file_vaksin]" accept=".pdf,.jpg,.jpeg,.png"
-                                class="w-full px-3 py-1.5 border border-gray-200 rounded-lg focus:ring-2 focus:ring-yellow-500 text-sm file:mr-2 file:py-1 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-medium file:bg-yellow-50 file:text-yellow-700 hover:file:bg-yellow-100">
-                            <p class="text-xs text-gray-400 mt-1">PDF/JPG/PNG Max 2MB</p>
+                    </div>
+
+                    {{-- SECTION: PASSPORT & DOKUMEN --}}
+                    <div class="mt-3 pt-3 border-t border-gray-200">
+                        <h6 class="text-xs font-semibold text-gray-700 mb-2 flex items-center">
+                            <i class="fas fa-passport text-yellow-500 mr-1.5"></i>
+                            Passport & Dokumen
+                        </h6>
+
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                            <div>
+                                <label class="block text-xs font-medium text-gray-600 mb-1">Nomor Paspor</label>
+                                <input type="text" name="jamaahs[${jamaahIndex}][nomor_paspor]"
+                                    class="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-yellow-500 text-sm">
+                            </div>
+                            <div>
+                                <label class="flex items-center gap-2 text-sm text-gray-700 cursor-pointer mt-6">
+                                    <input type="checkbox" name="jamaahs[${jamaahIndex}][is_kepala_keluarga]" value="1"
+                                        class="w-4 h-4 text-yellow-500 border-gray-300 rounded focus:ring-yellow-500">
+                                    <span>Kepala Keluarga / Kelompok</span>
+                                </label>
+                            </div>
                         </div>
-                        <div>
-                            <label class="block text-xs font-medium text-gray-600 mb-1">File Visa</label>
-                            <input type="file" name="jamaahs[${jamaahIndex}][file_visa]" accept=".pdf,.jpg,.jpeg,.png"
-                                class="w-full px-3 py-1.5 border border-gray-200 rounded-lg focus:ring-2 focus:ring-yellow-500 text-sm file:mr-2 file:py-1 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-medium file:bg-yellow-50 file:text-yellow-700 hover:file:bg-yellow-100">
-                            <p class="text-xs text-gray-400 mt-1">PDF/JPG/PNG Max 2MB</p>
+
+                        <div class="mt-3 pt-3 border-t border-gray-200">
+                            <div class="mb-3">
+                                <label class="block text-xs font-medium text-gray-600 mb-1.5">
+                                    Apakah ada Pembuatan Passport? <span class="text-red-500">*</span>
+                                </label>
+
+                                <div class="inline-flex rounded-lg overflow-hidden border border-gray-300">
+                                    <button type="button" onclick="setPembuatanPassportKeluarga(${jamaahIndex}, 1)"
+                                        id="btnYa-${jamaahIndex}"
+                                        class="px-6 py-2 text-sm font-medium bg-white text-gray-600 hover:bg-gray-50 transition-colors">
+                                        <i class="fas fa-check mr-1"></i> YA
+                                    </button>
+                                    <button type="button" onclick="setPembuatanPassportKeluarga(${jamaahIndex}, 0)"
+                                        id="btnTidak-${jamaahIndex}"
+                                        class="px-6 py-2 text-sm font-medium bg-red-500 text-white transition-colors border-l border-gray-300">
+                                        <i class="fas fa-times mr-1"></i> TIDAK
+                                    </button>
+                                </div>
+                                <input type="hidden" name="jamaahs[${jamaahIndex}][is_pembuatan_passport]"
+                                    id="is_pembuatan_passport-${jamaahIndex}" value="0">
+
+                                <p class="text-xs text-gray-400 mt-1">
+                                    <i class="fas fa-info-circle mr-1"></i>
+                                    Pilih <b>YA</b> jika ada pendapatan perusahaan. Pilih <b>TIDAK</b> jika jamaah sudah punya passport.
+                                </p>
+                            </div>
+
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                                <div>
+                                    <label class="block text-xs font-medium text-gray-600 mb-1">Pembayaran Passport <span class="text-gray-400 text-xs">(boleh kosong)</span></label>
+                                    <div class="relative">
+                                        <span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-xs">Rp</span>
+                                        <input type="text" name="jamaahs[${jamaahIndex}][pendampingan_fee]" value="0"
+                                            oninput="formatRupiah(this); updateTotalPendampingan(${jamaahIndex})"
+                                            onfocus="handleZeroFocus(this)" onblur="handleZeroBlur(this)"
+                                            class="w-full pl-8 pr-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-yellow-500 text-sm"
+                                            placeholder="0">
+                                    </div>
+                                </div>
+                                <div id="feePetugasContainer-${jamaahIndex}" class="hidden">
+                                    <label class="block text-xs font-medium text-gray-600 mb-1">Pendapatan Perusahaan <span class="text-gray-400 text-xs">(fee petugas)</span></label>
+                                    <div class="relative">
+                                        <span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-xs">Rp</span>
+                                        <input type="text" name="jamaahs[${jamaahIndex}][pendampingan_fee_petugas]"
+                                            id="pendampingan_fee_petugas-${jamaahIndex}" value="0"
+                                            oninput="formatRupiah(this); updateTotalPendampingan(${jamaahIndex})"
+                                            onfocus="handleZeroFocus(this)" onblur="handleZeroBlur(this)"
+                                            class="w-full pl-8 pr-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-yellow-500 text-sm"
+                                            placeholder="0">
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="mt-2 text-xs text-gray-500">
+                                Total Pembuatan Passport:
+                                <span class="font-bold text-blue-600" id="total-pendampingan-${jamaahIndex}">Rp 0</span>
+                                <span class="text-gray-400">(Pembayaran + Pendapatan Perusahaan)</span>
+                            </div>
                         </div>
-                        <div>
-                            <label class="block text-xs font-medium text-gray-600 mb-1">File Paspor</label>
-                            <input type="file" name="jamaahs[${jamaahIndex}][file_paspor]" accept=".pdf,.jpg,.jpeg,.png"
-                                class="w-full px-3 py-1.5 border border-gray-200 rounded-lg focus:ring-2 focus:ring-yellow-500 text-sm file:mr-2 file:py-1 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-medium file:bg-yellow-50 file:text-yellow-700 hover:file:bg-yellow-100">
-                            <p class="text-xs text-gray-400 mt-1">PDF/JPG/PNG Max 2MB</p>
+
+                        <div class="grid grid-cols-1 md:grid-cols-4 gap-3 mt-3 pt-3 border-t border-gray-200">
+                            <div>
+                                <label class="block text-xs font-medium text-gray-600 mb-1">File KTP/KK</label>
+                                <input type="file" name="jamaahs[${jamaahIndex}][file_ktp_kk]" accept=".pdf,.jpg,.jpeg,.png"
+                                    class="w-full px-3 py-1.5 border border-gray-200 rounded-lg focus:ring-2 focus:ring-yellow-500 text-sm file:mr-2 file:py-1 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-medium file:bg-yellow-50 file:text-yellow-700 hover:file:bg-yellow-100">
+                                <p class="text-xs text-gray-400 mt-1">PDF/JPG/PNG Max 2MB</p>
+                            </div>
+                            <div>
+                                <label class="block text-xs font-medium text-gray-600 mb-1">File Vaksin</label>
+                                <input type="file" name="jamaahs[${jamaahIndex}][file_vaksin]" accept=".pdf,.jpg,.jpeg,.png"
+                                    class="w-full px-3 py-1.5 border border-gray-200 rounded-lg focus:ring-2 focus:ring-yellow-500 text-sm file:mr-2 file:py-1 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-medium file:bg-yellow-50 file:text-yellow-700 hover:file:bg-yellow-100">
+                                <p class="text-xs text-gray-400 mt-1">PDF/JPG/PNG Max 2MB</p>
+                            </div>
+                            <div>
+                                <label class="block text-xs font-medium text-gray-600 mb-1">File Visa</label>
+                                <input type="file" name="jamaahs[${jamaahIndex}][file_visa]" accept=".pdf,.jpg,.jpeg,.png"
+                                    class="w-full px-3 py-1.5 border border-gray-200 rounded-lg focus:ring-2 focus:ring-yellow-500 text-sm file:mr-2 file:py-1 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-medium file:bg-yellow-50 file:text-yellow-700 hover:file:bg-yellow-100">
+                                <p class="text-xs text-gray-400 mt-1">PDF/JPG/PNG Max 2MB</p>
+                            </div>
+                            <div>
+                                <label class="block text-xs font-medium text-gray-600 mb-1">File Paspor</label>
+                                <input type="file" name="jamaahs[${jamaahIndex}][file_paspor]" accept=".pdf,.jpg,.jpeg,.png"
+                                    class="w-full px-3 py-1.5 border border-gray-200 rounded-lg focus:ring-2 focus:ring-yellow-500 text-sm file:mr-2 file:py-1 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-medium file:bg-yellow-50 file:text-yellow-700 hover:file:bg-yellow-100">
+                                <p class="text-xs text-gray-400 mt-1">PDF/JPG/PNG Max 2MB</p>
+                            </div>
                         </div>
                     </div>
                 `;
@@ -1662,18 +1888,17 @@
                                 if (input.value) input.value = input.value.replace(/\./g, '');
                             });
 
-                        var selectedRadio = document.querySelector('.keberangkatan-radio:checked');
-                        if (selectedRadio) {
-                            var isFullRadio = selectedRadio.dataset.kuotaDefaultIsFull === '1';
-                            var hargaSel = document.querySelector(
-                                '.harga-bulanan-select[data-keberangkatan-id="' + selectedRadio.dataset
-                                .keberangkatanId + '"]');
+                        var selectKeberangkatan = document.getElementById('keberangkatan-select');
+                        if (selectKeberangkatan && selectKeberangkatan.value) {
+                            var k = globalKeberangkatanList.find(item => parseInt(item.id) === parseInt(
+                                selectKeberangkatan.value));
+                            var hargaSel = document.querySelector('.harga-bulanan-select');
                             var selectedHargaFull = false;
                             if (hargaSel && hargaSel.value) {
                                 var opt = hargaSel.options[hargaSel.selectedIndex];
                                 selectedHargaFull = opt.dataset.isFull === '1';
                             }
-                            if (isFullRadio || selectedHargaFull) {
+                            if ((k && k.kuota_default_is_full) || selectedHargaFull) {
                                 e.preventDefault();
                                 alert('⚠️ Kuota bulan/tahun yang dipilih sudah PENUH!');
                                 return false;

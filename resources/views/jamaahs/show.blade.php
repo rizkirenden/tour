@@ -141,9 +141,23 @@
                                 <dt class="text-gray-500">WhatsApp</dt>
                                 <dd class="font-medium text-gray-700">{{ $jamaah->wa ?? '-' }}</dd>
                             </div>
-                            <div class="flex justify-between text-sm">
+                            <div class="flex justify-between text-sm border-b border-gray-100 pb-2">
                                 <dt class="text-gray-500">Alamat</dt>
-                                <dd class="font-medium text-gray-700">{{ $jamaah->alamat ?? '-' }}</dd>
+                                <dd class="font-medium text-gray-700 text-right">{{ $jamaah->alamat ?? '-' }}</dd>
+                            </div>
+
+                            {{-- ✅ NEW: Kota/Kabupaten, Kecamatan, Kelurahan --}}
+                            <div class="flex justify-between text-sm border-b border-gray-100 pb-2">
+                                <dt class="text-gray-500">Kota / Kabupaten</dt>
+                                <dd class="font-medium text-gray-700">{{ $jamaah->kota_kabupaten ?? '-' }}</dd>
+                            </div>
+                            <div class="flex justify-between text-sm border-b border-gray-100 pb-2">
+                                <dt class="text-gray-500">Kecamatan</dt>
+                                <dd class="font-medium text-gray-700">{{ $jamaah->kecamatan ?? '-' }}</dd>
+                            </div>
+                            <div class="flex justify-between text-sm">
+                                <dt class="text-gray-500">Kelurahan / Desa</dt>
+                                <dd class="font-medium text-gray-700">{{ $jamaah->kelurahan ?? '-' }}</dd>
                             </div>
                         </dl>
                     </div>

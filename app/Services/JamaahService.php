@@ -91,9 +91,6 @@ class JamaahService
 
             // ==========================================
             // PEMBUATAN PASSPORT
-            // is_pembuatan_passport = YA → pendampingan_fee_petugas diisi
-            // is_pembuatan_passport = TIDAK → pendampingan_fee_petugas = 0
-            // pendampingan_fee boleh 0 (jamaah sudah punya passport)
             // ==========================================
             $data['is_pembuatan_passport'] = (bool) ($data['is_pembuatan_passport'] ?? false);
             $data['pendampingan_fee'] = (int) ($data['pendampingan_fee'] ?? 0);
@@ -142,9 +139,6 @@ class JamaahService
                 $hargaProduk = (int) ($keberangkatanData[0]['harga'] ?? 0);
             }
 
-            // ==========================================
-            // TOTAL TAGIHAN = HARGA PRODUK + PEMBUATAN PASSPORT
-            // ==========================================
             $passportFee = $data['pendampingan_fee'] + $data['pendampingan_fee_petugas'];
             $totalTagihanKotor = $hargaProduk + $passportFee;
             $totalTagihanSetelahDiskon = max(0, $totalTagihanKotor - $nilaiDiskon);
@@ -216,15 +210,9 @@ class JamaahService
                 $data['bandara_keberangkatan'] = $kota->bandara_terdekat;
             }
 
-            // ==========================================
-            // AGENT
-            // ==========================================
             $data['agent_name'] = $data['agent_name'] ?? null;
             $data['fee_agent'] = (int) ($data['fee_agent'] ?? 0);
 
-            // ==========================================
-            // PEMBUATAN PASSPORT
-            // ==========================================
             $data['is_pembuatan_passport'] = (bool) ($data['is_pembuatan_passport'] ?? false);
             $data['pendampingan_fee'] = (int) ($data['pendampingan_fee'] ?? 0);
             $data['pendampingan_fee_petugas'] = (int) ($data['pendampingan_fee_petugas'] ?? 0);
@@ -255,6 +243,7 @@ class JamaahService
             $keberangkatanData = $data['keberangkatan_data'] ?? [];
             unset($data['keberangkatan_data']);
 
+            // ✅ EXCLUDE jamaah yang sedang diedit dari perhitungan kuota
             $this->validateKuota($keberangkatanData, $id);
 
             if (!empty($keberangkatanData)) {
@@ -280,9 +269,6 @@ class JamaahService
                 $hargaProduk = (int) ($keberangkatanData[0]['harga'] ?? 0);
             }
 
-            // ==========================================
-            // TOTAL TAGIHAN = HARGA PRODUK + PEMBUATAN PASSPORT
-            // ==========================================
             $passportFee = $data['pendampingan_fee'] + $data['pendampingan_fee_petugas'];
             $totalTagihanKotor = $hargaProduk + $passportFee;
             $totalTagihanSetelahDiskon = max(0, $totalTagihanKotor - $nilaiDiskon);
@@ -368,6 +354,10 @@ class JamaahService
         });
     }
 
+    /**
+     * Validasi kuota. Jika $excludeJamaahId diberikan, jamaah ini
+     * TIDAK dihitung dalam pemakaian kuota (untuk mode edit).
+     */
     private function validateKuota(array $keberangkatanData, $excludeJamaahId = null)
     {
         foreach ($keberangkatanData as $item) {
@@ -428,7 +418,12 @@ class JamaahService
         return Diskon::available()->orderBy('nama_diskon')->get();
     }
 
-    public function getKeberangkatanByProduk($namaProduk)
+    /**
+     * Ambil daftar keberangkatan & harga bulanan untuk produk.
+     * Jika $excludeJamaahId diberikan, jamaah tersebut TIDAK dihitung
+     * dalam pemakaian kuota (untuk mode edit).
+     */
+    public function getKeberangkatanByProduk($namaProduk, $excludeJamaahId = null)
     {
         $produk = ProdukPaket::where('nama_produk', $namaProduk)->first();
         if (!$produk) {
@@ -440,10 +435,16 @@ class JamaahService
             ->orderBy('tahun')
             ->orderBy('bulan')
             ->get()
-            ->map(function ($h) {
-                $terpakai = DB::table('jamaah_keberangkatans')
-                    ->where('id_produk_harga_bulanan', $h->id)
-                    ->count();
+            ->map(function ($h) use ($excludeJamaahId) {
+                $query = DB::table('jamaah_keberangkatans')
+                    ->where('id_produk_harga_bulanan', $h->id);
+
+                // ✅ EXCLUDE jamaah yang sedang diedit
+                if ($excludeJamaahId) {
+                    $query->where('id_jamaah', '!=', $excludeJamaahId);
+                }
+
+                $terpakai = $query->count();
 
                 $isFull = $h->kuota > 0 && $terpakai >= $h->kuota;
                 $sisa = $h->kuota > 0 ? max(0, $h->kuota - $terpakai) : -1;

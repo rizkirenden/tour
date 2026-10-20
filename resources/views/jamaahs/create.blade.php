@@ -150,6 +150,35 @@
                                 class="w-full px-4 py-2 border border-gray-200 rounded-xl focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500 text-sm wajib-pribadi"
                                 required>{{ old('alamat') }}</textarea>
                         </div>
+
+                        {{-- ✅ NEW: Kota/Kabupaten, Kecamatan, Kelurahan --}}
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1.5">
+                                    Kota / Kabupaten <span class="text-red-500">*</span>
+                                </label>
+                                <input type="text" name="kota_kabupaten" id="kota_kabupaten"
+                                    value="{{ old('kota_kabupaten') }}"
+                                    class="w-full px-4 py-2 border border-gray-200 rounded-xl focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500 text-sm wajib-pribadi"
+                                    placeholder="Contoh: Kota Bandung / Kab. Sleman" required>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1.5">
+                                    Kecamatan <span class="text-red-500">*</span>
+                                </label>
+                                <input type="text" name="kecamatan" id="kecamatan" value="{{ old('kecamatan') }}"
+                                    class="w-full px-4 py-2 border border-gray-200 rounded-xl focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500 text-sm wajib-pribadi"
+                                    placeholder="Contoh: Cibeunying Kaler" required>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1.5">
+                                    Kelurahan / Desa <span class="text-red-500">*</span>
+                                </label>
+                                <input type="text" name="kelurahan" id="kelurahan" value="{{ old('kelurahan') }}"
+                                    class="w-full px-4 py-2 border border-gray-200 rounded-xl focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500 text-sm wajib-pribadi"
+                                    placeholder="Contoh: Cigadung" required>
+                            </div>
+                        </div>
                     </div>
 
                     <!-- Informasi Passport -->
@@ -324,7 +353,6 @@
                             <i class="fas fa-handshake text-yellow-500 mr-2"></i> Agent & Pembuatan Passport
                         </h6>
 
-                        {{-- AGENT --}}
                         <div class="mb-4 bg-blue-50 rounded-xl p-4 border border-blue-100">
                             <h6 class="text-xs font-semibold text-blue-700 mb-3 flex items-center">
                                 <i class="fas fa-user-tie text-blue-500 mr-1"></i> Agent
@@ -350,13 +378,11 @@
                             </div>
                         </div>
 
-                        {{-- PEMBUATAN PASSPORT --}}
                         <div class="bg-green-50 rounded-xl p-4 border border-green-100">
                             <h6 class="text-xs font-semibold text-green-700 mb-3 flex items-center">
                                 <i class="fas fa-passport text-green-500 mr-1"></i> Pembuatan Passport
                             </h6>
 
-                            {{-- Pilihan YA / TIDAK --}}
                             <div class="mb-4">
                                 <label class="block text-sm font-medium text-gray-700 mb-1.5">
                                     Apakah ada Pembuatan Passport? <span class="text-red-500">*</span>
@@ -384,7 +410,6 @@
                                 </p>
                             </div>
 
-                            {{-- Pembayaran Passport (selalu tampil, boleh kosong) --}}
                             <div class="mb-3">
                                 <label class="block text-sm font-medium text-gray-700 mb-1.5">
                                     Pembayaran Passport
@@ -401,7 +426,6 @@
                                 </div>
                             </div>
 
-                            {{-- Pendapatan Perusahaan (hanya muncul jika YA) --}}
                             <div id="feePetugasContainer" class="mb-3 hidden">
                                 <label class="block text-sm font-medium text-gray-700 mb-1.5">
                                     Pendapatan Perusahaan
@@ -416,7 +440,6 @@
                                 </div>
                             </div>
 
-                            {{-- Total --}}
                             <div class="mt-3 pt-3 border-t border-green-200">
                                 <div class="flex items-center justify-between">
                                     <p class="text-sm font-medium text-gray-700">
@@ -588,34 +611,22 @@
         var globalHargaBulananList = [];
         var globalOldData = [];
 
-        // ==========================================
-        // FORMAT RUPIAH — kosong tetap kosong, leading zero dihapus
-        // ==========================================
         function formatRupiah(element) {
             let raw = element.value.replace(/[^,\d]/g, '');
-
             if (raw === '') {
                 element.value = '';
                 return;
             }
-
             raw = raw.replace(/^0+(?=\d)/, '');
-
             element.value = raw.replace(/\B(?=(\d{3})+(?!\d))/g, '.');
         }
 
-        // ==========================================
-        // HAPUS '0' saat field difokuskan
-        // ==========================================
         function clearZero(element) {
             if (element.value === '0' || element.value === '0.000' || element.value === '') {
                 element.value = '';
             }
         }
 
-        // ==========================================
-        // VALIDASI INFORMASI PRIBADI
-        // ==========================================
         function validateInformasiPribadi() {
             var fields = document.querySelectorAll('.wajib-pribadi');
             var labels = {
@@ -628,15 +639,16 @@
                 wa: 'WhatsApp',
                 tempat_lahir: 'Tempat Lahir',
                 tanggal_lahir: 'Tanggal Lahir',
-                alamat: 'Alamat'
+                alamat: 'Alamat',
+                kota_kabupaten: 'Kota / Kabupaten', // ✅ NEW
+                kecamatan: 'Kecamatan', // ✅ NEW
+                kelurahan: 'Kelurahan / Desa' // ✅ NEW
             };
             var missing = [];
 
             fields.forEach(function(field) {
                 var val = (field.value || '').trim();
-                var isInvalid = !val;
-
-                if (isInvalid) {
+                if (!val) {
                     field.classList.add('border-red-500', 'ring-2', 'ring-red-300');
                     field.classList.remove('border-gray-200');
                     if (labels[field.name]) missing.push(labels[field.name]);
@@ -667,9 +679,6 @@
             return true;
         }
 
-        // ==========================================
-        // TOGGLE PEMBUATAN PASSPORT (YA / TIDAK)
-        // ==========================================
         function togglePembuatanPassport() {
             var isYa = document.querySelector('input[name="is_pembuatan_passport"]:checked');
             var container = document.getElementById('feePetugasContainer');
@@ -740,9 +749,6 @@
             }
         }
 
-        // ==========================================
-        // LOAD KEBERANGKATAN
-        // ==========================================
         function loadKeberangkatan() {
             var produkPaket = document.getElementById('produk_paket');
             var tahunSelect = document.getElementById('filter-tahun');
@@ -769,7 +775,7 @@
 
             fetch(
                     `{{ route('transaksional.jamaah.keberangkatan-by-produk') }}?produk_paket=${encodeURIComponent(produkPaket.value)}`
-                    )
+                )
                 .then(res => res.json())
                 .then(data => {
                     if (!data.success || !data.keberangkatan || data.keberangkatan.length === 0) {
@@ -781,7 +787,7 @@
                     globalHargaBulananList = data.harga_bulanan || [];
 
                     var tahunSet = new Set();
-                    globalKeberangkatanList.forEach(k => tahunSet.add(k.tahun));
+                    globalKeberangkatanList.forEach(k => tahunSet.add(parseInt(k.tahun)));
                     var tahunList = Array.from(tahunSet).sort((a, b) => a - b);
 
                     tahunSelect.innerHTML = '<option value="">-- Pilih Tahun --</option>';
@@ -794,8 +800,8 @@
 
                     if (globalOldData && globalOldData.length > 0) {
                         var oldItem = globalOldData[0];
-                        var oldTahun = oldItem.tahun_keberangkatan;
-                        if (oldTahun && tahunList.includes(parseInt(oldTahun))) {
+                        var oldTahun = parseInt(oldItem.tahun_keberangkatan);
+                        if (oldTahun && tahunList.includes(oldTahun)) {
                             tahunSelect.value = oldTahun;
                             renderKeberangkatanByTahun(oldTahun);
                         }
@@ -826,176 +832,174 @@
                             <i class="fas fa-exclamation-triangle mr-1"></i>
                             Tidak ada keberangkatan di tahun ${tahun}
                         </p>
-                    </div>
-                `;
+                    </div>`;
                 return;
             }
 
             var selectedKeberangkatan = null;
+            var selectedItemData = null;
             if (globalOldData && globalOldData.length > 0) {
-                var oldItem = globalOldData[0];
-                selectedKeberangkatan = filtered.find(k => parseInt(k.id) === parseInt(oldItem.id_produk_keberangkatan));
+                selectedItemData = globalOldData[0];
+                var oldId = parseInt(selectedItemData.id_produk_keberangkatan);
+                selectedKeberangkatan = filtered.find(k => parseInt(k.id) === oldId) || null;
             }
 
-            var html = '';
+            var options = '<option value="">-- Pilih Keberangkatan --</option>';
             filtered.forEach(function(k) {
-                var isSelected = selectedKeberangkatan && parseInt(selectedKeberangkatan
-                    .id_produk_keberangkatan) === parseInt(k.id);
-                var isChecked = isSelected ? 'checked' : '';
+                var isFull = k.kuota_default_is_full ? true : false;
+                var label = k.keberangkatan_formatted + ' — ' + k.harga_default_formatted;
+                if (isFull) label += ' (KUOTA PENUH)';
+                var disabled = isFull ? 'disabled' : '';
+                var selected = (selectedKeberangkatan && parseInt(selectedKeberangkatan.id) === parseInt(k.id)) ?
+                    'selected' : '';
+                options += `<option value="${k.id}" ${selected} ${disabled}>${label}</option>`;
+            });
 
-                var currentHarga = isSelected ? parseInt(selectedKeberangkatan.harga) : parseInt(k.harga_default);
-                var currentIdHarga = isSelected ? selectedKeberangkatan.id_produk_harga_bulanan : k
-                    .id_harga_default;
+            var hargaPanelHtml = '';
+            if (selectedKeberangkatan && selectedItemData) {
+                var k = selectedKeberangkatan;
+                var currentIdHarga = selectedItemData.id_produk_harga_bulanan || '';
+                var currentHarga = parseInt(selectedItemData.harga || k.harga_default || 0);
+                var currentBulanHarga = selectedItemData.bulan_harga || k.bulan;
+                var currentTahunHarga = selectedItemData.tahun_harga || k.tahun;
+                var currentKuotaText = k.kuota_default_formatted;
+                var currentKuotaColor = k.kuota_default_is_full ? 'text-red-600' : 'text-blue-600';
 
-                var currentKuotaText = 'Tidak Terbatas';
-                var currentKuotaColor = 'text-gray-500';
-                if (isSelected) {
-                    if (selectedKeberangkatan.id_produk_harga_bulanan) {
-                        var hargaMatch = globalHargaBulananList.find(h => parseInt(h.id) === parseInt(
-                            selectedKeberangkatan.id_produk_harga_bulanan));
-                        if (hargaMatch) {
-                            currentKuotaText = hargaMatch.kuota_formatted;
-                            currentKuotaColor = hargaMatch.is_full ? 'text-red-600' : (hargaMatch.kuota_sisa !== -
-                                1 && hargaMatch.kuota_sisa <= 3 ? 'text-orange-600' : 'text-blue-600');
-                        }
-                    } else {
-                        currentKuotaText = k.kuota_default_formatted;
-                        currentKuotaColor = k.kuota_default_is_full ? 'text-red-600' : 'text-blue-600';
+                if (currentIdHarga) {
+                    var match = globalHargaBulananList.find(h => parseInt(h.id) === parseInt(currentIdHarga));
+                    if (match) {
+                        currentKuotaText = match.kuota_formatted;
+                        currentKuotaColor = match.is_full ? 'text-red-600' :
+                            (match.kuota_sisa !== -1 && match.kuota_sisa <= 3 ? 'text-orange-600' : 'text-blue-600');
                     }
-                } else {
-                    currentKuotaText = k.kuota_default_formatted;
-                    currentKuotaColor = k.kuota_default_is_full ? 'text-red-600' : 'text-blue-600';
                 }
 
-                var optionsHtml = '<option value="">-- Sama dengan keberangkatan (' + k.bulan_formatted +
+                var hargaOptions = '<option value="">-- Sama dengan keberangkatan (' + k.bulan_formatted +
                     ') --</option>';
                 globalHargaBulananList.forEach(function(h) {
-                    var selected = (parseInt(h.id) === parseInt(currentIdHarga)) ? 'selected' : '';
-                    var isFull = h.is_full ? true : false;
-                    var disabledAttr = isFull ? 'disabled' : '';
+                    var sel = (parseInt(h.id) === parseInt(currentIdHarga)) ? 'selected' : '';
+                    var full = h.is_full ? true : false;
+                    var dis = full ? 'disabled' : '';
                     var kuotaLabel = h.is_full ? 'PENUH (' + h.kuota + ')' : h.kuota_formatted;
-                    var styleAttr = isFull ? 'style="color:#ef4444;font-style:italic;"' : '';
-
-                    optionsHtml += '<option value="' + h.id +
-                        '" data-bulan="' + h.bulan +
-                        '" data-tahun="' + h.tahun +
-                        '" data-harga="' + h.harga +
-                        '" data-kuota="' + (h.kuota || 0) +
-                        '" data-is-full="' + (isFull ? '1' : '0') + '" ' +
-                        selected + ' ' + disabledAttr + ' ' + styleAttr + '>' +
-                        h.bulan_formatted + ' - ' + h.harga_formatted +
-                        ' (Kuota: ' + kuotaLabel + ')' +
-                        (isFull ? ' ⛔' : '') +
-                        '</option>';
+                    var styleAttr = full ? 'style="color:#ef4444;font-style:italic;"' : '';
+                    hargaOptions += `<option value="${h.id}"
+                        data-bulan="${h.bulan}" data-tahun="${h.tahun}"
+                        data-harga="${h.harga}" data-kuota="${h.kuota || 0}"
+                        data-is-full="${full ? '1' : '0'}"
+                        ${sel} ${dis} ${styleAttr}>
+                        ${h.bulan_formatted} - ${h.harga_formatted} (Kuota: ${kuotaLabel})${full ? ' ⛔' : ''}
+                    </option>`;
                 });
 
-                var radioDisabled = k.kuota_default_is_full ? 'disabled' : '';
-                var radioWarning = k.kuota_default_is_full ?
-                    '<p class="text-xs text-red-600 font-medium mt-1"><i class="fas fa-ban mr-1"></i>Kuota PENUH — tidak bisa dipilih</p>' :
-                    '';
+                hargaPanelHtml = buildHargaPanel(k, hargaOptions, currentHarga, currentKuotaText,
+                    currentKuotaColor, currentIdHarga, currentBulanHarga, currentTahunHarga);
+            }
 
-                html += `
-                    <div class="keberangkatan-item bg-white rounded-xl border border-gray-200 overflow-hidden" data-keberangkatan-id="${k.id}">
-                        <div class="flex items-start gap-3 p-3">
-                            <input type="radio"
-                                   name="keberangkatan_radio"
-                                   class="keberangkatan-radio mt-1 w-4 h-4 text-yellow-500 focus:ring-yellow-500"
-                                   value="${k.id}"
-                                   data-keberangkatan-id="${k.id}"
-                                   data-bulan="${k.bulan}"
-                                   data-tahun="${k.tahun}"
-                                   data-harga-default="${k.harga_default}"
-                                   data-kuota-default="${k.kuota_default || 0}"
-                                   data-kuota-default-is-full="${k.kuota_default_is_full ? '1' : '0'}"
-                                   ${isChecked}
-                                   ${radioDisabled}>
-                            <div class="flex-1">
-                                <p class="text-sm font-semibold text-gray-700">
-                                    <i class="fas fa-plane text-blue-500 mr-1"></i>
-                                    ${k.keberangkatan_formatted}
-                                </p>
-                                <p class="text-xs text-gray-500">Harga default: ${k.harga_default_formatted}</p>
-                                ${radioWarning}
-                            </div>
-                            <div class="text-right">
-                                <p class="text-xs text-gray-400">Harga dipilih:</p>
-                                <p class="text-sm font-bold text-green-600 harga-display-${k.id}">Rp ${currentHarga.toLocaleString('id-ID')}</p>
-                                <p class="text-xs ${currentKuotaColor} mt-0.5 kuota-display-${k.id}">
-                                    <i class="fas fa-users text-[10px]"></i> Kuota: ${currentKuotaText}
-                                </p>
-                            </div>
-                        </div>
+            container.innerHTML = `
+                <select id="keberangkatan-select"
+                        class="w-full px-4 py-2 border border-gray-200 rounded-xl focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500 text-sm">
+                    ${options}
+                </select>
+                <div id="keberangkatan-harga-wrapper" class="mt-3">${hargaPanelHtml}</div>
+            `;
 
-                        <div class="keberangkatan-harga-section border-t border-gray-100 bg-gray-50 p-3" style="display: ${isChecked ? 'block' : 'none'};">
-                            <label class="block text-xs font-medium text-gray-600 mb-1.5">
-                                <i class="fas fa-tag text-yellow-500 mr-1"></i>
-                                Harga diambil dari bulan/tahun:
-                            </label>
-                            <select class="harga-bulanan-select w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500"
-                                    data-keberangkatan-id="${k.id}">
-                                ${optionsHtml}
-                            </select>
-                            <div class="flex items-center justify-between mt-1">
-                                <p class="text-xs text-gray-400">
-                                    <i class="fas fa-info-circle mr-1"></i>
-                                    Pilih harga dari bulan/tahun berbeda (opsional)
-                                </p>
-                                <p class="text-xs font-medium kuota-info-${k.id} ${currentKuotaColor}">
-                                    <i class="fas fa-users mr-1"></i>
-                                    Kuota: <span class="kuota-info-val-${k.id}">${currentKuotaText}</span>
-                                </p>
-                            </div>
-                        </div>
-
-                        <input type="hidden" class="hidden-id-keberangkatan" name="keberangkatan_data[0][id_produk_keberangkatan]" value="${k.id}" ${isChecked ? '' : 'disabled'}>
-                        <input type="hidden" class="hidden-id-harga-${k.id}" name="keberangkatan_data[0][id_produk_harga_bulanan]" value="${currentIdHarga || ''}" ${isChecked ? '' : 'disabled'}>
-                        <input type="hidden" class="hidden-bulan-harga-${k.id}" name="keberangkatan_data[0][bulan_harga]" value="${isSelected ? selectedKeberangkatan.bulan_harga : k.bulan}" ${isChecked ? '' : 'disabled'}>
-                        <input type="hidden" class="hidden-tahun-harga-${k.id}" name="keberangkatan_data[0][tahun_harga]" value="${isSelected ? selectedKeberangkatan.tahun_harga : k.tahun}" ${isChecked ? '' : 'disabled'}>
-                        <input type="hidden" class="hidden-harga-${k.id}" name="keberangkatan_data[0][harga]" value="${currentHarga}" ${isChecked ? '' : 'disabled'}>
-                    </div>
-                `;
-            });
-
-            container.innerHTML = html;
-
-            document.querySelectorAll('.keberangkatan-radio').forEach(radio => radio.addEventListener('change',
-                handleKeberangkatanChange));
-            document.querySelectorAll('.harga-bulanan-select').forEach(sel => sel.addEventListener('change',
-                handleHargaBulananChange));
+            document.getElementById('keberangkatan-select').addEventListener('change',
+                handleKeberangkatanSelectChange);
+            var hargaSel = container.querySelector('.harga-bulanan-select');
+            if (hargaSel) hargaSel.addEventListener('change', handleHargaBulananChange);
         }
 
-        document.getElementById('filter-tahun').addEventListener('change', function() {
-            renderKeberangkatanByTahun(this.value);
-        });
+        function buildHargaPanel(k, hargaOptions, currentHarga, currentKuotaText, currentKuotaColor,
+            currentIdHarga, currentBulanHarga, currentTahunHarga) {
+            return `
+                <div class="keberangkatan-harga-section bg-gray-50 rounded-xl p-3 border border-gray-200">
+                    <label class="block text-xs font-medium text-gray-600 mb-1.5">
+                        <i class="fas fa-tag text-yellow-500 mr-1"></i>
+                        Harga diambil dari bulan/tahun:
+                    </label>
+                    <select class="harga-bulanan-select w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500"
+                            data-keberangkatan-id="${k.id}">
+                        ${hargaOptions}
+                    </select>
+                    <div class="flex items-center justify-between mt-1">
+                        <p class="text-xs text-gray-400">
+                            <i class="fas fa-info-circle mr-1"></i>
+                            Pilih harga dari bulan/tahun berbeda (opsional)
+                        </p>
+                        <p class="text-xs font-medium kuota-info-${k.id} ${currentKuotaColor}">
+                            <i class="fas fa-users mr-1"></i>
+                            Kuota: <span class="kuota-info-val-${k.id}">${currentKuotaText}</span>
+                        </p>
+                    </div>
+                    <div class="flex items-center justify-between mt-2 pt-2 border-t border-gray-200">
+                        <p class="text-xs text-gray-500">Harga dipilih:</p>
+                        <p class="text-sm font-bold text-green-600 harga-display-${k.id}">
+                            Rp ${parseInt(currentHarga || 0).toLocaleString('id-ID')}
+                        </p>
+                    </div>
+                    <input type="hidden" class="hidden-id-keberangkatan" name="keberangkatan_data[0][id_produk_keberangkatan]" value="${k.id}">
+                    <input type="hidden" class="hidden-id-harga" name="keberangkatan_data[0][id_produk_harga_bulanan]" value="${currentIdHarga || ''}">
+                    <input type="hidden" class="hidden-bulan-harga" name="keberangkatan_data[0][bulan_harga]" value="${currentBulanHarga}">
+                    <input type="hidden" class="hidden-tahun-harga" name="keberangkatan_data[0][tahun_harga]" value="${currentTahunHarga}">
+                    <input type="hidden" class="hidden-harga" name="keberangkatan_data[0][harga]" value="${currentHarga}">
+                </div>
+            `;
+        }
 
-        function handleKeberangkatanChange(e) {
-            var radio = e.target;
-            var selectedId = radio.dataset.keberangkatanId;
+        function handleKeberangkatanSelectChange(e) {
+            var select = e.target;
+            var selectedId = select.value;
+            var wrapper = document.getElementById('keberangkatan-harga-wrapper');
 
-            document.querySelectorAll('.keberangkatan-item').forEach(function(item) {
-                var itemId = item.dataset.keberangkatanId;
-                var hargaSection = item.querySelector('.keberangkatan-harga-section');
-                var hiddenInputs = item.querySelectorAll('input[type="hidden"]');
+            if (!selectedId) {
+                wrapper.innerHTML = '';
+                return;
+            }
 
-                if (itemId === selectedId) {
-                    hargaSection.style.display = 'block';
-                    hiddenInputs.forEach(hi => hi.disabled = false);
-                } else {
-                    hargaSection.style.display = 'none';
-                    hiddenInputs.forEach(hi => hi.disabled = true);
-                }
+            var k = globalKeberangkatanList.find(item => parseInt(item.id) === parseInt(selectedId));
+            if (!k) {
+                wrapper.innerHTML = '';
+                return;
+            }
+
+            var currentKuotaText = k.kuota_default_formatted;
+            var currentKuotaColor = k.kuota_default_is_full ? 'text-red-600' : 'text-blue-600';
+            var currentHarga = parseInt(k.harga_default || 0);
+
+            var hargaOptions = '<option value="">-- Sama dengan keberangkatan (' + k.bulan_formatted + ') --</option>';
+            globalHargaBulananList.forEach(function(h) {
+                var full = h.is_full ? true : false;
+                var dis = full ? 'disabled' : '';
+                var kuotaLabel = h.is_full ? 'PENUH (' + h.kuota + ')' : h.kuota_formatted;
+                var styleAttr = full ? 'style="color:#ef4444;font-style:italic;"' : '';
+                hargaOptions += `<option value="${h.id}"
+                    data-bulan="${h.bulan}" data-tahun="${h.tahun}"
+                    data-harga="${h.harga}" data-kuota="${h.kuota || 0}"
+                    data-is-full="${full ? '1' : '0'}"
+                    ${dis} ${styleAttr}>
+                    ${h.bulan_formatted} - ${h.harga_formatted} (Kuota: ${kuotaLabel})${full ? ' ⛔' : ''}
+                </option>`;
             });
+
+            wrapper.innerHTML = buildHargaPanel(k, hargaOptions, currentHarga, currentKuotaText, currentKuotaColor,
+                '', k.bulan, k.tahun);
+
+            var hargaSel = wrapper.querySelector('.harga-bulanan-select');
+            if (hargaSel) hargaSel.addEventListener('change', handleHargaBulananChange);
         }
 
         function handleHargaBulananChange(e) {
             var sel = e.target;
-            var keberangkatanId = sel.dataset.keberangkatanId;
-            var item = sel.closest('.keberangkatan-item');
-            var radio = item.querySelector('.keberangkatan-radio');
+            var wrapper = sel.closest('.keberangkatan-harga-section');
             var selectedOption = sel.options[sel.selectedIndex];
             var hargaBulananId = sel.value;
-            var bulanHarga, tahunHarga, harga, kuota, isFull;
 
+            var keberangkatanSelect = document.getElementById('keberangkatan-select');
+            var keberangkatanId = keberangkatanSelect ? keberangkatanSelect.value : null;
+            var k = globalKeberangkatanList.find(item => parseInt(item.id) === parseInt(keberangkatanId));
+            if (!k) return;
+
+            var bulanHarga, tahunHarga, harga, kuota, isFull;
             if (hargaBulananId) {
                 bulanHarga = selectedOption.dataset.bulan;
                 tahunHarga = selectedOption.dataset.tahun;
@@ -1003,25 +1007,25 @@
                 kuota = parseInt(selectedOption.dataset.kuota) || 0;
                 isFull = selectedOption.dataset.isFull === '1';
             } else {
-                bulanHarga = radio.dataset.bulan;
-                tahunHarga = radio.dataset.tahun;
-                harga = radio.dataset.hargaDefault;
-                kuota = parseInt(radio.dataset.kuotaDefault) || 0;
-                isFull = radio.dataset.kuotaDefaultIsFull === '1';
+                bulanHarga = k.bulan;
+                tahunHarga = k.tahun;
+                harga = k.harga_default;
+                kuota = parseInt(k.kuota_default) || 0;
+                isFull = k.kuota_default_is_full;
             }
 
             if (isFull) {
-                alert('⚠️ Kuota untuk bulan/tahun ini sudah PENUH!');
+                alert('⚠️ Kuota untuk bulan/tahun ini sudah PENUH!\n\nSilakan pilih bulan/tahun lain.');
                 sel.value = '';
                 return;
             }
 
-            item.querySelector('.hidden-id-harga-' + keberangkatanId).value = hargaBulananId || '';
-            item.querySelector('.hidden-bulan-harga-' + keberangkatanId).value = bulanHarga;
-            item.querySelector('.hidden-tahun-harga-' + keberangkatanId).value = tahunHarga;
-            item.querySelector('.hidden-harga-' + keberangkatanId).value = harga;
+            wrapper.querySelector('.hidden-id-harga').value = hargaBulananId || '';
+            wrapper.querySelector('.hidden-bulan-harga').value = bulanHarga;
+            wrapper.querySelector('.hidden-tahun-harga').value = tahunHarga;
+            wrapper.querySelector('.hidden-harga').value = harga;
 
-            var display = item.querySelector('.harga-display-' + keberangkatanId);
+            var display = wrapper.querySelector('.harga-display-' + k.id);
             if (display) display.textContent = 'Rp ' + parseInt(harga || 0).toLocaleString('id-ID');
 
             var kuotaText, kuotaColor;
@@ -1036,17 +1040,16 @@
                 kuotaColor = kuota <= 3 ? 'text-orange-600' : 'text-blue-600';
             }
 
-            var kuotaDisplay = item.querySelector('.kuota-display-' + keberangkatanId);
-            if (kuotaDisplay) {
-                kuotaDisplay.className = 'text-xs mt-0.5 kuota-display-' + keberangkatanId + ' ' + kuotaColor;
-                kuotaDisplay.innerHTML = '<i class="fas fa-users text-[10px]"></i> Kuota: ' + kuotaText;
-            }
-            var kuotaInfoVal = item.querySelector('.kuota-info-val-' + keberangkatanId);
+            var kuotaInfoVal = wrapper.querySelector('.kuota-info-val-' + k.id);
             if (kuotaInfoVal) {
                 kuotaInfoVal.textContent = kuotaText;
                 kuotaInfoVal.className = kuotaColor;
             }
         }
+
+        document.getElementById('filter-tahun').addEventListener('change', function() {
+            renderKeberangkatanByTahun(this.value);
+        });
 
         document.getElementById('produk_paket').addEventListener('change', function() {
             var selectedOption = this.options[this.selectedIndex];
@@ -1096,7 +1099,6 @@
             var produkPaket = document.getElementById('produk_paket');
             if (produkPaket && produkPaket.value) loadKeberangkatan();
 
-            // Init toggle pembuatan passport
             togglePembuatanPassport();
             updateTotalPendampingan();
 
@@ -1117,30 +1119,22 @@
                         }
                     });
 
-                    var selectedRadio = document.querySelector('.keberangkatan-radio:checked');
-                    if (selectedRadio) {
-                        var isFullRadio = selectedRadio.dataset.kuotaDefaultIsFull === '1';
-                        var hargaSel = document.querySelector(
-                            '.harga-bulanan-select[data-keberangkatan-id="' + selectedRadio.dataset
-                            .keberangkatanId + '"]');
+                    var keberangkatanSelect = document.getElementById('keberangkatan-select');
+                    if (keberangkatanSelect && keberangkatanSelect.value) {
+                        var k = globalKeberangkatanList.find(item => parseInt(item.id) === parseInt(
+                            keberangkatanSelect.value));
+                        var hargaSel = document.querySelector('.harga-bulanan-select');
                         var selectedHargaFull = false;
                         if (hargaSel && hargaSel.value) {
                             var opt = hargaSel.options[hargaSel.selectedIndex];
                             selectedHargaFull = opt.dataset.isFull === '1';
                         }
-
-                        if (isFullRadio || selectedHargaFull) {
+                        if ((k && k.kuota_default_is_full) || selectedHargaFull) {
                             e.preventDefault();
-                            alert('⚠️ Kuota bulan/tahun yang dipilih sudah PENUH!');
+                            alert(
+                                '⚠️ Kuota bulan/tahun yang dipilih sudah PENUH!\n\nSilakan pilih bulan/tahun lain.'
+                            );
                             return false;
-                        }
-
-                        var selectedItem = document.querySelector(
-                            '.keberangkatan-item[data-keberangkatan-id="' + selectedRadio.dataset
-                            .keberangkatanId + '"]');
-                        if (selectedItem) {
-                            selectedItem.querySelectorAll('input[type="hidden"]').forEach(hi => hi
-                                .disabled = false);
                         }
                     }
                 });

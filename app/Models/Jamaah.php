@@ -26,6 +26,9 @@ class Jamaah extends Model
         'telepon',
         'wa',
         'alamat',
+        'kota_kabupaten',      // ✅ NEW
+        'kecamatan',           // ✅ NEW
+        'kelurahan',           // ✅ NEW
         'nomor_paspor',
         'paspor_expired',
         'paspor_terbit',
@@ -120,8 +123,8 @@ class Jamaah extends Model
     public function departures()
     {
         return $this->belongsToMany(Departure::class, 'departure_jamaahs', 'id_jamaah', 'id_departure')
-                    ->withPivot('status_keberangkatan', 'catatan')
-                    ->withTimestamps();
+            ->withPivot('status_keberangkatan', 'catatan')
+            ->withTimestamps();
     }
 
     public function departureJamaahs()
@@ -267,12 +270,6 @@ class Jamaah extends Model
     // ACCESSORS - FEE PASSPORT (untuk Departure)
     // ==========================================
 
-    /**
-     * Apakah jamaah ini EFEKTIF punya pembuatan passport?
-     * - YA (is_pembuatan_passport = true) → true
-     * - TIDAK tapi ada pembayaran passport (pendampingan_fee > 0) → true
-     * - TIDAK dan tidak ada pembayaran passport → false
-     */
     public function getIsPembuatanPassportEfektifAttribute()
     {
         if ($this->is_pembuatan_passport) {
@@ -281,10 +278,6 @@ class Jamaah extends Model
         return ($this->pendampingan_fee ?? 0) > 0;
     }
 
-    /**
-     * Total fee passport per jamaah = pendampingan_fee + pendampingan_fee_petugas
-     * Dihitung jika is_pembuatan_passport_efektif = true
-     */
     public function getFeePassportAttribute()
     {
         if (!$this->is_pembuatan_passport_efektif) {
@@ -298,10 +291,6 @@ class Jamaah extends Model
         return 'Rp ' . number_format($this->fee_passport, 0, ',', '.');
     }
 
-    /**
-     * Pembayaran passport yang masuk ke PENGELUARAN departure
-     * Hanya jika efektif = true
-     */
     public function getPembayaranPassportUntukPengeluaranAttribute()
     {
         if (!$this->is_pembuatan_passport_efektif) {
@@ -310,10 +299,6 @@ class Jamaah extends Model
         return $this->pendampingan_fee ?? 0;
     }
 
-    /**
-     * Pendapatan perusahaan yang masuk ke PENDAPATAN departure
-     * Hanya jika efektif = true
-     */
     public function getPendapatanPerusahaanUntukPendapatanAttribute()
     {
         if (!$this->is_pembuatan_passport_efektif) {
@@ -490,9 +475,18 @@ class Jamaah extends Model
     public function getKeberangkatanListAttribute()
     {
         $bulanNama = [
-            1 => 'Januari', 2 => 'Februari', 3 => 'Maret', 4 => 'April',
-            5 => 'Mei', 6 => 'Juni', 7 => 'Juli', 8 => 'Agustus',
-            9 => 'September', 10 => 'Oktober', 11 => 'November', 12 => 'Desember'
+            1 => 'Januari',
+            2 => 'Februari',
+            3 => 'Maret',
+            4 => 'April',
+            5 => 'Mei',
+            6 => 'Juni',
+            7 => 'Juli',
+            8 => 'Agustus',
+            9 => 'September',
+            10 => 'Oktober',
+            11 => 'November',
+            12 => 'Desember'
         ];
 
         if ($this->keberangkatan->isEmpty()) {
@@ -507,8 +501,10 @@ class Jamaah extends Model
             ->map(function ($k) use ($bulanNama) {
                 $text = $bulanNama[$k->pivot->bulan_keberangkatan] . ' ' . $k->pivot->tahun_keberangkatan;
                 if ($k->pivot->bulan_harga && $k->pivot->tahun_harga) {
-                    if ($k->pivot->bulan_harga != $k->pivot->bulan_keberangkatan ||
-                        $k->pivot->tahun_harga != $k->pivot->tahun_keberangkatan) {
+                    if (
+                        $k->pivot->bulan_harga != $k->pivot->bulan_keberangkatan ||
+                        $k->pivot->tahun_harga != $k->pivot->tahun_keberangkatan
+                    ) {
                         $text .= ' (Harga: ' . $bulanNama[$k->pivot->bulan_harga] . ' ' . $k->pivot->tahun_harga . ')';
                     }
                 }
@@ -520,9 +516,18 @@ class Jamaah extends Model
     public function getKeberangkatanBadgesAttribute()
     {
         $bulanNama = [
-            1 => 'Januari', 2 => 'Februari', 3 => 'Maret', 4 => 'April',
-            5 => 'Mei', 6 => 'Juni', 7 => 'Juli', 8 => 'Agustus',
-            9 => 'September', 10 => 'Oktober', 11 => 'November', 12 => 'Desember'
+            1 => 'Januari',
+            2 => 'Februari',
+            3 => 'Maret',
+            4 => 'April',
+            5 => 'Mei',
+            6 => 'Juni',
+            7 => 'Juli',
+            8 => 'Agustus',
+            9 => 'September',
+            10 => 'Oktober',
+            11 => 'November',
+            12 => 'Desember'
         ];
 
         if ($this->keberangkatan->isEmpty()) {
@@ -541,8 +546,10 @@ class Jamaah extends Model
                 $html .= $bulanNama[$k->pivot->bulan_keberangkatan] . ' ' . $k->pivot->tahun_keberangkatan;
 
                 if ($k->pivot->bulan_harga && $k->pivot->tahun_harga) {
-                    if ($k->pivot->bulan_harga != $k->pivot->bulan_keberangkatan ||
-                        $k->pivot->tahun_harga != $k->pivot->tahun_keberangkatan) {
+                    if (
+                        $k->pivot->bulan_harga != $k->pivot->bulan_keberangkatan ||
+                        $k->pivot->tahun_harga != $k->pivot->tahun_keberangkatan
+                    ) {
                         $html .= '<span class="text-[10px] text-green-700 ml-1 border-l border-blue-300 pl-1">';
                         $html .= '<i class="fas fa-tag text-[9px]"></i> ';
                         $html .= $bulanNama[$k->pivot->bulan_harga] . ' ' . $k->pivot->tahun_harga;

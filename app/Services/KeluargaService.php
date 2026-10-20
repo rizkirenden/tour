@@ -48,9 +48,6 @@ class KeluargaService
             $data['fee_agent'] = (int) ($data['fee_agent'] ?? 0);
             $data['total_dibayar'] = (int) ($data['total_dibayar'] ?? 0);
 
-            // ==========================================
-            // AMBIL HARGA dari id_produk_harga_bulanan
-            // ==========================================
             $hargaProduk = 0;
             $hargaBulanan = null;
             $idHargaBulanan = $data['id_produk_harga_bulanan'] ?? null;
@@ -82,9 +79,6 @@ class KeluargaService
             $jumlahAnggota = count($data['jamaahs'] ?? []);
             $this->validateKuota($idHargaBulanan, $jumlahAnggota);
 
-            // ==========================================
-            // AMBIL DATA DISKON (total kelompok)
-            // ==========================================
             $totalDiskonKelompok = 0;
             $diskonData = null;
             if (!empty($data['id_diskon'])) {
@@ -100,11 +94,6 @@ class KeluargaService
 
             $sisaPembulatan = $totalDiskonKelompok - ($diskonPerOrang * $jumlahAnggota);
 
-            // ==========================================
-            // HITUNG TOTAL TAGIHAN KELOMPOK
-            // Total = Σ(harga_produk + passport_fee) - diskon
-            // passport_fee = pendampingan_fee + pendampingan_fee_petugas
-            // ==========================================
             $totalTagihanKotor = 0;
             $totalPassport = 0;
             if (!empty($data['jamaahs'])) {
@@ -135,9 +124,6 @@ class KeluargaService
                 $diskonData->increment('sudah_digunakan');
             }
 
-            // ==========================================
-            // CREATE JAMAAH ANGGOTA
-            // ==========================================
             if (!empty($data['jamaahs'])) {
                 foreach ($data['jamaahs'] as $index => $jamaahData) {
                     $jamaahData['id_keluarga'] = $keluarga->id_keluarga;
@@ -147,14 +133,10 @@ class KeluargaService
                     $jamaahData['fee_agent'] = (int) ($data['fee_agent'] ?? 0);
                     $jamaahData['agent_name'] = $data['agent'] ?? null;
 
-                    // ==========================================
-                    // PEMBUATAN PASSPORT — YA/TIDAK
-                    // ==========================================
                     $jamaahData['is_pembuatan_passport'] = (bool) ($jamaahData['is_pembuatan_passport'] ?? false);
                     $jamaahData['pendampingan_fee'] = (int) ($jamaahData['pendampingan_fee'] ?? 0);
                     $jamaahData['pendampingan_fee_petugas'] = (int) ($jamaahData['pendampingan_fee_petugas'] ?? 0);
 
-                    // Jika TIDAK pembuatan passport, paksa fee petugas = 0
                     if (!$jamaahData['is_pembuatan_passport']) {
                         $jamaahData['pendampingan_fee_petugas'] = 0;
                     }
@@ -177,13 +159,9 @@ class KeluargaService
                         $jamaahData['id_produk_harga_bulanan'] = $data['id_produk_harga_bulanan'];
                     }
 
-                    // Passport fee per jamaah
                     $passportFeeJamaah = $jamaahData['pendampingan_fee'] + $jamaahData['pendampingan_fee_petugas'];
-
-                    // Total Tagihan Jamaah = Harga Produk + Passport Fee
                     $totalTagihanJamaahKotor = $hargaProduk + $passportFeeJamaah;
 
-                    // Diskon (per orang + sisa pembulatan di jamaah pertama)
                     $diskonJamaah = $diskonPerOrang;
                     if ($index === 0 && $sisaPembulatan != 0) {
                         $diskonJamaah += $sisaPembulatan;
@@ -270,9 +248,6 @@ class KeluargaService
                 $this->validateKuota($idHargaBulanan, $jamaahBaru, $excludeJamaahIds);
             }
 
-            // ==========================================
-            // AMBIL DATA DISKON BARU
-            // ==========================================
             $totalDiskonKelompok = 0;
             $diskonData = null;
             if (!empty($data['id_diskon'])) {
@@ -302,9 +277,6 @@ class KeluargaService
                 $diskonData->increment('sudah_digunakan');
             }
 
-            // ==========================================
-            // UPDATE / CREATE / DELETE JAMAAH
-            // ==========================================
             if (!empty($data['jamaahs'])) {
                 $existingIds = collect($data['jamaahs'])->pluck('id_jamaah')->filter()->toArray();
                 $keluarga->jamaahs()->whereNotIn('id_jamaah', $existingIds)->delete();
@@ -316,14 +288,10 @@ class KeluargaService
                     $jamaahData['fee_agent'] = (int) ($data['fee_agent'] ?? 0);
                     $jamaahData['agent_name'] = $data['agent'] ?? null;
 
-                    // ==========================================
-                    // PEMBUATAN PASSPORT — YA/TIDAK
-                    // ==========================================
                     $jamaahData['is_pembuatan_passport'] = (bool) ($jamaahData['is_pembuatan_passport'] ?? false);
                     $jamaahData['pendampingan_fee'] = (int) ($jamaahData['pendampingan_fee'] ?? 0);
                     $jamaahData['pendampingan_fee_petugas'] = (int) ($jamaahData['pendampingan_fee_petugas'] ?? 0);
 
-                    // Jika TIDAK pembuatan passport, paksa fee petugas = 0
                     if (!$jamaahData['is_pembuatan_passport']) {
                         $jamaahData['pendampingan_fee_petugas'] = 0;
                     }
@@ -344,7 +312,6 @@ class KeluargaService
                         $jamaahData['id_produk_harga_bulanan'] = $data['id_produk_harga_bulanan'];
                     }
 
-                    // Passport fee per jamaah
                     $passportFeeJamaah = $jamaahData['pendampingan_fee'] + $jamaahData['pendampingan_fee_petugas'];
                     $totalTagihanJamaahKotor = $hargaProduk + $passportFeeJamaah;
 
@@ -356,7 +323,6 @@ class KeluargaService
                     $tagihanSetelahDiskonJamaah = max(0, $totalTagihanJamaahKotor - $diskonJamaah);
 
                     if (empty($jamaahData['id_jamaah'])) {
-                        // CREATE
                         $jamaahData['id_keberangkatan'] = $this->generateIdKeberangkatan('PKT', $index);
                         $jamaahData['total_tagihan_sebelum_diskon'] = $totalTagihanJamaahKotor;
                         $jamaahData['total_diskon'] = $diskonJamaah;
@@ -381,7 +347,6 @@ class KeluargaService
                             }
                         }
                     } else {
-                        // UPDATE
                         $jamaah = Jamaah::find($jamaahData['id_jamaah']);
                         if ($jamaah) {
                             $sisaTagihanBaru = max(0, $tagihanSetelahDiskonJamaah - $jamaah->total_dibayar);
@@ -574,8 +539,16 @@ class KeluargaService
     public function getHubunganOptions()
     {
         return [
-            'Kepala Keluarga', 'Istri', 'Suami', 'Anak', 'Orang Tua',
-            'Saudara', 'Mertua', 'Cucu', 'Keponakan', 'Lainnya'
+            'Kepala Keluarga',
+            'Istri',
+            'Suami',
+            'Anak',
+            'Orang Tua',
+            'Saudara',
+            'Mertua',
+            'Cucu',
+            'Keponakan',
+            'Lainnya'
         ];
     }
 
@@ -586,8 +559,10 @@ class KeluargaService
 
     // ==========================================
     // AJAX: KEBERANGKATAN BY PRODUK
+    // $excludeJamaahIds: untuk edit agar kuota anggota
+    // keluarga ini tidak dihitung sebagai "terpakai"
     // ==========================================
-    public function getKeberangkatanByProduk($namaProduk)
+    public function getKeberangkatanByProduk($namaProduk, $excludeJamaahIds = [])
     {
         $produk = ProdukPaket::where('nama_produk', $namaProduk)->first();
         if (!$produk) return ['keberangkatan' => [], 'harga_bulanan' => []];
@@ -596,9 +571,15 @@ class KeluargaService
             ->where('is_active', true)
             ->orderBy('tahun')->orderBy('bulan')
             ->get()
-            ->map(function ($h) {
-                $terpakai = DB::table('jamaah_keberangkatans')
-                    ->where('id_produk_harga_bulanan', $h->id)->count();
+            ->map(function ($h) use ($excludeJamaahIds) {
+                $query = DB::table('jamaah_keberangkatans')
+                    ->where('id_produk_harga_bulanan', $h->id);
+
+                if (!empty($excludeJamaahIds)) {
+                    $query->whereNotIn('id_jamaah', $excludeJamaahIds);
+                }
+
+                $terpakai = $query->count();
 
                 $isFull = $h->kuota > 0 && $terpakai >= $h->kuota;
                 $sisa = $h->kuota > 0 ? max(0, $h->kuota - $terpakai) : -1;

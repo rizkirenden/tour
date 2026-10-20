@@ -57,7 +57,6 @@
                                 {!! $keluarga->status_pembayaran_badge !!}
                             </div>
 
-                            <!-- BULAN KEBERANGKATAN & HARGA -->
                             <div class="flex flex-wrap items-center gap-2 mt-2">
                                 <span class="text-xs text-gray-500">
                                     <i class="fas fa-plane text-blue-500 mr-1"></i> Keberangkatan:
@@ -180,6 +179,9 @@
                                             class="px-3 py-2 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
                                             TTL</th>
                                         <th
+                                            class="px-3 py-2 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                                            Alamat</th>
+                                        <th
                                             class="px-3 py-2 text-right text-xs font-semibold text-gray-500 uppercase tracking-wider">
                                             Harga Produk</th>
                                         <th
@@ -243,6 +245,25 @@
                                                         class="text-gray-400">{{ $jamaah->tanggal_lahir->format('d/m/Y') }}</span>
                                                 @endif
                                             </td>
+
+                                            {{-- ✅ NEW: Alamat Lengkap (Kota/Kab, Kecamatan, Kelurahan) --}}
+                                            <td class="px-3 py-2 text-gray-600 text-xs max-w-xs">
+                                                <div class="text-gray-700">{{ $jamaah->alamat ?? '-' }}</div>
+                                                @if ($jamaah->kelurahan || $jamaah->kecamatan || $jamaah->kota_kabupaten)
+                                                    <div class="text-gray-500 mt-0.5 text-[11px]">
+                                                        @if ($jamaah->kelurahan)
+                                                            Kel. {{ $jamaah->kelurahan }}
+                                                        @endif
+                                                        @if ($jamaah->kecamatan)
+                                                            , Kec. {{ $jamaah->kecamatan }}
+                                                        @endif
+                                                        @if ($jamaah->kota_kabupaten)
+                                                            , {{ $jamaah->kota_kabupaten }}
+                                                        @endif
+                                                    </div>
+                                                @endif
+                                            </td>
+
                                             <td class="px-3 py-2 text-right text-gray-600">
                                                 {{ $jamaah->harga_produk_formatted }}
                                             </td>

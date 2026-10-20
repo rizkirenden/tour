@@ -1,9 +1,9 @@
 50.upgrade hotel dan kamar per jamaah atau keluarga - bayar full - buat input baru di daftar hotel
-58.edit jamaah data harga tidak ter record
+
 59.urutan data dari yang awal ke terahir di menu keseluruhan.
 63.FILTER SELURUH MENU
 76.TAMBAHKAN INPUTAN PEMBAYARAN TAK TERDUGA DI KEBERANGKATAN
-83.kota/kabupaten-kecamatan-kelurahan di input jamaah dan keluarga
+
 84. rekom passport per jamaah.
 ------------------------------------------------------------------------------------------------------------------------------------
 1. ada pembayaran langsung dengan uang real / cash - DONE
@@ -61,6 +61,7 @@
 55.Tambah Bulan Keberangkatan Di PRoduk Paket - Harga perbulan tetap - DONE
 56.Pilih Jamaah - Ambil Dari Harga Perbulan - DONE
 57.Tambah Kuota untuk harga per bulan - flexibel - DONE
+58.edit jamaah data harga tidak ter record - DONE
 60. PREVIEW GAMBAR DI FLAYER, MENU PAKET PRODUK - DONE
 61. informasi pribadi wajib di isi menu jamaah - DONE
 62. hapus angka 0 jika pengisian harga - DONE
@@ -81,4 +82,5 @@
 80. PENDAPATAN DI ATAS FEE PASSPORT DAN DAFTAR ATUR JAMAAH - DAN YANG LAIN ATUR DI BAWAH KEARENA PENGELUARAN - DONE
 81. TOTAL PENDAPATAN JAMAAH, TOTAL PENDAPATAN PEMBUATAN PASPOR, DISKON, PENDAPATAN BERSIH, TOTAL PENGELUARAN - DONE
 82.TAMBAH INFO PENDAPATAN DI MENU SHOW KEBERANGKATAN, SEPERTI TULISAN PENGELUARAN - DONE
+83.Tambah informasi pribadi kota/kabupaten-kecamatan-kelurahan di input jamaah dan keluarga - DONE
 ------------------------------------------------------------------------------------------------------------------------------------
