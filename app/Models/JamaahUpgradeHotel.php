@@ -53,16 +53,24 @@ class JamaahUpgradeHotel extends Model
 
     public function getTotalHargaFormattedAttribute()
     {
-        return 'Rp ' . number_format($this->total_harga, 0, ',', '.');
+        return 'Rp ' . number_format((int) $this->total_harga, 0, ',', '.');
     }
 
     public function getHargaPerMalamFormattedAttribute()
     {
-        return 'Rp ' . number_format($this->harga_per_malam, 0, ',', '.');
+        return 'Rp ' . number_format((int) $this->harga_per_malam, 0, ',', '.');
     }
 
     public function getIsKeluargaUpgradeAttribute()
     {
         return !is_null($this->id_keluarga) && is_null($this->id_jamaah);
+    }
+
+    /**
+     * Accessor safe untuk total_harga - selalu return integer
+     */
+    public function getTotalHargaSafeAttribute(): int
+    {
+        return (int) ($this->total_harga ?? 0);
     }
 }
