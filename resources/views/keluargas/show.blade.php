@@ -169,6 +169,10 @@
                                         <th
                                             class="px-3 py-2 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
                                             JK</th>
+                                        {{-- ✅ NEW: Kolom Status Kawin --}}
+                                        <th
+                                            class="px-3 py-2 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                                            Status Kawin</th>
                                         <th
                                             class="px-3 py-2 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
                                             Telepon</th>
@@ -235,6 +239,10 @@
                                                 @else
                                                     <span class="text-xs text-gray-400">-</span>
                                                 @endif
+                                            </td>
+                                            {{-- ✅ NEW: Kolom Status Kawin dengan badge berwarna --}}
+                                            <td class="px-3 py-2 text-center">
+                                                {!! $jamaah->status_kawin_badge !!}
                                             </td>
                                             <td class="px-3 py-2 text-gray-600 text-xs">{{ $jamaah->telepon ?? '-' }}</td>
                                             <td class="px-3 py-2 text-gray-600 text-xs">{{ $jamaah->wa ?? '-' }}</td>
@@ -370,9 +378,7 @@
                     </div>
                 </div>
 
-                {{-- ============================================ --}}
-                {{-- SECTION BARU: UPGRADE HOTEL KELUARGA --}}
-                {{-- ============================================ --}}
+                {{-- UPGRADE HOTEL KELUARGA --}}
                 @if (
                     $keluarga->upgradeHotels->count() > 0 ||
                         $keluarga->jamaahs->sum(fn($j) => $j->upgradeHotels->sum('total_harga')) > 0)

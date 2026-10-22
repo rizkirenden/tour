@@ -1,4 +1,5 @@
 <?php
+// app/Models/Jamaah.php
 
 namespace App\Models;
 
@@ -26,9 +27,9 @@ class Jamaah extends Model
         'telepon',
         'wa',
         'alamat',
-        'kota_kabupaten',      // ✅ NEW
-        'kecamatan',           // ✅ NEW
-        'kelurahan',           // ✅ NEW
+        'kota_kabupaten',
+        'kecamatan',
+        'kelurahan',
         'nomor_paspor',
         'paspor_expired',
         'paspor_terbit',
@@ -36,6 +37,7 @@ class Jamaah extends Model
         'tanggal_lahir',
         'tempat_lahir',
         'jenis_kelamin',
+        'status_kawin',              // ✅ NEW
         'kota_asal',
         'pulau',
         'bandara_keberangkatan',
@@ -132,7 +134,7 @@ class Jamaah extends Model
         return $this->hasMany(DepartureJamaah::class, 'id_jamaah', 'id_jamaah');
     }
 
-        public function upgradeHotels()
+    public function upgradeHotels()
     {
         return $this->hasMany(JamaahUpgradeHotel::class, 'id_jamaah', 'id_jamaah');
     }
@@ -222,6 +224,28 @@ class Jamaah extends Model
     public function getFeeAgentFormattedAttribute()
     {
         return 'Rp ' . number_format($this->fee_agent, 0, ',', '.');
+    }
+
+    // ==========================================
+    // ✅ ACCESSORS - STATUS KAWIN (NEW)
+    // ==========================================
+
+    public function getStatusKawinLabelAttribute()
+    {
+        return $this->status_kawin ?? '-';
+    }
+
+    public function getStatusKawinBadgeAttribute()
+    {
+        $colors = [
+            'Belum Kawin' => 'bg-gray-100 text-gray-700',
+            'Kawin' => 'bg-green-100 text-green-700',
+            'Cerai Hidup' => 'bg-yellow-100 text-yellow-700',
+            'Cerai Mati' => 'bg-red-100 text-red-700',
+        ];
+        $color = $colors[$this->status_kawin] ?? 'bg-gray-100 text-gray-700';
+        return '<span class="px-2 py-0.5 rounded-full text-xs font-medium ' . $color . '">'
+            . ($this->status_kawin ?? '-') . '</span>';
     }
 
     // ==========================================
@@ -568,7 +592,7 @@ class Jamaah extends Model
             ->implode(' ');
     }
 
-           public function getTotalUpgradeHotelAttribute()
+    public function getTotalUpgradeHotelAttribute()
     {
         return $this->upgradeHotels->sum('total_harga');
     }
@@ -748,6 +772,10 @@ class Jamaah extends Model
 
         $query->when($filters['jenis_kelamin'] ?? null, function ($query, $gender) {
             $query->where('jenis_kelamin', $gender);
+        });
+
+        $query->when($filters['status_kawin'] ?? null, function ($query, $statusKawin) {
+            $query->where('status_kawin', $statusKawin);
         });
 
         $query->when($filters['sumber_data'] ?? null, function ($query, $source) {

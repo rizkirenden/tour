@@ -62,6 +62,11 @@
                             <p class="text-gray-500 text-sm">
                                 <i class="fas fa-phone mr-1"></i> Telepon: {{ $jamaah->telepon ?? '-' }}
                             </p>
+                            {{-- ✅ NEW: Status Kawin --}}
+                            <p class="text-gray-500 text-sm">
+                                <i class="fas fa-heart mr-1"></i> Status Kawin:
+                                <span class="font-medium text-gray-700">{{ $jamaah->status_kawin ?? '-' }}</span>
+                            </p>
                             <p class="text-gray-500 text-sm">
                                 <i class="fas fa-passport mr-1"></i> Paspor: {{ $jamaah->nomor_paspor ?? '-' }}
                             </p>
@@ -217,9 +222,7 @@
                     </div>
                 </div>
 
-                {{-- ============================================ --}}
-                {{-- SECTION BARU: UPGRADE HOTEL --}}
-                {{-- ============================================ --}}
+                {{-- UPGRADE HOTEL --}}
                 @if (
                     $jamaah->upgradeHotels->count() > 0 ||
                         ($jamaah->id_keluarga && $jamaah->keluarga && $jamaah->keluarga->upgradeHotels->count() > 0))
@@ -609,8 +612,7 @@
                     <div class="flex items-center justify-end gap-3 pt-6 border-t border-gray-100 mt-6">
                         <a href="{{ route('transaksional.jamaah.index') }}"
                             class="px-4 py-2 bg-gray-200 text-gray-700 rounded-xl hover:bg-gray-300 transition-colors text-sm font-medium">
-                            Batal
-                        </a>
+                            Batal </a>
                         <button type="submit"
                             class="px-6 py-3 bg-yellow-500 text-white rounded-xl hover:bg-yellow-600 transition-colors text-sm font-medium shadow-sm hover:shadow">
                             <i class="fas fa-check-circle mr-2"></i> Proses Pembayaran </button>

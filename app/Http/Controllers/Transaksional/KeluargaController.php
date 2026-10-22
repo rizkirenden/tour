@@ -1,4 +1,5 @@
 <?php
+// app/Http/Controllers/Transaksional/KeluargaController.php
 
 namespace App\Http\Controllers\Transaksional;
 
@@ -84,6 +85,8 @@ class KeluargaController extends Controller
             'jamaahs.*.hubungan_keluarga' => 'nullable|string|max:30',
             'jamaahs.*.is_kepala_keluarga' => 'nullable|boolean',
             'jamaahs.*.jenis_kelamin' => 'required|in:L,P',
+            // ✅ NEW: Status kawin per jamaah
+            'jamaahs.*.status_kawin' => 'nullable|in:Belum Kawin,Kawin,Cerai Hidup,Cerai Mati',
             'jamaahs.*.telepon' => 'required|string|max:20',
             'jamaahs.*.wa' => 'required|string|max:20',
             'jamaahs.*.alamat' => 'nullable|string',
@@ -94,6 +97,10 @@ class KeluargaController extends Controller
             'jamaahs.*.pulau' => 'nullable|string|max:20',
             'jamaahs.*.bandara_keberangkatan' => 'nullable|string|max:50',
             'jamaahs.*.nomor_paspor' => 'nullable|string|max:20',
+            // ✅ NEW: Field passport lengkap (sama dengan form jamaah)
+            'jamaahs.*.paspor_terbit' => 'nullable|date',
+            'jamaahs.*.paspor_expired' => 'nullable|date',
+            'jamaahs.*.paspor_diterbitkan_di' => 'nullable|string|max:100',
             'jamaahs.*.tanggal_lahir' => 'nullable|date',
             'jamaahs.*.tempat_lahir' => 'required|string|max:100',
             'jamaahs.*.file_ktp_kk' => 'nullable|file|mimes:jpeg,png,jpg,pdf|max:2048',
@@ -211,6 +218,8 @@ class KeluargaController extends Controller
             'jamaahs.*.hubungan_keluarga' => 'nullable|string|max:30',
             'jamaahs.*.is_kepala_keluarga' => 'nullable|boolean',
             'jamaahs.*.jenis_kelamin' => 'required|in:L,P',
+            // ✅ NEW: Status kawin per jamaah
+            'jamaahs.*.status_kawin' => 'nullable|in:Belum Kawin,Kawin,Cerai Hidup,Cerai Mati',
             'jamaahs.*.telepon' => 'required|string|max:20',
             'jamaahs.*.wa' => 'required|string|max:20',
             'jamaahs.*.alamat' => 'nullable|string',
@@ -221,6 +230,10 @@ class KeluargaController extends Controller
             'jamaahs.*.pulau' => 'nullable|string|max:20',
             'jamaahs.*.bandara_keberangkatan' => 'nullable|string|max:50',
             'jamaahs.*.nomor_paspor' => 'nullable|string|max:20',
+            // ✅ NEW: Field passport lengkap
+            'jamaahs.*.paspor_terbit' => 'nullable|date',
+            'jamaahs.*.paspor_expired' => 'nullable|date',
+            'jamaahs.*.paspor_diterbitkan_di' => 'nullable|string|max:100',
             'jamaahs.*.tanggal_lahir' => 'nullable|date',
             'jamaahs.*.tempat_lahir' => 'required|string|max:100',
             'jamaahs.*.file_ktp_kk' => 'nullable|file|mimes:jpeg,png,jpg,pdf|max:2048',
@@ -622,10 +635,6 @@ class KeluargaController extends Controller
         ], 404);
     }
 
-    /**
-     * Ambil daftar kamar berdasarkan hotel — untuk fitur upgrade hotel.
-     * Return HTML inline (tanpa file partial).
-     */
     public function getKamarsByHotel($idHotel)
     {
         $hotel = Hotel::findOrFail($idHotel);

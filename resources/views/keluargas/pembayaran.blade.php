@@ -106,6 +106,9 @@
                                 <tr class="border-b-2 border-gray-300 bg-gray-100">
                                     <th class="px-3 py-2 text-left text-xs font-semibold text-gray-600 uppercase">#</th>
                                     <th class="px-3 py-2 text-left text-xs font-semibold text-gray-600 uppercase">Nama</th>
+                                    {{-- ✅ NEW: Kolom Status Kawin --}}
+                                    <th class="px-3 py-2 text-center text-xs font-semibold text-gray-600 uppercase">Status
+                                        Kawin</th>
                                     <th class="px-3 py-2 text-right text-xs font-semibold text-gray-600 uppercase">Harga
                                         Produk</th>
                                     <th class="px-3 py-2 text-right text-xs font-semibold text-gray-600 uppercase">Passport
@@ -127,6 +130,10 @@
                                     <tr class="hover:bg-white">
                                         <td class="px-3 py-2 text-gray-600">{{ $loop->iteration }}</td>
                                         <td class="px-3 py-2 font-medium text-gray-800">{{ $jamaah->nama_lengkap }}</td>
+                                        {{-- ✅ NEW: Status Kawin dengan badge --}}
+                                        <td class="px-3 py-2 text-center">
+                                            {!! $jamaah->status_kawin_badge !!}
+                                        </td>
                                         <td class="px-3 py-2 text-right text-gray-600">
                                             {{ $jamaah->harga_produk_formatted }}
                                         </td>
@@ -151,7 +158,7 @@
                             </tbody>
                             <tfoot class="border-t-2 border-gray-300 bg-gray-100">
                                 <tr class="font-bold">
-                                    <td colspan="4" class="px-3 py-2 text-right">TOTAL</td>
+                                    <td colspan="5" class="px-3 py-2 text-right">TOTAL</td>
                                     <td class="px-3 py-2 text-right text-gray-800">
                                         {{ $keluarga->total_tagihan_sebelum_diskon_formatted }}
                                     </td>
@@ -171,9 +178,7 @@
                     </div>
                 </div>
 
-                {{-- ============================================ --}}
-                {{-- SECTION BARU: UPGRADE HOTEL KELUARGA --}}
-                {{-- ============================================ --}}
+                {{-- UPGRADE HOTEL KELUARGA --}}
                 @if (
                     $keluarga->upgradeHotels->count() > 0 ||
                         $keluarga->jamaahs->sum(fn($j) => $j->upgradeHotels->sum('total_harga')) > 0)

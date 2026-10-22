@@ -103,6 +103,31 @@
                                     </option>
                                 </select>
                             </div>
+                            {{-- ✅ NEW: Status Kawin --}}
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1.5">
+                                    Status Kawin <span class="text-red-500">*</span>
+                                </label>
+                                <select name="status_kawin" id="status_kawin"
+                                    class="w-full px-4 py-2 border border-gray-200 rounded-xl focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500 text-sm wajib-pribadi"
+                                    required>
+                                    <option value="">Pilih Status</option>
+                                    <option value="Belum Kawin"
+                                        {{ old('status_kawin') == 'Belum Kawin' ? 'selected' : '' }}>Belum Kawin</option>
+                                    <option value="Kawin" {{ old('status_kawin') == 'Kawin' ? 'selected' : '' }}>Kawin
+                                    </option>
+                                    <option value="Cerai Hidup"
+                                        {{ old('status_kawin') == 'Cerai Hidup' ? 'selected' : '' }}>Cerai Hidup</option>
+                                    <option value="Cerai Mati" {{ old('status_kawin') == 'Cerai Mati' ? 'selected' : '' }}>
+                                        Cerai Mati</option>
+                                </select>
+                                @error('status_kawin')
+                                    <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+                                @enderror
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4">
                             <div>
                                 <label class="block text-sm font-medium text-gray-700 mb-1.5">
                                     Telepon <span class="text-red-500">*</span>
@@ -111,9 +136,6 @@
                                     class="w-full px-4 py-2 border border-gray-200 rounded-xl focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500 text-sm wajib-pribadi"
                                     placeholder="08xxxxxxxxxx" required>
                             </div>
-                        </div>
-
-                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4">
                             <div>
                                 <label class="block text-sm font-medium text-gray-700 mb-1.5">
                                     WhatsApp <span class="text-red-500">*</span>
@@ -131,6 +153,9 @@
                                     class="w-full px-4 py-2 border border-gray-200 rounded-xl focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500 text-sm wajib-pribadi"
                                     required>
                             </div>
+                        </div>
+
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4">
                             <div>
                                 <label class="block text-sm font-medium text-gray-700 mb-1.5">
                                     Tanggal Lahir <span class="text-red-500">*</span>
@@ -151,7 +176,6 @@
                                 required>{{ old('alamat') }}</textarea>
                         </div>
 
-                        {{-- ✅ NEW: Kota/Kabupaten, Kecamatan, Kelurahan --}}
                         <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4">
                             <div>
                                 <label class="block text-sm font-medium text-gray-700 mb-1.5">
@@ -712,6 +736,7 @@
                 nama_ayah: 'Nama Ayah',
                 pekerjaan: 'Pekerjaan',
                 jenis_kelamin: 'Jenis Kelamin',
+                status_kawin: 'Status Kawin',
                 telepon: 'Telepon',
                 wa: 'WhatsApp',
                 tempat_lahir: 'Tempat Lahir',
@@ -1271,7 +1296,7 @@
                 .catch(err => {
                     console.error(err);
                     container.innerHTML =
-                    '<div class="text-xs text-red-500 text-center py-2">Gagal memuat kamar.</div>';
+                        '<div class="text-xs text-red-500 text-center py-2">Gagal memuat kamar.</div>';
                 });
         }
 

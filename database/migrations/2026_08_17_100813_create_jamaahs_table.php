@@ -1,4 +1,5 @@
 <?php
+// database/migrations/xxxx_xx_xx_create_jamaahs_table.php
 
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
@@ -35,12 +36,17 @@ return new class extends Migration
             $table->string('nomor_paspor', 20)->nullable();
             $table->date('paspor_expired')->nullable()->comment('Tanggal berakhir paspor');
             $table->date('paspor_terbit')->nullable()->comment('Tanggal terbit paspor');
-            $table->string('paspor_diterbitkan_di', 100)->nullable()->comment('Tempat/negara paspor diterbitkan');
+            $table->string('paspor_diterbitkan_di', 100)->nullable()->comment('Tempat paspor diterbitkan');
 
             // === DATA LAHIR ===
             $table->date('tanggal_lahir')->nullable();
             $table->string('tempat_lahir', 100)->nullable();
             $table->enum('jenis_kelamin', ['L', 'P'])->nullable();
+
+            // === ✅ STATUS KAWIN (PER JAMAAH) ===
+            $table->enum('status_kawin', ['Belum Kawin', 'Kawin', 'Cerai Hidup', 'Cerai Mati'])
+                ->nullable()
+                ->comment('Status pernikahan jamaah');
 
             // === DATA KEBERANGKATAN ===
             $table->string('kota_asal', 50)->nullable();
@@ -51,29 +57,26 @@ return new class extends Migration
             $table->integer('bulan_keberangkatan')->nullable();
             $table->integer('tahun_keberangkatan')->nullable();
 
-            // === FILE UPLOAD (Support Gambar & PDF) ===
-            $table->string('file_ktp_kk', 255)->nullable()->comment('File KTP/KK (PDF/Gambar)');
-            $table->string('file_vaksin', 255)->nullable()->comment('File Vaksin (PDF/Gambar)');
-            $table->string('file_visa', 255)->nullable()->comment('File Visa (PDF/Gambar)');
-            $table->string('file_paspor', 255)->nullable()->comment('File Passport (PDF/Gambar)');
+            // === FILE UPLOAD ===
+            $table->string('file_ktp_kk', 255)->nullable()->comment('File KTP/KK');
+            $table->string('file_vaksin', 255)->nullable()->comment('File Vaksin');
+            $table->string('file_visa', 255)->nullable()->comment('File Visa');
+            $table->string('file_paspor', 255)->nullable()->comment('File Passport');
 
             // === KEAMANAN ===
             $table->string('encryption_key', 100)->nullable();
 
             // === AGENT ===
             $table->string('agent_name', 100)->nullable()->comment('Nama Agent');
-            $table->bigInteger('fee_agent')->default(0)->comment('Fee Agent');
+            $table->bigInteger('fee_agent')->default(0)
+                ->comment('Fee agent per jamaah (hasil bagi dari total keluarga)');
 
             // === PEMBUATAN PASSPORT ===
-            $table->boolean('is_pembuatan_passport')
-                ->default(false)
-                ->comment('YA = ada pendapatan perusahaan, TIDAK = hanya pembayaran passport (bisa kosong)');
-            $table->bigInteger('pendampingan_fee')
-                ->default(0)
-                ->comment('Pembayaran passport (bisa 0 jika jamaah sudah punya passport)');
-            $table->bigInteger('pendampingan_fee_petugas')
-                ->default(0)
-                ->comment('Pendapatan perusahaan (hanya diisi jika is_pembuatan_passport = YA)');
+            $table->boolean('is_pembuatan_passport')->default(false);
+            $table->bigInteger('pendampingan_fee')->default(0)
+                ->comment('Pembayaran passport');
+            $table->bigInteger('pendampingan_fee_petugas')->default(0)
+                ->comment('Pendapatan perusahaan');
 
             // === TIKET ===
             $table->bigInteger('harga_tiket_pergi_domestik')->default(0);
@@ -90,12 +93,14 @@ return new class extends Migration
 
             // === KEUANGAN ===
             $table->bigInteger('total_tagihan_sebelum_diskon')->default(0);
-            $table->bigInteger('nilai_diskon')->default(0)->comment('Nilai diskon per orang dalam Rupiah');
+            $table->bigInteger('nilai_diskon')->default(0);
             $table->bigInteger('total_diskon')->default(0);
             $table->bigInteger('total_tagihan_setelah_diskon')->default(0);
             $table->bigInteger('total_dibayar')->default(0);
             $table->bigInteger('sisa_tagihan')->default(0);
-            $table->enum('status_pembayaran', ['Belum Bayar', 'DP', 'Setoran', 'Lunas'])->default('Belum Bayar');
+            $table->enum('status_pembayaran', ['Belum Bayar', 'DP', 'Setoran', 'Lunas'])
+                ->default('Belum Bayar');
+
             $table->text('keterangan_diskon')->nullable();
             $table->text('catatan_tambahan')->nullable();
 
@@ -116,6 +121,7 @@ return new class extends Migration
             $table->index('nik', 'idx_jamaah_nik');
             $table->index('nomor_paspor', 'idx_jamaah_paspor');
             $table->index('nama_lengkap', 'idx_jamaah_nama');
+            $table->index('status_pembayaran', 'idx_jamaah_status');
         });
     }
 

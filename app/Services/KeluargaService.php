@@ -1,4 +1,5 @@
 <?php
+// app/Services/KeluargaService.php
 
 namespace App\Services;
 
@@ -48,7 +49,7 @@ class KeluargaService
     }
 
     // ==========================================
-    // CREATE
+    // CREATE - DENGAN FEE AGENT PER JAMAAH
     // ==========================================
     public function create(array $data)
     {
@@ -88,6 +89,14 @@ class KeluargaService
             $jumlahAnggota = count($data['jamaahs'] ?? []);
             $this->validateKuota($idHargaBulanan, $jumlahAnggota);
 
+            // ✅ FEE AGENT DIBAGI PER JAMAAH
+            $feeAgentTotal = (int) ($data['fee_agent'] ?? 0);
+            $feeAgentPerJamaah = $jumlahAnggota > 0
+                ? (int) round($feeAgentTotal / $jumlahAnggota)
+                : 0;
+            $sisaPembulatanFeeAgent = $feeAgentTotal - ($feeAgentPerJamaah * $jumlahAnggota);
+
+            // Diskon
             $totalDiskonKelompok = 0;
             $diskonData = null;
             if (!empty($data['id_diskon'])) {
@@ -100,9 +109,9 @@ class KeluargaService
             $diskonPerOrang = $jumlahAnggota > 0
                 ? (int) round($totalDiskonKelompok / $jumlahAnggota)
                 : 0;
+            $sisaPembulatanDiskon = (int) ($totalDiskonKelompok - ($diskonPerOrang * $jumlahAnggota));
 
-            $sisaPembulatan = (int) ($totalDiskonKelompok - ($diskonPerOrang * $jumlahAnggota));
-
+            // Upgrade keluarga
             $totalUpgradeKeluarga = 0;
             $upgradeKeluargaData = $data['upgrade_hotels'] ?? [];
             foreach ($upgradeKeluargaData as $up) {
@@ -115,6 +124,7 @@ class KeluargaService
                 ? (int) round($totalUpgradeKeluarga / $jumlahAnggota)
                 : 0;
 
+            // Total tagihan kotor
             $totalTagihanKotor = 0;
             if (!empty($data['jamaahs'])) {
                 foreach ($data['jamaahs'] as $j) {
@@ -164,8 +174,16 @@ class KeluargaService
                     $jamaahData['is_kepala_keluarga'] = $jamaahData['is_kepala_keluarga'] ?? false;
                     $jamaahData['produk_paket'] = $data['produk_paket'];
 
-                    $jamaahData['fee_agent'] = (int) ($data['fee_agent'] ?? 0);
+                    // ✅ FEE AGENT PER JAMAAH
+                    $feeAgentJamaah = $feeAgentPerJamaah;
+                    if ($index === 0 && $sisaPembulatanFeeAgent != 0) {
+                        $feeAgentJamaah += $sisaPembulatanFeeAgent;
+                    }
+                    $jamaahData['fee_agent'] = $feeAgentJamaah;
                     $jamaahData['agent_name'] = $data['agent'] ?? null;
+
+                    // ✅ Status kawin
+                    $jamaahData['status_kawin'] = $jamaahData['status_kawin'] ?? null;
 
                     $jamaahData['is_pembuatan_passport'] = (bool) ($jamaahData['is_pembuatan_passport'] ?? false);
                     $jamaahData['pendampingan_fee'] = (int) ($jamaahData['pendampingan_fee'] ?? 0);
@@ -206,8 +224,8 @@ class KeluargaService
                     $totalTagihanJamaahKotor = (int) $hargaProduk + (int) $passportFeeJamaah + (int) $jUpgradePersonal + (int) $upgradeKeluargaPerJamaah;
 
                     $diskonJamaah = (int) $diskonPerOrang;
-                    if ($index === 0 && $sisaPembulatan != 0) {
-                        $diskonJamaah += (int) $sisaPembulatan;
+                    if ($index === 0 && $sisaPembulatanDiskon != 0) {
+                        $diskonJamaah += (int) $sisaPembulatanDiskon;
                     }
 
                     $tagihanSetelahDiskonJamaah = max(0, $totalTagihanJamaahKotor - $diskonJamaah);
@@ -293,6 +311,7 @@ class KeluargaService
                 $this->validateKuota($idHargaBulanan, $jamaahBaru, $excludeJamaahIds);
             }
 
+            // Diskon
             $totalDiskonKelompok = 0;
             $diskonData = null;
             if (!empty($data['id_diskon'])) {
@@ -306,9 +325,16 @@ class KeluargaService
             $diskonPerOrang = $jumlahJamaah > 0
                 ? (int) round($totalDiskonKelompok / $jumlahJamaah)
                 : 0;
+            $sisaPembulatanDiskon = (int) ($totalDiskonKelompok - ($diskonPerOrang * $jumlahJamaah));
 
-            $sisaPembulatan = (int) ($totalDiskonKelompok - ($diskonPerOrang * $jumlahJamaah));
+            // ✅ FEE AGENT DIBAGI PER JAMAAH
+            $feeAgentTotal = (int) ($data['fee_agent'] ?? 0);
+            $feeAgentPerJamaah = $jumlahJamaah > 0
+                ? (int) round($feeAgentTotal / $jumlahJamaah)
+                : 0;
+            $sisaPembulatanFeeAgent = $feeAgentTotal - ($feeAgentPerJamaah * $jumlahJamaah);
 
+            // Upgrade keluarga
             $totalUpgradeKeluarga = 0;
             $upgradeKeluargaData = $data['upgrade_hotels'] ?? [];
             foreach ($upgradeKeluargaData as $up) {
@@ -321,20 +347,21 @@ class KeluargaService
                 ? (int) round($totalUpgradeKeluarga / $jumlahJamaah)
                 : 0;
 
-            $data['fee_agent'] = (int) ($data['fee_agent'] ?? 0);
+            $data['fee_agent'] = $feeAgentTotal;
             $data['nilai_diskon'] = (int) $diskonPerOrang;
             $data['total_diskon'] = (int) $totalDiskonKelompok;
             unset($data['upgrade_hotels']);
 
+            $oldDiskonId = $keluarga->id_diskon;
             $keluarga->update($data);
 
             $this->saveUpgradeHotelsKeluarga($keluarga->id_keluarga, $upgradeKeluargaData);
 
-            if ($keluarga->id_diskon && $keluarga->id_diskon != ($data['id_diskon'] ?? null)) {
-                $oldDiskon = Diskon::find($keluarga->id_diskon);
+            if ($oldDiskonId && $oldDiskonId != ($data['id_diskon'] ?? null)) {
+                $oldDiskon = Diskon::find($oldDiskonId);
                 if ($oldDiskon) $oldDiskon->decrement('sudah_digunakan');
             }
-            if ($diskonData && $diskonData->is_available && $keluarga->id_diskon != ($data['id_diskon'] ?? null)) {
+            if ($diskonData && $diskonData->is_available && $oldDiskonId != ($data['id_diskon'] ?? null)) {
                 $diskonData->increment('sudah_digunakan');
             }
 
@@ -349,8 +376,17 @@ class KeluargaService
                     $jamaahData['id_keluarga'] = $keluarga->id_keluarga;
                     $jamaahData['produk_paket'] = $data['produk_paket'];
                     $jamaahData['nilai_diskon'] = (int) $diskonPerOrang;
-                    $jamaahData['fee_agent'] = (int) ($data['fee_agent'] ?? 0);
+
+                    // ✅ FEE AGENT PER JAMAAH
+                    $feeAgentJamaah = $feeAgentPerJamaah;
+                    if ($index === 0 && $sisaPembulatanFeeAgent != 0) {
+                        $feeAgentJamaah += $sisaPembulatanFeeAgent;
+                    }
+                    $jamaahData['fee_agent'] = $feeAgentJamaah;
                     $jamaahData['agent_name'] = $data['agent'] ?? null;
+
+                    // ✅ Status kawin
+                    $jamaahData['status_kawin'] = $jamaahData['status_kawin'] ?? null;
 
                     $jamaahData['is_pembuatan_passport'] = (bool) ($jamaahData['is_pembuatan_passport'] ?? false);
                     $jamaahData['pendampingan_fee'] = (int) ($jamaahData['pendampingan_fee'] ?? 0);
@@ -389,8 +425,8 @@ class KeluargaService
                     $totalTagihanJamaahKotor = (int) $hargaProduk + (int) $passportFeeJamaah + (int) $jUpgradePersonal + (int) $upgradeKeluargaPerJamaah;
 
                     $diskonJamaah = (int) $diskonPerOrang;
-                    if ($index === 0 && $sisaPembulatan != 0) {
-                        $diskonJamaah += (int) $sisaPembulatan;
+                    if ($index === 0 && $sisaPembulatanDiskon != 0) {
+                        $diskonJamaah += (int) $sisaPembulatanDiskon;
                     }
 
                     $tagihanSetelahDiskonJamaah = max(0, $totalTagihanJamaahKotor - $diskonJamaah);
@@ -687,14 +723,14 @@ class KeluargaService
         return 'DP';
     }
 
-   private function generateIdKeberangkatan($kodeProduk, $index)
-{
-    $year = date('Y');
-    $month = date('m');
-    $index = (int) $index; // <-- CAST KE INTEGER
-    $number = str_pad($index + 1, 3, '0', STR_PAD_LEFT);
-    return "{$kodeProduk}-{$year}{$month}-{$number}";
-}
+    private function generateIdKeberangkatan($kodeProduk, $index)
+    {
+        $year = date('Y');
+        $month = date('m');
+        $index = (int) $index;
+        $number = str_pad($index + 1, 3, '0', STR_PAD_LEFT);
+        return "{$kodeProduk}-{$year}{$month}-{$number}";
+    }
 
     // ==========================================
     // OPTIONS
@@ -712,8 +748,16 @@ class KeluargaService
     public function getHubunganOptions()
     {
         return [
-            'Kepala Keluarga', 'Istri', 'Suami', 'Anak', 'Orang Tua',
-            'Saudara', 'Mertua', 'Cucu', 'Keponakan', 'Lainnya'
+            'Kepala Keluarga',
+            'Istri',
+            'Suami',
+            'Anak',
+            'Orang Tua',
+            'Saudara',
+            'Mertua',
+            'Cucu',
+            'Keponakan',
+            'Lainnya'
         ];
     }
 

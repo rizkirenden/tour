@@ -1,4 +1,5 @@
 <?php
+// app/Services/JamaahService.php
 
 namespace App\Services;
 
@@ -42,6 +43,11 @@ class JamaahService
 
         if (!empty($filters['jenis_kelamin'])) {
             $query->where('jenis_kelamin', $filters['jenis_kelamin']);
+        }
+
+        // ✅ NEW: Filter status kawin
+        if (!empty($filters['status_kawin'])) {
+            $query->where('status_kawin', $filters['status_kawin']);
         }
 
         if (!empty($filters['sumber_data'])) {
@@ -109,6 +115,9 @@ class JamaahService
             if (!$data['is_pembuatan_passport']) {
                 $data['pendampingan_fee_petugas'] = 0;
             }
+
+            // ✅ Status kawin - default null jika kosong
+            $data['status_kawin'] = $data['status_kawin'] ?? null;
 
             $diskonData = null;
             $nilaiDiskon = 0;
@@ -248,6 +257,9 @@ class JamaahService
             if (!$data['is_pembuatan_passport']) {
                 $data['pendampingan_fee_petugas'] = 0;
             }
+
+            // ✅ Status kawin - default null jika kosong
+            $data['status_kawin'] = $data['status_kawin'] ?? null;
 
             $diskonData = null;
             $nilaiDiskon = 0;

@@ -1,4 +1,5 @@
 <?php
+// app/Http/Controllers/Transaksional/JamaahController.php
 
 namespace App\Http\Controllers\Transaksional;
 
@@ -32,7 +33,7 @@ class JamaahController extends Controller
 
     public function index(Request $request)
     {
-        $filters = $request->only(['search', 'status_pembayaran', 'jenis_kelamin', 'sumber_data']);
+        $filters = $request->only(['search', 'status_pembayaran', 'jenis_kelamin', 'sumber_data', 'status_kawin']);
         $data = $this->service->getAll($filters);
 
         if ($request->ajax()) {
@@ -83,6 +84,8 @@ class JamaahController extends Controller
             'tanggal_lahir' => 'nullable|date',
             'tempat_lahir' => 'nullable|string|max:100',
             'jenis_kelamin' => 'nullable|in:L,P',
+            // ✅ NEW: Status kawin
+            'status_kawin' => 'nullable|in:Belum Kawin,Kawin,Cerai Hidup,Cerai Mati',
             'kota_asal' => 'required|string|max:50|exists:kota_asals,nama_kota',
             'pulau' => 'nullable|string|max:20',
             'bandara_keberangkatan' => 'nullable|string|max:50',
@@ -108,7 +111,7 @@ class JamaahController extends Controller
             'pendampingan_fee' => 'nullable|integer|min:0',
             'pendampingan_fee_petugas' => 'nullable|integer|min:0',
 
-            // ✅ NEW: Upgrade hotel
+            // Upgrade hotel
             'upgrade_hotels' => 'nullable|array',
             'upgrade_hotels.*.id_hotel' => 'required_with:upgrade_hotels|exists:hotels,id_hotel',
             'upgrade_hotels.*.id_kamar' => 'nullable|exists:kamars,id_kamar',
@@ -130,6 +133,9 @@ class JamaahController extends Controller
         if (!$validated['is_pembuatan_passport']) {
             $validated['pendampingan_fee_petugas'] = 0;
         }
+
+        // ✅ Status kawin - null jika kosong
+        $validated['status_kawin'] = $validated['status_kawin'] ?? null;
 
         $this->uploadFiles($request, $validated);
 
@@ -183,7 +189,7 @@ class JamaahController extends Controller
             ];
         })->values()->toArray();
 
-        // ✅ NEW: Existing upgrade hotels
+        // Existing upgrade hotels
         $selectedUpgradeHotels = $jamaah->upgradeHotels->map(function ($u) {
             return [
                 'id_hotel' => $u->id_hotel,
@@ -234,6 +240,8 @@ class JamaahController extends Controller
             'tanggal_lahir' => 'nullable|date',
             'tempat_lahir' => 'nullable|string|max:100',
             'jenis_kelamin' => 'nullable|in:L,P',
+            // ✅ NEW: Status kawin
+            'status_kawin' => 'nullable|in:Belum Kawin,Kawin,Cerai Hidup,Cerai Mati',
             'kota_asal' => 'required|string|max:50|exists:kota_asals,nama_kota',
             'pulau' => 'nullable|string|max:20',
             'bandara_keberangkatan' => 'nullable|string|max:50',
@@ -259,7 +267,7 @@ class JamaahController extends Controller
             'pendampingan_fee' => 'nullable|integer|min:0',
             'pendampingan_fee_petugas' => 'nullable|integer|min:0',
 
-            // ✅ NEW: Upgrade hotel
+            // Upgrade hotel
             'upgrade_hotels' => 'nullable|array',
             'upgrade_hotels.*.id_hotel' => 'required_with:upgrade_hotels|exists:hotels,id_hotel',
             'upgrade_hotels.*.id_kamar' => 'nullable|exists:kamars,id_kamar',
@@ -281,6 +289,9 @@ class JamaahController extends Controller
         if (!$validated['is_pembuatan_passport']) {
             $validated['pendampingan_fee_petugas'] = 0;
         }
+
+        // ✅ Status kawin - null jika kosong
+        $validated['status_kawin'] = $validated['status_kawin'] ?? null;
 
         $oldFiles = [
             'file_ktp_kk' => $jamaah->file_ktp_kk,
@@ -769,10 +780,6 @@ class JamaahController extends Controller
         ]);
     }
 
-    /**
-     * AJAX get kamar by hotel — untuk fitur upgrade hotel Jamaah
-     * Return HTML inline (tanpa file partial)
-     */
     public function getKamarsByHotel($idHotel)
     {
         $hotel = Hotel::findOrFail($idHotel);

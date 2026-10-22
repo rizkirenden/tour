@@ -1,4 +1,5 @@
 <?php
+// app/Models/Keluarga.php
 
 namespace App\Models;
 
@@ -34,6 +35,7 @@ class Keluarga extends Model
         'status_pembayaran',
         'keterangan_diskon',
         'catatan_tambahan'
+        // ✅ status_kawin TIDAK ADA di sini (hanya di Jamaah)
     ];
 
     protected $casts = [
@@ -86,6 +88,27 @@ class Keluarga extends Model
     }
 
     // ==========================================
+    // ✅ ACCESSORS - FEE AGENT PER JAMAAH (NEW)
+    // ==========================================
+
+    public function getFeeAgentPerJamaahAttribute()
+    {
+        $jumlahJamaah = $this->jamaahs->count();
+        if ($jumlahJamaah <= 0) return 0;
+        return (int) round($this->fee_agent / $jumlahJamaah);
+    }
+
+    public function getFeeAgentPerJamaahFormattedAttribute()
+    {
+        return 'Rp ' . number_format($this->fee_agent_per_jamaah, 0, ',', '.');
+    }
+
+    public function getJumlahJamaahAttribute()
+    {
+        return $this->jamaahs->count();
+    }
+
+    // ==========================================
     // ACCESSORS
     // ==========================================
 
@@ -126,7 +149,7 @@ class Keluarga extends Model
         return $this->kode_keluarga ?? '-';
     }
 
-           public function getTotalUpgradeHotelAttribute()
+    public function getTotalUpgradeHotelAttribute()
     {
         return $this->upgradeHotels->sum('total_harga');
     }
@@ -152,19 +175,16 @@ class Keluarga extends Model
     // DISKON & TAGIHAN
     // ==========================================
 
-    /** Total diskon kelompok (misal: Rp 2.000.000) */
     public function getTotalDiskonFormattedAttribute()
     {
         return 'Rp ' . number_format($this->total_diskon ?? 0, 0, ',', '.');
     }
 
-    /** Diskon per orang (hasil pembagian) */
     public function getDiskonPerOrangFormattedAttribute()
     {
         return 'Rp ' . number_format($this->nilai_diskon ?? 0, 0, ',', '.');
     }
 
-    /** Harga kotor sebelum diskon (total kelompok) */
     public function getTotalTagihanSebelumDiskonFormattedAttribute()
     {
         return 'Rp ' . number_format($this->total_tagihan_sebelum_diskon ?? 0, 0, ',', '.');
@@ -177,9 +197,18 @@ class Keluarga extends Model
     public function getBulanKeberangkatanNamaAttribute()
     {
         $bulanNama = [
-            1 => 'Januari', 2 => 'Februari', 3 => 'Maret', 4 => 'April',
-            5 => 'Mei', 6 => 'Juni', 7 => 'Juli', 8 => 'Agustus',
-            9 => 'September', 10 => 'Oktober', 11 => 'November', 12 => 'Desember'
+            1 => 'Januari',
+            2 => 'Februari',
+            3 => 'Maret',
+            4 => 'April',
+            5 => 'Mei',
+            6 => 'Juni',
+            7 => 'Juli',
+            8 => 'Agustus',
+            9 => 'September',
+            10 => 'Oktober',
+            11 => 'November',
+            12 => 'Desember'
         ];
         return $bulanNama[$this->bulan_keberangkatan] ?? '-';
     }
@@ -187,9 +216,18 @@ class Keluarga extends Model
     public function getBulanHargaNamaAttribute()
     {
         $bulanNama = [
-            1 => 'Januari', 2 => 'Februari', 3 => 'Maret', 4 => 'April',
-            5 => 'Mei', 6 => 'Juni', 7 => 'Juli', 8 => 'Agustus',
-            9 => 'September', 10 => 'Oktober', 11 => 'November', 12 => 'Desember'
+            1 => 'Januari',
+            2 => 'Februari',
+            3 => 'Maret',
+            4 => 'April',
+            5 => 'Mei',
+            6 => 'Juni',
+            7 => 'Juli',
+            8 => 'Agustus',
+            9 => 'September',
+            10 => 'Oktober',
+            11 => 'November',
+            12 => 'Desember'
         ];
         return $bulanNama[$this->bulan_harga] ?? '-';
     }

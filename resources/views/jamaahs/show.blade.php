@@ -59,6 +59,12 @@
                                     {{ $jamaah->produk_paket }}</p>
                                 <p class="text-gray-500 text-sm"><i class="fas fa-map-marker-alt mr-1"></i> Kota Asal:
                                     {{ $jamaah->kota_asal ?? '-' }}</p>
+                                {{-- ✅ NEW: Status Kawin di header --}}
+                                @if ($jamaah->status_kawin)
+                                    <p class="text-gray-500 text-sm"><i class="fas fa-heart mr-1"></i> Status Kawin:
+                                        <span class="font-medium text-gray-700">{{ $jamaah->status_kawin }}</span>
+                                    </p>
+                                @endif
                             </div>
                             <div class="flex flex-wrap items-center gap-3 mt-1">
                                 <span class="text-xs text-gray-500">Passport:</span>{!! $jamaah->status_passport['badge'] !!}
@@ -116,6 +122,13 @@
                             <div class="flex justify-between text-sm border-b border-gray-100 pb-2">
                                 <dt class="text-gray-500">Jenis Kelamin</dt>
                                 <dd class="font-medium text-gray-700">{{ $jamaah->jenis_kelamin_label }}</dd>
+                            </div>
+                            {{-- ✅ NEW: Status Kawin --}}
+                            <div class="flex justify-between text-sm border-b border-gray-100 pb-2">
+                                <dt class="text-gray-500">Status Kawin</dt>
+                                <dd class="font-medium">
+                                    {!! $jamaah->status_kawin_badge !!}
+                                </dd>
                             </div>
                             <div class="flex justify-between text-sm border-b border-gray-100 pb-2">
                                 <dt class="text-gray-500">Tempat, Tanggal Lahir</dt>
@@ -346,9 +359,7 @@
                         </dl>
                     </div>
 
-                    {{-- ============================================ --}}
                     {{-- UPGRADE HOTEL --}}
-                    {{-- ============================================ --}}
                     @if ($jamaah->upgradeHotels->count() > 0 || $jamaah->total_upgrade_hotel_gabungan > 0)
                         <div class="bg-orange-50 rounded-xl p-5 border border-orange-200 lg:col-span-2">
                             <h6 class="text-sm font-semibold text-gray-700 mb-4 flex items-center"><i
@@ -480,7 +491,8 @@
                                     @else
                                         <div
                                             class="w-24 h-24 bg-gray-100 rounded-lg mx-auto flex items-center justify-center border border-gray-200">
-                                            <i class="fas fa-file text-4xl text-gray-300"></i></div>
+                                            <i class="fas fa-file text-4xl text-gray-300"></i>
+                                        </div>
                                         <p class="text-xs text-gray-400 mt-2">Tidak ada file</p>
                                     @endif
                                 </div>
