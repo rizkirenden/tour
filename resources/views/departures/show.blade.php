@@ -19,23 +19,50 @@
 @endsection
 
 @section('content')
+    @php $locked = $departure->perjalanan_selesai; @endphp
     <div class="mx-auto">
         <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
-            <!-- HEADER -->
+            {{-- HEADER --}}
             <div class="px-6 py-4 border-b border-gray-100 flex flex-wrap items-center justify-between gap-3">
                 <div>
                     <h5 class="text-sm font-semibold text-gray-700">Detail Keberangkatan</h5>
                     <p class="text-xs text-gray-400 mt-0.5">Kelola data keberangkatan secara bertahap</p>
                 </div>
                 <div class="flex items-center gap-2 flex-wrap">
-                    <a href="{{ route('transaksional.departure.edit', $departure->id_departure) }}"
-                        class="inline-flex items-center px-4 py-2 bg-yellow-500 text-white rounded-lg hover:bg-yellow-600 transition text-sm font-medium shadow-sm hover:shadow">
-                        <i class="fas fa-edit mr-2"></i> Edit Dasar
-                    </a>
-                    <button onclick="recalculate({{ $departure->id_departure }})"
-                        class="inline-flex items-center px-3 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition text-sm font-medium">
-                        <i class="fas fa-sync-alt mr-2"></i> Recalculate
-                    </button>
+                    {{-- LOCK: header buttons --}}
+                    @if ($locked)
+                        <span
+                            class="inline-flex items-center px-3 py-2 bg-gray-800 text-white rounded-lg text-sm font-semibold">
+                            <i class="fas fa-lock mr-2"></i> PERJALANAN SELESAI
+                        </span>
+                        <form action="{{ route('transaksional.departure.batalkan-selesai', $departure->id_departure) }}"
+                            method="POST"
+                            onsubmit="return confirm('Batalkan status SELESAI? Data akan dapat diedit kembali.')">
+                            @csrf
+                            <button type="submit"
+                                class="inline-flex items-center px-4 py-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition text-sm font-medium shadow-sm">
+                                <i class="fas fa-lock-open mr-2"></i> Batalkan Selesai
+                            </button>
+                        </form>
+                    @else
+                        <a href="{{ route('transaksional.departure.edit', $departure->id_departure) }}"
+                            class="inline-flex items-center px-4 py-2 bg-yellow-500 text-white rounded-lg hover:bg-yellow-600 transition text-sm font-medium shadow-sm hover:shadow">
+                            <i class="fas fa-edit mr-2"></i> Edit Dasar
+                        </a>
+                        <button onclick="recalculate({{ $departure->id_departure }})"
+                            class="inline-flex items-center px-3 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition text-sm font-medium">
+                            <i class="fas fa-sync-alt mr-2"></i> Recalculate
+                        </button>
+                        <form action="{{ route('transaksional.departure.mark-selesai', $departure->id_departure) }}"
+                            method="POST"
+                            onsubmit="return confirm('Tandai perjalanan SELESAI?\n\nSemua data akan TERKUNCI sampai dibatalkan.')">
+                            @csrf
+                            <button type="submit"
+                                class="inline-flex items-center px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition text-sm font-medium shadow-sm">
+                                <i class="fas fa-flag-checkered mr-2"></i> Perjalanan Selesai
+                            </button>
+                        </form>
+                    @endif
                     <a href="{{ route('transaksional.departure.index') }}"
                         class="inline-flex items-center px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition text-sm font-medium">
                         <i class="fas fa-arrow-left mr-2"></i> Kembali
@@ -43,7 +70,20 @@
                 </div>
             </div>
 
-            <!-- PROGRESS BAR -->
+            {{-- LOCK: banner --}}
+            @if ($locked)
+                <div class="mx-6 mt-4 rounded-xl border-2 border-gray-800 bg-gray-100 p-4">
+                    <p class="text-sm font-semibold text-gray-800">
+                        <i class="fas fa-lock mr-2"></i> Perjalanan ini sudah ditandai <strong>SELESAI</strong>
+                        pada {{ $departure->perjalanan_selesai_at?->format('d M Y H:i') }}.
+                    </p>
+                    <p class="text-xs text-gray-600 mt-1">
+                        Semua data bersifat read-only. Klik <strong>Batalkan Selesai</strong> di atas untuk membuka kunci.
+                    </p>
+                </div>
+            @endif
+
+            {{-- PROGRESS BAR --}}
             <div class="px-6 pt-4">
                 <div class="flex items-center gap-4">
                     <span class="text-sm font-medium text-gray-700">Progress:</span>
@@ -55,7 +95,7 @@
                 </div>
             </div>
 
-            <!-- CONTENT -->
+            {{-- CONTENT --}}
             <div class="p-6">
                 {{-- HEADER KEBERANGKATAN --}}
                 <div
@@ -68,6 +108,7 @@
                                     {{ $departure->kode_keberangkatan }}
                                 </span>
                                 {!! $departure->status_badge !!}
+                                {!! $departure->perjalanan_selesai_badge !!}
                             </div>
                             <p class="text-gray-500 text-sm mt-1">
                                 <i class="fas fa-box mr-1"></i> Produk: {{ $departure->produk_paket }}
@@ -111,14 +152,18 @@
                     </div>
                 </div>
 
-                {{-- 1. PENDAPATAN --}}
+                {{-- ============================================================ --}}
+                {{-- 1. PENDAPATAN (CASH BASIS)                                     --}}
+                {{-- ============================================================ --}}
                 <div class="mb-6">
                     <h6 class="text-sm font-semibold text-gray-700 mb-3 flex items-center">
                         <i class="fas fa-money-bill-wave text-green-500 mr-2"></i> Pendapatan
+                        <span
+                            class="ml-2 px-2 py-0.5 bg-emerald-100 text-emerald-700 text-[10px] rounded-full font-bold">CASH
+                            BASIS</span>
                     </h6>
                 </div>
 
-                {{-- 1. RINGKASAN PENDAPATAN --}}
                 <div class="bg-gray-50 rounded-xl p-5 border border-gray-100 mb-6">
                     <h6 class="text-sm font-semibold text-gray-700 mb-4 flex items-center">
                         <i class="fas fa-money-bill-wave text-green-500 mr-2"></i> Ringkasan Pendapatan
@@ -127,26 +172,46 @@
                     @php
                         $pendapatanPerusahaanPassport = $departure->total_pendapatan_perusahaan_passport;
                         $pembayaranPassport = $departure->total_pembayaran_passport;
+                        $totalTagihanJamaah = $departure->total_tagihan_jamaah;
+                        $totalSudahDibayarJamaah = $departure->total_dibayar_jamaah;
+                        $totalSisaTagihan = $departure->total_sisa_tagihan;
                     @endphp
+
+                    <div class="mb-4 bg-blue-50 rounded-lg p-3 border border-blue-200">
+                        <p class="text-xs text-blue-700">
+                            <i class="fas fa-info-circle mr-1"></i>
+                            <strong>Pendapatan dihitung CASH BASIS</strong> = hanya uang yang <strong>sudah dibayar</strong>
+                            jamaah.
+                            Tagihan invoice hanya <strong>informasi</strong> dan tidak dihitung sebagai pendapatan sampai
+                            ada pembayaran masuk.
+                        </p>
+                    </div>
 
                     <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
                         <div class="bg-white rounded-lg p-3 border border-gray-200 text-center">
-                            <p class="text-xs text-gray-500">Pendapatan Kotor</p>
-                            <p class="text-sm font-bold text-green-600">{{ $departure->total_pendapatan_kotor_formatted }}
-                            </p>
+                            <p class="text-xs text-gray-500">Total Tagihan (Invoice)</p>
+                            <p class="text-sm font-bold text-gray-700">Rp
+                                {{ number_format($totalTagihanJamaah, 0, ',', '.') }}</p>
+                            <p class="text-[10px] text-gray-400 mt-0.5">Hanya informasi</p>
                         </div>
-                        <div class="bg-white rounded-lg p-3 border border-gray-200 text-center">
-                            <p class="text-xs text-gray-500">Total Diskon</p>
-                            <p class="text-sm font-bold text-red-600">{{ $departure->total_diskon_formatted }}</p>
+                        <div class="bg-white rounded-lg p-3 border-2 border-emerald-400 text-center">
+                            <p class="text-xs text-emerald-700 font-semibold">Sudah Dibayar</p>
+                            <p class="text-sm font-bold text-emerald-600">Rp
+                                {{ number_format($totalSudahDibayarJamaah, 0, ',', '.') }}</p>
+                            <p class="text-[10px] text-emerald-500 mt-0.5 font-semibold">✓ DIHITUNG
+                                ({{ $departure->jamaahs->count() }} jamaah)</p>
+                        </div>
+                        <div class="bg-white rounded-lg p-3 border border-red-200 text-center">
+                            <p class="text-xs text-gray-500">Sisa Tagihan</p>
+                            <p class="text-sm font-bold text-red-600">Rp
+                                {{ number_format($totalSisaTagihan, 0, ',', '.') }}</p>
+                            <p class="text-[10px] text-gray-400 mt-0.5">Belum dibayar</p>
                         </div>
                         <div class="bg-white rounded-lg p-3 border border-purple-200 text-center">
                             <p class="text-xs text-gray-500">Pendapatan Perusahaan Passport</p>
                             <p class="text-sm font-bold text-purple-600">
                                 {{ $departure->total_pendapatan_perusahaan_passport_formatted }}</p>
-                        </div>
-                        <div class="bg-white rounded-lg p-3 border border-gray-200 text-center">
-                            <p class="text-xs text-gray-500">Total Pendapatan</p>
-                            <p class="text-sm font-bold text-blue-600">{{ $departure->total_pendapatan_formatted }}</p>
+                            <p class="text-[10px] text-purple-400 mt-0.5">Fee petugas</p>
                         </div>
                     </div>
 
@@ -179,17 +244,28 @@
                         </div>
                     @endif
 
-                    <div class="grid grid-cols-2 gap-4 mb-4">
-                        <div class="bg-white rounded-lg p-3 border border-gray-200 text-center">
-                            <p class="text-xs text-gray-500">Pendapatan Bersih</p>
-                            <p class="text-sm font-bold text-yellow-600">
-                                {{ $departure->total_pendapatan_bersih_formatted }}</p>
+                    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
+                        <div class="bg-white rounded-lg p-3 border border-emerald-200 text-center">
+                            <p class="text-xs text-gray-500">Pendapatan Kotor</p>
+                            <p class="text-sm font-bold text-emerald-600">
+                                {{ $departure->total_pendapatan_kotor_formatted }}</p>
+                            <p class="text-[10px] text-gray-400 mt-0.5">= sudah dibayar</p>
                         </div>
                         <div class="bg-white rounded-lg p-3 border border-gray-200 text-center">
-                            <p class="text-xs text-gray-500">Keuntungan</p>
-                            <p
-                                class="text-lg font-bold {{ $departure->keuntungan > 0 ? 'text-green-600' : 'text-red-600' }}">
-                                {{ $departure->keuntungan_formatted }}</p>
+                            <p class="text-xs text-gray-500">Total Diskon</p>
+                            <p class="text-sm font-bold text-red-600">{{ $departure->total_diskon_formatted }}</p>
+                            <p class="text-[10px] text-gray-400 mt-0.5">Info</p>
+                        </div>
+                        <div class="bg-white rounded-lg p-3 border border-gray-200 text-center">
+                            <p class="text-xs text-gray-500">Total Pendapatan</p>
+                            <p class="text-sm font-bold text-blue-600">{{ $departure->total_pendapatan_formatted }}</p>
+                            <p class="text-[10px] text-gray-400 mt-0.5">Cash + Passport</p>
+                        </div>
+                        <div class="bg-white rounded-lg p-3 border-2 border-emerald-400 text-center">
+                            <p class="text-xs text-emerald-700 font-semibold">Pendapatan Bersih</p>
+                            <p class="text-sm font-bold text-emerald-600">
+                                {{ $departure->total_pendapatan_bersih_formatted }}</p>
+                            <p class="text-[10px] text-emerald-500 mt-0.5 font-semibold">✓ DIHITUNG</p>
                         </div>
                     </div>
 
@@ -198,20 +274,20 @@
                             <div>
                                 <p class="text-sm font-bold text-green-800"><i class="fas fa-calculator mr-2"></i>TOTAL
                                     KESELURUHAN PENDAPATAN</p>
-                                <p class="text-[10px] text-green-600 mt-0.5">Pendapatan Kotor + Pendapatan Perusahaan
-                                    Passport</p>
+                                <p class="text-[10px] text-green-600 mt-0.5"><strong>Hanya uang yang sudah masuk</strong>
+                                    (Sudah Dibayar + Passport Perusahaan)</p>
                             </div>
                             <div class="text-right">
                                 <p class="text-xl md:text-2xl font-extrabold text-green-700">
                                     {{ $departure->total_pendapatan_bersih_formatted }}</p>
-                                <p class="text-[10px] text-green-600">Pendapatan Bersih Final</p>
+                                <p class="text-[10px] text-green-600">Pendapatan Bersih Final (Cash Basis)</p>
                             </div>
                         </div>
-                        <div class="mt-3 pt-3 border-t border-green-300 grid grid-cols-2 md:grid-cols-3 gap-2 text-xs">
+                        <div class="mt-3 pt-3 border-t border-green-300 grid grid-cols-2 md:grid-cols-4 gap-2 text-xs">
                             <div class="flex justify-between">
-                                <span class="text-green-700">Kotor:</span>
-                                <span
-                                    class="font-bold text-green-800">{{ $departure->total_pendapatan_kotor_formatted }}</span>
+                                <span class="text-green-700">Sudah Dibayar:</span>
+                                <span class="font-bold text-emerald-700">Rp
+                                    {{ number_format($totalSudahDibayarJamaah, 0, ',', '.') }}</span>
                             </div>
                             <div class="flex justify-between">
                                 <span class="text-green-700">Passport Perusahaan:</span>
@@ -223,11 +299,16 @@
                                 <span
                                     class="font-bold text-green-800">{{ $departure->total_pendapatan_bersih_formatted }}</span>
                             </div>
+                            <div class="flex justify-between">
+                                <span class="text-gray-500 line-through">Tagihan Invoice:</span>
+                                <span class="font-medium text-gray-500 line-through">Rp
+                                    {{ number_format($totalTagihanJamaah, 0, ',', '.') }}</span>
+                            </div>
                         </div>
                     </div>
                 </div>
 
-                {{-- 2. FEE PASSPORT & DAFTAR JAMAAH --}}
+                {{-- FEE PASSPORT & JAMAAH --}}
                 @php
                     $bulanNama = [
                         1 => 'Jan',
@@ -274,20 +355,22 @@
                         </h6>
                         <div class="flex items-center gap-2">
                             {!! $departure->jamaah_status_badge !!}
-                            <form action="{{ route('transaksional.departure.sync-jamaahs', $departure->id_departure) }}"
-                                method="POST"
-                                onsubmit="return confirm('Mencari jamaah baru yang memenuhi kriteria (Lunas, produk sesuai, bulan/tahun sesuai, dan belum terdaftar di departure lain). Lanjutkan?')">
-                                @csrf
-                                <button type="submit"
-                                    class="inline-flex items-center px-3 py-1.5 bg-purple-500 text-white text-xs rounded-lg hover:bg-purple-600 transition"
-                                    title="Cari jamaah baru yang tersedia">
-                                    <i class="fas fa-sync-alt mr-1"></i> Sync Jamaah
+                            {{-- LOCK: tombol sync + atur jamaah --}}
+                            @unless ($locked)
+                                <form action="{{ route('transaksional.departure.sync-jamaahs', $departure->id_departure) }}"
+                                    method="POST"
+                                    onsubmit="return confirm('Mencari jamaah baru yang memenuhi kriteria. Lanjutkan?')">
+                                    @csrf
+                                    <button type="submit"
+                                        class="inline-flex items-center px-3 py-1.5 bg-purple-500 text-white text-xs rounded-lg hover:bg-purple-600 transition">
+                                        <i class="fas fa-sync-alt mr-1"></i> Sync Jamaah
+                                    </button>
+                                </form>
+                                <button onclick="openJamaahModal()"
+                                    class="inline-flex items-center px-3 py-1.5 bg-yellow-500 text-white text-xs rounded-lg hover:bg-yellow-600 transition">
+                                    <i class="fas fa-plus mr-1"></i> Atur Daftar Jamaah
                                 </button>
-                            </form>
-                            <button onclick="openJamaahModal()"
-                                class="inline-flex items-center px-3 py-1.5 bg-yellow-500 text-white text-xs rounded-lg hover:bg-yellow-600 transition">
-                                <i class="fas fa-plus mr-1"></i> Atur Daftar Jamaah
-                            </button>
+                            @endunless
                         </div>
                     </div>
 
@@ -322,7 +405,8 @@
                         </div>
                     </div>
 
-                    <div class="mb-3 flex flex-wrap items-center gap-3 text-xs">
+                    <div
+                        class="mb-3 flex flex-wrap items-center gap-3 text-xs bg-white rounded-lg p-2 border border-gray-200">
                         <span class="inline-flex items-center gap-1.5"><span
                                 class="w-3 h-3 rounded-full bg-green-500"></span><span
                                 class="text-gray-600">Lunas</span></span>
@@ -335,6 +419,15 @@
                         <span class="inline-flex items-center gap-1.5"><span
                                 class="w-3 h-3 rounded-full bg-green-600"></span><span class="text-gray-600">Pembuatan
                                 Passport YA</span></span>
+                        <span class="inline-flex items-center gap-1.5 border-l border-gray-300 pl-3 ml-1">
+                            <span class="px-1.5 py-0.5 bg-gray-100 text-gray-600 text-[9px] rounded font-bold">INFO</span>
+                            <span class="text-gray-500">Harga paket = hanya informasi</span>
+                        </span>
+                        <span class="inline-flex items-center gap-1.5">
+                            <span
+                                class="px-1.5 py-0.5 bg-emerald-100 text-emerald-700 text-[9px] rounded font-bold">DIHITUNG</span>
+                            <span class="text-gray-500">Sudah dibayar = masuk perhitungan</span>
+                        </span>
                     </div>
 
                     <div class="mb-3">
@@ -350,17 +443,12 @@
                             @foreach ($departure->jamaahs as $jamaah)
                                 @php
                                     $isLunas = $jamaah->status_pembayaran == 'Lunas';
-                                    if ($isLunas) {
-                                        $borderClass = 'border-l-4 border-l-green-500';
-                                        $bgClass = 'bg-green-50/60';
-                                        $badgeClass = 'bg-green-500 text-white';
-                                        $badgeText = 'LUNAS';
-                                    } else {
-                                        $borderClass = 'border-l-4 border-l-red-500';
-                                        $bgClass = 'bg-red-50/60';
-                                        $badgeClass = 'bg-red-500 text-white';
-                                        $badgeText = 'BELUM LUNAS';
-                                    }
+                                    $borderClass = $isLunas
+                                        ? 'border-l-4 border-l-green-500'
+                                        : 'border-l-4 border-l-red-500';
+                                    $bgClass = $isLunas ? 'bg-green-50/60' : 'bg-red-50/60';
+                                    $badgeClass = $isLunas ? 'bg-green-500 text-white' : 'bg-red-500 text-white';
+                                    $badgeText = $isLunas ? 'LUNAS' : 'BELUM LUNAS';
                                     $jamaahKeberangkatanInfo = '';
                                     $jamaahHargaInfo = '';
                                     $jamaahHargaLabel = 'Harga';
@@ -369,7 +457,6 @@
                                     $jamaahPembayaranPassport = $jamaah->pendampingan_fee ?? 0;
                                     $jamaahPendapatanPerusahaan = $jamaah->pendampingan_fee_petugas ?? 0;
                                     $jamaahPilihanAsli = $jamaah->is_pembuatan_passport;
-
                                     if ($jamaah->keberangkatan && $jamaah->keberangkatan->count() > 0) {
                                         $firstK = $jamaah->keberangkatan->first();
                                         $bulanPivot = $firstK->pivot->bulan_keberangkatan ?? null;
@@ -411,6 +498,10 @@
                                                 number_format($jamaah->total_tagihan_setelah_diskon, 0, ',', '.');
                                         }
                                     }
+                                    $jamaahSudahDibayar = $jamaah->total_dibayar ?? 0;
+                                    $jamaahTagihan =
+                                        $jamaah->total_tagihan_setelah_diskon ?? ($jamaah->total_tagihan ?? 0);
+                                    $jamaahSisa = max(0, $jamaahTagihan - $jamaahSudahDibayar);
                                 @endphp
                                 <div class="p-3 rounded-lg {{ $borderClass }} {{ $bgClass }} jamaah-item"
                                     data-name="{{ strtolower($jamaah->nama_lengkap) }}"
@@ -438,20 +529,36 @@
                                             </div>
                                             <p class="text-xs text-gray-500 truncate">{{ $jamaah->produk_paket }}</p>
                                             @if ($jamaahKeberangkatanInfo)
-                                                <p class="text-[11px] text-blue-600 mt-0.5"><i
-                                                        class="fas fa-plane mr-0.5"></i> Keberangkatan:
+                                                <p class="text-[11px] text-blue-600 mt-0.5">
+                                                    <i class="fas fa-plane mr-0.5"></i> Keberangkatan:
                                                     <strong>{{ $jamaahKeberangkatanInfo }}</strong>
                                                 </p>
                                             @endif
                                             @if ($jamaahHargaInfo)
-                                                <p class="text-[11px] text-emerald-600 font-semibold mt-0.5"><i
-                                                        class="fas fa-money-bill-wave mr-0.5"></i>
-                                                    {{ $jamaahHargaLabel }}: <strong>{{ $jamaahHargaInfo }}</strong></p>
+                                                <p class="text-[11px] text-gray-500 mt-0.5">
+                                                    <i class="fas fa-tag mr-0.5"></i> {{ $jamaahHargaLabel }}: <strong
+                                                        class="text-gray-700">{{ $jamaahHargaInfo }}</strong>
+                                                    <span
+                                                        class="ml-1 px-1.5 py-0.5 bg-gray-100 text-gray-500 text-[9px] rounded">INFO</span>
+                                                </p>
+                                            @endif
+                                            <p class="text-[11px] text-emerald-700 font-semibold mt-0.5">
+                                                <i class="fas fa-wallet mr-0.5"></i> Sudah Dibayar: <strong>Rp
+                                                    {{ number_format($jamaahSudahDibayar, 0, ',', '.') }}</strong>
+                                                <span
+                                                    class="ml-1 px-1.5 py-0.5 bg-emerald-100 text-emerald-700 text-[9px] rounded font-bold">DIHITUNG</span>
+                                            </p>
+                                            @if ($jamaahSisa > 0)
+                                                <p class="text-[10px] text-red-600 mt-0.5">
+                                                    <i class="fas fa-exclamation-circle mr-0.5"></i> Sisa Tagihan: Rp
+                                                    {{ number_format($jamaahSisa, 0, ',', '.') }}
+                                                </p>
                                             @endif
                                             @if ($jamaahIsPembuatanPassport)
-                                                <p class="text-[11px] text-purple-600 font-semibold mt-0.5"><i
-                                                        class="fas fa-passport mr-0.5"></i> Fee Passport: <strong>Rp
-                                                        {{ number_format($jamaahFeePassport, 0, ',', '.') }}</strong></p>
+                                                <p class="text-[11px] text-purple-600 font-semibold mt-0.5">
+                                                    <i class="fas fa-passport mr-0.5"></i> Fee Passport: <strong>Rp
+                                                        {{ number_format($jamaahFeePassport, 0, ',', '.') }}</strong>
+                                                </p>
                                                 @if ($jamaahPembayaranPassport > 0)
                                                     <p class="text-[10px] text-red-600 ml-3">→ Pengeluaran (Bayar): Rp
                                                         {{ number_format($jamaahPembayaranPassport, 0, ',', '.') }}</p>
@@ -474,17 +581,21 @@
                                         </div>
                                         <div class="flex flex-col items-end gap-1 flex-shrink-0">
                                             <span
-                                                class="text-xs text-green-600 font-medium">{{ $jamaah->total_dibayar_formatted }}</span>
-                                            <button
-                                                onclick="removeJamaah({{ $departure->id_departure }}, {{ $jamaah->id_jamaah }})"
-                                                class="text-red-500 hover:text-red-700 text-xs"
-                                                title="Hapus dari keberangkatan"><i class="fas fa-times"></i></button>
-                                            <form
-                                                id="remove-jamaah-form-{{ $departure->id_departure }}-{{ $jamaah->id_jamaah }}"
-                                                action="{{ route('transaksional.departure.remove-jamaah', [$departure->id_departure, $jamaah->id_jamaah]) }}"
-                                                method="POST" class="hidden">
-                                                @csrf @method('DELETE')
-                                            </form>
+                                                class="text-xs text-emerald-600 font-bold">{{ $jamaah->total_dibayar_formatted }}</span>
+                                            <span class="text-[9px] text-gray-400">Dibayar</span>
+                                            {{-- LOCK: tombol hapus jamaah --}}
+                                            @unless ($locked)
+                                                <button
+                                                    onclick="removeJamaah({{ $departure->id_departure }}, {{ $jamaah->id_jamaah }})"
+                                                    class="text-red-500 hover:text-red-700 text-xs"
+                                                    title="Hapus dari keberangkatan"><i class="fas fa-times"></i></button>
+                                                <form
+                                                    id="remove-jamaah-form-{{ $departure->id_departure }}-{{ $jamaah->id_jamaah }}"
+                                                    action="{{ route('transaksional.departure.remove-jamaah', [$departure->id_departure, $jamaah->id_jamaah]) }}"
+                                                    method="POST" class="hidden">
+                                                    @csrf @method('DELETE')
+                                                </form>
+                                            @endunless
                                         </div>
                                     </div>
                                 </div>
@@ -493,14 +604,24 @@
 
                         <div class="mt-3 pt-3 border-t border-gray-200">
                             <div class="flex items-center justify-between">
-                                <span class="text-sm font-semibold text-gray-700">Total Pendapatan dari Jamaah</span>
-                                <span
-                                    class="text-lg font-bold text-green-600">{{ $departure->total_pendapatan_kotor_formatted }}</span>
+                                <span class="text-sm font-semibold text-gray-700">Total Tagihan (info)</span>
+                                <span class="text-lg font-bold text-gray-700">Rp
+                                    {{ number_format($totalTagihanJamaah, 0, ',', '.') }}</span>
                             </div>
+                            <div class="flex items-center justify-between text-sm mt-1">
+                                <span class="text-emerald-700 font-semibold">Total Sudah Dibayar (dihitung)</span>
+                                <span class="font-bold text-emerald-700">Rp
+                                    {{ number_format($totalSudahDibayarJamaah, 0, ',', '.') }}</span>
+                            </div>
+                            @if ($totalSisaTagihan > 0)
+                                <div class="flex items-center justify-between text-sm text-red-600 mt-1">
+                                    <span>Total Sisa Tagihan</span>
+                                    <span class="font-semibold">Rp
+                                        {{ number_format($totalSisaTagihan, 0, ',', '.') }}</span>
+                                </div>
+                            @endif
                             <div class="flex items-center justify-between text-sm text-gray-500 mt-1">
                                 <span>Total Jamaah: {{ $departure->jamaahs->count() }} orang</span>
-                                <span>Rata-rata per Jamaah:
-                                    {{ $departure->total_pendapatan_kotor > 0 && $departure->jamaahs->count() > 0 ? 'Rp ' . number_format($departure->total_pendapatan_kotor / $departure->jamaahs->count(), 0, ',', '.') : 'Rp 0' }}</span>
                             </div>
                             <div class="flex items-center justify-between text-sm text-gray-500 mt-1">
                                 <span><i class="fas fa-passport text-purple-500 mr-1"></i>Total Fee Passport
@@ -527,13 +648,15 @@
                                 <i class="fas fa-users text-gray-300 text-xl"></i>
                             </div>
                             <p class="text-gray-500 text-sm">Belum ada jamaah terdaftar</p>
-                            <p class="text-gray-400 text-xs mt-1">Klik tombol "Sync Jamaah" atau "Atur Daftar Jamaah" untuk
-                                menambahkan</p>
+                            @unless ($locked)
+                                <p class="text-gray-400 text-xs mt-1">Klik tombol "Sync Jamaah" atau "Atur Daftar Jamaah" untuk
+                                    menambahkan</p>
+                            @endunless
                         </div>
                     @endif
                 </div>
 
-                {{-- 3. PENGELUARAN --}}
+                {{-- PENGELUARAN --}}
                 <div class="mb-6">
                     <h6 class="text-sm font-semibold text-gray-700 mb-3 flex items-center">
                         <i class="fas fa-receipt text-red-500 mr-2"></i> Pengeluaran
@@ -548,10 +671,12 @@
                         </h6>
                         <div class="flex items-center gap-2">
                             {!! $departure->maskapai_status_badge !!}
-                            <button onclick="openMaskapaiModal()"
-                                class="inline-flex items-center px-3 py-1.5 bg-yellow-500 text-white text-xs rounded-lg hover:bg-yellow-600 transition">
-                                <i class="fas fa-plus mr-1"></i> Atur Maskapai
-                            </button>
+                            @unless ($locked)
+                                <button onclick="openMaskapaiModal()"
+                                    class="inline-flex items-center px-3 py-1.5 bg-yellow-500 text-white text-xs rounded-lg hover:bg-yellow-600 transition">
+                                    <i class="fas fa-plus mr-1"></i> Atur Maskapai
+                                </button>
+                            @endunless
                         </div>
                     </div>
                     <div class="mb-3">
@@ -614,10 +739,12 @@
                         </h6>
                         <div class="flex items-center gap-2">
                             {!! $departure->hotel_status_badge !!}
-                            <button onclick="openHotelModal()"
-                                class="inline-flex items-center px-3 py-1.5 bg-yellow-500 text-white text-xs rounded-lg hover:bg-yellow-600 transition">
-                                <i class="fas fa-plus mr-1"></i> Atur Hotel
-                            </button>
+                            @unless ($locked)
+                                <button onclick="openHotelModal()"
+                                    class="inline-flex items-center px-3 py-1.5 bg-yellow-500 text-white text-xs rounded-lg hover:bg-yellow-600 transition">
+                                    <i class="fas fa-plus mr-1"></i> Atur Hotel
+                                </button>
+                            @endunless
                         </div>
                     </div>
                     <div class="mb-3">
@@ -680,8 +807,8 @@
                                             @foreach ($hotelMadinahDetails as $detail)
                                                 <div class="bg-white rounded-lg p-3 border border-gray-200 hotel-detail-item"
                                                     data-hotel="madinah">
-                                                    <p class="text-sm font-medium text-gray-700">{{ $detail->tipe_kamar }}
-                                                    </p>
+                                                    <p class="text-sm font-medium text-gray-700">
+                                                        {{ $detail->tipe_kamar }}</p>
                                                     <p class="text-xs text-gray-500">{{ $detail->jumlah_kamar }} Kamar ×
                                                         {{ $detail->harga_per_malam_formatted }} ×
                                                         {{ $detail->durasi_menginap }} Malam</p>
@@ -738,7 +865,9 @@
                                     <i class="fas fa-hotel text-gray-300 text-xl"></i>
                                 </div>
                                 <p class="text-gray-500 text-sm">Belum ada data hotel</p>
-                                <p class="text-gray-400 text-xs mt-1">Klik tombol "Atur Hotel" untuk menambahkan hotel</p>
+                                @unless ($locked)
+                                    <p class="text-gray-400 text-xs mt-1">Klik tombol "Atur Hotel" untuk menambahkan hotel</p>
+                                @endunless
                             </div>
                         @endif
                     </div>
@@ -757,9 +886,11 @@
                             @if ($departure->produk && $departure->produk->include_tur && $departure->produk->paketTour)
                                 <span class="px-2 py-1 text-xs font-medium rounded-full bg-green-100 text-green-700"><i
                                         class="fas fa-check mr-1"></i> Include Tour</span>
-                                <button onclick="openPaketTourHotelModal()"
-                                    class="inline-flex items-center px-3 py-1.5 bg-yellow-500 text-white text-xs rounded-lg hover:bg-yellow-600 transition"><i
-                                        class="fas fa-plus mr-1"></i> Atur Hotel Tour</button>
+                                @unless ($locked)
+                                    <button onclick="openPaketTourHotelModal()"
+                                        class="inline-flex items-center px-3 py-1.5 bg-yellow-500 text-white text-xs rounded-lg hover:bg-yellow-600 transition"><i
+                                            class="fas fa-plus mr-1"></i> Atur Hotel Tour</button>
+                                @endunless
                             @else
                                 <span class="px-2 py-1 text-xs font-medium rounded-full bg-gray-100 text-gray-500"><i
                                         class="fas fa-minus mr-1"></i> Tanpa Tour</span>
@@ -824,8 +955,10 @@
                                         <i class="fas fa-umbrella-beach text-gray-300 text-xl"></i>
                                     </div>
                                     <p class="text-gray-500 text-sm">Belum ada hotel tour yang diatur</p>
-                                    <p class="text-gray-400 text-xs mt-1">Klik tombol "Atur Hotel Tour" untuk mengatur
-                                        hotel tour</p>
+                                    @unless ($locked)
+                                        <p class="text-gray-400 text-xs mt-1">Klik tombol "Atur Hotel Tour" untuk mengatur
+                                            hotel tour</p>
+                                    @endunless
                                 </div>
                             @endif
                         </div>
@@ -874,10 +1007,12 @@
                         </h6>
                         <div class="flex items-center gap-2">
                             {!! $departure->perlengkapan_status_badge !!}
-                            <button onclick="openPerlengkapanModal()"
-                                class="inline-flex items-center px-3 py-1.5 bg-yellow-500 text-white text-xs rounded-lg hover:bg-yellow-600 transition">
-                                <i class="fas fa-plus mr-1"></i> Atur Perlengkapan
-                            </button>
+                            @unless ($locked)
+                                <button onclick="openPerlengkapanModal()"
+                                    class="inline-flex items-center px-3 py-1.5 bg-yellow-500 text-white text-xs rounded-lg hover:bg-yellow-600 transition">
+                                    <i class="fas fa-plus mr-1"></i> Atur Perlengkapan
+                                </button>
+                            @endunless
                         </div>
                     </div>
                     <div class="mb-3">
@@ -930,16 +1065,18 @@
                                                     onclick="openPerlengkapanDetailModal({{ $perlengkapan->id }})"
                                                     class="p-1 text-blue-500 hover:bg-blue-50 rounded transition"
                                                     title="Lihat Detail"><i class="fas fa-eye text-xs"></i></button>
-                                                <button type="button"
-                                                    onclick="removePerlengkapan({{ $departure->id_departure }}, {{ $perlengkapan->id }})"
-                                                    class="p-1 text-red-500 hover:bg-red-50 rounded transition"
-                                                    title="Hapus"><i class="fas fa-trash text-xs"></i></button>
-                                                <form
-                                                    id="remove-perlengkapan-form-{{ $departure->id_departure }}-{{ $perlengkapan->id }}"
-                                                    action="{{ route('transaksional.departure.remove-perlengkapan', [$departure->id_departure, $perlengkapan->id]) }}"
-                                                    method="POST" class="hidden">
-                                                    @csrf @method('DELETE')
-                                                </form>
+                                                @unless ($locked)
+                                                    <button type="button"
+                                                        onclick="removePerlengkapan({{ $departure->id_departure }}, {{ $perlengkapan->id }})"
+                                                        class="p-1 text-red-500 hover:bg-red-50 rounded transition"
+                                                        title="Hapus"><i class="fas fa-trash text-xs"></i></button>
+                                                    <form
+                                                        id="remove-perlengkapan-form-{{ $departure->id_departure }}-{{ $perlengkapan->id }}"
+                                                        action="{{ route('transaksional.departure.remove-perlengkapan', [$departure->id_departure, $perlengkapan->id]) }}"
+                                                        method="POST" class="hidden">
+                                                        @csrf @method('DELETE')
+                                                    </form>
+                                                @endunless
                                             </div>
                                         </div>
                                         <div class="mt-2">
@@ -982,8 +1119,7 @@
                                             Diterima</span>
                                         <p class="text-xs text-gray-400 mt-0.5"><i
                                                 class="fas fa-info-circle mr-1"></i>Hanya dihitung dari perlengkapan yang
-                                            <strong>sudah diterima</strong> jamaah
-                                        </p>
+                                            <strong>sudah diterima</strong> jamaah</p>
                                     </div>
                                     <span
                                         class="text-lg font-bold text-purple-600">{{ $departure->total_harga_perlengkapan_formatted }}</span>
@@ -1001,16 +1137,16 @@
                                     <i class="fas fa-box text-gray-300 text-xl"></i>
                                 </div>
                                 <p class="text-gray-500 text-sm">Belum ada perlengkapan yang ditambahkan</p>
-                                <p class="text-gray-400 text-xs mt-1">Klik tombol "Atur Perlengkapan" untuk menambahkan
-                                    perlengkapan</p>
+                                @unless ($locked)
+                                    <p class="text-gray-400 text-xs mt-1">Klik tombol "Atur Perlengkapan" untuk menambahkan
+                                        perlengkapan</p>
+                                @endunless
                             </div>
                         @endif
                     </div>
                 </div>
 
-                {{-- ============================================ --}}
-                {{-- SECTION BARU: UPGRADE HOTEL & HARGA ASLI --}}
-                {{-- ============================================ --}}
+                {{-- UPGRADE HOTEL --}}
                 @php
                     $jamaahWithUpgradePersonal = $departure->jamaahs->filter(fn($j) => $j->upgradeHotels->count() > 0);
                     $keluargaWithUpgrade = collect();
@@ -1046,13 +1182,13 @@
                                     class="ml-2 text-xs bg-orange-100 text-orange-800 px-2 py-0.5 rounded-full">{{ $jamaahWithUpgradePersonal->count() + $keluargaWithUpgrade->count() }}
                                     sumber</span>
                             </h6>
-                            <button onclick="openHargaAsliModal()"
-                                class="inline-flex items-center px-3 py-1.5 bg-orange-500 text-white text-xs rounded-lg hover:bg-orange-600 transition">
-                                <i class="fas fa-edit mr-1"></i> Input Harga Asli (Modal)
-                            </button>
+                            @unless ($locked)
+                                <button onclick="openHargaAsliModal()"
+                                    class="inline-flex items-center px-3 py-1.5 bg-orange-500 text-white text-xs rounded-lg hover:bg-orange-600 transition">
+                                    <i class="fas fa-edit mr-1"></i> Input Harga Asli (Modal)
+                                </button>
+                            @endunless
                         </div>
-
-                        {{-- Info bantuan --}}
                         <div class="mb-4 bg-white rounded-lg p-3 border border-orange-200">
                             <p class="text-xs text-gray-600">
                                 <i class="fas fa-info-circle text-orange-500 mr-1"></i>
@@ -1061,17 +1197,15 @@
                                 <strong>Harga Asli (Modal)</strong> = harga <strong>modal</strong> upgrade (dibayar ke
                                 hotel).
                                 <br>
-                                <i class="fas fa-arrow-right text-green-500 mr-1"></i>
-                                Jika <strong>Dibayar &gt; Modal</strong> → <span
-                                    class="text-green-600 font-semibold">PROFIT</span> (masuk pendapatan).
+                                <i class="fas fa-arrow-right text-green-500 mr-1"></i> Jika <strong>Dibayar &gt;
+                                    Modal</strong> → <span class="text-green-600 font-semibold">PROFIT</span> (masuk
+                                pendapatan).
                                 <br>
-                                <i class="fas fa-arrow-right text-red-500 mr-1"></i>
-                                Jika <strong>Dibayar &lt; Modal</strong> → <span
-                                    class="text-red-600 font-semibold">MINUS</span> (masuk pengeluaran / nombok).
+                                <i class="fas fa-arrow-right text-red-500 mr-1"></i> Jika <strong>Dibayar &lt;
+                                    Modal</strong> → <span class="text-red-600 font-semibold">MINUS</span> (masuk
+                                pengeluaran / nombok).
                             </p>
                         </div>
-
-                        {{-- Ringkasan --}}
                         <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-4">
                             <div class="bg-white rounded-lg p-3 border border-orange-200 text-center">
                                 <p class="text-xs text-gray-500">Upgrade Personal</p>
@@ -1098,8 +1232,6 @@
                                 <p class="text-[10px] text-gray-400 mt-0.5">Dibayar ke hotel</p>
                             </div>
                         </div>
-
-                        {{-- Selisih --}}
                         <div
                             class="mb-4 rounded-lg p-4 border-2 {{ $selisihStatus['status'] === 'profit' ? 'bg-green-50 border-green-400' : ($selisihStatus['status'] === 'minus' ? 'bg-red-50 border-red-400' : 'bg-gray-50 border-gray-300') }}">
                             <div class="flex items-center justify-between flex-wrap gap-2">
@@ -1129,8 +1261,6 @@
                                 </div>
                             </div>
                         </div>
-
-                        {{-- Detail Upgrade Personal --}}
                         @if ($jamaahWithUpgradePersonal->count() > 0)
                             <div class="mb-3">
                                 <h6 class="text-xs font-semibold text-gray-600 mb-2 flex items-center">
@@ -1188,8 +1318,6 @@
                                 </div>
                             </div>
                         @endif
-
-                        {{-- Detail Upgrade Keluarga --}}
                         @if ($keluargaWithUpgrade->count() > 0)
                             <div class="mt-3 pt-3 border-t border-orange-200">
                                 <h6 class="text-xs font-semibold text-gray-600 mb-2 flex items-center">
@@ -1213,10 +1341,8 @@
                                         @endphp
                                         <div class="bg-white rounded-lg p-3 border border-purple-200">
                                             <div class="flex items-center justify-between mb-2">
-                                                <span class="font-semibold text-gray-700 text-sm">
-                                                    <i class="fas fa-users text-purple-500 mr-1"></i>
-                                                    {{ $keluarga->nama_keluarga }}
-                                                </span>
+                                                <span class="font-semibold text-gray-700 text-sm"><i
+                                                        class="fas fa-users text-purple-500 mr-1"></i>{{ $keluarga->nama_keluarga }}</span>
                                                 <span class="text-xs font-bold text-purple-600">Rp
                                                     {{ number_format($shareTotalDeparture, 0, ',', '.') }}</span>
                                             </div>
@@ -1250,31 +1376,28 @@
                     </div>
                 @endif
 
-                {{-- ============================================ --}}
-                {{-- SECTION BARU: PEMBAYARAN TAK TERDUGA --}}
-                {{-- ============================================ --}}
+                {{-- PEMBAYARAN TAK TERDUGA --}}
                 <div class="bg-red-50 rounded-xl p-5 border-2 border-red-300 mb-6">
                     <div class="flex items-center justify-between mb-4 flex-wrap gap-2">
                         <h6 class="text-sm font-semibold text-gray-700 flex items-center">
                             <i class="fas fa-exclamation-triangle text-red-500 mr-2"></i> Pembayaran Tak Terduga
-                            <span class="ml-2 text-xs bg-red-100 text-red-800 px-2 py-0.5 rounded-full">
-                                {{ $departure->pembayaranTakTerduga->count() }} item
-                            </span>
+                            <span
+                                class="ml-2 text-xs bg-red-100 text-red-800 px-2 py-0.5 rounded-full">{{ $departure->pembayaranTakTerduga->count() }}
+                                item</span>
                         </h6>
-                        <button onclick="openPembayaranTakTerdugaModal()"
-                            class="inline-flex items-center px-3 py-1.5 bg-red-500 text-white text-xs rounded-lg hover:bg-red-600 transition">
-                            <i class="fas fa-plus mr-1"></i> Tambah Pembayaran
-                        </button>
+                        @unless ($locked)
+                            <button onclick="openPembayaranTakTerdugaModal()"
+                                class="inline-flex items-center px-3 py-1.5 bg-red-500 text-white text-xs rounded-lg hover:bg-red-600 transition">
+                                <i class="fas fa-plus mr-1"></i> Tambah Pembayaran
+                            </button>
+                        @endunless
                     </div>
-
                     <div class="bg-yellow-50 rounded-lg p-3 border border-yellow-200 mb-4">
                         <p class="text-xs text-yellow-700">
                             <i class="fas fa-info-circle mr-1"></i>
                             Pembayaran ini akan <strong>masuk ke PENGELUARAN</strong> departure.
-                            Gunakan untuk biaya tak terduga seperti denda, biaya tambahan, atau pengeluaran lainnya.
                         </p>
                     </div>
-
                     @if ($departure->pembayaranTakTerduga->count() > 0)
                         <div class="overflow-x-auto mb-3">
                             <table class="w-full text-sm bg-white rounded-lg overflow-hidden">
@@ -1303,24 +1426,26 @@
                                             <td class="px-3 py-2 text-gray-600 text-xs">{{ $ptt->keterangan ?? '-' }}
                                             </td>
                                             <td class="px-3 py-2 text-center">
-                                                <button
-                                                    onclick="editPembayaranTakTerduga({{ $ptt->id_pembayaran_tak_terduga }}, '{{ addslashes($ptt->nama_pembayaran) }}', {{ $ptt->total_pembayaran }}, '{{ addslashes($ptt->keterangan ?? '') }}')"
-                                                    class="p-1 text-blue-500 hover:bg-blue-50 rounded transition"
-                                                    title="Edit">
-                                                    <i class="fas fa-edit text-xs"></i>
-                                                </button>
-                                                <button type="button"
-                                                    onclick="removePembayaranTakTerduga({{ $departure->id_departure }}, {{ $ptt->id_pembayaran_tak_terduga }})"
-                                                    class="p-1 text-red-500 hover:bg-red-50 rounded transition"
-                                                    title="Hapus">
-                                                    <i class="fas fa-trash text-xs"></i>
-                                                </button>
-                                                <form
-                                                    id="remove-ptt-form-{{ $departure->id_departure }}-{{ $ptt->id_pembayaran_tak_terduga }}"
-                                                    action="{{ route('transaksional.departure.remove-pembayaran-tak-terduga', [$departure->id_departure, $ptt->id_pembayaran_tak_terduga]) }}"
-                                                    method="POST" class="hidden">
-                                                    @csrf @method('DELETE')
-                                                </form>
+                                                @unless ($locked)
+                                                    <button
+                                                        onclick="editPembayaranTakTerduga({{ $ptt->id_pembayaran_tak_terduga }}, '{{ addslashes($ptt->nama_pembayaran) }}', {{ $ptt->total_pembayaran }}, '{{ addslashes($ptt->keterangan ?? '') }}')"
+                                                        class="p-1 text-blue-500 hover:bg-blue-50 rounded transition"
+                                                        title="Edit">
+                                                        <i class="fas fa-edit text-xs"></i>
+                                                    </button>
+                                                    <button type="button"
+                                                        onclick="removePembayaranTakTerduga({{ $departure->id_departure }}, {{ $ptt->id_pembayaran_tak_terduga }})"
+                                                        class="p-1 text-red-500 hover:bg-red-50 rounded transition"
+                                                        title="Hapus">
+                                                        <i class="fas fa-trash text-xs"></i>
+                                                    </button>
+                                                    <form
+                                                        id="remove-ptt-form-{{ $departure->id_departure }}-{{ $ptt->id_pembayaran_tak_terduga }}"
+                                                        action="{{ route('transaksional.departure.remove-pembayaran-tak-terduga', [$departure->id_departure, $ptt->id_pembayaran_tak_terduga]) }}"
+                                                        method="POST" class="hidden">
+                                                        @csrf @method('DELETE')
+                                                    </form>
+                                                @endunless
                                             </td>
                                         </tr>
                                     @endforeach
@@ -1342,7 +1467,9 @@
                                 <i class="fas fa-exclamation-triangle text-gray-300 text-xl"></i>
                             </div>
                             <p class="text-gray-500 text-sm">Belum ada pembayaran tak terduga</p>
-                            <p class="text-gray-400 text-xs mt-1">Klik tombol "Tambah Pembayaran" untuk menambahkan</p>
+                            @unless ($locked)
+                                <p class="text-gray-400 text-xs mt-1">Klik tombol "Tambah Pembayaran" untuk menambahkan</p>
+                            @endunless
                         </div>
                     @endif
                 </div>
@@ -1364,10 +1491,12 @@
                                 / {{ $totalJtItems }} diterima</span>
                         </h6>
                         <div class="flex items-center gap-2">
-                            <button onclick="openJenisTransaksiModal()"
-                                class="inline-flex items-center px-3 py-1.5 bg-yellow-500 text-white text-xs rounded-lg hover:bg-yellow-600 transition">
-                                <i class="fas fa-plus mr-1"></i> Atur Jenis Transaksi
-                            </button>
+                            @unless ($locked)
+                                <button onclick="openJenisTransaksiModal()"
+                                    class="inline-flex items-center px-3 py-1.5 bg-yellow-500 text-white text-xs rounded-lg hover:bg-yellow-600 transition">
+                                    <i class="fas fa-plus mr-1"></i> Atur Jenis Transaksi
+                                </button>
+                            @endunless
                         </div>
                     </div>
                     <div class="mb-3">
@@ -1421,20 +1550,22 @@
                                                     onclick="openJenisTransaksiDetailModal({{ $item->id }})"
                                                     class="p-1 text-blue-500 hover:bg-blue-50 rounded transition"
                                                     title="Lihat Detail"><i class="fas fa-eye text-xs"></i></button>
-                                                <button type="button"
-                                                    onclick="editJenisTransaksiHarga({{ $departure->id_departure }}, {{ $item->id_jenis_transaksi }}, '{{ $item->total_harga }}')"
-                                                    class="p-1 text-blue-500 hover:bg-blue-50 rounded transition"
-                                                    title="Edit Harga Total"><i class="fas fa-edit text-xs"></i></button>
-                                                <button type="button"
-                                                    onclick="removeJenisTransaksi({{ $departure->id_departure }}, {{ $item->id_jenis_transaksi }})"
-                                                    class="p-1 text-red-500 hover:bg-red-50 rounded transition"
-                                                    title="Hapus"><i class="fas fa-trash text-xs"></i></button>
-                                                <form
-                                                    id="remove-jenis-transaksi-form-{{ $departure->id_departure }}-{{ $item->id_jenis_transaksi }}"
-                                                    action="{{ route('transaksional.departure.remove-jenis-transaksi', [$departure->id_departure, $item->id_jenis_transaksi]) }}"
-                                                    method="POST" class="hidden">
-                                                    @csrf @method('DELETE')
-                                                </form>
+                                                @unless ($locked)
+                                                    <button type="button"
+                                                        onclick="editJenisTransaksiHarga({{ $departure->id_departure }}, {{ $item->id_jenis_transaksi }}, '{{ $item->total_harga }}')"
+                                                        class="p-1 text-blue-500 hover:bg-blue-50 rounded transition"
+                                                        title="Edit Harga Total"><i class="fas fa-edit text-xs"></i></button>
+                                                    <button type="button"
+                                                        onclick="removeJenisTransaksi({{ $departure->id_departure }}, {{ $item->id_jenis_transaksi }})"
+                                                        class="p-1 text-red-500 hover:bg-red-50 rounded transition"
+                                                        title="Hapus"><i class="fas fa-trash text-xs"></i></button>
+                                                    <form
+                                                        id="remove-jenis-transaksi-form-{{ $departure->id_departure }}-{{ $item->id_jenis_transaksi }}"
+                                                        action="{{ route('transaksional.departure.remove-jenis-transaksi', [$departure->id_departure, $item->id_jenis_transaksi]) }}"
+                                                        method="POST" class="hidden">
+                                                        @csrf @method('DELETE')
+                                                    </form>
+                                                @endunless
                                             </div>
                                         </div>
                                         <div class="mt-2">
@@ -1498,8 +1629,10 @@
                                     <i class="fas fa-receipt text-gray-300 text-xl"></i>
                                 </div>
                                 <p class="text-gray-500 text-sm">Belum ada jenis transaksi yang ditambahkan</p>
-                                <p class="text-gray-400 text-xs mt-1">Klik tombol "Atur Jenis Transaksi" untuk menambahkan
-                                    jenis transaksi</p>
+                                @unless ($locked)
+                                    <p class="text-gray-400 text-xs mt-1">Klik tombol "Atur Jenis Transaksi" untuk menambahkan
+                                        jenis transaksi</p>
+                                @endunless
                             </div>
                         @endif
                     </div>
@@ -1673,8 +1806,7 @@
                                 <p class="text-gray-400 text-sm mt-1">Semua jamaah terdaftar tanpa agent</p>
                                 @if ($departure->jamaahs->count() > 0)
                                     <p class="text-xs text-gray-400 mt-2">Total jamaah terdaftar:
-                                        <strong>{{ $departure->jamaahs->count() }}</strong> orang
-                                    </p>
+                                        <strong>{{ $departure->jamaahs->count() }}</strong> orang</p>
                                 @endif
                             </div>
                         @endif
@@ -1689,10 +1821,12 @@
                         </h6>
                         <div class="flex items-center gap-2">
                             {!! $departure->catatan_status_badge !!}
-                            <button onclick="openCatatanModal()"
-                                class="inline-flex items-center px-3 py-1.5 bg-yellow-500 text-white text-xs rounded-lg hover:bg-yellow-600 transition">
-                                <i class="fas fa-plus mr-1"></i> Tambah
-                            </button>
+                            @unless ($locked)
+                                <button onclick="openCatatanModal()"
+                                    class="inline-flex items-center px-3 py-1.5 bg-yellow-500 text-white text-xs rounded-lg hover:bg-yellow-600 transition">
+                                    <i class="fas fa-plus mr-1"></i> Tambah
+                                </button>
+                            @endunless
                         </div>
                     </div>
                     <div class="bg-white rounded-lg p-3 border border-gray-200 min-h-[60px]">
@@ -1700,7 +1834,7 @@
                     </div>
                 </div>
 
-                {{-- 4. RINCIAN PENGELUARAN --}}
+                {{-- RINCIAN PENGELUARAN --}}
                 <div class="bg-gray-50 rounded-xl p-5 border border-gray-100 mb-6">
                     <h6 class="text-sm font-semibold text-gray-700 mb-4 flex items-center">
                         <i class="fas fa-list text-red-500 mr-2"></i> Rincian Pengeluaran
@@ -1774,40 +1908,10 @@
                                 <p class="text-[10px] text-red-600">Total Pengeluaran Final</p>
                             </div>
                         </div>
-                        <div class="mt-3 pt-3 border-t border-red-300 grid grid-cols-1 md:grid-cols-2 gap-1 text-xs">
-                            <div class="flex justify-between"><span class="text-red-700">Maskapai:</span><span
-                                    class="font-bold text-red-800">{{ $departure->total_harga_maskapai_formatted }}</span>
-                            </div>
-                            <div class="flex justify-between"><span class="text-red-700">Hotel:</span><span
-                                    class="font-bold text-red-800">{{ $departure->total_harga_hotel_all_formatted }}</span>
-                            </div>
-                            <div class="flex justify-between"><span class="text-red-700">Hotel Tour:</span><span
-                                    class="font-bold text-red-800">{{ $departure->total_harga_paket_tour_hotel_formatted }}</span>
-                            </div>
-                            <div class="flex justify-between"><span class="text-red-700">Perlengkapan
-                                    (diterima):</span><span
-                                    class="font-bold text-red-800">{{ $departure->total_harga_perlengkapan_formatted }}</span>
-                            </div>
-                            <div class="flex justify-between"><span class="text-red-700">Jenis Transaksi
-                                    (diterima):</span><span
-                                    class="font-bold text-red-800">{{ $departure->total_jenis_transaksi_formatted }}</span>
-                            </div>
-                            <div class="flex justify-between"><span class="text-red-700">Pembayaran Passport
-                                    ({{ $jamaahDenganPassport }} YA efektif):</span><span
-                                    class="font-bold text-red-800">Rp
-                                    {{ number_format($totalPembayaranPassport, 0, ',', '.') }}</span></div>
-                            <div class="flex justify-between"><span class="text-red-700">Fee
-                                    Agent:</span><span class="font-bold text-red-800">Rp
-                                    {{ number_format($totalFeeAgent, 0, ',', '.') }}</span></div>
-                            <div class="flex justify-between"><span class="text-red-700">Pembayaran Tak
-                                    Terduga:</span><span
-                                    class="font-bold text-red-800">{{ $departure->total_pembayaran_tak_terduga_formatted }}</span>
-                            </div>
-                        </div>
                     </div>
                 </div>
 
-                {{-- 5. HASIL PERHITUNGAN --}}
+                {{-- HASIL PERHITUNGAN --}}
                 @php
                     $hasilPendapatan = $departure->total_pendapatan_bersih ?? 0;
                     $hasilPengeluaran = $departure->total_pengeluaran ?? 0;
@@ -1816,6 +1920,15 @@
                     $persentaseHasil = $hasilPendapatan > 0 ? round(($hasilAkhir / $hasilPendapatan) * 100, 2) : 0;
                 @endphp
                 <div class="mb-6">
+                    <div class="mb-2 bg-blue-50 rounded-lg p-3 border border-blue-200">
+                        <p class="text-xs text-blue-700">
+                            <i class="fas fa-info-circle mr-1"></i>
+                            <strong>Catatan:</strong> Perhitungan ini menggunakan <strong>CASH BASIS</strong> — pendapatan =
+                            uang yang sudah dibayar jamaah.
+                            Jika masih ada sisa tagihan (Rp {{ $departure->total_sisa_tagihan_formatted }}), maka belum
+                            masuk perhitungan sampai dibayar.
+                        </p>
+                    </div>
                     <div
                         class="rounded-2xl border-4 {{ $isProfit ? 'border-green-500 bg-gradient-to-br from-green-50 via-emerald-50 to-green-100' : 'border-red-500 bg-gradient-to-br from-red-50 via-rose-50 to-red-100' }} overflow-hidden shadow-lg">
                         <div class="{{ $isProfit ? 'bg-green-500' : 'bg-red-500' }} px-6 py-3">
@@ -1953,1038 +2066,893 @@
                             <dt class="text-gray-500">Terakhir Diperbarui</dt>
                             <dd class="font-medium text-gray-700">{{ $departure->updated_at->format('d M Y H:i') }}</dd>
                         </div>
+                        @if ($departure->perjalanan_selesai && $departure->perjalanan_selesai_at)
+                            <div class="flex justify-between text-sm">
+                                <dt class="text-gray-500">Ditandai Selesai</dt>
+                                <dd class="font-medium text-gray-700">
+                                    {{ $departure->perjalanan_selesai_at->format('d M Y H:i') }}</dd>
+                            </div>
+                            @if ($departure->penandaSelesai)
+                                <div class="flex justify-between text-sm">
+                                    <dt class="text-gray-500">Oleh</dt>
+                                    <dd class="font-medium text-gray-700">{{ $departure->penandaSelesai->name ?? '-' }}
+                                    </dd>
+                                </div>
+                            @endif
+                        @endif
                     </div>
                 </div>
 
                 <!-- Aksi Bawah -->
                 <div class="mt-6 pt-6 border-t border-gray-100 flex flex-wrap items-center justify-end gap-3">
-                    <form action="{{ route('transaksional.departure.sync-all', $departure->id_departure) }}"
-                        method="POST"
-                        onsubmit="return confirm('Sinkronisasi akan memperbarui semua perlengkapan dan jenis transaksi dengan jumlah jamaah terbaru ({{ $departure->jamaahs->count() }} jamaah). Lanjutkan?')">
-                        @csrf
-                        <button type="submit"
-                            class="inline-flex items-center px-4 py-2 bg-purple-500 text-white rounded-lg hover:bg-purple-600 transition text-sm font-medium shadow-sm hover:shadow">
-                            <i class="fas fa-sync-alt mr-2"></i> Sinkronisasi Ulang
-                        </button>
-                    </form>
+                    @unless ($locked)
+                        <form action="{{ route('transaksional.departure.sync-all', $departure->id_departure) }}"
+                            method="POST"
+                            onsubmit="return confirm('Sinkronisasi akan memperbarui semua perlengkapan dan jenis transaksi dengan jumlah jamaah terbaru ({{ $departure->jamaahs->count() }} jamaah). Lanjutkan?')">
+                            @csrf
+                            <button type="submit"
+                                class="inline-flex items-center px-4 py-2 bg-purple-500 text-white rounded-lg hover:bg-purple-600 transition text-sm font-medium shadow-sm hover:shadow">
+                                <i class="fas fa-sync-alt mr-2"></i> Sinkronisasi Ulang
+                            </button>
+                        </form>
+                    @endunless
                     <a href="{{ route('transaksional.departure.index') }}"
                         class="px-4 py-2 bg-gray-200 rounded-lg hover:bg-gray-300 transition">Kembali</a>
-                    <a href="{{ route('transaksional.departure.edit', $departure->id_departure) }}"
-                        class="px-4 py-2 bg-yellow-500 text-white rounded-lg hover:bg-yellow-600 transition">Edit Dasar</a>
+                    @unless ($locked)
+                        <a href="{{ route('transaksional.departure.edit', $departure->id_departure) }}"
+                            class="px-4 py-2 bg-yellow-500 text-white rounded-lg hover:bg-yellow-600 transition">Edit Dasar</a>
+                    @endunless
                 </div>
             </div>
         </div>
     </div>
 
     {{-- MODAL INPUT HARGA ASLI UPGRADE --}}
-    <div id="hargaAsliModal" class="fixed inset-0 bg-black/50 z-50 hidden flex items-center justify-center">
-        <div class="bg-white rounded-2xl max-w-md w-full">
-            <div class="px-6 py-4 border-b border-gray-200 flex items-center justify-between">
-                <h5 class="text-lg font-semibold text-gray-800 flex items-center">
-                    <i class="fas fa-money-bill-wave text-orange-500 mr-2"></i> Input Harga Asli (Modal) Upgrade
-                </h5>
-                <button onclick="closeHargaAsliModal()" class="text-gray-400 hover:text-gray-600">
-                    <i class="fas fa-times text-xl"></i>
-                </button>
-            </div>
-            <form action="{{ route('transaksional.departure.update-harga-asli-upgrade', $departure->id_departure) }}"
-                method="POST" class="p-6">
-                @csrf
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1.5">Harga Asli (Modal) Upgrade <span
-                            class="text-red-500">*</span></label>
-                    <div class="relative">
-                        <span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm">Rp</span>
-                        <input type="text" name="harga_asli_upgrade_total" id="harga_asli_upgrade_total_display"
-                            value="{{ ($departure->harga_asli_upgrade_total ?? 0) > 0 ? number_format($departure->harga_asli_upgrade_total, 0, ',', '.') : '' }}"
-                            class="w-full pl-10 pr-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-orange-500 text-lg"
-                            placeholder="0" oninput="formatRupiahHargaAsli(this)" autocomplete="off">
-                    </div>
-                    <p class="text-xs text-gray-500 mt-2">
-                        <i class="fas fa-info-circle mr-1"></i>
-                        Harga asli = harga <strong>modal</strong> upgrade hotel (yang dibayarkan ke hotel).
-                        <br>Total upgrade = yang <strong>dibayar jamaah</strong>.
-                    </p>
-                    <div class="mt-3 bg-gray-50 rounded-lg p-3 border border-gray-200">
-                        <div class="flex justify-between text-sm mb-1">
-                            <span class="text-gray-600">Total Upgrade (Dibayar Jamaah):</span>
-                            <span
-                                class="font-bold text-orange-600">{{ $departure->total_upgrade_hotel_gabungan_formatted }}</span>
-                        </div>
-                        <div class="flex justify-between text-sm">
-                            <span class="text-gray-600">Selisih (Dibayar − Modal):</span>
-                            <span class="font-bold {{ $selisihStatus['color'] }}"
-                                id="previewSelisih">{{ $departure->selisih_upgrade_hotel_formatted }}</span>
-                        </div>
-                        <div class="mt-2 pt-2 border-t border-gray-200">
-                            <p class="text-xs text-gray-500" id="previewSelisihLabel">
-                                @if ($selisih > 0)
-                                    <i class="fas fa-arrow-up text-green-500 mr-1"></i> Akan masuk ke <strong
-                                        class="text-green-600">pendapatan</strong> (PROFIT)
-                                @elseif ($selisih < 0)
-                                    <i class="fas fa-arrow-down text-red-500 mr-1"></i> Akan masuk ke <strong
-                                        class="text-red-600">pengeluaran</strong> (nombok)
-                                @else
-                                    <i class="fas fa-equals text-gray-500 mr-1"></i> Tidak ada selisih
-                                @endif
-                            </p>
-                        </div>
-                    </div>
-                </div>
-                <div class="flex items-center justify-end gap-3 pt-4 border-t border-gray-100 mt-4">
-                    <button type="button" onclick="closeHargaAsliModal()"
-                        class="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition">Batal</button>
-                    <button type="submit"
-                        class="px-4 py-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition">
-                        <i class="fas fa-save mr-2"></i> Simpan
+    @unless ($locked)
+        <div id="hargaAsliModal" class="fixed inset-0 bg-black/50 z-50 hidden flex items-center justify-center">
+            <div class="bg-white rounded-2xl max-w-md w-full">
+                <div class="px-6 py-4 border-b border-gray-200 flex items-center justify-between">
+                    <h5 class="text-lg font-semibold text-gray-800 flex items-center">
+                        <i class="fas fa-money-bill-wave text-orange-500 mr-2"></i> Input Harga Asli (Modal) Upgrade
+                    </h5>
+                    <button onclick="closeHargaAsliModal()" class="text-gray-400 hover:text-gray-600">
+                        <i class="fas fa-times text-xl"></i>
                     </button>
                 </div>
-            </form>
+                <form action="{{ route('transaksional.departure.update-harga-asli-upgrade', $departure->id_departure) }}"
+                    method="POST" class="p-6">
+                    @csrf
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1.5">Harga Asli (Modal) Upgrade <span
+                                class="text-red-500">*</span></label>
+                        <div class="relative">
+                            <span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm">Rp</span>
+                            <input type="text" name="harga_asli_upgrade_total" id="harga_asli_upgrade_total_display"
+                                value="{{ ($departure->harga_asli_upgrade_total ?? 0) > 0 ? number_format($departure->harga_asli_upgrade_total, 0, ',', '.') : '' }}"
+                                class="w-full pl-10 pr-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-orange-500 text-lg"
+                                placeholder="0" oninput="formatRupiahHargaAsli(this)" autocomplete="off">
+                        </div>
+                        <p class="text-xs text-gray-500 mt-2">
+                            <i class="fas fa-info-circle mr-1"></i>
+                            Harga asli = harga <strong>modal</strong> upgrade hotel (yang dibayarkan ke hotel).
+                        </p>
+                    </div>
+                    <div class="flex items-center justify-end gap-3 pt-4 border-t border-gray-100 mt-4">
+                        <button type="button" onclick="closeHargaAsliModal()"
+                            class="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition">Batal</button>
+                        <button type="submit"
+                            class="px-4 py-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition">
+                            <i class="fas fa-save mr-2"></i> Simpan
+                        </button>
+                    </div>
+                </form>
+            </div>
         </div>
-    </div>
+    @endunless
 
-    {{-- ============================================ --}}
     {{-- MODAL PEMBAYARAN TAK TERDUGA --}}
-    {{-- ============================================ --}}
-    <div id="pembayaranTakTerdugaModal" class="fixed inset-0 bg-black/50 z-50 hidden flex items-center justify-center">
-        <div class="bg-white rounded-2xl max-w-md w-full">
-            <div class="px-6 py-4 border-b border-gray-200 flex items-center justify-between">
-                <h5 class="text-lg font-semibold text-gray-800 flex items-center">
-                    <i class="fas fa-exclamation-triangle text-red-500 mr-2"></i>
-                    <span id="pembayaranTakTerdugaModalTitle">Tambah Pembayaran Tak Terduga</span>
-                </h5>
-                <button onclick="closePembayaranTakTerdugaModal()" class="text-gray-400 hover:text-gray-600">
-                    <i class="fas fa-times text-xl"></i>
-                </button>
-            </div>
-            <form id="pembayaranTakTerdugaForm"
-                action="{{ route('transaksional.departure.store-pembayaran-tak-terduga', $departure->id_departure) }}"
-                method="POST" class="p-6 space-y-4">
-                @csrf
-                <input type="hidden" name="_method" id="pembayaranTakTerdugaMethod" value="POST">
-                <input type="hidden" name="pembayaran_id" id="pembayaranTakTerdugaId" value="">
-
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1.5">
-                        Nama Pembayaran <span class="text-red-500">*</span>
-                    </label>
-                    <input type="text" name="nama_pembayaran" id="ptt_nama_pembayaran"
-                        class="w-full px-4 py-2 border border-gray-200 rounded-xl focus:ring-2 focus:ring-red-500 focus:border-red-500 text-sm"
-                        placeholder="Contoh: Denda overstay, biaya tambahan, dll" required>
-                </div>
-
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1.5">
-                        Total Pembayaran <span class="text-red-500">*</span>
-                    </label>
-                    <div class="relative">
-                        <span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm">Rp</span>
-                        <input type="text" name="total_pembayaran" id="ptt_total_pembayaran"
-                            class="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-xl focus:ring-2 focus:ring-red-500 focus:border-red-500 text-lg"
-                            placeholder="0" required oninput="formatRupiahPtt(this)" autocomplete="off">
-                    </div>
-                    <p class="text-xs text-gray-500 mt-1">
-                        <i class="fas fa-info-circle mr-1"></i>
-                        Akan masuk ke <strong class="text-red-600">pengeluaran</strong> departure
-                    </p>
-                </div>
-
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1.5">Keterangan</label>
-                    <textarea name="keterangan" id="ptt_keterangan" rows="2"
-                        class="w-full px-4 py-2 border border-gray-200 rounded-xl focus:ring-2 focus:ring-red-500 focus:border-red-500 text-sm"
-                        placeholder="Catatan tambahan (opsional)"></textarea>
-                </div>
-
-                <div class="flex items-center justify-end gap-3 pt-4 border-t border-gray-100">
-                    <button type="button" onclick="closePembayaranTakTerdugaModal()"
-                        class="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition">Batal</button>
-                    <button type="submit" id="pembayaranTakTerdugaSubmitBtn"
-                        class="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition">
-                        <i class="fas fa-save mr-2"></i> <span id="pembayaranTakTerdugaSubmitText">Tambah</span>
+    @unless ($locked)
+        <div id="pembayaranTakTerdugaModal" class="fixed inset-0 bg-black/50 z-50 hidden flex items-center justify-center">
+            <div class="bg-white rounded-2xl max-w-md w-full">
+                <div class="px-6 py-4 border-b border-gray-200 flex items-center justify-between">
+                    <h5 class="text-lg font-semibold text-gray-800 flex items-center">
+                        <i class="fas fa-exclamation-triangle text-red-500 mr-2"></i>
+                        <span id="pembayaranTakTerdugaModalTitle">Tambah Pembayaran Tak Terduga</span>
+                    </h5>
+                    <button onclick="closePembayaranTakTerdugaModal()" class="text-gray-400 hover:text-gray-600">
+                        <i class="fas fa-times text-xl"></i>
                     </button>
                 </div>
-            </form>
-        </div>
-    </div>
-
-    {{-- MODAL ATUR HOTEL TOUR --}}
-    <div id="paketTourHotelModal" class="fixed inset-0 bg-black/50 z-50 hidden flex items-center justify-center">
-        <div class="bg-white rounded-2xl max-w-5xl w-full max-h-[90vh] overflow-y-auto">
-            <div class="sticky top-0 bg-white px-6 py-4 border-b border-gray-200 flex items-center justify-between">
-                <h5 class="text-lg font-semibold text-gray-800 flex items-center">
-                    <i class="fas fa-umbrella-beach text-yellow-500 mr-2"></i> Atur Hotel Tour
-                </h5>
-                <button onclick="closePaketTourHotelModal()" class="text-gray-400 hover:text-gray-600">
-                    <i class="fas fa-times text-xl"></i>
-                </button>
-            </div>
-            <form action="{{ route('transaksional.departure.update-paket-tour-hotel', $departure->id_departure) }}"
-                method="POST" class="p-6 space-y-6" id="paketTourHotelForm">
-                @csrf
-                @method('PUT')
-                <input type="hidden" name="id_paket_tour" value="{{ $departure->produk->paket_tour_id ?? '' }}">
-                <div class="bg-blue-50 rounded-lg p-4 border border-blue-200">
-                    <p class="text-sm text-blue-700"><i class="fas fa-info-circle mr-2"></i>Atur hotel-hotel yang
-                        termasuk
-                        dalam paket tour untuk keberangkatan ini.</p>
-                    <div class="flex items-center gap-4 mt-2 text-xs text-blue-600">
-                        <span>Paket Tour: <strong>{{ $departure->produk->paketTour->kota_tujuan ?? '-' }}</strong></span>
-                        <span>Durasi: <strong>{{ $departure->produk->paketTour->durasi_hari ?? 0 }} Hari</strong></span>
-                    </div>
-                </div>
-                <div id="paketTourHotelsContainer">
-                    @php
-                        $tourHotels = $departure->departurePaketTourHotels->sortBy('urutan');
-                        $availableHotels = $departure->produk->paketTour->hotels ?? collect();
-                    @endphp
-                    @if ($availableHotels->count() > 0)
-                        <div class="space-y-4">
-                            @foreach ($availableHotels as $index => $hotel)
-                                @php
-                                    $hotelTourItems = $tourHotels->where('id_hotel', $hotel->id_hotel);
-                                    $isChecked = $hotelTourItems->count() > 0;
-                                @endphp
-                                <div class="bg-white border border-gray-200 rounded-xl p-4 hover:shadow-md transition-shadow duration-200 hotel-tour-item"
-                                    data-hotel-id="{{ $hotel->id_hotel }}" data-index="{{ $loop->index }}">
-                                    <div class="flex items-start gap-4">
-                                        <div class="flex items-start gap-2 pt-1">
-                                            <input type="checkbox"
-                                                name="paket_tour_hotels[{{ $loop->index }}][id_hotel]"
-                                                value="{{ $hotel->id_hotel }}" {{ $isChecked ? 'checked' : '' }}
-                                                class="hotel-tour-checkbox w-4 h-4 text-yellow-500 border-gray-300 rounded focus:ring-yellow-500 mt-1">
-                                            <span
-                                                class="inline-flex items-center justify-center w-6 h-6 bg-gray-100 text-gray-600 text-xs font-medium rounded-full">{{ $loop->iteration }}</span>
-                                        </div>
-                                        <div class="flex-1">
-                                            <div class="flex items-center justify-between">
-                                                <div>
-                                                    <p class="font-semibold text-gray-800">{{ $hotel->nama_hotel }}</p>
-                                                    <p class="text-sm text-gray-500">{{ $hotel->kota ?? '-' }}
-                                                        @if ($hotel->bintang)
-                                                            · {{ $hotel->bintang_text }}
-                                                        @endif
-                                                    </p>
-                                                </div>
-                                                <span class="text-sm text-gray-400"><i
-                                                        class="fas fa-door-open mr-1"></i><span
-                                                        id="kamarCount-{{ $loop->index }}">Memuat...</span></span>
-                                            </div>
-                                            <div id="kamarContainer-{{ $loop->index }}"
-                                                class="mt-3 grid grid-cols-1 md:grid-cols-2 gap-3"></div>
-                                            <div class="mt-2 text-sm text-gray-500">Total: <span
-                                                    id="totalHotelTour-{{ $loop->index }}"
-                                                    class="font-bold text-yellow-600">Rp 0</span></div>
-                                        </div>
-                                    </div>
-                                </div>
-                            @endforeach
-                        </div>
-                        <div class="bg-gray-50 rounded-lg p-3 border border-gray-200">
-                            <div class="flex items-center justify-between">
-                                <span class="text-sm font-semibold text-gray-700"><i
-                                        class="fas fa-calculator mr-2 text-yellow-500"></i>Total Seluruh Hotel Tour</span>
-                                <span class="text-lg font-bold text-yellow-600"
-                                    id="totalPaketTourHotelPreview">{{ $departure->total_harga_paket_tour_hotel_formatted }}</span>
-                            </div>
-                        </div>
-                    @else
-                        <div class="text-center py-8 bg-gray-50 rounded-xl border border-gray-200">
-                            <i class="fas fa-hotel text-4xl text-gray-300 mb-3"></i>
-                            <p class="text-gray-500 font-medium">Belum ada hotel yang terdaftar untuk paket tour ini</p>
-                            <p class="text-gray-400 text-sm mt-1">Silakan tambahkan hotel pada paket tour terlebih dahulu
-                            </p>
-                            <button type="button" onclick="closePaketTourHotelModal()"
-                                class="inline-block mt-3 px-4 py-2 bg-gray-500 text-white text-sm rounded-lg hover:bg-gray-600 transition"><i
-                                    class="fas fa-times mr-2"></i> Tutup</button>
-                        </div>
-                    @endif
-                </div>
-                <div class="flex items-center justify-end gap-3 pt-4 border-t border-gray-100">
-                    <button type="button" onclick="closePaketTourHotelModal()"
-                        class="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition">Batal</button>
-                    <button type="submit"
-                        class="px-4 py-2 bg-yellow-500 text-white rounded-lg hover:bg-yellow-600 transition"><i
-                            class="fas fa-save mr-2"></i> Simpan Hotel Tour</button>
-                </div>
-            </form>
-        </div>
-    </div>
-
-    {{-- MODAL MASKAPAI --}}
-    <div id="maskapaiModal" class="fixed inset-0 bg-black/50 z-50 hidden flex items-center justify-center">
-        <div class="bg-white rounded-2xl max-w-3xl w-full max-h-[90vh] overflow-y-auto">
-            <div class="sticky top-0 bg-white px-6 py-4 border-b border-gray-200 flex items-center justify-between">
-                <h5 class="text-lg font-semibold text-gray-800 flex items-center"><i
-                        class="fas fa-plane text-yellow-500 mr-2"></i> Tambah Maskapai & Harga</h5>
-                <button onclick="closeMaskapaiModal()" class="text-gray-400 hover:text-gray-600"><i
-                        class="fas fa-times text-xl"></i></button>
-            </div>
-            <form action="{{ route('transaksional.departure.update-maskapai', $departure->id_departure) }}"
-                method="POST" class="p-6 space-y-6">
-                @csrf
-                @method('PUT')
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <form id="pembayaranTakTerdugaForm"
+                    action="{{ route('transaksional.departure.store-pembayaran-tak-terduga', $departure->id_departure) }}"
+                    method="POST" class="p-6 space-y-4">
+                    @csrf
+                    <input type="hidden" name="_method" id="pembayaranTakTerdugaMethod" value="POST">
+                    <input type="hidden" name="pembayaran_id" id="pembayaranTakTerdugaId" value="">
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1.5">Maskapai Domestik Berangkat</label>
-                        <select name="id_maskapai_domestik_berangkat"
-                            class="w-full px-4 py-2 border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500">
-                            <option value="">-- Pilih --</option>
-                            @foreach ($maskapaiOptions as $maskapai)
-                                @if ($maskapai->is_domestik)
-                                    <option value="{{ $maskapai->id_maskapai }}"
-                                        {{ $departure->id_maskapai_domestik_berangkat == $maskapai->id_maskapai ? 'selected' : '' }}>
-                                        {{ $maskapai->nama_maskapai }}</option>
-                                @endif
-                            @endforeach
-                        </select>
+                        <label class="block text-sm font-medium text-gray-700 mb-1.5">Nama Pembayaran <span
+                                class="text-red-500">*</span></label>
+                        <input type="text" name="nama_pembayaran" id="ptt_nama_pembayaran"
+                            class="w-full px-4 py-2 border border-gray-200 rounded-xl focus:ring-2 focus:ring-red-500 focus:border-red-500 text-sm"
+                            placeholder="Contoh: Denda overstay" required>
                     </div>
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1.5">Harga Domestik Berangkat</label>
+                        <label class="block text-sm font-medium text-gray-700 mb-1.5">Total Pembayaran <span
+                                class="text-red-500">*</span></label>
                         <div class="relative">
                             <span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm">Rp</span>
-                            <input type="text" name="harga_maskapai_domestik_berangkat_display"
-                                id="harga_maskapai_domestik_berangkat_display"
-                                value="{{ $departure->harga_maskapai_domestik_berangkat ? 'Rp ' . number_format($departure->harga_maskapai_domestik_berangkat, 0, ',', '.') : 'Rp 0' }}"
-                                class="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500 maskapai-harga"
-                                placeholder="Rp 0"
-                                oninput="formatRupiahMaskapai(this, 'harga_maskapai_domestik_berangkat')"
-                                onblur="formatRupiahMaskapai(this, 'harga_maskapai_domestik_berangkat')">
-                            <input type="hidden" name="harga_maskapai_domestik_berangkat"
-                                id="harga_maskapai_domestik_berangkat"
-                                value="{{ $departure->harga_maskapai_domestik_berangkat }}">
+                            <input type="text" name="total_pembayaran" id="ptt_total_pembayaran"
+                                class="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-xl focus:ring-2 focus:ring-red-500 focus:border-red-500 text-lg"
+                                placeholder="0" required oninput="formatRupiahPtt(this)" autocomplete="off">
                         </div>
-                    </div>
-                </div>
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1.5">Maskapai Domestik Pulang</label>
-                        <select name="id_maskapai_domestik_pulang"
-                            class="w-full px-4 py-2 border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500">
-                            <option value="">-- Pilih --</option>
-                            @foreach ($maskapaiOptions as $maskapai)
-                                @if ($maskapai->is_domestik)
-                                    <option value="{{ $maskapai->id_maskapai }}"
-                                        {{ $departure->id_maskapai_domestik_pulang == $maskapai->id_maskapai ? 'selected' : '' }}>
-                                        {{ $maskapai->nama_maskapai }}</option>
-                                @endif
-                            @endforeach
-                        </select>
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1.5">Harga Domestik Pulang</label>
-                        <div class="relative">
-                            <span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm">Rp</span>
-                            <input type="text" name="harga_maskapai_domestik_pulang_display"
-                                id="harga_maskapai_domestik_pulang_display"
-                                value="{{ $departure->harga_maskapai_domestik_pulang ? 'Rp ' . number_format($departure->harga_maskapai_domestik_pulang, 0, ',', '.') : 'Rp 0' }}"
-                                class="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500 maskapai-harga"
-                                placeholder="Rp 0"
-                                oninput="formatRupiahMaskapai(this, 'harga_maskapai_domestik_pulang')"
-                                onblur="formatRupiahMaskapai(this, 'harga_maskapai_domestik_pulang')">
-                            <input type="hidden" name="harga_maskapai_domestik_pulang"
-                                id="harga_maskapai_domestik_pulang"
-                                value="{{ $departure->harga_maskapai_domestik_pulang }}">
-                        </div>
-                    </div>
-                </div>
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1.5">Maskapai Internasional
-                            Berangkat</label>
-                        <select name="id_maskapai_internasional_berangkat"
-                            class="w-full px-4 py-2 border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500">
-                            <option value="">-- Pilih --</option>
-                            @foreach ($maskapaiOptions as $maskapai)
-                                @if ($maskapai->is_internasional)
-                                    <option value="{{ $maskapai->id_maskapai }}"
-                                        {{ $departure->id_maskapai_internasional_berangkat == $maskapai->id_maskapai ? 'selected' : '' }}>
-                                        {{ $maskapai->nama_maskapai }}</option>
-                                @endif
-                            @endforeach
-                        </select>
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1.5">Harga Internasional
-                            Berangkat</label>
-                        <div class="relative">
-                            <span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm">Rp</span>
-                            <input type="text" name="harga_maskapai_internasional_berangkat_display"
-                                id="harga_maskapai_internasional_berangkat_display"
-                                value="{{ $departure->harga_maskapai_internasional_berangkat ? 'Rp ' . number_format($departure->harga_maskapai_internasional_berangkat, 0, ',', '.') : 'Rp 0' }}"
-                                class="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500 maskapai-harga"
-                                placeholder="Rp 0"
-                                oninput="formatRupiahMaskapai(this, 'harga_maskapai_internasional_berangkat')"
-                                onblur="formatRupiahMaskapai(this, 'harga_maskapai_internasional_berangkat')">
-                            <input type="hidden" name="harga_maskapai_internasional_berangkat"
-                                id="harga_maskapai_internasional_berangkat"
-                                value="{{ $departure->harga_maskapai_internasional_berangkat }}">
-                        </div>
-                    </div>
-                </div>
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1.5">Maskapai Internasional
-                            Pulang</label>
-                        <select name="id_maskapai_internasional_pulang"
-                            class="w-full px-4 py-2 border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500">
-                            <option value="">-- Pilih --</option>
-                            @foreach ($maskapaiOptions as $maskapai)
-                                @if ($maskapai->is_internasional)
-                                    <option value="{{ $maskapai->id_maskapai }}"
-                                        {{ $departure->id_maskapai_internasional_pulang == $maskapai->id_maskapai ? 'selected' : '' }}>
-                                        {{ $maskapai->nama_maskapai }}</option>
-                                @endif
-                            @endforeach
-                        </select>
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1.5">Harga Internasional Pulang</label>
-                        <div class="relative">
-                            <span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm">Rp</span>
-                            <input type="text" name="harga_maskapai_internasional_pulang_display"
-                                id="harga_maskapai_internasional_pulang_display"
-                                value="{{ $departure->harga_maskapai_internasional_pulang ? 'Rp ' . number_format($departure->harga_maskapai_internasional_pulang, 0, ',', '.') : 'Rp 0' }}"
-                                class="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500 maskapai-harga"
-                                placeholder="Rp 0"
-                                oninput="formatRupiahMaskapai(this, 'harga_maskapai_internasional_pulang')"
-                                onblur="formatRupiahMaskapai(this, 'harga_maskapai_internasional_pulang')">
-                            <input type="hidden" name="harga_maskapai_internasional_pulang"
-                                id="harga_maskapai_internasional_pulang"
-                                value="{{ $departure->harga_maskapai_internasional_pulang }}">
-                        </div>
-                    </div>
-                </div>
-                <div class="bg-blue-50 rounded-lg p-3 border border-blue-200">
-                    <p class="text-sm text-blue-700"><i class="fas fa-info-circle mr-2"></i>Pastikan harga maskapai
-                        sudah termasuk pajak dan biaya lainnya.</p>
-                </div>
-                <div class="flex items-center justify-end gap-3 pt-4 border-t border-gray-100">
-                    <button type="button" onclick="closeMaskapaiModal()"
-                        class="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition">Batal</button>
-                    <button type="submit"
-                        class="px-4 py-2 bg-yellow-500 text-white rounded-lg hover:bg-yellow-600 transition"><i
-                            class="fas fa-save mr-2"></i> Simpan</button>
-                </div>
-            </form>
-        </div>
-    </div>
-
-    {{-- MODAL HOTEL --}}
-    <div id="hotelModal" class="fixed inset-0 bg-black/50 z-50 hidden flex items-center justify-center">
-        <div class="bg-white rounded-2xl max-w-4xl w-full max-h-[90vh] overflow-y-auto">
-            <div class="sticky top-0 bg-white px-6 py-4 border-b border-gray-200 flex items-center justify-between">
-                <h5 class="text-lg font-semibold text-gray-800 flex items-center"><i
-                        class="fas fa-hotel text-yellow-500 mr-2"></i> Tambah Hotel & Tipe Kamar</h5>
-                <button onclick="closeHotelModal()" class="text-gray-400 hover:text-gray-600"><i
-                        class="fas fa-times text-xl"></i></button>
-            </div>
-            <form action="{{ route('transaksional.departure.update-hotel', $departure->id_departure) }}"
-                method="POST" class="p-6 space-y-6">
-                @csrf
-                @method('PUT')
-                <div class="mb-4">
-                    <div class="relative">
-                        <i class="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm"></i>
-                        <input type="text" id="searchHotelModal" placeholder="Cari hotel..."
-                            class="w-full pl-10 pr-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500 text-sm">
-                    </div>
-                </div>
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1.5">Hotel Mekkah</label>
-                    <select name="id_hotel_mekkah" id="id_hotel_mekkah"
-                        class="hotel-select w-full px-4 py-2 border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500"
-                        data-departure="{{ $departure->id_departure }}" data-container="kamarContainerMekkah"
-                        data-total="totalHotelMekkah">
-                        <option value="">-- Pilih --</option>
-                        @foreach ($hotelOptions as $hotel)
-                            @if ($hotel->kota == 'Mekkah')
-                                <option value="{{ $hotel->id_hotel }}"
-                                    {{ $departure->id_hotel_mekkah == $hotel->id_hotel ? 'selected' : '' }}>
-                                    {{ $hotel->nama_hotel }} ({{ $hotel->bintang_text }})</option>
-                            @endif
-                        @endforeach
-                    </select>
-                    <div id="kamarContainerMekkah" class="mt-3 grid grid-cols-1 md:grid-cols-2 gap-3"></div>
-                    <div class="mt-2 text-sm text-gray-500">Total: <span id="totalHotelMekkah"
-                            class="font-bold text-yellow-600">Rp 0</span></div>
-                </div>
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1.5">Hotel Madinah</label>
-                    <select name="id_hotel_madinah" id="id_hotel_madinah"
-                        class="hotel-select w-full px-4 py-2 border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500"
-                        data-departure="{{ $departure->id_departure }}" data-container="kamarContainerMadinah"
-                        data-total="totalHotelMadinah">
-                        <option value="">-- Pilih --</option>
-                        @foreach ($hotelOptions as $hotel)
-                            @if ($hotel->kota == 'Madinah')
-                                <option value="{{ $hotel->id_hotel }}"
-                                    {{ $departure->id_hotel_madinah == $hotel->id_hotel ? 'selected' : '' }}>
-                                    {{ $hotel->nama_hotel }} ({{ $hotel->bintang_text }})</option>
-                            @endif
-                        @endforeach
-                    </select>
-                    <div id="kamarContainerMadinah" class="mt-3 grid grid-cols-1 md:grid-cols-2 gap-3"></div>
-                    <div class="mt-2 text-sm text-gray-500">Total: <span id="totalHotelMadinah"
-                            class="font-bold text-yellow-600">Rp 0</span></div>
-                </div>
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1.5">Hotel Transit</label>
-                    <select name="id_hotel_transit" id="id_hotel_transit"
-                        class="hotel-select w-full px-4 py-2 border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500"
-                        data-departure="{{ $departure->id_departure }}" data-container="kamarContainerTransit"
-                        data-total="totalHotelTransit">
-                        <option value="">-- Pilih --</option>
-                        @foreach ($hotelOptions as $hotel)
-                            @if ($hotel->kota != 'Mekkah' && $hotel->kota != 'Madinah')
-                                <option value="{{ $hotel->id_hotel }}"
-                                    {{ $departure->id_hotel_transit == $hotel->id_hotel ? 'selected' : '' }}>
-                                    {{ $hotel->nama_hotel }} ({{ $hotel->bintang_text }})</option>
-                            @endif
-                        @endforeach
-                    </select>
-                    <div id="kamarContainerTransit" class="mt-3 grid grid-cols-1 md:grid-cols-2 gap-3"></div>
-                    <div class="mt-2 text-sm text-gray-500">Total: <span id="totalHotelTransit"
-                            class="font-bold text-yellow-600">Rp 0</span></div>
-                </div>
-                <div class="flex items-center justify-end gap-3 pt-4 border-t border-gray-100">
-                    <button type="button" onclick="closeHotelModal()"
-                        class="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition">Batal</button>
-                    <button type="submit"
-                        class="px-4 py-2 bg-yellow-500 text-white rounded-lg hover:bg-yellow-600 transition"><i
-                            class="fas fa-save mr-2"></i> Simpan</button>
-                </div>
-            </form>
-        </div>
-    </div>
-
-    {{-- MODAL JAMAAH --}}
-    <div id="jamaahModal" class="fixed inset-0 bg-black/50 z-50 hidden flex items-center justify-center">
-        <div class="bg-white rounded-2xl max-w-4xl w-full max-h-[90vh] overflow-hidden">
-            <div class="sticky top-0 bg-white px-6 py-4 border-b border-gray-200 flex items-center justify-between">
-                <h5 class="text-lg font-semibold text-gray-800 flex items-center"><i
-                        class="fas fa-users text-yellow-500 mr-2"></i> Tambah Daftar Jamaah</h5>
-                <button onclick="closeJamaahModal()" class="text-gray-400 hover:text-gray-600"><i
-                        class="fas fa-times text-xl"></i></button>
-            </div>
-            <form action="{{ route('transaksional.departure.update-jamaah', $departure->id_departure) }}"
-                method="POST" class="p-6">
-                @csrf
-                @method('PUT')
-                @if ($departure->produk_paket || ($departure->bulan_keberangkatan && $departure->tahun_keberangkatan))
-                    <div class="mb-4 bg-blue-50 border border-blue-200 rounded-xl p-3">
-                        <div class="flex items-start gap-2">
-                            <i class="fas fa-filter text-blue-500 mt-0.5"></i>
-                            <div class="flex-1">
-                                <p class="text-sm font-medium text-blue-800">Jamaah ditampilkan berdasarkan filter
-                                    keberangkatan:</p>
-                                @if ($departure->produk_paket)
-                                    <p class="text-xs text-blue-600 mt-1"><i class="fas fa-box mr-1"></i> Produk Paket:
-                                        <strong>{{ $departure->produk_paket }}</strong>
-                                    </p>
-                                @endif
-                                @if ($departure->bulan_keberangkatan && $departure->tahun_keberangkatan)
-                                    <p class="text-xs text-blue-600 mt-0.5"><i
-                                            class="fas fa-calendar-alt mr-1"></i>Bulan:
-                                        <strong>{{ date('F', mktime(0, 0, 0, $departure->bulan_keberangkatan, 1)) }}</strong>
-                                        · Tahun: <strong>{{ $departure->tahun_keberangkatan }}</strong>
-                                    </p>
-                                @endif
-                                <p class="text-xs text-blue-500 mt-1">Hanya jamaah dengan <strong>produk paket &
-                                        bulan/tahun</strong> yang sama yang ditampilkan.</p>
-                            </div>
-                        </div>
-                    </div>
-                @endif
-                <div class="mb-3 flex flex-wrap items-center gap-3 text-xs">
-                    <span class="inline-flex items-center gap-1.5"><span
-                            class="w-3 h-3 rounded-full bg-green-500"></span><span
-                            class="text-gray-600">Lunas</span></span>
-                    <span class="inline-flex items-center gap-1.5"><span
-                            class="w-3 h-3 rounded-full bg-red-500"></span><span class="text-gray-600">Belum
-                            Lunas</span></span>
-                    <span class="inline-flex items-center gap-1.5"><span
-                            class="w-3 h-3 rounded-full bg-blue-500"></span><span class="text-gray-600">Sudah
-                            Terdaftar</span></span>
-                    <span class="inline-flex items-center gap-1.5"><span
-                            class="w-3 h-3 rounded-full bg-purple-500"></span><span class="text-gray-600">Fee
-                            Passport</span></span>
-                </div>
-                <div class="mb-4">
-                    <div class="relative">
-                        <i class="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm"></i>
-                        <input type="text" id="searchJamaahModal"
-                            placeholder="Cari jamaah berdasarkan nama, produk, atau status..."
-                            class="w-full pl-10 pr-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500 text-sm">
-                    </div>
-                    @php
-                        $lunasCount = $jamaahs->where('status_pembayaran', 'Lunas')->count();
-                        $belumLunasCount = $jamaahs->where('status_pembayaran', '!=', 'Lunas')->count();
-                    @endphp
-                    <div class="flex flex-wrap items-center gap-4 mt-2 text-xs">
-                        <span class="text-gray-400"><i class="fas fa-info-circle mr-1"></i> Ketik untuk mencari
-                            jamaah</span>
-                        <span id="jamaahCountModal" class="font-medium">
-                            <span class="text-gray-600">{{ $jamaahs->count() }} jamaah tersedia</span>
-                            @if ($lunasCount > 0)
-                                <span class="text-green-600 font-medium">· {{ $lunasCount }} Lunas</span>
-                            @endif
-                            @if ($belumLunasCount > 0)
-                                <span class="text-red-600 font-bold">· {{ $belumLunasCount }} Belum Lunas</span>
-                            @endif
-                        </span>
-                    </div>
-                </div>
-                <div class="grid grid-cols-2 md:grid-cols-3 gap-2 max-h-72 overflow-y-auto border border-gray-200 rounded-xl p-4"
-                    id="jamaahModalList">
-                    @php
-                        $selectedJamaahs = $departure->jamaahs->pluck('id_jamaah')->toArray();
-                        $bulanNamaModal = [
-                            1 => 'Jan',
-                            2 => 'Feb',
-                            3 => 'Mar',
-                            4 => 'Apr',
-                            5 => 'Mei',
-                            6 => 'Jun',
-                            7 => 'Jul',
-                            8 => 'Agu',
-                            9 => 'Sep',
-                            10 => 'Okt',
-                            11 => 'Nov',
-                            12 => 'Des',
-                        ];
-                        $bulanFullModal = [
-                            1 => 'Januari',
-                            2 => 'Februari',
-                            3 => 'Maret',
-                            4 => 'April',
-                            5 => 'Mei',
-                            6 => 'Juni',
-                            7 => 'Juli',
-                            8 => 'Agustus',
-                            9 => 'September',
-                            10 => 'Oktober',
-                            11 => 'November',
-                            12 => 'Desember',
-                        ];
-                    @endphp
-                    @forelse($jamaahs as $jamaah)
-                        @php
-                            $isLunas = $jamaah->status_pembayaran == 'Lunas';
-                            $isRegistered = in_array($jamaah->id_jamaah, $selectedJamaahs);
-                            $hasPassport = $jamaah->is_pembuatan_passport_efektif;
-                            if ($isRegistered) {
-                                $borderClass = 'border-2 border-blue-400';
-                                $bgClass = 'bg-blue-50';
-                                $badgeClass = 'bg-blue-500 text-white';
-                                $badgeText = 'TERDAFTAR';
-                            } elseif ($isLunas) {
-                                $borderClass = 'border-2 border-green-500';
-                                $bgClass = 'bg-green-50';
-                                $badgeClass = 'bg-green-500 text-white';
-                                $badgeText = 'LUNAS';
-                            } else {
-                                $borderClass = 'border-2 border-red-500';
-                                $bgClass = 'bg-red-50';
-                                $badgeClass = 'bg-red-500 text-white';
-                                $badgeText = 'BELUM LUNAS';
-                            }
-                            $jamaahKeberangkatanInfo = '';
-                            $jamaahHargaInfo = '';
-                            $jamaahHargaLabel = 'Harga';
-                            $jamaahFeePassport = $jamaah->fee_passport;
-                            if ($jamaah->keberangkatan && $jamaah->keberangkatan->count() > 0) {
-                                $firstK = $jamaah->keberangkatan->first();
-                                $bulanPivot = $firstK->pivot->bulan_keberangkatan ?? null;
-                                $tahunPivot = $firstK->pivot->tahun_keberangkatan ?? null;
-                                if ($bulanPivot && $tahunPivot) {
-                                    $jamaahKeberangkatanInfo =
-                                        ($bulanNamaModal[$bulanPivot] ?? '-') . ' ' . $tahunPivot;
-                                    $jamaahHargaLabel =
-                                        'Harga (' . ($bulanFullModal[$bulanPivot] ?? '-') . ' ' . $tahunPivot . ')';
-                                }
-                                if ($firstK->pivot->harga_paket ?? null) {
-                                    $jamaahHargaInfo = 'Rp ' . number_format($firstK->pivot->harga_paket, 0, ',', '.');
-                                } elseif ($firstK->pivot->harga ?? null) {
-                                    $jamaahHargaInfo = 'Rp ' . number_format($firstK->pivot->harga, 0, ',', '.');
-                                }
-                            } elseif ($jamaah->bulan_keberangkatan && $jamaah->tahun_keberangkatan) {
-                                $jamaahKeberangkatanInfo =
-                                    ($bulanNamaModal[$jamaah->bulan_keberangkatan] ?? '-') .
-                                    ' ' .
-                                    $jamaah->tahun_keberangkatan;
-                                $jamaahHargaLabel =
-                                    'Harga (' .
-                                    ($bulanFullModal[$jamaah->bulan_keberangkatan] ?? '-') .
-                                    ' ' .
-                                    $jamaah->tahun_keberangkatan .
-                                    ')';
-                                if ($jamaah->harga_paket ?? null) {
-                                    $jamaahHargaInfo = 'Rp ' . number_format($jamaah->harga_paket, 0, ',', '.');
-                                }
-                            }
-                            if (!$jamaahHargaInfo) {
-                                if ($jamaah->total_tagihan ?? null) {
-                                    $jamaahHargaInfo = 'Rp ' . number_format($jamaah->total_tagihan, 0, ',', '.');
-                                } elseif ($jamaah->total_tagihan_setelah_diskon ?? null) {
-                                    $jamaahHargaInfo =
-                                        'Rp ' . number_format($jamaah->total_tagihan_setelah_diskon, 0, ',', '.');
-                                }
-                            }
-                        @endphp
-                        <label
-                            class="jamaah-modal-item relative flex items-start p-2.5 {{ $borderClass }} {{ $bgClass }} rounded-lg hover:shadow-md transition cursor-pointer"
-                            data-name="{{ strtolower($jamaah->nama_lengkap) }}"
-                            data-produk="{{ strtolower($jamaah->produk_paket) }}"
-                            data-status="{{ strtolower($jamaah->status_pembayaran) }}"
-                            data-registered="{{ $isRegistered ? '1' : '0' }}"
-                            title="Keberangkatan: {{ $jamaahKeberangkatanInfo ?: '-' }}{{ $jamaahHargaInfo ? ' | Harga: ' . $jamaahHargaInfo : '' }}">
-                            <span
-                                class="absolute -top-2 -right-1 text-[10px] font-bold px-2 py-0.5 rounded-full {{ $badgeClass }} shadow-sm whitespace-nowrap">{{ $badgeText }}</span>
-                            <input type="checkbox" name="jamaah_ids[]" value="{{ $jamaah->id_jamaah }}"
-                                {{ $isRegistered ? 'checked' : '' }}
-                                class="w-4 h-4 text-yellow-500 border-gray-300 rounded focus:ring-yellow-500 flex-shrink-0 mt-0.5">
-                            <div class="ml-2 overflow-hidden flex-1">
-                                <p class="text-sm font-semibold text-gray-800 truncate pr-2">{{ $jamaah->nama_lengkap }}
-                                </p>
-                                <p class="text-xs text-gray-500 truncate">{{ $jamaah->produk_paket }}</p>
-                                @if ($jamaahKeberangkatanInfo)
-                                    <p class="text-[10px] text-blue-600 truncate mt-0.5"><i
-                                            class="fas fa-plane mr-0.5"></i> Keberangkatan:
-                                        {{ $jamaahKeberangkatanInfo }}</p>
-                                @endif
-                                @if ($jamaahHargaInfo)
-                                    <p class="text-[10px] text-emerald-600 font-semibold truncate mt-0.5"><i
-                                            class="fas fa-money-bill-wave mr-0.5"></i> {{ $jamaahHargaLabel }}:
-                                        {{ $jamaahHargaInfo }}</p>
-                                @endif
-                                @if ($hasPassport)
-                                    <p class="text-[10px] text-green-600 font-semibold truncate mt-0.5">
-                                        <i
-                                            class="fas fa-passport mr-0.5"></i>{{ $jamaah->is_pembuatan_passport ? 'PASSPORT YA' : 'PASSPORT YA (EFEKTIF)' }}
-                                        @if ($jamaahFeePassport > 0)
-                                            · Fee: Rp {{ number_format($jamaahFeePassport, 0, ',', '.') }}
-                                        @endif
-                                    </p>
-                                @endif
-                                <p class="text-xs mt-1">
-                                    <span
-                                        class="px-1.5 py-0.5 rounded-full text-[10px] font-medium {{ $jamaah->status_pembayaran == 'Lunas' ? 'bg-green-100 text-green-700' : ($jamaah->status_pembayaran == 'DP' ? 'bg-yellow-100 text-yellow-700' : ($jamaah->status_pembayaran == 'Setoran' ? 'bg-blue-100 text-blue-700' : 'bg-red-100 text-red-700')) }}">{{ $jamaah->status_pembayaran }}</span>
-                                </p>
-                            </div>
-                        </label>
-                    @empty
-                        <div class="col-span-3 text-center py-8">
-                            <div class="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-3">
-                                <i class="fas fa-users text-gray-300 text-2xl"></i>
-                            </div>
-                            <p class="text-gray-500 font-medium">Tidak ada jamaah yang tersedia</p>
-                            <p class="text-gray-400 text-xs mt-1">
-                                Tidak ada jamaah dengan produk <strong>{{ $departure->produk_paket }}</strong>
-                                @if ($departure->bulan_keberangkatan && $departure->tahun_keberangkatan)
-                                    dan keberangkatan
-                                    <strong>{{ date('F', mktime(0, 0, 0, $departure->bulan_keberangkatan, 1)) }}
-                                        {{ $departure->tahun_keberangkatan }}</strong>
-                                @endif
-                                yang belum terdaftar di departure lain.
-                            </p>
-                        </div>
-                    @endforelse
-                </div>
-                <div
-                    class="mt-4 flex items-center justify-between text-sm bg-blue-50 rounded-lg px-4 py-2.5 border border-blue-200">
-                    <div class="text-blue-700"><i class="fas fa-info-circle mr-2"></i>Centang jamaah yang akan
-                        dimasukkan ke keberangkatan ini</div>
-                    <div class="flex items-center gap-3">
-                        <button type="button" onclick="selectAllJamaah()"
-                            class="text-blue-600 hover:text-blue-800 text-xs font-medium"><i
-                                class="fas fa-check-double mr-1"></i> Pilih Semua</button>
-                        <button type="button" onclick="deselectAllJamaah()"
-                            class="text-red-600 hover:text-red-800 text-xs font-medium"><i
-                                class="fas fa-times mr-1"></i> Hapus Semua</button>
-                    </div>
-                </div>
-                <div class="flex items-center justify-end gap-3 pt-4 border-t border-gray-100 mt-4">
-                    <button type="button" onclick="closeJamaahModal()"
-                        class="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition">Batal</button>
-                    <button type="submit"
-                        class="px-4 py-2 bg-yellow-500 text-white rounded-lg hover:bg-yellow-600 transition"><i
-                            class="fas fa-save mr-2"></i> Simpan</button>
-                </div>
-            </form>
-        </div>
-    </div>
-
-    {{-- MODAL PERLENGKAPAN --}}
-    <div id="perlengkapanModal" class="fixed inset-0 bg-black/50 z-50 hidden flex items-center justify-center">
-        <div class="bg-white rounded-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
-            <div class="sticky top-0 bg-white px-6 py-4 border-b border-gray-200 flex items-center justify-between">
-                <h5 class="text-lg font-semibold text-gray-800">Tambah Perlengkapan ke Departure</h5>
-                <button onclick="closePerlengkapanModal()" class="text-gray-400 hover:text-gray-600"><i
-                        class="fas fa-times text-xl"></i></button>
-            </div>
-            <form action="{{ route('transaksional.departure.update-perlengkapan', $departure->id_departure) }}"
-                method="POST" class="p-6 space-y-4">
-                @csrf
-                @method('PUT')
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1.5">Pilih Perlengkapan <span
-                            class="text-red-500">*</span></label>
-                    <div
-                        class="grid grid-cols-1 md:grid-cols-2 gap-2 max-h-60 overflow-y-auto border border-gray-200 rounded-xl p-3">
-                        @forelse($perlengkapanOptions as $perlengkapan)
-                            <label
-                                class="flex items-center p-2 border border-gray-200 rounded-lg hover:bg-gray-50 transition cursor-pointer">
-                                <input type="checkbox" name="id_perlengkapan[]"
-                                    value="{{ $perlengkapan->id_perlengkapan }}"
-                                    class="w-4 h-4 text-yellow-500 border-gray-300 rounded focus:ring-yellow-500">
-                                <div class="ml-2">
-                                    <p class="text-sm font-medium text-gray-700">{{ $perlengkapan->nama_perlengkapan }}
-                                    </p>
-                                    <p class="text-xs text-gray-400">{{ $perlengkapan->harga_satuan_formatted }} /
-                                        {{ $perlengkapan->satuan ?? 'unit' }}</p>
-                                </div>
-                            </label>
-                        @empty
-                            <p class="text-sm text-gray-400 col-span-2 text-center py-4">Semua perlengkapan sudah
-                                ditambahkan.</p>
-                        @endforelse
-                    </div>
-                </div>
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1.5">Jumlah per Jamaah</label>
-                        <input type="number" name="jumlah_per_jamaah" value="1"
-                            class="w-full px-4 py-2 border border-gray-200 rounded-xl focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500 text-sm"
-                            min="1">
                     </div>
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-1.5">Keterangan</label>
-                        <input type="text" name="keterangan"
-                            class="w-full px-4 py-2 border border-gray-200 rounded-xl focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500 text-sm"
-                            placeholder="Catatan (opsional)">
+                        <textarea name="keterangan" id="ptt_keterangan" rows="2"
+                            class="w-full px-4 py-2 border border-gray-200 rounded-xl focus:ring-2 focus:ring-red-500 focus:border-red-500 text-sm"
+                            placeholder="Catatan tambahan (opsional)"></textarea>
                     </div>
-                </div>
-                <div class="bg-blue-50 rounded-lg p-3 border border-blue-200">
-                    <p class="text-sm text-blue-700"><i class="fas fa-info-circle mr-2"></i>Perlengkapan akan diberikan
-                        ke <strong>SEMUA</strong> jamaah yang terdaftar di departure ini.</p>
-                    <p class="text-xs text-blue-500 mt-1">Jumlah jamaah saat ini:
-                        <strong>{{ $departure->jamaahs->count() }}</strong> orang
-                    </p>
-                </div>
-                <div class="flex items-center justify-end gap-3 pt-4 border-t border-gray-100">
-                    <button type="button" onclick="closePerlengkapanModal()"
-                        class="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition">Batal</button>
-                    <button type="submit"
-                        class="px-4 py-2 bg-yellow-500 text-white rounded-lg hover:bg-yellow-600 transition"><i
-                            class="fas fa-save mr-2"></i> Tambah</button>
-                </div>
-            </form>
-        </div>
-    </div>
-
-    {{-- MODAL JENIS TRANSAKSI --}}
-    <div id="jenisTransaksiModal" class="fixed inset-0 bg-black/50 z-50 hidden flex items-center justify-center">
-        <div class="bg-white rounded-2xl max-w-4xl w-full max-h-[90vh] overflow-y-auto">
-            <div class="sticky top-0 bg-white px-6 py-4 border-b border-gray-200 flex items-center justify-between">
-                <h5 class="text-lg font-semibold text-gray-800 flex items-center"><i
-                        class="fas fa-receipt text-yellow-500 mr-2"></i> Tambah Jenis Transaksi ke Departure</h5>
-                <button onclick="closeJenisTransaksiModal()" class="text-gray-400 hover:text-gray-600"><i
-                        class="fas fa-times text-xl"></i></button>
+                    <div class="flex items-center justify-end gap-3 pt-4 border-t border-gray-100">
+                        <button type="button" onclick="closePembayaranTakTerdugaModal()"
+                            class="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition">Batal</button>
+                        <button type="submit" id="pembayaranTakTerdugaSubmitBtn"
+                            class="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition">
+                            <i class="fas fa-save mr-2"></i> <span id="pembayaranTakTerdugaSubmitText">Tambah</span>
+                        </button>
+                    </div>
+                </form>
             </div>
-            <form action="{{ route('transaksional.departure.update-jenis-transaksi', $departure->id_departure) }}"
-                method="POST" class="p-6 space-y-4">
-                @csrf
-                @method('PUT')
-                @php $totalJamaah = $departure->jamaahs->count(); @endphp
-                <div class="mb-4">
-                    <div class="relative">
-                        <i class="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm"></i>
-                        <input type="text" id="searchJenisTransaksiModal"
-                            placeholder="Cari jenis transaksi berdasarkan nama atau keterangan..."
-                            class="w-full pl-10 pr-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500 text-sm">
-                    </div>
-                    <div class="flex items-center gap-4 mt-2 text-xs text-gray-400">
-                        <span><i class="fas fa-info-circle mr-1"></i> Ketik untuk mencari jenis transaksi</span>
-                        <span id="jenisTransaksiCountModal"
-                            class="font-medium text-gray-600">{{ $jenisTransaksiOptions->count() }} jenis transaksi
-                            tersedia</span>
-                    </div>
+        </div>
+    @endunless
+
+    {{-- MODAL ATUR HOTEL TOUR --}}
+    @unless ($locked)
+        <div id="paketTourHotelModal" class="fixed inset-0 bg-black/50 z-50 hidden flex items-center justify-center">
+            <div class="bg-white rounded-2xl max-w-5xl w-full max-h-[90vh] overflow-y-auto">
+                <div class="sticky top-0 bg-white px-6 py-4 border-b border-gray-200 flex items-center justify-between">
+                    <h5 class="text-lg font-semibold text-gray-800 flex items-center">
+                        <i class="fas fa-umbrella-beach text-yellow-500 mr-2"></i> Atur Hotel Tour
+                    </h5>
+                    <button onclick="closePaketTourHotelModal()" class="text-gray-400 hover:text-gray-600">
+                        <i class="fas fa-times text-xl"></i>
+                    </button>
                 </div>
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1.5">Pilih Jenis Transaksi <span
-                            class="text-red-500">*</span></label>
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-3 max-h-60 overflow-y-auto border border-gray-200 rounded-xl p-3"
-                        id="jenisTransaksiModalList">
-                        @forelse($jenisTransaksiOptions as $jenis)
-                            <label
-                                class="jenis-transaksi-modal-item flex items-start p-3 border border-gray-200 rounded-lg hover:bg-gray-50 transition cursor-pointer"
-                                data-nama="{{ strtolower($jenis->nama) }}"
-                                data-keterangan="{{ strtolower($jenis->keterangan ?? '') }}">
-                                <input type="checkbox" name="id_jenis_transaksi[]" value="{{ $jenis->id_jenis }}"
-                                    class="jenis-transaksi-checkbox w-4 h-4 text-yellow-500 border-gray-300 rounded focus:ring-yellow-500 mt-1">
-                                <div class="ml-3 flex-1">
-                                    <div class="flex items-center justify-between">
-                                        <p class="text-sm font-medium text-gray-700">{{ $jenis->nama }}</p>
-                                        <span class="text-xs text-gray-400">{{ $jenis->kode ?? '' }}</span>
-                                    </div>
-                                    @if ($jenis->keterangan)
-                                        <p class="text-xs text-gray-400">{{ $jenis->keterangan }}</p>
-                                    @endif
-                                    <div class="grid grid-cols-2 gap-2 mt-2">
-                                        <div>
-                                            <label class="text-xs text-gray-500">Harga Total</label>
-                                            <div class="relative">
+                <form action="{{ route('transaksional.departure.update-paket-tour-hotel', $departure->id_departure) }}"
+                    method="POST" class="p-6 space-y-6" id="paketTourHotelForm">
+                    @csrf
+                    @method('PUT')
+                    <input type="hidden" name="id_paket_tour" value="{{ $departure->produk->paket_tour_id ?? '' }}">
+                    <div class="bg-blue-50 rounded-lg p-4 border border-blue-200">
+                        <p class="text-sm text-blue-700"><i class="fas fa-info-circle mr-2"></i>Atur hotel-hotel yang
+                            termasuk dalam paket tour untuk keberangkatan ini.</p>
+                        <div class="flex items-center gap-4 mt-2 text-xs text-blue-600">
+                            <span>Paket Tour: <strong>{{ $departure->produk->paketTour->kota_tujuan ?? '-' }}</strong></span>
+                            <span>Durasi: <strong>{{ $departure->produk->paketTour->durasi_hari ?? 0 }} Hari</strong></span>
+                        </div>
+                    </div>
+                    <div id="paketTourHotelsContainer">
+                        @php
+                            $tourHotels = $departure->departurePaketTourHotels->sortBy('urutan');
+                            $availableHotels = $departure->produk->paketTour->hotels ?? collect();
+                        @endphp
+                        @if ($availableHotels->count() > 0)
+                            <div class="space-y-4">
+                                @foreach ($availableHotels as $index => $hotel)
+                                    @php
+                                        $hotelTourItems = $tourHotels->where('id_hotel', $hotel->id_hotel);
+                                        $isChecked = $hotelTourItems->count() > 0;
+                                    @endphp
+                                    <div class="bg-white border border-gray-200 rounded-xl p-4 hover:shadow-md transition-shadow duration-200 hotel-tour-item"
+                                        data-hotel-id="{{ $hotel->id_hotel }}" data-index="{{ $loop->index }}">
+                                        <div class="flex items-start gap-4">
+                                            <div class="flex items-start gap-2 pt-1">
+                                                <input type="checkbox"
+                                                    name="paket_tour_hotels[{{ $loop->index }}][id_hotel]"
+                                                    value="{{ $hotel->id_hotel }}" {{ $isChecked ? 'checked' : '' }}
+                                                    class="hotel-tour-checkbox w-4 h-4 text-yellow-500 border-gray-300 rounded focus:ring-yellow-500 mt-1">
                                                 <span
-                                                    class="absolute left-2 top-1/2 -translate-y-1/2 text-gray-400 text-xs">Rp</span>
-                                                <input type="text"
-                                                    name="harga_total_display[{{ $jenis->id_jenis }}]"
-                                                    id="harga_total_display_{{ $jenis->id_jenis }}"
-                                                    class="jenis-harga w-full pl-8 pr-2 py-1.5 border border-gray-200 rounded text-sm rupiah-input"
-                                                    placeholder="Rp 0"
-                                                    oninput="formatRupiahJenisTransaksi(this, 'harga_total_{{ $jenis->id_jenis }}')"
-                                                    onblur="formatRupiahJenisTransaksi(this, 'harga_total_{{ $jenis->id_jenis }}')"
-                                                    value="Rp 0">
-                                                <input type="hidden" name="harga_total[{{ $jenis->id_jenis }}]"
-                                                    id="harga_total_{{ $jenis->id_jenis }}" value="0">
+                                                    class="inline-flex items-center justify-center w-6 h-6 bg-gray-100 text-gray-600 text-xs font-medium rounded-full">{{ $loop->iteration }}</span>
                                             </div>
-                                            <p class="text-[10px] text-gray-400 mt-0.5">Dibagi ke {{ $totalJamaah }}
-                                                jamaah</p>
-                                        </div>
-                                        <div>
-                                            <label class="text-xs text-gray-500">Catatan</label>
-                                            <input type="text" name="catatan[{{ $jenis->id_jenis }}]"
-                                                class="jenis-catatan w-full px-2 py-1.5 border border-gray-200 rounded text-sm"
-                                                placeholder="Opsional">
+                                            <div class="flex-1">
+                                                <div class="flex items-center justify-between">
+                                                    <div>
+                                                        <p class="font-semibold text-gray-800">{{ $hotel->nama_hotel }}</p>
+                                                        <p class="text-sm text-gray-500">{{ $hotel->kota ?? '-' }}
+                                                            @if ($hotel->bintang)
+                                                                · {{ $hotel->bintang_text }}
+                                                            @endif
+                                                        </p>
+                                                    </div>
+                                                    <span class="text-sm text-gray-400"><i
+                                                            class="fas fa-door-open mr-1"></i><span
+                                                            id="kamarCount-{{ $loop->index }}">Memuat...</span></span>
+                                                </div>
+                                                <div id="kamarContainer-{{ $loop->index }}"
+                                                    class="mt-3 grid grid-cols-1 md:grid-cols-2 gap-3"></div>
+                                                <div class="mt-2 text-sm text-gray-500">Total: <span
+                                                        id="totalHotelTour-{{ $loop->index }}"
+                                                        class="font-bold text-yellow-600">Rp 0</span></div>
+                                            </div>
                                         </div>
                                     </div>
+                                @endforeach
+                            </div>
+                            <div class="bg-gray-50 rounded-lg p-3 border border-gray-200">
+                                <div class="flex items-center justify-between">
+                                    <span class="text-sm font-semibold text-gray-700"><i
+                                            class="fas fa-calculator mr-2 text-yellow-500"></i>Total Seluruh Hotel Tour</span>
+                                    <span class="text-lg font-bold text-yellow-600"
+                                        id="totalPaketTourHotelPreview">{{ $departure->total_harga_paket_tour_hotel_formatted }}</span>
                                 </div>
-                            </label>
-                        @empty
-                            <p class="text-sm text-gray-400 col-span-2 text-center py-4">Semua jenis transaksi sudah
-                                ditambahkan.</p>
-                        @endforelse
+                            </div>
+                        @else
+                            <div class="text-center py-8 bg-gray-50 rounded-xl border border-gray-200">
+                                <i class="fas fa-hotel text-4xl text-gray-300 mb-3"></i>
+                                <p class="text-gray-500 font-medium">Belum ada hotel yang terdaftar untuk paket tour ini</p>
+                                <button type="button" onclick="closePaketTourHotelModal()"
+                                    class="inline-block mt-3 px-4 py-2 bg-gray-500 text-white text-sm rounded-lg hover:bg-gray-600 transition"><i
+                                        class="fas fa-times mr-2"></i> Tutup</button>
+                            </div>
+                        @endif
                     </div>
-                    <p class="text-xs text-gray-400 mt-2">
-                        <i class="fas fa-info-circle mr-1"></i>Masukkan <strong>harga total</strong> (bukan per jamaah).
-                        Sistem otomatis membagi rata ke <strong>{{ $totalJamaah }} jamaah</strong>.
-                    </p>
+                    <div class="flex items-center justify-end gap-3 pt-4 border-t border-gray-100">
+                        <button type="button" onclick="closePaketTourHotelModal()"
+                            class="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition">Batal</button>
+                        <button type="submit"
+                            class="px-4 py-2 bg-yellow-500 text-white rounded-lg hover:bg-yellow-600 transition"><i
+                                class="fas fa-save mr-2"></i> Simpan Hotel Tour</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    @endunless
+
+    {{-- MODAL MASKAPAI --}}
+    @unless ($locked)
+        <div id="maskapaiModal" class="fixed inset-0 bg-black/50 z-50 hidden flex items-center justify-center">
+            <div class="bg-white rounded-2xl max-w-3xl w-full max-h-[90vh] overflow-y-auto">
+                <div class="sticky top-0 bg-white px-6 py-4 border-b border-gray-200 flex items-center justify-between">
+                    <h5 class="text-lg font-semibold text-gray-800 flex items-center"><i
+                            class="fas fa-plane text-yellow-500 mr-2"></i> Tambah Maskapai & Harga</h5>
+                    <button onclick="closeMaskapaiModal()" class="text-gray-400 hover:text-gray-600"><i
+                            class="fas fa-times text-xl"></i></button>
                 </div>
-                <div class="bg-gray-50 rounded-lg p-4 border border-gray-200">
+                <form action="{{ route('transaksional.departure.update-maskapai', $departure->id_departure) }}"
+                    method="POST" class="p-6 space-y-6">
+                    @csrf
+                    @method('PUT')
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1.5">Default Harga Total</label>
-                            <div class="relative">
-                                <span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm">Rp</span>
-                                <input type="text" name="default_harga_total_display"
-                                    id="default_harga_total_display"
-                                    class="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-xl focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500 text-sm rupiah-input"
-                                    placeholder="Rp 0" oninput="formatRupiahJenisTransaksi(this, 'default_harga_total')"
-                                    onblur="formatRupiahJenisTransaksi(this, 'default_harga_total')" value="Rp 0">
-                                <input type="hidden" name="default_harga_total" id="default_harga_total"
-                                    value="0">
-                            </div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1.5">Maskapai Domestik Berangkat</label>
+                            <select name="id_maskapai_domestik_berangkat"
+                                class="w-full px-4 py-2 border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500">
+                                <option value="">-- Pilih --</option>
+                                @foreach ($maskapaiOptions as $maskapai)
+                                    @if ($maskapai->is_domestik)
+                                        <option value="{{ $maskapai->id_maskapai }}"
+                                            {{ $departure->id_maskapai_domestik_berangkat == $maskapai->id_maskapai ? 'selected' : '' }}>
+                                            {{ $maskapai->nama_maskapai }}</option>
+                                    @endif
+                                @endforeach
+                            </select>
                         </div>
                         <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1.5">Default Catatan</label>
-                            <input type="text" name="default_catatan" id="default_catatan"
-                                class="w-full px-4 py-2 border border-gray-200 rounded-xl focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500 text-sm"
-                                placeholder="Catatan untuk semua">
+                            <label class="block text-sm font-medium text-gray-700 mb-1.5">Harga Domestik Berangkat</label>
+                            <div class="relative">
+                                <span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm">Rp</span>
+                                <input type="text" name="harga_maskapai_domestik_berangkat_display"
+                                    id="harga_maskapai_domestik_berangkat_display"
+                                    value="{{ $departure->harga_maskapai_domestik_berangkat ? 'Rp ' . number_format($departure->harga_maskapai_domestik_berangkat, 0, ',', '.') : 'Rp 0' }}"
+                                    class="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500 maskapai-harga"
+                                    placeholder="Rp 0"
+                                    oninput="formatRupiahMaskapai(this, 'harga_maskapai_domestik_berangkat')"
+                                    onblur="formatRupiahMaskapai(this, 'harga_maskapai_domestik_berangkat')">
+                                <input type="hidden" name="harga_maskapai_domestik_berangkat"
+                                    id="harga_maskapai_domestik_berangkat"
+                                    value="{{ $departure->harga_maskapai_domestik_berangkat }}">
+                            </div>
                         </div>
                     </div>
-                    <div class="flex flex-wrap items-center gap-3 mt-3">
-                        <button type="button" onclick="fillAllHarga()"
-                            class="text-sm text-blue-500 hover:text-blue-700"><i class="fas fa-fill-drip mr-1"></i> Isi
-                            Semua Harga Total</button>
-                        <button type="button" onclick="fillAllCatatan()"
-                            class="text-sm text-blue-500 hover:text-blue-700"><i class="fas fa-fill-drip mr-1"></i> Isi
-                            Semua Catatan</button>
-                        <button type="button" onclick="selectAllJenisTransaksi()"
-                            class="text-sm text-green-500 hover:text-green-700"><i class="fas fa-check-double mr-1"></i>
-                            Pilih Semua</button>
-                        <button type="button" onclick="deselectAllJenisTransaksi()"
-                            class="text-sm text-red-500 hover:text-red-700"><i class="fas fa-times mr-1"></i> Hapus
-                            Semua</button>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1.5">Maskapai Domestik Pulang</label>
+                            <select name="id_maskapai_domestik_pulang"
+                                class="w-full px-4 py-2 border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500">
+                                <option value="">-- Pilih --</option>
+                                @foreach ($maskapaiOptions as $maskapai)
+                                    @if ($maskapai->is_domestik)
+                                        <option value="{{ $maskapai->id_maskapai }}"
+                                            {{ $departure->id_maskapai_domestik_pulang == $maskapai->id_maskapai ? 'selected' : '' }}>
+                                            {{ $maskapai->nama_maskapai }}</option>
+                                    @endif
+                                @endforeach
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1.5">Harga Domestik Pulang</label>
+                            <div class="relative">
+                                <span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm">Rp</span>
+                                <input type="text" name="harga_maskapai_domestik_pulang_display"
+                                    id="harga_maskapai_domestik_pulang_display"
+                                    value="{{ $departure->harga_maskapai_domestik_pulang ? 'Rp ' . number_format($departure->harga_maskapai_domestik_pulang, 0, ',', '.') : 'Rp 0' }}"
+                                    class="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500 maskapai-harga"
+                                    placeholder="Rp 0"
+                                    oninput="formatRupiahMaskapai(this, 'harga_maskapai_domestik_pulang')"
+                                    onblur="formatRupiahMaskapai(this, 'harga_maskapai_domestik_pulang')">
+                                <input type="hidden" name="harga_maskapai_domestik_pulang"
+                                    id="harga_maskapai_domestik_pulang"
+                                    value="{{ $departure->harga_maskapai_domestik_pulang }}">
+                            </div>
+                        </div>
                     </div>
-                </div>
-                <div class="bg-blue-50 rounded-lg p-3 border border-blue-200">
-                    <p class="text-sm text-blue-700"><i class="fas fa-info-circle mr-2"></i>Jenis transaksi akan
-                        ditambahkan ke <strong>SEMUA</strong> jamaah yang terdaftar di departure ini.</p>
-                    <p class="text-xs text-blue-500 mt-1">Jumlah jamaah saat ini: <strong>{{ $totalJamaah }}</strong>
-                        orang</p>
-                </div>
-                <div class="flex items-center justify-end gap-3 pt-4 border-t border-gray-100">
-                    <button type="button" onclick="closeJenisTransaksiModal()"
-                        class="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition">Batal</button>
-                    <button type="submit"
-                        class="px-4 py-2 bg-yellow-500 text-white rounded-lg hover:bg-yellow-600 transition"><i
-                            class="fas fa-save mr-2"></i> Tambah</button>
-                </div>
-            </form>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1.5">Maskapai Internasional
+                                Berangkat</label>
+                            <select name="id_maskapai_internasional_berangkat"
+                                class="w-full px-4 py-2 border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500">
+                                <option value="">-- Pilih --</option>
+                                @foreach ($maskapaiOptions as $maskapai)
+                                    @if ($maskapai->is_internasional)
+                                        <option value="{{ $maskapai->id_maskapai }}"
+                                            {{ $departure->id_maskapai_internasional_berangkat == $maskapai->id_maskapai ? 'selected' : '' }}>
+                                            {{ $maskapai->nama_maskapai }}</option>
+                                    @endif
+                                @endforeach
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1.5">Harga Internasional
+                                Berangkat</label>
+                            <div class="relative">
+                                <span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm">Rp</span>
+                                <input type="text" name="harga_maskapai_internasional_berangkat_display"
+                                    id="harga_maskapai_internasional_berangkat_display"
+                                    value="{{ $departure->harga_maskapai_internasional_berangkat ? 'Rp ' . number_format($departure->harga_maskapai_internasional_berangkat, 0, ',', '.') : 'Rp 0' }}"
+                                    class="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500 maskapai-harga"
+                                    placeholder="Rp 0"
+                                    oninput="formatRupiahMaskapai(this, 'harga_maskapai_internasional_berangkat')"
+                                    onblur="formatRupiahMaskapai(this, 'harga_maskapai_internasional_berangkat')">
+                                <input type="hidden" name="harga_maskapai_internasional_berangkat"
+                                    id="harga_maskapai_internasional_berangkat"
+                                    value="{{ $departure->harga_maskapai_internasional_berangkat }}">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1.5">Maskapai Internasional
+                                Pulang</label>
+                            <select name="id_maskapai_internasional_pulang"
+                                class="w-full px-4 py-2 border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500">
+                                <option value="">-- Pilih --</option>
+                                @foreach ($maskapaiOptions as $maskapai)
+                                    @if ($maskapai->is_internasional)
+                                        <option value="{{ $maskapai->id_maskapai }}"
+                                            {{ $departure->id_maskapai_internasional_pulang == $maskapai->id_maskapai ? 'selected' : '' }}>
+                                            {{ $maskapai->nama_maskapai }}</option>
+                                    @endif
+                                @endforeach
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1.5">Harga Internasional Pulang</label>
+                            <div class="relative">
+                                <span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm">Rp</span>
+                                <input type="text" name="harga_maskapai_internasional_pulang_display"
+                                    id="harga_maskapai_internasional_pulang_display"
+                                    value="{{ $departure->harga_maskapai_internasional_pulang ? 'Rp ' . number_format($departure->harga_maskapai_internasional_pulang, 0, ',', '.') : 'Rp 0' }}"
+                                    class="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500 maskapai-harga"
+                                    placeholder="Rp 0"
+                                    oninput="formatRupiahMaskapai(this, 'harga_maskapai_internasional_pulang')"
+                                    onblur="formatRupiahMaskapai(this, 'harga_maskapai_internasional_pulang')">
+                                <input type="hidden" name="harga_maskapai_internasional_pulang"
+                                    id="harga_maskapai_internasional_pulang"
+                                    value="{{ $departure->harga_maskapai_internasional_pulang }}">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="flex items-center justify-end gap-3 pt-4 border-t border-gray-100">
+                        <button type="button" onclick="closeMaskapaiModal()"
+                            class="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition">Batal</button>
+                        <button type="submit"
+                            class="px-4 py-2 bg-yellow-500 text-white rounded-lg hover:bg-yellow-600 transition"><i
+                                class="fas fa-save mr-2"></i> Simpan</button>
+                    </div>
+                </form>
+            </div>
         </div>
-    </div>
+    @endunless
+
+    {{-- MODAL HOTEL --}}
+    @unless ($locked)
+        <div id="hotelModal" class="fixed inset-0 bg-black/50 z-50 hidden flex items-center justify-center">
+            <div class="bg-white rounded-2xl max-w-4xl w-full max-h-[90vh] overflow-y-auto">
+                <div class="sticky top-0 bg-white px-6 py-4 border-b border-gray-200 flex items-center justify-between">
+                    <h5 class="text-lg font-semibold text-gray-800 flex items-center"><i
+                            class="fas fa-hotel text-yellow-500 mr-2"></i> Tambah Hotel & Tipe Kamar</h5>
+                    <button onclick="closeHotelModal()" class="text-gray-400 hover:text-gray-600"><i
+                            class="fas fa-times text-xl"></i></button>
+                </div>
+                <form action="{{ route('transaksional.departure.update-hotel', $departure->id_departure) }}"
+                    method="POST" class="p-6 space-y-6">
+                    @csrf
+                    @method('PUT')
+                    <div class="mb-4">
+                        <div class="relative">
+                            <i class="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm"></i>
+                            <input type="text" id="searchHotelModal" placeholder="Cari hotel..."
+                                class="w-full pl-10 pr-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500 text-sm">
+                        </div>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1.5">Hotel Mekkah</label>
+                        <select name="id_hotel_mekkah" id="id_hotel_mekkah"
+                            class="hotel-select w-full px-4 py-2 border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500"
+                            data-departure="{{ $departure->id_departure }}" data-container="kamarContainerMekkah"
+                            data-total="totalHotelMekkah">
+                            <option value="">-- Pilih --</option>
+                            @foreach ($hotelOptions as $hotel)
+                                @if ($hotel->kota == 'Mekkah')
+                                    <option value="{{ $hotel->id_hotel }}"
+                                        {{ $departure->id_hotel_mekkah == $hotel->id_hotel ? 'selected' : '' }}>
+                                        {{ $hotel->nama_hotel }} ({{ $hotel->bintang_text }})</option>
+                                @endif
+                            @endforeach
+                        </select>
+                        <div id="kamarContainerMekkah" class="mt-3 grid grid-cols-1 md:grid-cols-2 gap-3"></div>
+                        <div class="mt-2 text-sm text-gray-500">Total: <span id="totalHotelMekkah"
+                                class="font-bold text-yellow-600">Rp 0</span></div>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1.5">Hotel Madinah</label>
+                        <select name="id_hotel_madinah" id="id_hotel_madinah"
+                            class="hotel-select w-full px-4 py-2 border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500"
+                            data-departure="{{ $departure->id_departure }}" data-container="kamarContainerMadinah"
+                            data-total="totalHotelMadinah">
+                            <option value="">-- Pilih --</option>
+                            @foreach ($hotelOptions as $hotel)
+                                @if ($hotel->kota == 'Madinah')
+                                    <option value="{{ $hotel->id_hotel }}"
+                                        {{ $departure->id_hotel_madinah == $hotel->id_hotel ? 'selected' : '' }}>
+                                        {{ $hotel->nama_hotel }} ({{ $hotel->bintang_text }})</option>
+                                @endif
+                            @endforeach
+                        </select>
+                        <div id="kamarContainerMadinah" class="mt-3 grid grid-cols-1 md:grid-cols-2 gap-3"></div>
+                        <div class="mt-2 text-sm text-gray-500">Total: <span id="totalHotelMadinah"
+                                class="font-bold text-yellow-600">Rp 0</span></div>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1.5">Hotel Transit</label>
+                        <select name="id_hotel_transit" id="id_hotel_transit"
+                            class="hotel-select w-full px-4 py-2 border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500"
+                            data-departure="{{ $departure->id_departure }}" data-container="kamarContainerTransit"
+                            data-total="totalHotelTransit">
+                            <option value="">-- Pilih --</option>
+                            @foreach ($hotelOptions as $hotel)
+                                @if ($hotel->kota != 'Mekkah' && $hotel->kota != 'Madinah')
+                                    <option value="{{ $hotel->id_hotel }}"
+                                        {{ $departure->id_hotel_transit == $hotel->id_hotel ? 'selected' : '' }}>
+                                        {{ $hotel->nama_hotel }} ({{ $hotel->bintang_text }})</option>
+                                @endif
+                            @endforeach
+                        </select>
+                        <div id="kamarContainerTransit" class="mt-3 grid grid-cols-1 md:grid-cols-2 gap-3"></div>
+                        <div class="mt-2 text-sm text-gray-500">Total: <span id="totalHotelTransit"
+                                class="font-bold text-yellow-600">Rp 0</span></div>
+                    </div>
+                    <div class="flex items-center justify-end gap-3 pt-4 border-t border-gray-100">
+                        <button type="button" onclick="closeHotelModal()"
+                            class="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition">Batal</button>
+                        <button type="submit"
+                            class="px-4 py-2 bg-yellow-500 text-white rounded-lg hover:bg-yellow-600 transition"><i
+                                class="fas fa-save mr-2"></i> Simpan</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    @endunless
+
+    {{-- MODAL JAMAAH --}}
+    @unless ($locked)
+        <div id="jamaahModal" class="fixed inset-0 bg-black/50 z-50 hidden flex items-center justify-center p-4">
+            <div class="bg-white rounded-2xl max-w-4xl w-full max-h-[90vh] flex flex-col overflow-hidden">
+                <div class="flex-shrink-0 bg-white px-6 py-4 border-b border-gray-200 flex items-center justify-between">
+                    <h5 class="text-lg font-semibold text-gray-800 flex items-center">
+                        <i class="fas fa-users text-yellow-500 mr-2"></i> Tambah Daftar Jamaah
+                    </h5>
+                    <button onclick="closeJamaahModal()" class="text-gray-400 hover:text-gray-600">
+                        <i class="fas fa-times text-xl"></i>
+                    </button>
+                </div>
+                <form action="{{ route('transaksional.departure.update-jamaah', $departure->id_departure) }}"
+                    method="POST" class="flex flex-col flex-1 min-h-0">
+                    @csrf
+                    @method('PUT')
+                    <div class="flex-1 overflow-y-auto p-6 space-y-4">
+                        @if ($departure->produk_paket || ($departure->bulan_keberangkatan && $departure->tahun_keberangkatan))
+                            <div class="bg-blue-50 border border-blue-200 rounded-xl p-3">
+                                <div class="flex items-start gap-2">
+                                    <i class="fas fa-filter text-blue-500 mt-0.5"></i>
+                                    <div class="flex-1">
+                                        <p class="text-sm font-medium text-blue-800">Jamaah ditampilkan berdasarkan filter
+                                            keberangkatan:</p>
+                                        @if ($departure->produk_paket)
+                                            <p class="text-xs text-blue-600 mt-1"><i class="fas fa-box mr-1"></i> Produk
+                                                Paket: <strong>{{ $departure->produk_paket }}</strong></p>
+                                        @endif
+                                        @if ($departure->bulan_keberangkatan && $departure->tahun_keberangkatan)
+                                            <p class="text-xs text-blue-600 mt-0.5"><i
+                                                    class="fas fa-calendar-alt mr-1"></i>Bulan:
+                                                <strong>{{ date('F', mktime(0, 0, 0, $departure->bulan_keberangkatan, 1)) }}</strong>
+                                                · Tahun: <strong>{{ $departure->tahun_keberangkatan }}</strong></p>
+                                        @endif
+                                    </div>
+                                </div>
+                            </div>
+                        @endif
+                        <div>
+                            <div class="relative">
+                                <i class="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm"></i>
+                                <input type="text" id="searchJamaahModal"
+                                    placeholder="Cari jamaah berdasarkan nama, produk, atau status..."
+                                    class="w-full pl-10 pr-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500 text-sm">
+                            </div>
+                            @php
+                                $lunasCount = $jamaahs->where('status_pembayaran', 'Lunas')->count();
+                                $belumLunasCount = $jamaahs->where('status_pembayaran', '!=', 'Lunas')->count();
+                            @endphp
+                            <div class="flex flex-wrap items-center gap-4 mt-2 text-xs">
+                                <span class="text-gray-400"><i class="fas fa-info-circle mr-1"></i> Ketik untuk mencari
+                                    jamaah</span>
+                                <span id="jamaahCountModal" class="font-medium">
+                                    <span class="text-gray-600">{{ $jamaahs->count() }} jamaah tersedia</span>
+                                    @if ($lunasCount > 0)
+                                        <span class="text-green-600 font-medium">· {{ $lunasCount }} Lunas</span>
+                                    @endif
+                                    @if ($belumLunasCount > 0)
+                                        <span class="text-red-600 font-bold">· {{ $belumLunasCount }} Belum Lunas</span>
+                                    @endif
+                                </span>
+                            </div>
+                        </div>
+                        <div class="grid grid-cols-2 md:grid-cols-3 gap-2 max-h-[50vh] overflow-y-auto border border-gray-200 rounded-xl p-4"
+                            id="jamaahModalList">
+                            @php
+                                $selectedJamaahs = $departure->jamaahs->pluck('id_jamaah')->toArray();
+                                $bulanNamaModal = [
+                                    1 => 'Jan',
+                                    2 => 'Feb',
+                                    3 => 'Mar',
+                                    4 => 'Apr',
+                                    5 => 'Mei',
+                                    6 => 'Jun',
+                                    7 => 'Jul',
+                                    8 => 'Agu',
+                                    9 => 'Sep',
+                                    10 => 'Okt',
+                                    11 => 'Nov',
+                                    12 => 'Des',
+                                ];
+                                $bulanFullModal = [
+                                    1 => 'Januari',
+                                    2 => 'Februari',
+                                    3 => 'Maret',
+                                    4 => 'April',
+                                    5 => 'Mei',
+                                    6 => 'Juni',
+                                    7 => 'Juli',
+                                    8 => 'Agustus',
+                                    9 => 'September',
+                                    10 => 'Oktober',
+                                    11 => 'November',
+                                    12 => 'Desember',
+                                ];
+                            @endphp
+                            @forelse($jamaahs as $jamaah)
+                                @php
+                                    $isLunas = $jamaah->status_pembayaran == 'Lunas';
+                                    $isRegistered = in_array($jamaah->id_jamaah, $selectedJamaahs);
+                                    $hasPassport = $jamaah->is_pembuatan_passport_efektif;
+                                    if ($isRegistered) {
+                                        $borderClass = 'border-2 border-blue-400';
+                                        $bgClass = 'bg-blue-50';
+                                        $badgeClass = 'bg-blue-500 text-white';
+                                        $badgeText = 'TERDAFTAR';
+                                    } elseif ($isLunas) {
+                                        $borderClass = 'border-2 border-green-500';
+                                        $bgClass = 'bg-green-50';
+                                        $badgeClass = 'bg-green-500 text-white';
+                                        $badgeText = 'LUNAS';
+                                    } else {
+                                        $borderClass = 'border-2 border-red-500';
+                                        $bgClass = 'bg-red-50';
+                                        $badgeClass = 'bg-red-500 text-white';
+                                        $badgeText = 'BELUM LUNAS';
+                                    }
+                                    $jamaahFeePassport = $jamaah->fee_passport;
+                                    $jamaahSudahDibayar = $jamaah->total_dibayar ?? 0;
+                                    $jamaahTagihan =
+                                        $jamaah->total_tagihan_setelah_diskon ?? ($jamaah->total_tagihan ?? 0);
+                                    $jamaahSisa = max(0, $jamaahTagihan - $jamaahSudahDibayar);
+                                @endphp
+                                <label
+                                    class="jamaah-modal-item relative flex items-start p-2.5 {{ $borderClass }} {{ $bgClass }} rounded-lg hover:shadow-md transition cursor-pointer"
+                                    data-name="{{ strtolower($jamaah->nama_lengkap) }}"
+                                    data-produk="{{ strtolower($jamaah->produk_paket) }}"
+                                    data-status="{{ strtolower($jamaah->status_pembayaran) }}"
+                                    data-registered="{{ $isRegistered ? '1' : '0' }}">
+                                    <span
+                                        class="absolute -top-2 -right-1 text-[10px] font-bold px-2 py-0.5 rounded-full {{ $badgeClass }} shadow-sm whitespace-nowrap">{{ $badgeText }}</span>
+                                    <input type="checkbox" name="jamaah_ids[]" value="{{ $jamaah->id_jamaah }}"
+                                        {{ $isRegistered ? 'checked' : '' }}
+                                        class="w-4 h-4 text-yellow-500 border-gray-300 rounded focus:ring-yellow-500 flex-shrink-0 mt-0.5">
+                                    <div class="ml-2 overflow-hidden flex-1">
+                                        <p class="text-sm font-semibold text-gray-800 truncate pr-2">
+                                            {{ $jamaah->nama_lengkap }}</p>
+                                        <p class="text-xs text-gray-500 truncate">{{ $jamaah->produk_paket }}</p>
+                                        <p class="text-[10px] text-emerald-700 font-semibold truncate mt-0.5">
+                                            <i class="fas fa-wallet mr-0.5"></i> Sudah Dibayar:
+                                            <strong>Rp {{ number_format($jamaahSudahDibayar, 0, ',', '.') }}</strong>
+                                        </p>
+                                        @if ($hasPassport)
+                                            <p class="text-[10px] text-green-600 font-semibold truncate mt-0.5">
+                                                <i
+                                                    class="fas fa-passport mr-0.5"></i>{{ $jamaah->is_pembuatan_passport ? 'PASSPORT YA' : 'PASSPORT YA (EFEKTIF)' }}
+                                            </p>
+                                        @endif
+                                    </div>
+                                </label>
+                            @empty
+                                <div class="col-span-3 text-center py-8">
+                                    <div
+                                        class="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-3">
+                                        <i class="fas fa-users text-gray-300 text-2xl"></i>
+                                    </div>
+                                    <p class="text-gray-500 font-medium">Tidak ada jamaah yang tersedia</p>
+                                </div>
+                            @endforelse
+                        </div>
+                        <div
+                            class="flex items-center justify-between text-sm bg-blue-50 rounded-lg px-4 py-2.5 border border-blue-200">
+                            <div class="text-blue-700"><i class="fas fa-info-circle mr-2"></i>Centang jamaah yang akan
+                                dimasukkan ke keberangkatan ini</div>
+                            <div class="flex items-center gap-3">
+                                <button type="button" onclick="selectAllJamaah()"
+                                    class="text-blue-600 hover:text-blue-800 text-xs font-medium"><i
+                                        class="fas fa-check-double mr-1"></i> Pilih Semua</button>
+                                <button type="button" onclick="deselectAllJamaah()"
+                                    class="text-red-600 hover:text-red-800 text-xs font-medium"><i
+                                        class="fas fa-times mr-1"></i> Hapus Semua</button>
+                            </div>
+                        </div>
+                    </div>
+                    <div
+                        class="flex-shrink-0 px-6 py-4 border-t border-gray-200 bg-gray-50 flex items-center justify-end gap-3">
+                        <button type="button" onclick="closeJamaahModal()"
+                            class="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition">Batal</button>
+                        <button type="submit"
+                            class="px-4 py-2 bg-yellow-500 text-white rounded-lg hover:bg-yellow-600 transition">
+                            <i class="fas fa-save mr-2"></i> Simpan
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    @endunless
+
+    {{-- MODAL PERLENGKAPAN --}}
+    @unless ($locked)
+        <div id="perlengkapanModal" class="fixed inset-0 bg-black/50 z-50 hidden flex items-center justify-center">
+            <div class="bg-white rounded-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+                <div class="sticky top-0 bg-white px-6 py-4 border-b border-gray-200 flex items-center justify-between">
+                    <h5 class="text-lg font-semibold text-gray-800">Tambah Perlengkapan ke Departure</h5>
+                    <button onclick="closePerlengkapanModal()" class="text-gray-400 hover:text-gray-600"><i
+                            class="fas fa-times text-xl"></i></button>
+                </div>
+                <form action="{{ route('transaksional.departure.update-perlengkapan', $departure->id_departure) }}"
+                    method="POST" class="p-6 space-y-4">
+                    @csrf
+                    @method('PUT')
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1.5">Pilih Perlengkapan <span
+                                class="text-red-500">*</span></label>
+                        <div
+                            class="grid grid-cols-1 md:grid-cols-2 gap-2 max-h-60 overflow-y-auto border border-gray-200 rounded-xl p-3">
+                            @forelse($perlengkapanOptions as $perlengkapan)
+                                <label
+                                    class="flex items-center p-2 border border-gray-200 rounded-lg hover:bg-gray-50 transition cursor-pointer">
+                                    <input type="checkbox" name="id_perlengkapan[]"
+                                        value="{{ $perlengkapan->id_perlengkapan }}"
+                                        class="w-4 h-4 text-yellow-500 border-gray-300 rounded focus:ring-yellow-500">
+                                    <div class="ml-2">
+                                        <p class="text-sm font-medium text-gray-700">{{ $perlengkapan->nama_perlengkapan }}
+                                        </p>
+                                        <p class="text-xs text-gray-400">{{ $perlengkapan->harga_satuan_formatted }} /
+                                            {{ $perlengkapan->satuan ?? 'unit' }}</p>
+                                    </div>
+                                </label>
+                            @empty
+                                <p class="text-sm text-gray-400 col-span-2 text-center py-4">Semua perlengkapan sudah
+                                    ditambahkan.</p>
+                            @endforelse
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1.5">Jumlah per Jamaah</label>
+                            <input type="number" name="jumlah_per_jamaah" value="1"
+                                class="w-full px-4 py-2 border border-gray-200 rounded-xl focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500 text-sm"
+                                min="1">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1.5">Keterangan</label>
+                            <input type="text" name="keterangan"
+                                class="w-full px-4 py-2 border border-gray-200 rounded-xl focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500 text-sm"
+                                placeholder="Catatan (opsional)">
+                        </div>
+                    </div>
+                    <div class="flex items-center justify-end gap-3 pt-4 border-t border-gray-100">
+                        <button type="button" onclick="closePerlengkapanModal()"
+                            class="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition">Batal</button>
+                        <button type="submit"
+                            class="px-4 py-2 bg-yellow-500 text-white rounded-lg hover:bg-yellow-600 transition"><i
+                                class="fas fa-save mr-2"></i> Tambah</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    @endunless
+
+    {{-- MODAL JENIS TRANSAKSI --}}
+    @unless ($locked)
+        <div id="jenisTransaksiModal" class="fixed inset-0 bg-black/50 z-50 hidden flex items-center justify-center">
+            <div class="bg-white rounded-2xl max-w-4xl w-full max-h-[90vh] overflow-y-auto">
+                <div class="sticky top-0 bg-white px-6 py-4 border-b border-gray-200 flex items-center justify-between">
+                    <h5 class="text-lg font-semibold text-gray-800 flex items-center"><i
+                            class="fas fa-receipt text-yellow-500 mr-2"></i> Tambah Jenis Transaksi ke Departure</h5>
+                    <button onclick="closeJenisTransaksiModal()" class="text-gray-400 hover:text-gray-600"><i
+                            class="fas fa-times text-xl"></i></button>
+                </div>
+                <form action="{{ route('transaksional.departure.update-jenis-transaksi', $departure->id_departure) }}"
+                    method="POST" class="p-6 space-y-4">
+                    @csrf
+                    @method('PUT')
+                    @php $totalJamaah = $departure->jamaahs->count(); @endphp
+                    <div class="mb-4">
+                        <div class="relative">
+                            <i class="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm"></i>
+                            <input type="text" id="searchJenisTransaksiModal"
+                                placeholder="Cari jenis transaksi berdasarkan nama atau keterangan..."
+                                class="w-full pl-10 pr-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500 text-sm">
+                        </div>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1.5">Pilih Jenis Transaksi <span
+                                class="text-red-500">*</span></label>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-3 max-h-60 overflow-y-auto border border-gray-200 rounded-xl p-3"
+                            id="jenisTransaksiModalList">
+                            @forelse($jenisTransaksiOptions as $jenis)
+                                <label
+                                    class="jenis-transaksi-modal-item flex items-start p-3 border border-gray-200 rounded-lg hover:bg-gray-50 transition cursor-pointer"
+                                    data-nama="{{ strtolower($jenis->nama) }}"
+                                    data-keterangan="{{ strtolower($jenis->keterangan ?? '') }}">
+                                    <input type="checkbox" name="id_jenis_transaksi[]" value="{{ $jenis->id_jenis }}"
+                                        class="jenis-transaksi-checkbox w-4 h-4 text-yellow-500 border-gray-300 rounded focus:ring-yellow-500 mt-1">
+                                    <div class="ml-3 flex-1">
+                                        <div class="flex items-center justify-between">
+                                            <p class="text-sm font-medium text-gray-700">{{ $jenis->nama }}</p>
+                                            <span class="text-xs text-gray-400">{{ $jenis->kode ?? '' }}</span>
+                                        </div>
+                                        <div class="grid grid-cols-2 gap-2 mt-2">
+                                            <div>
+                                                <label class="text-xs text-gray-500">Harga Total</label>
+                                                <div class="relative">
+                                                    <span
+                                                        class="absolute left-2 top-1/2 -translate-y-1/2 text-gray-400 text-xs">Rp</span>
+                                                    <input type="text"
+                                                        name="harga_total_display[{{ $jenis->id_jenis }}]"
+                                                        id="harga_total_display_{{ $jenis->id_jenis }}"
+                                                        class="jenis-harga w-full pl-8 pr-2 py-1.5 border border-gray-200 rounded text-sm rupiah-input"
+                                                        placeholder="Rp 0"
+                                                        oninput="formatRupiahJenisTransaksi(this, 'harga_total_{{ $jenis->id_jenis }}')"
+                                                        onblur="formatRupiahJenisTransaksi(this, 'harga_total_{{ $jenis->id_jenis }}')"
+                                                        value="Rp 0">
+                                                    <input type="hidden" name="harga_total[{{ $jenis->id_jenis }}]"
+                                                        id="harga_total_{{ $jenis->id_jenis }}" value="0">
+                                                </div>
+                                                <p class="text-[10px] text-gray-400 mt-0.5">Dibagi ke {{ $totalJamaah }}
+                                                    jamaah</p>
+                                            </div>
+                                            <div>
+                                                <label class="text-xs text-gray-500">Catatan</label>
+                                                <input type="text" name="catatan[{{ $jenis->id_jenis }}]"
+                                                    class="jenis-catatan w-full px-2 py-1.5 border border-gray-200 rounded text-sm"
+                                                    placeholder="Opsional">
+                                            </div>
+                                        </div>
+                                    </div>
+                                </label>
+                            @empty
+                                <p class="text-sm text-gray-400 col-span-2 text-center py-4">Semua jenis transaksi sudah
+                                    ditambahkan.</p>
+                            @endforelse
+                        </div>
+                    </div>
+                    <div class="flex items-center justify-end gap-3 pt-4 border-t border-gray-100">
+                        <button type="button" onclick="closeJenisTransaksiModal()"
+                            class="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition">Batal</button>
+                        <button type="submit"
+                            class="px-4 py-2 bg-yellow-500 text-white rounded-lg hover:bg-yellow-600 transition"><i
+                                class="fas fa-save mr-2"></i> Tambah</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    @endunless
 
     {{-- MODAL EDIT HARGA JENIS TRANSAKSI --}}
-    <div id="editJenisTransaksiModal" class="fixed inset-0 bg-black/50 z-50 hidden flex items-center justify-center">
-        <div class="bg-white rounded-2xl max-w-md w-full">
-            <div class="px-6 py-4 border-b border-gray-200 flex items-center justify-between">
-                <h5 class="text-lg font-semibold text-gray-800">Edit Harga Total Jenis Transaksi</h5>
-                <button onclick="closeEditJenisTransaksiModal()" class="text-gray-400 hover:text-gray-600"><i
-                        class="fas fa-times text-xl"></i></button>
-            </div>
-            <form id="editJenisTransaksiForm" method="POST" class="p-6">
-                @csrf
-                @method('PATCH')
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1.5">Harga Total <span
-                            class="text-red-500">*</span></label>
-                    <div class="relative">
-                        <span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm">Rp</span>
-                        <input type="text" name="harga_total_display" id="edit_harga_total_display"
-                            class="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-xl focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500 text-sm rupiah-input"
-                            placeholder="Rp 0" oninput="formatRupiahJenisTransaksi(this, 'edit_harga_total')"
-                            onblur="formatRupiahJenisTransaksi(this, 'edit_harga_total')">
-                        <input type="hidden" name="harga_total" id="edit_harga_total" value="0">
+    @unless ($locked)
+        <div id="editJenisTransaksiModal" class="fixed inset-0 bg-black/50 z-50 hidden flex items-center justify-center">
+            <div class="bg-white rounded-2xl max-w-md w-full">
+                <div class="px-6 py-4 border-b border-gray-200 flex items-center justify-between">
+                    <h5 class="text-lg font-semibold text-gray-800">Edit Harga Total Jenis Transaksi</h5>
+                    <button onclick="closeEditJenisTransaksiModal()" class="text-gray-400 hover:text-gray-600"><i
+                            class="fas fa-times text-xl"></i></button>
+                </div>
+                <form id="editJenisTransaksiForm" method="POST" class="p-6">
+                    @csrf
+                    @method('PATCH')
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1.5">Harga Total <span
+                                class="text-red-500">*</span></label>
+                        <div class="relative">
+                            <span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm">Rp</span>
+                            <input type="text" name="harga_total_display" id="edit_harga_total_display"
+                                class="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-xl focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500 text-sm rupiah-input"
+                                placeholder="Rp 0" oninput="formatRupiahJenisTransaksi(this, 'edit_harga_total')"
+                                onblur="formatRupiahJenisTransaksi(this, 'edit_harga_total')">
+                            <input type="hidden" name="harga_total" id="edit_harga_total" value="0">
+                        </div>
                     </div>
-                    <p class="text-xs text-gray-400 mt-1">Jumlah jamaah saat ini: {{ $departure->jamaahs->count() }}
-                        orang</p>
-                    <p class="text-xs text-gray-400 mt-0.5"><i class="fas fa-info-circle mr-1"></i>Sistem akan otomatis
-                        membagi rata ke setiap jamaah</p>
-                </div>
-                <div class="flex items-center justify-end gap-3 pt-4 border-t border-gray-100 mt-4">
-                    <button type="button" onclick="closeEditJenisTransaksiModal()"
-                        class="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition">Batal</button>
-                    <button type="submit"
-                        class="px-4 py-2 bg-yellow-500 text-white rounded-lg hover:bg-yellow-600 transition">Simpan</button>
-                </div>
-            </form>
+                    <div class="flex items-center justify-end gap-3 pt-4 border-t border-gray-100 mt-4">
+                        <button type="button" onclick="closeEditJenisTransaksiModal()"
+                            class="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition">Batal</button>
+                        <button type="submit"
+                            class="px-4 py-2 bg-yellow-500 text-white rounded-lg hover:bg-yellow-600 transition">Simpan</button>
+                    </div>
+                </form>
+            </div>
         </div>
-    </div>
+    @endunless
 
     {{-- MODAL CATATAN --}}
-    <div id="catatanModal" class="fixed inset-0 bg-black/50 z-50 hidden flex items-center justify-center">
-        <div class="bg-white rounded-2xl max-w-2xl w-full">
-            <div class="px-6 py-4 border-b border-gray-200 flex items-center justify-between">
-                <h5 class="text-lg font-semibold text-gray-800">Tambah Catatan</h5>
-                <button onclick="closeCatatanModal()" class="text-gray-400 hover:text-gray-600"><i
-                        class="fas fa-times text-xl"></i></button>
-            </div>
-            <form action="{{ route('transaksional.departure.update-catatan', $departure->id_departure) }}"
-                method="POST" class="p-6">
-                @csrf
-                @method('PUT')
-                <textarea name="catatan" rows="5"
-                    class="w-full px-4 py-2 border border-gray-200 rounded-xl focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500 text-sm"
-                    placeholder="Catatan tambahan untuk keberangkatan ini...">{{ $departure->catatan }}</textarea>
-                <div class="flex items-center justify-end gap-3 pt-4 border-t border-gray-100 mt-4">
-                    <button type="button" onclick="closeCatatanModal()"
-                        class="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition">Batal</button>
-                    <button type="submit"
-                        class="px-4 py-2 bg-yellow-500 text-white rounded-lg hover:bg-yellow-600 transition">Simpan</button>
+    @unless ($locked)
+        <div id="catatanModal" class="fixed inset-0 bg-black/50 z-50 hidden flex items-center justify-center">
+            <div class="bg-white rounded-2xl max-w-2xl w-full">
+                <div class="px-6 py-4 border-b border-gray-200 flex items-center justify-between">
+                    <h5 class="text-lg font-semibold text-gray-800">Tambah Catatan</h5>
+                    <button onclick="closeCatatanModal()" class="text-gray-400 hover:text-gray-600"><i
+                            class="fas fa-times text-xl"></i></button>
                 </div>
-            </form>
+                <form action="{{ route('transaksional.departure.update-catatan', $departure->id_departure) }}"
+                    method="POST" class="p-6">
+                    @csrf
+                    @method('PUT')
+                    <textarea name="catatan" rows="5"
+                        class="w-full px-4 py-2 border border-gray-200 rounded-xl focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500 text-sm"
+                        placeholder="Catatan tambahan untuk keberangkatan ini...">{{ $departure->catatan }}</textarea>
+                    <div class="flex items-center justify-end gap-3 pt-4 border-t border-gray-100 mt-4">
+                        <button type="button" onclick="closeCatatanModal()"
+                            class="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition">Batal</button>
+                        <button type="submit"
+                            class="px-4 py-2 bg-yellow-500 text-white rounded-lg hover:bg-yellow-600 transition">Simpan</button>
+                    </div>
+                </form>
+            </div>
         </div>
-    </div>
+    @endunless
 
     {{-- MODAL DETAIL PERLENGKAPAN --}}
     <div id="perlengkapanDetailModal" class="fixed inset-0 bg-black/50 z-50 hidden flex items-center justify-center">
@@ -3033,69 +3001,34 @@
 
 @push('scripts')
     <script>
+        // ===== SEARCH FILTERS =====
         document.addEventListener('DOMContentLoaded', function() {
-            const searchMaskapai = document.getElementById('searchMaskapai');
-            if (searchMaskapai) {
-                searchMaskapai.addEventListener('keyup', function() {
+            const bindSearch = (inputId, itemClass, fields) => {
+                const input = document.getElementById(inputId);
+                if (!input) return;
+                input.addEventListener('keyup', function() {
                     const search = this.value.toLowerCase();
-                    document.querySelectorAll('.maskapai-item').forEach(function(item) {
-                        const name = item.dataset.nama || '';
-                        item.style.display = name.includes(search) ? 'flex' : 'none';
+                    document.querySelectorAll(itemClass).forEach(function(item) {
+                        let match = false;
+                        for (const f of fields) {
+                            const v = item.dataset[f] || '';
+                            if (v.includes(search)) {
+                                match = true;
+                                break;
+                            }
+                        }
+                        item.style.display = match ? '' : 'none';
                     });
                 });
-            }
-            const searchHotel = document.getElementById('searchHotel');
-            if (searchHotel) {
-                searchHotel.addEventListener('keyup', function() {
-                    const search = this.value.toLowerCase();
-                    document.querySelectorAll('.hotel-item').forEach(function(item) {
-                        const name = item.dataset.nama || '';
-                        item.style.display = name.includes(search) ? 'block' : 'none';
-                    });
-                });
-            }
-            const searchHotelTour = document.getElementById('searchHotelTour');
-            if (searchHotelTour) {
-                searchHotelTour.addEventListener('keyup', function() {
-                    const search = this.value.toLowerCase();
-                    document.querySelectorAll('#hotelTourList .hotel-tour-item').forEach(function(item) {
-                        const name = item.dataset.nama || '';
-                        const kota = item.dataset.kota || '';
-                        item.style.display = (name.includes(search) || kota.includes(search)) ?
-                            'block' : 'none';
-                    });
-                });
-            }
-            const searchPerlengkapan = document.getElementById('searchPerlengkapan');
-            if (searchPerlengkapan) {
-                searchPerlengkapan.addEventListener('keyup', function() {
-                    const search = this.value.toLowerCase();
-                    document.querySelectorAll('.perlengkapan-item').forEach(function(item) {
-                        const name = item.dataset.nama || '';
-                        item.style.display = name.includes(search) ? 'block' : 'none';
-                    });
-                });
-            }
-            const searchJamaah = document.getElementById('searchJamaah');
-            if (searchJamaah) {
-                searchJamaah.addEventListener('keyup', function() {
-                    const search = this.value.toLowerCase();
-                    document.querySelectorAll('.jamaah-item').forEach(function(item) {
-                        const name = item.dataset.name || '';
-                        item.style.display = name.includes(search) ? 'block' : 'none';
-                    });
-                });
-            }
-            const searchJenisTransaksi = document.getElementById('searchJenisTransaksi');
-            if (searchJenisTransaksi) {
-                searchJenisTransaksi.addEventListener('keyup', function() {
-                    const search = this.value.toLowerCase();
-                    document.querySelectorAll('.jenis-transaksi-item').forEach(function(item) {
-                        const name = item.dataset.nama || '';
-                        item.style.display = name.includes(search) ? 'block' : 'none';
-                    });
-                });
-            }
+            };
+            bindSearch('searchMaskapai', '.maskapai-item', ['nama']);
+            bindSearch('searchHotel', '.hotel-item', ['nama']);
+            bindSearch('searchHotelTour', '#hotelTourList .hotel-tour-item', ['nama', 'kota']);
+            bindSearch('searchPerlengkapan', '.perlengkapan-item', ['nama']);
+            bindSearch('searchJamaah', '.jamaah-item', ['name']);
+            bindSearch('searchJenisTransaksi', '.jenis-transaksi-item', ['nama']);
+            bindSearch('searchAgent', '.agent-row, .no-agent-row', ['agent', 'name']);
+
             const searchJamaahModal = document.getElementById('searchJamaahModal');
             if (searchJamaahModal) {
                 searchJamaahModal.addEventListener('keyup', function() {
@@ -3126,6 +3059,7 @@
                     document.getElementById('jamaahCountModal').innerHTML = countHtml;
                 });
             }
+
             const searchJenisTransaksiModal = document.getElementById('searchJenisTransaksiModal');
             if (searchJenisTransaksiModal) {
                 searchJenisTransaksiModal.addEventListener('keyup', function() {
@@ -3141,25 +3075,9 @@
                             item.style.display = 'none';
                         }
                     });
-                    document.getElementById('jenisTransaksiCountModal').textContent = visibleCount +
-                        ' jenis transaksi tersedia';
                 });
             }
-            const searchAgent = document.getElementById('searchAgent');
-            if (searchAgent) {
-                searchAgent.addEventListener('keyup', function() {
-                    const search = this.value.toLowerCase();
-                    document.querySelectorAll('.agent-row, .no-agent-row').forEach(function(item) {
-                        const agent = item.dataset.agent || '';
-                        const name = item.dataset.name || '';
-                        if (agent.includes(search) || name.includes(search) || search === '') {
-                            item.style.display = '';
-                        } else {
-                            item.style.display = 'none';
-                        }
-                    });
-                });
-            }
+
             document.querySelectorAll('.hotel-tour-item .hotel-tour-checkbox').forEach(function(checkbox) {
                 checkbox.addEventListener('change', function() {
                     const parent = this.closest('.hotel-tour-item');
@@ -3177,6 +3095,7 @@
                     }
                 });
             });
+
             document.querySelectorAll('.hotel-select').forEach(function(select) {
                 select.addEventListener('change', function() {
                     const containerId = this.dataset.container;
@@ -3184,6 +3103,7 @@
                     loadKamarsWithSelected(this.id, containerId, totalId);
                 });
             });
+
             document.querySelectorAll('.jenis-transaksi-checkbox').forEach(function(checkbox) {
                 checkbox.addEventListener('change', function() {
                     const parent = this.closest('.jenis-transaksi-modal-item');
@@ -3200,6 +3120,7 @@
                 });
                 checkbox.dispatchEvent(new Event('change'));
             });
+
             document.querySelectorAll('.fixed.inset-0.bg-black\\/50').forEach(function(modal) {
                 modal.addEventListener('click', function(e) {
                     if (e.target === this) this.classList.add('hidden');
@@ -3306,7 +3227,7 @@
                             const kamarCheckbox = kamarItem.querySelector('.kamar-checkbox');
                             if (kamarCheckbox && kamarCheckbox.checked) {
                                 const jumlah = parseInt(kamarItem.querySelector('.kamar-jumlah').value) ||
-                                    0;
+                                0;
                                 const hargaInput = kamarItem.querySelector('.kamar-harga');
                                 let harga = 0;
                                 if (hargaInput) {
@@ -3315,7 +3236,7 @@
                                     harga = parseInt(rawValue) || 0;
                                 }
                                 const durasi = parseInt(kamarItem.querySelector('.kamar-durasi').value) ||
-                                    1;
+                                1;
                                 grandTotal += jumlah * harga * durasi;
                             }
                         });
@@ -3338,20 +3259,25 @@
             calculateHotelTourTotal(index);
         }
 
+        // MASKAPAI
         function openMaskapaiModal() {
             document.getElementById('maskapaiModal').classList.remove('hidden');
-            document.querySelectorAll('.maskapai-harga').forEach(function(input) {
-                const hiddenInput = document.getElementById(input.id.replace('display', ''));
-                let value = 0;
-                if (hiddenInput) value = parseInt(hiddenInput.value) || 0;
-                input.value = value > 0 ? 'Rp ' + value.toLocaleString('id-ID') : 'Rp 0';
-            });
         }
 
         function closeMaskapaiModal() {
             document.getElementById('maskapaiModal').classList.add('hidden');
         }
 
+        function formatRupiahMaskapai(input, hiddenId) {
+            let value = input.value.replace(/[^,\d]/g, '').replace(/^Rp\s*/, '').replace(/\./g, '').replace(/,/g, '.');
+            if (value === '' || isNaN(value)) value = '0';
+            const number = parseInt(value);
+            input.value = 'Rp ' + number.toLocaleString('id-ID');
+            const hiddenInput = document.getElementById(hiddenId);
+            if (hiddenInput) hiddenInput.value = number;
+        }
+
+        // HOTEL
         function openHotelModal() {
             document.getElementById('hotelModal').classList.remove('hidden');
             loadKamarsWithSelected('id_hotel_mekkah', 'kamarContainerMekkah', 'totalHotelMekkah');
@@ -3430,24 +3356,28 @@
             return total;
         }
 
+        function formatRupiahHotel(input, kamarId) {
+            let value = input.value.replace(/[^,\d]/g, '').replace(/^Rp\s*/, '').replace(/\./g, '').replace(/,/g, '.');
+            if (value === '' || isNaN(value)) value = '0';
+            const number = parseInt(value);
+            input.value = 'Rp ' + number.toLocaleString('id-ID');
+            const hiddenInput = document.getElementById('kamar_harga_' + kamarId);
+            if (hiddenInput) hiddenInput.value = number;
+            const container = input.closest('.kamar-item').closest('.grid');
+            if (container) {
+                const containerId = container.id;
+                const totalId = containerId.replace('kamarContainer', 'totalHotel');
+                calculateHotelTotal(containerId, totalId);
+            }
+        }
+
+        // JAMAAH
         function openJamaahModal() {
             document.getElementById('jamaahModal').classList.remove('hidden');
             document.getElementById('searchJamaahModal').value = '';
             document.querySelectorAll('.jamaah-modal-item').forEach(function(item) {
                 item.style.display = 'flex';
             });
-            const allItems = document.querySelectorAll('.jamaah-modal-item');
-            let lunasCount = 0,
-                belumLunasCount = 0;
-            allItems.forEach(function(item) {
-                if (item.dataset.status === 'lunas') lunasCount++;
-                else belumLunasCount++;
-            });
-            let countHtml = '<span class="text-gray-600">' + allItems.length + ' jamaah tersedia</span>';
-            if (lunasCount > 0) countHtml += ' <span class="text-green-600 font-medium">· ' + lunasCount + ' Lunas</span>';
-            if (belumLunasCount > 0) countHtml += ' <span class="text-red-600 font-bold">· ' + belumLunasCount +
-                ' Belum Lunas</span>';
-            document.getElementById('jamaahCountModal').innerHTML = countHtml;
         }
 
         function closeJamaahModal() {
@@ -3474,6 +3404,7 @@
             });
         }
 
+        // PERLENGKAPAN
         function openPerlengkapanModal() {
             document.getElementById('perlengkapanModal').classList.remove('hidden');
         }
@@ -3501,7 +3432,7 @@
                 .then(data => {
                     content.innerHTML = data.html;
                     document.getElementById('perlengkapanDetailTitle').textContent = 'Detail: ' + data
-                        .nama_perlengkapan;
+                    .nama_perlengkapan;
                     const checkAll = document.getElementById(`perlengkapan-check-all-${perlengkapanId}`);
                     if (checkAll) {
                         checkAll.addEventListener('change', function() {
@@ -3515,20 +3446,18 @@
                         cb.addEventListener('change', function() {
                             const all = document.querySelectorAll(
                                 `#perlengkapan-jamaah-list-${perlengkapanId} .perlengkapan-jamaah-checkbox`
-                            );
+                                );
                             const checked = document.querySelectorAll(
                                 `#perlengkapan-jamaah-list-${perlengkapanId} .perlengkapan-jamaah-checkbox:checked`
-                            );
+                                );
                             if (checkAll) checkAll.checked = all.length === checked.length;
                         });
                     });
                 })
                 .catch(error => {
                     console.error('Error:', error);
-                    if (!refreshOnly) {
-                        content.innerHTML =
-                            `<div class="text-center py-12"><i class="fas fa-exclamation-circle text-3xl text-red-500 mb-3"></i><p class="text-gray-500">Gagal memuat data. Silakan coba lagi.</p></div>`;
-                    }
+                    if (!refreshOnly) content.innerHTML =
+                        `<div class="text-center py-12"><i class="fas fa-exclamation-circle text-3xl text-red-500 mb-3"></i><p class="text-gray-500">Gagal memuat data.</p></div>`;
                 });
         }
 
@@ -3536,27 +3465,13 @@
             document.getElementById('perlengkapanDetailModal').classList.add('hidden');
         }
 
+        // JENIS TRANSAKSI
         function openJenisTransaksiModal() {
             document.getElementById('jenisTransaksiModal').classList.remove('hidden');
             document.getElementById('searchJenisTransaksiModal').value = '';
             document.querySelectorAll('.jenis-transaksi-modal-item').forEach(function(item) {
                 item.style.display = 'flex';
             });
-            document.getElementById('jenisTransaksiCountModal').textContent =
-                '{{ $jenisTransaksiOptions->count() }} jenis transaksi tersedia';
-            document.querySelectorAll('#jenisTransaksiModalList .jenis-harga').forEach(function(input) {
-                const hiddenId = input.id.replace('display_', '');
-                const hiddenInput = document.getElementById(hiddenId);
-                let value = 0;
-                if (hiddenInput) value = parseInt(hiddenInput.value) || 0;
-                input.value = value > 0 ? 'Rp ' + value.toLocaleString('id-ID') : 'Rp 0';
-            });
-            const defaultHargaDisplay = document.getElementById('default_harga_total_display');
-            const defaultHarga = document.getElementById('default_harga_total');
-            if (defaultHargaDisplay && defaultHarga) {
-                let value = parseInt(defaultHarga.value) || 0;
-                defaultHargaDisplay.value = value > 0 ? 'Rp ' + value.toLocaleString('id-ID') : 'Rp 0';
-            }
         }
 
         function closeJenisTransaksiModal() {
@@ -3587,46 +3502,6 @@
             document.getElementById('editJenisTransaksiModal').classList.add('hidden');
         }
 
-        function fillAllHarga() {
-            const defaultHargaDisplay = document.getElementById('default_harga_total_display');
-            const defaultHarga = document.getElementById('default_harga_total');
-            if (!defaultHarga.value || defaultHarga.value == '0') {
-                alert('Silakan isi default harga total terlebih dahulu!');
-                return;
-            }
-            document.querySelectorAll('#jenisTransaksiModalList .jenis-harga').forEach(function(input) {
-                if (!input.disabled) {
-                    input.value = defaultHargaDisplay.value;
-                    const hiddenId = input.id.replace('display_', '');
-                    const hiddenInput = document.getElementById(hiddenId);
-                    if (hiddenInput) hiddenInput.value = defaultHarga.value;
-                }
-            });
-        }
-
-        function fillAllCatatan() {
-            const defaultCatatan = document.getElementById('default_catatan').value;
-            document.querySelectorAll('#jenisTransaksiModalList .jenis-catatan').forEach(function(input) {
-                if (!input.disabled) input.value = defaultCatatan;
-            });
-        }
-
-        function selectAllJenisTransaksi() {
-            document.querySelectorAll('#jenisTransaksiModalList .jenis-transaksi-modal-item input[type="checkbox"]')
-                .forEach(function(checkbox) {
-                    checkbox.checked = true;
-                    checkbox.dispatchEvent(new Event('change'));
-                });
-        }
-
-        function deselectAllJenisTransaksi() {
-            document.querySelectorAll('#jenisTransaksiModalList .jenis-transaksi-modal-item input[type="checkbox"]')
-                .forEach(function(checkbox) {
-                    checkbox.checked = false;
-                    checkbox.dispatchEvent(new Event('change'));
-                });
-        }
-
         function openJenisTransaksiDetailModal(jenisTransaksiId, refreshOnly = false) {
             const modal = document.getElementById('jenisTransaksiDetailModal');
             const content = document.getElementById('jenisTransaksiDetailContent');
@@ -3646,7 +3521,7 @@
                         checkAll.addEventListener('change', function() {
                             document.querySelectorAll(
                                 `#jenis-transaksi-jamaah-list-${jenisTransaksiId} .jenis-transaksi-jamaah-checkbox`
-                            ).forEach(cb => cb.checked = this.checked);
+                                ).forEach(cb => cb.checked = this.checked);
                         });
                     }
                     document.querySelectorAll(
@@ -3655,20 +3530,18 @@
                             cb.addEventListener('change', function() {
                                 const all = document.querySelectorAll(
                                     `#jenis-transaksi-jamaah-list-${jenisTransaksiId} .jenis-transaksi-jamaah-checkbox`
-                                );
+                                    );
                                 const checked = document.querySelectorAll(
                                     `#jenis-transaksi-jamaah-list-${jenisTransaksiId} .jenis-transaksi-jamaah-checkbox:checked`
-                                );
+                                    );
                                 if (checkAll) checkAll.checked = all.length === checked.length;
                             });
                         });
                 })
                 .catch(error => {
                     console.error('Error:', error);
-                    if (!refreshOnly) {
-                        content.innerHTML =
-                            `<div class="text-center py-12"><i class="fas fa-exclamation-circle text-3xl text-red-500 mb-3"></i><p class="text-gray-500">Gagal memuat data. Silakan coba lagi.</p></div>`;
-                    }
+                    if (!refreshOnly) content.innerHTML =
+                        `<div class="text-center py-12"><i class="fas fa-exclamation-circle text-3xl text-red-500 mb-3"></i><p class="text-gray-500">Gagal memuat data.</p></div>`;
                 });
         }
 
@@ -3695,9 +3568,7 @@
                 if (data.success) {
                     openPerlengkapanDetailModal(departurePerlengkapanId, true);
                     showToast(data.message, 'success');
-                } else {
-                    showToast(data.message || 'Gagal', 'error');
-                }
+                } else showToast(data.message || 'Gagal', 'error');
             }).catch(err => {
                 console.error(err);
                 showToast('Terjadi kesalahan', 'error');
@@ -3728,9 +3599,7 @@
                 if (data.success) {
                     openPerlengkapanDetailModal(departurePerlengkapanId, true);
                     showToast(data.message, 'success');
-                } else {
-                    showToast(data.message || 'Gagal', 'error');
-                }
+                } else showToast(data.message || 'Gagal', 'error');
             }).catch(err => {
                 console.error(err);
                 showToast('Terjadi kesalahan', 'error');
@@ -3754,9 +3623,7 @@
                 if (data.success) {
                     openJenisTransaksiDetailModal(departureJenisTransaksiId, true);
                     showToast(data.message, 'success');
-                } else {
-                    showToast(data.message || 'Gagal', 'error');
-                }
+                } else showToast(data.message || 'Gagal', 'error');
             }).catch(err => {
                 console.error(err);
                 showToast('Terjadi kesalahan', 'error');
@@ -3787,9 +3654,7 @@
                 if (data.success) {
                     openJenisTransaksiDetailModal(departureJenisTransaksiId, true);
                     showToast(data.message, 'success');
-                } else {
-                    showToast(data.message || 'Gagal', 'error');
-                }
+                } else showToast(data.message || 'Gagal', 'error');
             }).catch(err => {
                 console.error(err);
                 showToast('Terjadi kesalahan', 'error');
@@ -3830,18 +3695,8 @@
         }
 
         function recalculate(id) {
-            if (confirm('Yakin ingin menghitung ulang data keuangan?')) {
-                document.getElementById('recalculate-form').submit();
-            }
-        }
-
-        function formatRupiahMaskapai(input, hiddenId) {
-            let value = input.value.replace(/[^,\d]/g, '').replace(/^Rp\s*/, '').replace(/\./g, '').replace(/,/g, '.');
-            if (value === '' || isNaN(value)) value = '0';
-            const number = parseInt(value);
-            input.value = 'Rp ' + number.toLocaleString('id-ID');
-            const hiddenInput = document.getElementById(hiddenId);
-            if (hiddenInput) hiddenInput.value = number;
+            if (confirm('Yakin ingin menghitung ulang data keuangan?')) document.getElementById('recalculate-form')
+        .submit();
         }
 
         function formatRupiahJenisTransaksi(input, hiddenId) {
@@ -3853,24 +3708,7 @@
             if (hiddenInput) hiddenInput.value = number;
         }
 
-        function formatRupiahHotel(input, kamarId) {
-            let value = input.value.replace(/[^,\d]/g, '').replace(/^Rp\s*/, '').replace(/\./g, '').replace(/,/g, '.');
-            if (value === '' || isNaN(value)) value = '0';
-            const number = parseInt(value);
-            input.value = 'Rp ' + number.toLocaleString('id-ID');
-            const hiddenInput = document.getElementById('kamar_harga_' + kamarId);
-            if (hiddenInput) hiddenInput.value = number;
-            const container = input.closest('.kamar-item').closest('.grid');
-            if (container) {
-                const containerId = container.id;
-                const totalId = containerId.replace('kamarContainer', 'totalHotel');
-                calculateHotelTotal(containerId, totalId);
-            }
-        }
-
-        // ============================================
-        // UPGRADE HOTEL — INPUT HARGA ASLI
-        // ============================================
+        // UPGRADE
         function openHargaAsliModal() {
             document.getElementById('hargaAsliModal').classList.remove('hidden');
         }
@@ -3892,10 +3730,9 @@
             updatePreviewSelisih(number);
         }
 
-        // LOGIKA BARU: Selisih = Dibayar jamaah − Modal
         function updatePreviewSelisih(hargaAsli) {
             const totalUpgrade = {{ $departure->total_upgrade_hotel_gabungan }};
-            const selisih = totalUpgrade - hargaAsli; // dibayar − modal
+            const selisih = totalUpgrade - hargaAsli;
             const selisihEl = document.getElementById('previewSelisih');
             const labelEl = document.getElementById('previewSelisihLabel');
             if (!selisihEl || !labelEl) return;
@@ -3916,9 +3753,7 @@
             }
         }
 
-        // ============================================
         // PEMBAYARAN TAK TERDUGA
-        // ============================================
         const PTT_STORE_URL =
             "{{ route('transaksional.departure.store-pembayaran-tak-terduga', $departure->id_departure) }}";
         const PTT_UPDATE_URL =
@@ -3953,9 +3788,7 @@
         }
 
         function removePembayaranTakTerduga(departureId, pembayaranId) {
-            if (confirm(
-                    'Yakin ingin menghapus pembayaran tak terduga ini?\n\nData akan dihapus dan total pengeluaran departure akan dihitung ulang.'
-                    )) {
+            if (confirm('Yakin ingin menghapus pembayaran tak terduga ini?')) {
                 document.getElementById('remove-ptt-form-' + departureId + '-' + pembayaranId).submit();
             }
         }
@@ -3970,7 +3803,6 @@
             if (isNaN(number)) number = 0;
             input.value = number.toLocaleString('id-ID');
         }
-
         document.getElementById('pembayaranTakTerdugaForm')?.addEventListener('submit', function(e) {
             const input = document.getElementById('ptt_total_pembayaran');
             const raw = input.value.replace(/[^\d]/g, '');

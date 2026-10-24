@@ -53,13 +53,13 @@
                                 <span
                                     class="px-3 py-1 bg-blue-500 text-white text-xs font-medium rounded-full">{{ $jamaah->id_keberangkatan }}</span>
                                 {!! $jamaah->status_pembayaran_badge !!}
+                                {!! $jamaah->kelebihan_bayar_badge !!}
                             </div>
                             <div class="flex flex-wrap items-center gap-3 mt-2">
                                 <p class="text-gray-500 text-sm"><i class="fas fa-box mr-1"></i> Produk:
                                     {{ $jamaah->produk_paket }}</p>
                                 <p class="text-gray-500 text-sm"><i class="fas fa-map-marker-alt mr-1"></i> Kota Asal:
                                     {{ $jamaah->kota_asal ?? '-' }}</p>
-                                {{-- ✅ NEW: Status Kawin di header --}}
                                 @if ($jamaah->status_kawin)
                                     <p class="text-gray-500 text-sm"><i class="fas fa-heart mr-1"></i> Status Kawin:
                                         <span class="font-medium text-gray-700">{{ $jamaah->status_kawin }}</span>
@@ -76,10 +76,40 @@
                                 {{ $jamaah->total_tagihan_setelah_diskon_formatted }}</p>
                             <p class="text-sm text-gray-500">Total Tagihan</p>
                             <p class="text-sm text-green-600">{{ $jamaah->total_dibayar_formatted }} dibayar</p>
+                            @if ($jamaah->total_refund > 0)
+                                <p class="text-sm text-amber-600">−{{ $jamaah->total_refund_formatted }} refund</p>
+                            @endif
                             <p class="text-sm text-red-500">{{ $jamaah->sisa_tagihan_formatted }} sisa</p>
+                            @if ($jamaah->sisa_kelebihan_bayar > 0)
+                                <p class="text-sm text-amber-600 font-bold">
+                                    <i class="fas fa-hand-holding-usd mr-1"></i>
+                                    {{ $jamaah->sisa_kelebihan_bayar_formatted }} kelebihan
+                                </p>
+                            @endif
                         </div>
                     </div>
                 </div>
+
+                {{-- ALERT KELEBIHAN BAYAR --}}
+                @if ($jamaah->sisa_kelebihan_bayar > 0)
+                    <div
+                        class="bg-amber-50 border-2 border-amber-400 rounded-xl p-4 mb-6 flex flex-wrap items-center justify-between gap-3">
+                        <div>
+                            <p class="text-sm font-bold text-amber-800 flex items-center gap-2">
+                                <i class="fas fa-hand-holding-usd text-lg"></i>
+                                ADA KELEBIHAN BAYAR
+                            </p>
+                            <p class="text-xs text-amber-700 mt-1">
+                                Jamaah membayar melebihi tagihan. Sisa kelebihan:
+                                <strong>{{ $jamaah->sisa_kelebihan_bayar_formatted }}</strong>
+                            </p>
+                        </div>
+                        <a href="{{ route('transaksional.jamaah.pembayaran', $jamaah->id_jamaah) }}"
+                            class="inline-flex items-center px-4 py-2 bg-amber-500 text-white rounded-lg hover:bg-amber-600 transition text-sm font-medium whitespace-nowrap">
+                            <i class="fas fa-undo-alt mr-2"></i> Proses Refund
+                        </a>
+                    </div>
+                @endif
 
                 <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
                     <!-- Informasi Pribadi -->
@@ -123,7 +153,6 @@
                                 <dt class="text-gray-500">Jenis Kelamin</dt>
                                 <dd class="font-medium text-gray-700">{{ $jamaah->jenis_kelamin_label }}</dd>
                             </div>
-                            {{-- ✅ NEW: Status Kawin --}}
                             <div class="flex justify-between text-sm border-b border-gray-100 pb-2">
                                 <dt class="text-gray-500">Status Kawin</dt>
                                 <dd class="font-medium">
@@ -339,10 +368,27 @@
                                 <dt class="text-gray-500">Total Dibayar</dt>
                                 <dd class="font-medium text-green-600">{{ $jamaah->total_dibayar_formatted }}</dd>
                             </div>
+                            @if ($jamaah->total_refund > 0)
+                                <div class="flex justify-between text-sm border-b border-gray-100 pb-2">
+                                    <dt class="text-gray-500">Total Refund</dt>
+                                    <dd class="font-medium text-amber-600">−{{ $jamaah->total_refund_formatted }}</dd>
+                                </div>
+                                <div class="flex justify-between text-sm border-b border-gray-100 pb-2">
+                                    <dt class="text-gray-500">Net Diterima</dt>
+                                    <dd class="font-medium text-gray-700">{{ $jamaah->net_dibayar_formatted }}</dd>
+                                </div>
+                            @endif
                             <div class="flex justify-between text-sm border-b border-gray-100 pb-2">
                                 <dt class="text-gray-500">Sisa Tagihan</dt>
                                 <dd class="font-medium text-red-600">{{ $jamaah->sisa_tagihan_formatted }}</dd>
                             </div>
+                            @if ($jamaah->sisa_kelebihan_bayar > 0)
+                                <div class="flex justify-between text-sm border-b border-gray-100 pb-2">
+                                    <dt class="text-gray-500 font-semibold">Sisa Kelebihan Bayar</dt>
+                                    <dd class="font-bold text-amber-600">
+                                        {{ $jamaah->sisa_kelebihan_bayar_formatted }}</dd>
+                                </div>
+                            @endif
                             <div class="flex justify-between text-sm border-b border-gray-100 pb-2">
                                 <dt class="text-gray-500">Diskon</dt>
                                 <dd class="font-medium text-gray-700">
@@ -457,8 +503,8 @@
                                     <p class="text-xs text-purple-700"><i class="fas fa-info-circle mr-1"></i>
                                         Upgrade hotel keluarga sebesar <span
                                             class="font-bold">{{ $jamaah->keluarga->total_upgrade_hotel_formatted }}</span>
-                                        dibagi rata ke <span class="font-bold">{{ $jamaah->keluarga->jamaahs->count() }}
-                                            jamaah</span>.
+                                        dibagi rata ke <span
+                                            class="font-bold">{{ $jamaah->keluarga->jamaahs->count() }} jamaah</span>.
                                         Bagian Anda: <span
                                             class="font-bold">{{ $jamaah->keluarga->upgrade_hotel_per_jamaah_formatted }}</span>
                                     </p>

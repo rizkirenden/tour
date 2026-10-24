@@ -161,6 +161,14 @@
                                 class="p-2 text-green-500 hover:bg-green-50 rounded-lg" title="Bayar">
                                 <i class="fas fa-money-bill-wave text-sm"></i>
                             </a>
+
+                            {{-- ✅ TOMBOL REKOMENDASI PASSPORT --}}
+                            <a href="{{ route('transaksional.jamaah.cetak-rekomendasi-passport', $item->id_jamaah) }}"
+                                class="p-2 text-purple-500 hover:bg-purple-50 rounded-lg" title="Rekomendasi Passport"
+                                target="_blank">
+                                <i class="fas fa-file-signature text-sm"></i>
+                            </a>
+
                             <button onclick="confirmDelete({{ $item->id_jamaah }})"
                                 class="p-2 text-red-500 hover:bg-red-50 rounded-lg" title="Hapus">
                                 <i class="fas fa-trash text-sm"></i>

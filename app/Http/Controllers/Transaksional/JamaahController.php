@@ -14,7 +14,6 @@ use App\Models\Kamar;
 use App\Models\ProdukPaket;
 use App\Models\ProdukHargaBulanan;
 use App\Models\ProdukKeberangkatan;
-use App\Models\DokumenPerusahaan;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
 use Illuminate\Support\Facades\Storage;
@@ -33,7 +32,7 @@ class JamaahController extends Controller
 
     public function index(Request $request)
     {
-        $filters = $request->only(['search', 'status_pembayaran', 'jenis_kelamin', 'sumber_data', 'status_kawin']);
+        $filters = $request->only(['search', 'status_pembayaran', 'jenis_kelamin', 'sumber_data', 'status_kawin', 'has_kelebihan']);
         $data = $this->service->getAll($filters);
 
         if ($request->ajax()) {
@@ -84,7 +83,6 @@ class JamaahController extends Controller
             'tanggal_lahir' => 'nullable|date',
             'tempat_lahir' => 'nullable|string|max:100',
             'jenis_kelamin' => 'nullable|in:L,P',
-            // ✅ NEW: Status kawin
             'status_kawin' => 'nullable|in:Belum Kawin,Kawin,Cerai Hidup,Cerai Mati',
             'kota_asal' => 'required|string|max:50|exists:kota_asals,nama_kota',
             'pulau' => 'nullable|string|max:20',
@@ -111,7 +109,6 @@ class JamaahController extends Controller
             'pendampingan_fee' => 'nullable|integer|min:0',
             'pendampingan_fee_petugas' => 'nullable|integer|min:0',
 
-            // Upgrade hotel
             'upgrade_hotels' => 'nullable|array',
             'upgrade_hotels.*.id_hotel' => 'required_with:upgrade_hotels|exists:hotels,id_hotel',
             'upgrade_hotels.*.id_kamar' => 'nullable|exists:kamars,id_kamar',
@@ -134,7 +131,6 @@ class JamaahController extends Controller
             $validated['pendampingan_fee_petugas'] = 0;
         }
 
-        // ✅ Status kawin - null jika kosong
         $validated['status_kawin'] = $validated['status_kawin'] ?? null;
 
         $this->uploadFiles($request, $validated);
@@ -189,7 +185,6 @@ class JamaahController extends Controller
             ];
         })->values()->toArray();
 
-        // Existing upgrade hotels
         $selectedUpgradeHotels = $jamaah->upgradeHotels->map(function ($u) {
             return [
                 'id_hotel' => $u->id_hotel,
@@ -240,7 +235,6 @@ class JamaahController extends Controller
             'tanggal_lahir' => 'nullable|date',
             'tempat_lahir' => 'nullable|string|max:100',
             'jenis_kelamin' => 'nullable|in:L,P',
-            // ✅ NEW: Status kawin
             'status_kawin' => 'nullable|in:Belum Kawin,Kawin,Cerai Hidup,Cerai Mati',
             'kota_asal' => 'required|string|max:50|exists:kota_asals,nama_kota',
             'pulau' => 'nullable|string|max:20',
@@ -267,7 +261,6 @@ class JamaahController extends Controller
             'pendampingan_fee' => 'nullable|integer|min:0',
             'pendampingan_fee_petugas' => 'nullable|integer|min:0',
 
-            // Upgrade hotel
             'upgrade_hotels' => 'nullable|array',
             'upgrade_hotels.*.id_hotel' => 'required_with:upgrade_hotels|exists:hotels,id_hotel',
             'upgrade_hotels.*.id_kamar' => 'nullable|exists:kamars,id_kamar',
@@ -290,7 +283,6 @@ class JamaahController extends Controller
             $validated['pendampingan_fee_petugas'] = 0;
         }
 
-        // ✅ Status kawin - null jika kosong
         $validated['status_kawin'] = $validated['status_kawin'] ?? null;
 
         $oldFiles = [
@@ -305,8 +297,14 @@ class JamaahController extends Controller
         try {
             $jamaah = $this->service->update($id, $validated);
 
+            $msg = "Jamaah '{$jamaah->nama_lengkap}' berhasil diperbarui!";
+
+            if ($jamaah->sisa_kelebihan_bayar > 0) {
+                $msg .= " ⚠️ Ada kelebihan bayar: {$jamaah->sisa_kelebihan_bayar_formatted} — silakan proses refund di halaman pembayaran.";
+            }
+
             return redirect()->route('transaksional.jamaah.index')
-                ->with('success', "Jamaah '{$jamaah->nama_lengkap}' berhasil diperbarui!");
+                ->with('success', $msg);
         } catch (\Exception $e) {
             foreach (['file_ktp_kk', 'file_vaksin', 'file_visa', 'file_paspor'] as $field) {
                 if (isset($validated[$field]) && $validated[$field] !== $oldFiles[$field]) {
@@ -417,12 +415,18 @@ class JamaahController extends Controller
         $jumlahBayar = $validated['jumlah_bayar'];
         $jenisTransaksi = JenisTransaksi::find($validated['id_jenis_transaksi']);
 
-        if ($jenisTransaksi->kode == 'LUNAS' && $jumlahBayar < ($totalTagihan - $totalDibayarSaatIni)) {
+        $sisaSaatIni = max(0, $totalTagihan - $totalDibayarSaatIni);
+
+        // ✅ Cek apakah jenis transaksi adalah pelunasan (berdasarkan NAMA)
+        $namaJenis = strtolower(trim((string) $jenisTransaksi->nama));
+        $isLunas = str_contains($namaJenis, 'lunas') || str_contains($namaJenis, 'pelunasan');
+
+        if ($isLunas && $jumlahBayar < $sisaSaatIni) {
             return redirect()->back()
-                ->with('error', 'Jumlah bayar untuk pelunasan harus sebesar sisa tagihan: Rp ' . number_format($totalTagihan - $totalDibayarSaatIni, 0, ',', '.'));
+                ->with('error', 'Jumlah bayar untuk pelunasan harus sebesar sisa tagihan: Rp ' . number_format($sisaSaatIni, 0, ',', '.'));
         }
 
-        if ($jumlahBayar > ($totalTagihan - $totalDibayarSaatIni)) {
+        if ($jumlahBayar > $sisaSaatIni) {
             return redirect()->back()
                 ->with('error', 'Jumlah bayar melebihi sisa tagihan!');
         }
@@ -440,13 +444,17 @@ class JamaahController extends Controller
             'id_jenis_transaksi' => $validated['id_jenis_transaksi'],
             'tanggal_transaksi' => $validated['tanggal_transaksi'],
             'jumlah_bayar' => $jumlahBayar,
+            'jenis_mutasi' => 'masuk',
             'bukti_pembayaran' => $buktiPath,
             'keterangan' => $validated['keterangan'],
             'created_by' => Auth::user()->name ?? 'System',
         ]);
 
-        $totalDibayarBaru = $totalDibayarSaatIni + $jumlahBayar;
-        $sisaTagihanBaru = $totalTagihan - $totalDibayarBaru;
+       $totalDibayarBaru = $totalDibayarSaatIni + $jumlahBayar;
+// ✅ Sisa tagihan tidak boleh negatif
+$sisaTagihanBaru = max(0, $totalTagihan - $totalDibayarBaru);
+$totalRefund = (int) ($jamaah->total_refund ?? 0);
+$kelebihanBaru = max(0, $totalDibayarBaru - $totalTagihan);
 
         if ($sisaTagihanBaru <= 0) {
             $status = 'Lunas';
@@ -461,7 +469,8 @@ class JamaahController extends Controller
         $jamaah->update([
             'total_dibayar' => $totalDibayarBaru,
             'sisa_tagihan' => $sisaTagihanBaru,
-            'status_pembayaran' => $status
+            'status_pembayaran' => $status,
+            'sisa_kelebihan_bayar' => max(0, $kelebihanBaru - $totalRefund),
         ]);
 
         if ($jamaah->id_keluarga) {
@@ -471,6 +480,54 @@ class JamaahController extends Controller
 
         return redirect()->route('transaksional.jamaah.pembayaran', $id)
             ->with('success', "Pembayaran {$jenisTransaksi->nama} sebesar Rp " . number_format($jumlahBayar, 0, ',', '.') . " berhasil!");
+    }
+
+    // ==========================================
+    // ✅ PROSES REFUND (BERDASARKAN NAMA)
+    // ==========================================
+    public function prosesRefund(Request $request, $id)
+    {
+        $jumlahRefundRaw = preg_replace('/[^\d]/', '', $request->input('jumlah_refund'));
+        $request->merge(['jumlah_refund' => (int) $jumlahRefundRaw]);
+
+        $validated = $request->validate([
+            'id_metode_pembayaran' => 'required|exists:metode_pembayarans,id_metode',
+            'tanggal_transaksi'    => 'required|date',
+            'jumlah_refund'        => 'required|integer|min:1',
+            'bukti_pembayaran'     => 'nullable|file|mimes:jpeg,png,jpg,pdf|max:2048',
+            'keterangan'           => 'nullable|string',
+            'keterangan_refund'    => 'nullable|string',
+        ]);
+
+        $jamaah = $this->service->getById($id);
+
+        if ($validated['jumlah_refund'] > (int) $jamaah->sisa_kelebihan_bayar) {
+            return redirect()->back()
+                ->with('error', 'Jumlah refund melebihi sisa kelebihan bayar (maks: ' . $jamaah->sisa_kelebihan_bayar_formatted . ').');
+        }
+
+        $buktiPath = null;
+        if ($request->hasFile('bukti_pembayaran')) {
+            $file = $request->file('bukti_pembayaran');
+            $filename = time() . '_refund_' . $jamaah->id_jamaah . '.' . $file->getClientOriginalExtension();
+            $buktiPath = $file->storeAs('jamaah/bukti-refund', $filename, 'public');
+        }
+
+        try {
+            $validated['bukti_pembayaran'] = $buktiPath;
+
+            $this->service->prosesRefund($id, $validated);
+
+            return redirect()->route('transaksional.jamaah.pembayaran', $id)
+                ->with('success', 'Refund sebesar Rp ' . number_format($validated['jumlah_refund'], 0, ',', '.') . ' berhasil diproses!');
+        } catch (\Exception $e) {
+            if ($buktiPath && Storage::disk('public')->exists($buktiPath)) {
+                Storage::disk('public')->delete($buktiPath);
+            }
+            return redirect()->back()
+                ->withInput()
+                ->with('error', 'Gagal memproses refund: ' . $e->getMessage());
+        }
     }
 
     public function hapusBukti($id)
@@ -493,6 +550,7 @@ class JamaahController extends Controller
     {
         $transaksi = TransaksiPembayaran::findOrFail($id);
         $jamaahId = $transaksi->id_jamaah;
+        $isRefund = ($transaksi->jenis_mutasi ?? 'masuk') === 'keluar';
 
         if ($transaksi->bukti_pembayaran && Storage::disk('public')->exists($transaksi->bukti_pembayaran)) {
             Storage::disk('public')->delete($transaksi->bukti_pembayaran);
@@ -502,8 +560,18 @@ class JamaahController extends Controller
 
         $jamaah = $this->service->getById($jamaahId);
         $totalTagihan = $jamaah->total_tagihan_setelah_diskon;
-        $totalDibayarBaru = $jamaah->transaksis()->sum('jumlah_bayar');
-        $sisaTagihanBaru = $totalTagihan - $totalDibayarBaru;
+
+        // Hitung ulang dari transaksi tersisa
+        $totalDibayarBaru = TransaksiPembayaran::where('id_jamaah', $jamaahId)
+            ->where('jenis_mutasi', 'masuk')
+            ->sum('jumlah_bayar');
+        $totalRefundBaru  = TransaksiPembayaran::where('id_jamaah', $jamaahId)
+            ->where('jenis_mutasi', 'keluar')
+            ->sum('jumlah_bayar');
+
+            // ✅ Sisa tagihan tidak boleh negatif
+$sisaTagihanBaru = max(0, $totalTagihan - $totalDibayarBaru);
+$kelebihanBaru   = max(0, $totalDibayarBaru - $totalTagihan);
 
         if ($sisaTagihanBaru <= 0) {
             $status = 'Lunas';
@@ -516,9 +584,11 @@ class JamaahController extends Controller
         }
 
         $jamaah->update([
-            'total_dibayar' => $totalDibayarBaru,
-            'sisa_tagihan' => $sisaTagihanBaru,
-            'status_pembayaran' => $status
+            'total_dibayar'          => $totalDibayarBaru,
+            'sisa_tagihan'           => $sisaTagihanBaru,
+            'status_pembayaran'      => $status,
+            'total_refund'           => $totalRefundBaru,
+            'sisa_kelebihan_bayar'   => max(0, $kelebihanBaru - $totalRefundBaru),
         ]);
 
         if ($jamaah->id_keluarga) {
@@ -526,8 +596,10 @@ class JamaahController extends Controller
             $keluargaService->recalculateKeluarga($jamaah->id_keluarga);
         }
 
+        $msg = $isRefund ? 'Transaksi refund berhasil dihapus!' : 'Transaksi pembayaran berhasil dihapus!';
+
         return redirect()->route('transaksional.jamaah.pembayaran', $jamaahId)
-            ->with('success', 'Transaksi pembayaran berhasil dihapus!');
+            ->with('success', $msg);
     }
 
     public function cetakPdfRiwayat($id)
@@ -851,4 +923,104 @@ class JamaahController extends Controller
             ],
         ]);
     }
+
+   public function cetakPdfRekomendasiPassport($id)
+{
+    set_time_limit(300);
+
+    try {
+        $jamaah = $this->service->getByIdWithRelations($id);
+
+        // Ambil keberangkatan pertama (paling awal)
+        $keberangkatan = $jamaah->keberangkatan->sortBy([
+            'pivot.tahun_keberangkatan',
+            'pivot.bulan_keberangkatan',
+        ])->first();
+
+        $bulanNama = [
+            1 => 'Januari', 2 => 'Februari', 3 => 'Maret', 4 => 'April',
+            5 => 'Mei', 6 => 'Juni', 7 => 'Juli', 8 => 'Agustus',
+            9 => 'September', 10 => 'Oktober', 11 => 'November', 12 => 'Desember'
+        ];
+
+        // Format bulan keberangkatan
+        $bulanKeberangkatan = '-';
+        $tahunKeberangkatan = '-';
+        if ($keberangkatan) {
+            $bulanKeberangkatan = $bulanNama[$keberangkatan->pivot->bulan_keberangkatan] ?? '-';
+            $tahunKeberangkatan = $keberangkatan->pivot->tahun_keberangkatan ?? '-';
+        } elseif ($jamaah->bulan_keberangkatan && $jamaah->tahun_keberangkatan) {
+            $bulanKeberangkatan = $bulanNama[$jamaah->bulan_keberangkatan] ?? '-';
+            $tahunKeberangkatan = $jamaah->tahun_keberangkatan;
+        }
+
+        // Load header.png dari public/assets/header.png
+        $headerBase64 = $this->loadFileBase64(public_path('assets/header.png'));
+
+        // Load footer1.png dan footer2.png dari public/assets/
+        $footer1Base64 = $this->loadFileBase64(public_path('assets/footer1.png'));
+        $footer2Base64 = $this->loadFileBase64(public_path('assets/footer2.png'));
+
+        // Log untuk memastikan gambar terbaca
+        \Log::info('PDF Rekomendasi Passport - Asset Check', [
+            'header_exists'  => !is_null($headerBase64),
+            'footer1_exists' => !is_null($footer1Base64),
+            'footer1_len'    => $footer1Base64 ? strlen($footer1Base64) : 0,
+            'footer2_exists' => !is_null($footer2Base64),
+            'footer2_len'    => $footer2Base64 ? strlen($footer2Base64) : 0,
+        ]);
+
+        $data = [
+            'jamaah'              => $jamaah,
+            'bulanKeberangkatan'  => $bulanKeberangkatan,
+            'tahunKeberangkatan'  => $tahunKeberangkatan,
+            'tanggal_cetak'       => now()->format('d/m/Y'),
+            'dicetak_oleh'        => Auth::user()->name ?? 'System',
+            'logoBase64'          => $this->loadDokumenBase64('logo'),
+            'headerBase64'        => $headerBase64,
+            'ttdBase64'           => $this->loadDokumenBase64('ttd'),
+            'capBase64'           => $this->loadDokumenBase64('cap'),
+            'footer1Base64'       => $footer1Base64,
+            'footer2Base64'       => $footer2Base64,
+        ];
+
+        $pdf = Pdf::loadView('jamaahs.pdf-rekomendasi-passport', $data);
+        $pdf->setPaper('A4', 'portrait');
+
+        $pdf->setOptions([
+            'defaultFont' => 'sans-serif',
+            'isHtml5ParserEnabled' => true,
+            'isRemoteEnabled' => false,
+            'isPhpEnabled' => false,
+            'dpi' => 96,
+            'isFontSubsettingEnabled' => false,
+            'isJavascriptEnabled' => false,
+        ]);
+
+        return $pdf->download(
+            'Surat_Rekomendasi_Passport_' . str_replace(' ', '_', $jamaah->nama_lengkap)
+            . '_' . date('Ymd_His') . '.pdf'
+        );
+    } catch (\Exception $e) {
+        \Log::error('PDF Rekomendasi Passport Error: ' . $e->getMessage());
+        return back()->with('error', 'Gagal generate PDF: ' . $e->getMessage());
+    }
+}
+
+/**
+ * Helper untuk mengubah file gambar ke base64.
+ */
+private function loadFileBase64($path)
+{
+    if (!file_exists($path)) {
+        \Log::warning('File not found: ' . $path);
+        return null;
+    }
+    if (filesize($path) > 2000000) {
+        \Log::warning('File too large: ' . $path);
+        return null;
+    }
+    $mime = mime_content_type($path);
+    return 'data:' . $mime . ';base64,' . base64_encode(file_get_contents($path));
+}
 }

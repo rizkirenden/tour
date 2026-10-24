@@ -57,6 +57,30 @@
                                 @error('id_produk')
                                     <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
                                 @enderror
+
+                                {{-- ✅ INFO: snapshot saat ini vs nama produk master --}}
+                                @if ($departure->produk)
+                                    <div
+                                        class="mt-2 text-xs text-gray-500 bg-gray-50 border border-gray-200 rounded-lg p-2">
+                                        <p>
+                                            <i class="fas fa-database mr-1 text-gray-400"></i>
+                                            Snapshot tersimpan:
+                                            <strong class="text-gray-700">{{ $departure->produk_paket }}</strong>
+                                        </p>
+                                        <p>
+                                            <i class="fas fa-tag mr-1 text-gray-400"></i>
+                                            Nama produk master:
+                                            <strong class="text-emerald-700">{{ $departure->produk->nama_produk }}</strong>
+                                        </p>
+                                        @if ($departure->produk_paket !== $departure->produk->nama_produk)
+                                            <p class="text-amber-600 mt-1">
+                                                <i class="fas fa-exclamation-triangle mr-1"></i>
+                                                Snapshot berbeda dari master. Klik <strong>Update</strong> untuk
+                                                sinkronisasi otomatis.
+                                            </p>
+                                        @endif
+                                    </div>
+                                @endif
                             </div>
                             <div>
                                 <label class="block text-sm font-medium text-gray-700 mb-1.5">
@@ -96,8 +120,8 @@
                                     <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
                                 @enderror
                             </div>
-                            <!-- Tambahkan setelah Tanggal Kepulangan -->
-                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+                            <!-- Bulan & Tahun -->
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4 md:col-span-2">
                                 <div>
                                     <label class="block text-sm font-medium text-gray-700 mb-1.5">
                                         Bulan Keberangkatan

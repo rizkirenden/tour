@@ -91,6 +91,7 @@ class DepartureService
             'departurePaketTourHotels.kamar',
             'departurePaketTourHotels.paketTour',
             'pembayaranTakTerduga',
+            'penandaSelesai',
         ])->findOrFail($id);
     }
 
@@ -120,14 +121,77 @@ class DepartureService
         return DB::transaction(function () use ($id, $data) {
             $departure = Departure::findOrFail($id);
 
-            if (isset($data['id_produk']) && $data['id_produk'] != $departure->id_produk) {
-                $produk = ProdukPaket::findOrFail($data['id_produk']);
-                $data['produk_paket'] = $produk->nama_produk;
-            }
+            $idProduk = $data['id_produk'] ?? $departure->id_produk;
+            $produk = ProdukPaket::findOrFail($idProduk);
+
+            $data['produk_paket'] = $produk->nama_produk;
+
+            $idProdukBerubah = ((int) $idProduk !== (int) $departure->id_produk);
 
             $departure->update($data);
 
+            if ($idProdukBerubah) {
+                $jamaahIds = DB::table('departure_jamaahs')
+                    ->where('id_departure', $id)
+                    ->pluck('id_jamaah')
+                    ->toArray();
+
+                if (!empty($jamaahIds)) {
+                    DB::table('jamaahs')
+                        ->whereIn('id_jamaah', $jamaahIds)
+                        ->update(['produk_paket' => $produk->nama_produk]);
+                }
+            }
+
             return $departure->load(['statusKeberangkatan', 'produk']);
+        });
+    }
+
+    public function syncProdukSnapshot($id = null)
+    {
+        return DB::transaction(function () use ($id) {
+            $query = Departure::query()->with(['produk', 'jamaahs']);
+
+            if ($id !== null) {
+                $query->where('id_departure', $id);
+            }
+
+            $updatedDepartures = 0;
+            $updatedJamaahs = 0;
+
+            $query->chunk(100, function ($departures) use (&$updatedDepartures, &$updatedJamaahs) {
+                foreach ($departures as $departure) {
+                    if (!$departure->produk) {
+                        continue;
+                    }
+
+                    $namaBaru = $departure->produk->nama_produk;
+
+                    if ($departure->produk_paket !== $namaBaru) {
+                        $departure->produk_paket = $namaBaru;
+                        $departure->saveQuietly();
+                        $updatedDepartures++;
+                    }
+
+                    $jamaahIds = $departure->jamaahs->pluck('id_jamaah')->toArray();
+                    if (!empty($jamaahIds)) {
+                        $affected = DB::table('jamaahs')
+                            ->whereIn('id_jamaah', $jamaahIds)
+                            ->where(function ($q) use ($namaBaru) {
+                                $q->whereNull('produk_paket')
+                                  ->orWhere('produk_paket', '!=', $namaBaru);
+                            })
+                            ->update(['produk_paket' => $namaBaru]);
+
+                        $updatedJamaahs += $affected;
+                    }
+                }
+            });
+
+            return [
+                'departures_updated' => $updatedDepartures,
+                'jamaahs_updated'    => $updatedJamaahs,
+            ];
         });
     }
 
@@ -715,22 +779,29 @@ class DepartureService
             ->join('status_keberangkatans', 'status_keberangkatans.id_status', '=', 'departures.id_status')
             ->whereIn('status_keberangkatans.nama_status', ['Aktif', 'Berangkat']);
 
-        $query = Jamaah::whereNotIn('id_jamaah', $subquery)
-            ->where('status_pembayaran', 'Lunas');
+        $query = Jamaah::whereNotIn('id_jamaah', $subquery);
 
         if ($departure->produk_paket) {
-            $query->where('produk_paket', $departure->produk_paket);
+            $query->whereRaw('TRIM(produk_paket) = ?', [trim($departure->produk_paket)]);
         }
 
         if ($departure->bulan_keberangkatan && $departure->tahun_keberangkatan) {
-            $query->where(function ($q) use ($departure) {
-                $q->whereHas('keberangkatan', function ($subQ) use ($departure) {
-                    $subQ->where('bulan_keberangkatan', $departure->bulan_keberangkatan)
-                        ->where('tahun_keberangkatan', $departure->tahun_keberangkatan);
+            $bulan = $departure->bulan_keberangkatan;
+            $tahun = $departure->tahun_keberangkatan;
+
+            $query->where(function ($q) use ($bulan, $tahun) {
+                $q->whereHas('keberangkatan', function ($subQ) use ($bulan, $tahun) {
+                    $subQ->where('bulan_keberangkatan', $bulan)
+                        ->where('tahun_keberangkatan', $tahun);
                 })
-                ->orWhere(function ($subQ) use ($departure) {
-                    $subQ->where('bulan_keberangkatan', $departure->bulan_keberangkatan)
-                        ->where('tahun_keberangkatan', $departure->tahun_keberangkatan);
+                ->orWhere(function ($subQ) use ($bulan, $tahun) {
+                    $subQ->where('bulan_keberangkatan', $bulan)
+                        ->where('tahun_keberangkatan', $tahun);
+                })
+                ->orWhere(function ($subQ) {
+                    $subQ->whereNull('bulan_keberangkatan')
+                        ->whereNull('tahun_keberangkatan')
+                        ->whereDoesntHave('keberangkatan');
                 });
             });
         }
@@ -786,22 +857,29 @@ class DepartureService
             $subquery->where('departures.id_departure', '!=', $departureId);
         }
 
-        $query = Jamaah::whereNotIn('id_jamaah', $subquery)
-            ->where('status_pembayaran', 'Lunas');
+        $query = Jamaah::whereNotIn('id_jamaah', $subquery);
 
         if ($departure && $departure->produk_paket) {
-            $query->where('produk_paket', $departure->produk_paket);
+            $query->whereRaw('TRIM(produk_paket) = ?', [trim($departure->produk_paket)]);
         }
 
         if ($departure && $departure->bulan_keberangkatan && $departure->tahun_keberangkatan) {
-            $query->where(function ($q) use ($departure) {
-                $q->whereHas('keberangkatan', function ($subQ) use ($departure) {
-                    $subQ->where('bulan_keberangkatan', $departure->bulan_keberangkatan)
-                        ->where('tahun_keberangkatan', $departure->tahun_keberangkatan);
+            $bulan = $departure->bulan_keberangkatan;
+            $tahun = $departure->tahun_keberangkatan;
+
+            $query->where(function ($q) use ($bulan, $tahun) {
+                $q->whereHas('keberangkatan', function ($subQ) use ($bulan, $tahun) {
+                    $subQ->where('bulan_keberangkatan', $bulan)
+                        ->where('tahun_keberangkatan', $tahun);
                 })
-                ->orWhere(function ($subQ) use ($departure) {
-                    $subQ->where('bulan_keberangkatan', $departure->bulan_keberangkatan)
-                        ->where('tahun_keberangkatan', $departure->tahun_keberangkatan);
+                ->orWhere(function ($subQ) use ($bulan, $tahun) {
+                    $subQ->where('bulan_keberangkatan', $bulan)
+                        ->where('tahun_keberangkatan', $tahun);
+                })
+                ->orWhere(function ($subQ) {
+                    $subQ->whereNull('bulan_keberangkatan')
+                        ->whereNull('tahun_keberangkatan')
+                        ->whereDoesntHave('keberangkatan');
                 });
             });
         }
@@ -825,18 +903,26 @@ class DepartureService
         $query = Jamaah::whereNotIn('id_jamaah', $subquery);
 
         if ($departure && $departure->produk_paket) {
-            $query->where('produk_paket', $departure->produk_paket);
+            $query->whereRaw('TRIM(produk_paket) = ?', [trim($departure->produk_paket)]);
         }
 
         if ($departure && $departure->bulan_keberangkatan && $departure->tahun_keberangkatan) {
-            $query->where(function ($q) use ($departure) {
-                $q->whereHas('keberangkatan', function ($subQ) use ($departure) {
-                    $subQ->where('bulan_keberangkatan', $departure->bulan_keberangkatan)
-                        ->where('tahun_keberangkatan', $departure->tahun_keberangkatan);
+            $bulan = $departure->bulan_keberangkatan;
+            $tahun = $departure->tahun_keberangkatan;
+
+            $query->where(function ($q) use ($bulan, $tahun) {
+                $q->whereHas('keberangkatan', function ($subQ) use ($bulan, $tahun) {
+                    $subQ->where('bulan_keberangkatan', $bulan)
+                        ->where('tahun_keberangkatan', $tahun);
                 })
-                ->orWhere(function ($subQ) use ($departure) {
-                    $subQ->where('bulan_keberangkatan', $departure->bulan_keberangkatan)
-                        ->where('tahun_keberangkatan', $departure->tahun_keberangkatan);
+                ->orWhere(function ($subQ) use ($bulan, $tahun) {
+                    $subQ->where('bulan_keberangkatan', $bulan)
+                        ->where('tahun_keberangkatan', $tahun);
+                })
+                ->orWhere(function ($subQ) {
+                    $subQ->whereNull('bulan_keberangkatan')
+                        ->whereNull('tahun_keberangkatan')
+                        ->whereDoesntHave('keberangkatan');
                 });
             });
         }
@@ -862,19 +948,26 @@ class DepartureService
             $subquery->where('departures.id_departure', '!=', $departureId);
         }
 
-        $query = Jamaah::where('produk_paket', $produk->nama_produk)
-            ->whereNotIn('id_jamaah', $subquery)
-            ->where('status_pembayaran', 'Lunas');
+        $query = Jamaah::whereRaw('TRIM(produk_paket) = ?', [trim($produk->nama_produk)])
+            ->whereNotIn('id_jamaah', $subquery);
 
         if ($departure && $departure->bulan_keberangkatan && $departure->tahun_keberangkatan) {
-            $query->where(function ($q) use ($departure) {
-                $q->whereHas('keberangkatan', function ($subQ) use ($departure) {
-                    $subQ->where('bulan_keberangkatan', $departure->bulan_keberangkatan)
-                        ->where('tahun_keberangkatan', $departure->tahun_keberangkatan);
+            $bulan = $departure->bulan_keberangkatan;
+            $tahun = $departure->tahun_keberangkatan;
+
+            $query->where(function ($q) use ($bulan, $tahun) {
+                $q->whereHas('keberangkatan', function ($subQ) use ($bulan, $tahun) {
+                    $subQ->where('bulan_keberangkatan', $bulan)
+                        ->where('tahun_keberangkatan', $tahun);
                 })
-                ->orWhere(function ($subQ) use ($departure) {
-                    $subQ->where('bulan_keberangkatan', $departure->bulan_keberangkatan)
-                        ->where('tahun_keberangkatan', $departure->tahun_keberangkatan);
+                ->orWhere(function ($subQ) use ($bulan, $tahun) {
+                    $subQ->where('bulan_keberangkatan', $bulan)
+                        ->where('tahun_keberangkatan', $tahun);
+                })
+                ->orWhere(function ($subQ) {
+                    $subQ->whereNull('bulan_keberangkatan')
+                        ->whereNull('tahun_keberangkatan')
+                        ->whereDoesntHave('keberangkatan');
                 });
             });
         }
@@ -904,7 +997,7 @@ class DepartureService
 
     public function recalculateAll()
     {
-        $departures = Departure::all();
+        $departures = Departure::where('perjalanan_selesai', false)->get();
         foreach ($departures as $departure) {
             $departure->recalculate();
         }
@@ -1019,10 +1112,6 @@ class DepartureService
             ->get();
     }
 
-    // ==========================================
-    // PEMBAYARAN TAK TERDUGA
-    // ==========================================
-
     public function addPembayaranTakTerduga($departureId, array $data)
     {
         return DB::transaction(function () use ($departureId, $data) {
@@ -1073,6 +1162,44 @@ class DepartureService
             $departure->recalculate();
 
             return $pembayaran;
+        });
+    }
+
+    // ==========================================
+    // LOCK: PERJALANAN SELESAI
+    // ==========================================
+
+    public function markPerjalananSelesai($id, $userId = null)
+    {
+        return DB::transaction(function () use ($id, $userId) {
+            $departure = Departure::findOrFail($id);
+
+            if ($departure->perjalanan_selesai) {
+                throw new \Exception('Perjalanan sudah ditandai selesai.');
+            }
+
+            $departure->update([
+                'perjalanan_selesai'    => true,
+                'perjalanan_selesai_at' => now(),
+                'perjalanan_selesai_by' => $userId,
+            ]);
+
+            return $departure->fresh();
+        });
+    }
+
+    public function batalkanPerjalananSelesai($id)
+    {
+        return DB::transaction(function () use ($id) {
+            $departure = Departure::findOrFail($id);
+
+            $departure->update([
+                'perjalanan_selesai'    => false,
+                'perjalanan_selesai_at' => null,
+                'perjalanan_selesai_by' => null,
+            ]);
+
+            return $departure->fresh();
         });
     }
 }

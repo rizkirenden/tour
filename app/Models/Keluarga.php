@@ -31,11 +31,12 @@ class Keluarga extends Model
         'total_diskon',
         'total_tagihan_setelah_diskon',
         'total_dibayar',
+        'total_refund',
+        'sisa_kelebihan_bayar',
         'sisa_tagihan',
         'status_pembayaran',
         'keterangan_diskon',
         'catatan_tambahan'
-        // ✅ status_kawin TIDAK ADA di sini (hanya di Jamaah)
     ];
 
     protected $casts = [
@@ -49,6 +50,8 @@ class Keluarga extends Model
         'total_diskon' => 'integer',
         'total_tagihan_setelah_diskon' => 'integer',
         'total_dibayar' => 'integer',
+        'total_refund' => 'integer',
+        'sisa_kelebihan_bayar' => 'integer',
         'sisa_tagihan' => 'integer',
     ];
 
@@ -87,8 +90,20 @@ class Keluarga extends Model
             ->whereNull('id_jamaah');
     }
 
+    public function transaksis()
+    {
+        return $this->hasManyThrough(
+            TransaksiPembayaran::class,
+            Jamaah::class,
+            'id_keluarga',
+            'id_jamaah',
+            'id_keluarga',
+            'id_jamaah'
+        );
+    }
+
     // ==========================================
-    // ✅ ACCESSORS - FEE AGENT PER JAMAAH (NEW)
+    // ACCESSORS - FEE AGENT
     // ==========================================
 
     public function getFeeAgentPerJamaahAttribute()
@@ -108,14 +123,14 @@ class Keluarga extends Model
         return $this->jamaahs->count();
     }
 
-    // ==========================================
-    // ACCESSORS
-    // ==========================================
-
     public function getFeeAgentFormattedAttribute()
     {
         return 'Rp ' . number_format($this->fee_agent, 0, ',', '.');
     }
+
+    // ==========================================
+    // ACCESSORS - STATUS & TAGIHAN
+    // ==========================================
 
     public function getStatusPembayaranBadgeAttribute()
     {
@@ -139,10 +154,79 @@ class Keluarga extends Model
         return 'Rp ' . number_format($this->total_dibayar, 0, ',', '.');
     }
 
+    public function getSisaTagihanAttribute($value)
+    {
+        // ✅ Paksa non-negatif untuk data lama
+        return max(0, (int) $value);
+    }
+
     public function getSisaTagihanFormattedAttribute()
     {
         return 'Rp ' . number_format($this->sisa_tagihan, 0, ',', '.');
     }
+
+    // ==========================================
+    // ✅ ACCESSORS - REFUND / KELEBIHAN BAYAR
+    // ==========================================
+
+    public function getKelebihanBayarAttribute()
+    {
+        $dibayar = (int) ($this->total_dibayar ?? 0);
+        $tagihan = (int) ($this->total_tagihan_setelah_diskon ?? 0);
+        return max(0, $dibayar - $tagihan);
+    }
+
+    public function getKelebihanBayarFormattedAttribute()
+    {
+        return 'Rp ' . number_format($this->kelebihan_bayar, 0, ',', '.');
+    }
+
+    public function getSisaKelebihanBayarAttribute()
+    {
+        if (isset($this->attributes['sisa_kelebihan_bayar'])) {
+            return max(0, (int) $this->attributes['sisa_kelebihan_bayar']);
+        }
+        return max(0, $this->kelebihan_bayar - (int) ($this->total_refund ?? 0));
+    }
+
+    public function getSisaKelebihanBayarFormattedAttribute()
+    {
+        return 'Rp ' . number_format($this->sisa_kelebihan_bayar, 0, ',', '.');
+    }
+
+    public function getTotalRefundFormattedAttribute()
+    {
+        return 'Rp ' . number_format((int) ($this->total_refund ?? 0), 0, ',', '.');
+    }
+
+    public function getHasKelebihanBayarAttribute()
+    {
+        return $this->sisa_kelebihan_bayar > 0;
+    }
+
+    public function getKelebihanBayarBadgeAttribute()
+    {
+        if ($this->sisa_kelebihan_bayar > 0) {
+            return '<span class="px-2 py-1 rounded-full text-xs font-bold bg-amber-100 text-amber-700">
+                        <i class="fas fa-hand-holding-usd mr-1"></i> Kelebihan: ' . $this->sisa_kelebihan_bayar_formatted . '
+                    </span>';
+        }
+        return '';
+    }
+
+    public function getNetDibayarAttribute()
+    {
+        return max(0, (int) ($this->total_dibayar ?? 0) - (int) ($this->total_refund ?? 0));
+    }
+
+    public function getNetDibayarFormattedAttribute()
+    {
+        return 'Rp ' . number_format($this->net_dibayar, 0, ',', '.');
+    }
+
+    // ==========================================
+    // ACCESSORS - LAINNYA
+    // ==========================================
 
     public function getKodeKeluargaFormattedAttribute()
     {
@@ -171,10 +255,6 @@ class Keluarga extends Model
         return 'Rp ' . number_format($this->upgrade_hotel_per_jamaah, 0, ',', '.');
     }
 
-    // ==========================================
-    // DISKON & TAGIHAN
-    // ==========================================
-
     public function getTotalDiskonFormattedAttribute()
     {
         return 'Rp ' . number_format($this->total_diskon ?? 0, 0, ',', '.');
@@ -190,25 +270,12 @@ class Keluarga extends Model
         return 'Rp ' . number_format($this->total_tagihan_sebelum_diskon ?? 0, 0, ',', '.');
     }
 
-    // ==========================================
-    // KEBERANGKATAN & HARGA
-    // ==========================================
-
     public function getBulanKeberangkatanNamaAttribute()
     {
         $bulanNama = [
-            1 => 'Januari',
-            2 => 'Februari',
-            3 => 'Maret',
-            4 => 'April',
-            5 => 'Mei',
-            6 => 'Juni',
-            7 => 'Juli',
-            8 => 'Agustus',
-            9 => 'September',
-            10 => 'Oktober',
-            11 => 'November',
-            12 => 'Desember'
+            1 => 'Januari', 2 => 'Februari', 3 => 'Maret', 4 => 'April',
+            5 => 'Mei', 6 => 'Juni', 7 => 'Juli', 8 => 'Agustus',
+            9 => 'September', 10 => 'Oktober', 11 => 'November', 12 => 'Desember'
         ];
         return $bulanNama[$this->bulan_keberangkatan] ?? '-';
     }
@@ -216,18 +283,9 @@ class Keluarga extends Model
     public function getBulanHargaNamaAttribute()
     {
         $bulanNama = [
-            1 => 'Januari',
-            2 => 'Februari',
-            3 => 'Maret',
-            4 => 'April',
-            5 => 'Mei',
-            6 => 'Juni',
-            7 => 'Juli',
-            8 => 'Agustus',
-            9 => 'September',
-            10 => 'Oktober',
-            11 => 'November',
-            12 => 'Desember'
+            1 => 'Januari', 2 => 'Februari', 3 => 'Maret', 4 => 'April',
+            5 => 'Mei', 6 => 'Juni', 7 => 'Juli', 8 => 'Agustus',
+            9 => 'September', 10 => 'Oktober', 11 => 'November', 12 => 'Desember'
         ];
         return $bulanNama[$this->bulan_harga] ?? '-';
     }

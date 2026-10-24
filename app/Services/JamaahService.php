@@ -10,11 +10,18 @@ use App\Models\ProdukHargaBulanan;
 use App\Models\ProdukKeberangkatan;
 use App\Models\KotaAsal;
 use App\Models\Diskon;
+use App\Models\JenisTransaksi;
+use App\Models\TransaksiPembayaran;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 
 class JamaahService
 {
+    // ==========================================
+    // READ
+    // ==========================================
     public function getAll(array $filters = [])
     {
         $query = Jamaah::with([
@@ -45,7 +52,6 @@ class JamaahService
             $query->where('jenis_kelamin', $filters['jenis_kelamin']);
         }
 
-        // ✅ NEW: Filter status kawin
         if (!empty($filters['status_kawin'])) {
             $query->where('status_kawin', $filters['status_kawin']);
         }
@@ -56,6 +62,10 @@ class JamaahService
             } elseif ($filters['sumber_data'] == 'jamaah') {
                 $query->whereNull('id_keluarga');
             }
+        }
+
+        if (!empty($filters['has_kelebihan'])) {
+            $query->where('sisa_kelebihan_bayar', '>', 0);
         }
 
         return $query->orderBy('created_at', 'desc')->paginate(10);
@@ -95,7 +105,7 @@ class JamaahService
         return DB::transaction(function () use ($data) {
             if (empty($data['id_keberangkatan'])) {
                 $produk = ProdukPaket::where('nama_produk', $data['produk_paket'])->first();
-                $kodeProduk = $produk ? 'PKT' : 'PKT';
+                $kodeProduk = $produk ? ($produk->kode_produk ?? 'PKT') : 'PKT';
                 $data['id_keberangkatan'] = $this->generateIdKeberangkatan($kodeProduk);
             }
 
@@ -116,7 +126,6 @@ class JamaahService
                 $data['pendampingan_fee_petugas'] = 0;
             }
 
-            // ✅ Status kawin - default null jika kosong
             $data['status_kawin'] = $data['status_kawin'] ?? null;
 
             $diskonData = null;
@@ -129,6 +138,7 @@ class JamaahService
             }
 
             $data['total_dibayar'] = (int) ($data['total_dibayar'] ?? 0);
+            $data['total_refund'] = 0;
 
             $keberangkatanData = $data['keberangkatan_data'] ?? [];
             unset($data['keberangkatan_data']);
@@ -177,11 +187,22 @@ class JamaahService
             $data['nilai_diskon'] = $nilaiDiskon;
             $data['total_diskon'] = $nilaiDiskon;
             $data['total_tagihan_setelah_diskon'] = $totalTagihanSetelahDiskon;
-            $data['sisa_tagihan'] = $totalTagihanSetelahDiskon - $data['total_dibayar'];
-            $data['status_pembayaran'] = $this->determinePaymentStatus(
-                $data['total_dibayar'],
-                $totalTagihanSetelahDiskon
-            );
+
+            // ✅ Sisa tagihan TIDAK BOLEH negatif — kalau sudah bayar lebih, sisa = 0
+$sisa = max(0, $totalTagihanSetelahDiskon - $data['total_dibayar']);
+$kelebihan = max(0, $data['total_dibayar'] - $totalTagihanSetelahDiskon);
+
+$data['sisa_tagihan'] = $sisa;
+$data['sisa_kelebihan_bayar'] = max(0, $kelebihan - (int) ($data['total_refund'] ?? 0));
+
+            if ($sisa <= 0) {
+                $data['status_pembayaran'] = 'Lunas';
+            } else {
+                $data['status_pembayaran'] = $this->determinePaymentStatus(
+                    $data['total_dibayar'],
+                    $totalTagihanSetelahDiskon
+                );
+            }
 
             $jamaah = Jamaah::create($data);
 
@@ -241,6 +262,10 @@ class JamaahService
         return DB::transaction(function () use ($id, $data) {
             $jamaah = $this->getById($id);
 
+            $hargaProdukLama   = (int) $jamaah->harga_produk;
+            $produkLama        = $jamaah->produk_paket;
+            $totalTagihanLama  = (int) $jamaah->total_tagihan_setelah_diskon;
+
             $kota = KotaAsal::where('nama_kota', $data['kota_asal'] ?? null)->first();
             if ($kota) {
                 $data['pulau'] = $kota->pulau;
@@ -258,7 +283,6 @@ class JamaahService
                 $data['pendampingan_fee_petugas'] = 0;
             }
 
-            // ✅ Status kawin - default null jika kosong
             $data['status_kawin'] = $data['status_kawin'] ?? null;
 
             $diskonData = null;
@@ -270,7 +294,7 @@ class JamaahService
                 }
             }
 
-            $data['total_dibayar'] = (int) ($data['total_dibayar'] ?? 0);
+            $data['total_dibayar'] = (int) ($data['total_dibayar'] ?? $jamaah->total_dibayar);
 
             if ($jamaah->id_diskon && $jamaah->id_diskon != ($data['id_diskon'] ?? null)) {
                 $oldDiskon = Diskon::find($jamaah->id_diskon);
@@ -327,11 +351,22 @@ class JamaahService
             $data['nilai_diskon'] = $nilaiDiskon;
             $data['total_diskon'] = $nilaiDiskon;
             $data['total_tagihan_setelah_diskon'] = $totalTagihanSetelahDiskon;
-            $data['sisa_tagihan'] = $totalTagihanSetelahDiskon - $data['total_dibayar'];
-            $data['status_pembayaran'] = $this->determinePaymentStatus(
-                $data['total_dibayar'],
-                $totalTagihanSetelahDiskon
-            );
+
+           $totalDibayar = (int) $data['total_dibayar'];
+$totalRefund  = (int) ($jamaah->total_refund ?? 0);
+
+// ✅ Sisa tagihan TIDAK BOLEH negatif
+$sisa = max(0, $totalTagihanSetelahDiskon - $totalDibayar);
+$kelebihan = max(0, $totalDibayar - $totalTagihanSetelahDiskon);
+
+$data['sisa_tagihan'] = $sisa;
+$data['sisa_kelebihan_bayar'] = max(0, $kelebihan - $totalRefund);
+
+            if ($sisa <= 0) {
+                $data['status_pembayaran'] = 'Lunas';
+            } else {
+                $data['status_pembayaran'] = $this->determinePaymentStatus($totalDibayar, $totalTagihanSetelahDiskon);
+            }
 
             $jamaah->update($data);
 
@@ -372,6 +407,23 @@ class JamaahService
                 }
             } else {
                 $jamaah->keberangkatan()->detach();
+            }
+
+            $produkBaru = $data['produk_paket'] ?? $produkLama;
+            $hargaBerubah = ($hargaProduk !== $hargaProdukLama) || ($produkBaru !== $produkLama);
+
+            if ($hargaBerubah) {
+                $this->logPerubahanProduk($jamaah, [
+                    'produk_lama'   => $produkLama,
+                    'produk_baru'   => $produkBaru,
+                    'harga_lama'    => $hargaProdukLama,
+                    'harga_baru'    => $hargaProduk,
+                    'tagihan_lama'  => $totalTagihanLama,
+                    'tagihan_baru'  => $totalTagihanSetelahDiskon,
+                    'dibayar'       => $totalDibayar,
+                    'selisih'       => $totalDibayar - $totalTagihanSetelahDiskon,
+                    'kelebihan'     => $kelebihan,
+                ]);
             }
 
             if ($jamaah->id_keluarga) {
@@ -438,6 +490,110 @@ class JamaahService
         });
     }
 
+    // ==========================================
+    // LOG PERUBAHAN PRODUK / HARGA
+    // ==========================================
+    private function logPerubahanProduk(Jamaah $jamaah, array $info)
+    {
+        $dibayar   = (int) $info['dibayar'];
+        $tagihan   = (int) $info['tagihan_baru'];
+        $selisih   = (int) $info['selisih'];
+        $kelebihan = (int) $info['kelebihan'];
+
+        if ($selisih > 0) {
+            $status = 'KELEBIHAN BAYAR';
+            $pesan  = 'Ada kelebihan bayar sebesar Rp ' . number_format($kelebihan, 0, ',', '.') . ' — bisa diproses refund.';
+        } elseif ($selisih < 0) {
+            $status = 'SISA TAGIHAN';
+            $pesan  = 'Sisa tagihan sebesar Rp ' . number_format(abs($selisih), 0, ',', '.') . '.';
+        } else {
+            $status = 'PAS';
+            $pesan  = 'Pembayaran pas dengan tagihan baru (Lunas).';
+        }
+
+        $keterangan = sprintf(
+            '[PINDAH PRODUK] %s → %s. Harga: Rp %s → Rp %s. Tagihan: Rp %s → Rp %s. Dibayar: Rp %s. Status: %s. %s',
+            $info['produk_lama'] ?? '-',
+            $info['produk_baru'] ?? '-',
+            number_format((int) $info['harga_lama'], 0, ',', '.'),
+            number_format((int) $info['harga_baru'], 0, ',', '.'),
+            number_format((int) $info['tagihan_lama'], 0, ',', '.'),
+            number_format($tagihan, 0, ',', '.'),
+            number_format($dibayar, 0, ',', '.'),
+            $status,
+            $pesan
+        );
+
+        Log::info($keterangan, [
+            'id_jamaah' => $jamaah->id_jamaah,
+            'info'      => $info,
+        ]);
+    }
+
+    // ==========================================
+    // ✅ PROSES REFUND (BERDASARKAN NAMA, TANPA KOLOM `kode`)
+    // ==========================================
+    public function prosesRefund($jamaahId, array $data)
+    {
+        return DB::transaction(function () use ($jamaahId, $data) {
+            $jamaah = $this->getById($jamaahId);
+
+            $jumlahRefund = (int) ($data['jumlah_refund'] ?? 0);
+            $maxRefund    = (int) $jamaah->sisa_kelebihan_bayar;
+
+            if ($jumlahRefund <= 0) {
+                throw new \Exception('Jumlah refund harus lebih dari 0.');
+            }
+
+            if ($jumlahRefund > $maxRefund) {
+                throw new \Exception(
+                    'Jumlah refund melebihi sisa kelebihan bayar. Maksimal: Rp ' .
+                    number_format($maxRefund, 0, ',', '.')
+                );
+            }
+
+            // ✅ Cari jenis transaksi REFUND berdasarkan NAMA (tidak ada kolom kode)
+            $jenisRefund = JenisTransaksi::where(function ($q) {
+                $q->where('nama', 'like', '%refund%')
+                    ->orWhere('nama', 'like', '%pengembalian%');
+            })->first();
+
+            // Kalau belum ada → auto-create
+            if (!$jenisRefund) {
+                $jenisRefund = JenisTransaksi::create([
+                    'nama'       => 'Pengembalian Dana (Refund)',
+                    'keterangan' => 'Transaksi pengembalian dana ke jamaah (kelebihan bayar / pindah produk)',
+                ]);
+            }
+
+            TransaksiPembayaran::create([
+                'id_jamaah'            => $jamaahId,
+                'id_metode_pembayaran' => $data['id_metode_pembayaran'],
+                'id_jenis_transaksi'   => $jenisRefund->id_jenis,
+                'tanggal_transaksi'    => $data['tanggal_transaksi'] ?? now()->toDateString(),
+                'jumlah_bayar'         => $jumlahRefund,
+                'jenis_mutasi'         => 'keluar',
+                'bukti_pembayaran'     => $data['bukti_pembayaran'] ?? null,
+                'keterangan'           => $data['keterangan'] ?? 'Pengembalian kelebihan bayar',
+                'keterangan_refund'    => $data['keterangan_refund'] ?? null,
+                'created_by'           => Auth::user()->name ?? 'System',
+            ]);
+
+            $totalRefundBaru   = (int) ($jamaah->total_refund ?? 0) + $jumlahRefund;
+            $sisaKelebihanBaru = max(0, $jamaah->kelebihan_bayar - $totalRefundBaru);
+
+            $jamaah->update([
+                'total_refund'         => $totalRefundBaru,
+                'sisa_kelebihan_bayar' => $sisaKelebihanBaru,
+            ]);
+
+            return $jamaah->fresh();
+        });
+    }
+
+    // ==========================================
+    // HELPERS
+    // ==========================================
     private function validateKuota(array $keberangkatanData, $excludeJamaahId = null)
     {
         foreach ($keberangkatanData as $item) {

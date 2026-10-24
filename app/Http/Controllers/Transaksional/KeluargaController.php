@@ -12,6 +12,7 @@ use App\Models\ProdukKeberangkatan;
 use App\Models\ProdukHargaBulanan;
 use App\Models\Hotel;
 use App\Models\Kamar;
+use App\Models\JenisTransaksi;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Auth;
@@ -28,9 +29,12 @@ class KeluargaController extends Controller
         $this->service = $service;
     }
 
+    // ==========================================
+    // INDEX
+    // ==========================================
     public function index(Request $request)
     {
-        $filters = $request->only(['search', 'status_pembayaran']);
+        $filters = $request->only(['search', 'status_pembayaran', 'has_kelebihan']);
         $data = $this->service->getAll($filters);
 
         if ($request->ajax()) {
@@ -40,6 +44,9 @@ class KeluargaController extends Controller
         return view('keluargas.index', compact('data'));
     }
 
+    // ==========================================
+    // CREATE
+    // ==========================================
     public function create()
     {
         $produkPakets = $this->service->getProdukPakets();
@@ -57,6 +64,9 @@ class KeluargaController extends Controller
         ));
     }
 
+    // ==========================================
+    // STORE
+    // ==========================================
     public function store(Request $request)
     {
         $validated = $request->validate([
@@ -85,7 +95,6 @@ class KeluargaController extends Controller
             'jamaahs.*.hubungan_keluarga' => 'nullable|string|max:30',
             'jamaahs.*.is_kepala_keluarga' => 'nullable|boolean',
             'jamaahs.*.jenis_kelamin' => 'required|in:L,P',
-            // ✅ NEW: Status kawin per jamaah
             'jamaahs.*.status_kawin' => 'nullable|in:Belum Kawin,Kawin,Cerai Hidup,Cerai Mati',
             'jamaahs.*.telepon' => 'required|string|max:20',
             'jamaahs.*.wa' => 'required|string|max:20',
@@ -97,7 +106,6 @@ class KeluargaController extends Controller
             'jamaahs.*.pulau' => 'nullable|string|max:20',
             'jamaahs.*.bandara_keberangkatan' => 'nullable|string|max:50',
             'jamaahs.*.nomor_paspor' => 'nullable|string|max:20',
-            // ✅ NEW: Field passport lengkap (sama dengan form jamaah)
             'jamaahs.*.paspor_terbit' => 'nullable|date',
             'jamaahs.*.paspor_expired' => 'nullable|date',
             'jamaahs.*.paspor_diterbitkan_di' => 'nullable|string|max:100',
@@ -145,6 +153,9 @@ class KeluargaController extends Controller
         }
     }
 
+    // ==========================================
+    // SHOW
+    // ==========================================
     public function show($id)
     {
         $keluarga = $this->service->getById($id);
@@ -170,7 +181,10 @@ class KeluargaController extends Controller
         return view('keluargas.show', compact('keluarga', 'transaksis', 'rekapJamaah'));
     }
 
-    public function edit($id)
+    // ==========================================
+    // EDIT
+    // ==========================================
+       public function edit($id)
     {
         $keluarga = $this->service->getById($id);
         $produkPakets = $this->service->getProdukPakets();
@@ -179,16 +193,85 @@ class KeluargaController extends Controller
         $diskons = $this->service->getDiskons();
         $hotelOptions = Hotel::orderBy('kota')->orderBy('nama_hotel')->get();
 
+        $jamaahData = old('jamaahs');
+
+        if (!$jamaahData) {
+            $jamaahData = $keluarga->jamaahs->map(function ($jamaah) {
+                return [
+                    'id_jamaah' => $jamaah->id_jamaah,
+                    'nama_lengkap' => $jamaah->nama_lengkap,
+                    'nik' => $jamaah->nik,
+                    'nama_ayah' => $jamaah->nama_ayah,
+                    'pekerjaan' => $jamaah->pekerjaan,
+                    'hubungan_keluarga' => $jamaah->hubungan_keluarga,
+                    'is_kepala_keluarga' => $jamaah->is_kepala_keluarga,
+                    'jenis_kelamin' => $jamaah->jenis_kelamin,
+                    'status_kawin' => $jamaah->status_kawin,
+                    'telepon' => $jamaah->telepon,
+                    'wa' => $jamaah->wa,
+                    'alamat' => $jamaah->alamat,
+                    'kota_kabupaten' => $jamaah->kota_kabupaten,
+                    'kecamatan' => $jamaah->kecamatan,
+                    'kelurahan' => $jamaah->kelurahan,
+                    'kota_asal' => $jamaah->kota_asal,
+                    'pulau' => $jamaah->pulau,
+                    'bandara_keberangkatan' => $jamaah->bandara_keberangkatan,
+                    'nomor_paspor' => $jamaah->nomor_paspor,
+                    'paspor_terbit' => $jamaah->paspor_terbit ? $jamaah->paspor_terbit->format('Y-m-d') : null,
+                    'paspor_expired' => $jamaah->paspor_expired ? $jamaah->paspor_expired->format('Y-m-d') : null,
+                    'paspor_diterbitkan_di' => $jamaah->paspor_diterbitkan_di,
+                    'tempat_lahir' => $jamaah->tempat_lahir,
+                    'tanggal_lahir' => $jamaah->tanggal_lahir ? $jamaah->tanggal_lahir->format('Y-m-d') : null,
+                    'is_pembuatan_passport' => $jamaah->is_pembuatan_passport,
+                    'pendampingan_fee' => $jamaah->pendampingan_fee,
+                    'pendampingan_fee_petugas' => $jamaah->pendampingan_fee_petugas,
+                    'file_ktp_kk' => $jamaah->file_ktp_kk,
+                    'file_vaksin' => $jamaah->file_vaksin,
+                    'file_visa' => $jamaah->file_visa,
+                    'file_paspor' => $jamaah->file_paspor,
+                    'upgrade_hotels' => $jamaah->upgradeHotels->map(function ($u) {
+                        return [
+                            'id_hotel' => $u->id_hotel,
+                            'id_kamar' => $u->id_kamar,
+                            'tipe_kamar' => $u->tipe_kamar,
+                            'jumlah_kamar' => $u->jumlah_kamar,
+                            'durasi_menginap' => $u->durasi_menginap,
+                            'harga_per_malam' => $u->harga_per_malam,
+                        ];
+                    })->toArray(),
+                ];
+            })->toArray();
+        }
+
+        if (empty($jamaahData)) {
+            $jamaahData = [[
+                'id_jamaah' => '', 'nama_lengkap' => '', 'nik' => '', 'nama_ayah' => '',
+                'pekerjaan' => '', 'hubungan_keluarga' => '', 'is_kepala_keluarga' => true,
+                'jenis_kelamin' => '', 'status_kawin' => '', 'telepon' => '', 'wa' => '',
+                'alamat' => '', 'kota_kabupaten' => '', 'kecamatan' => '', 'kelurahan' => '',
+                'kota_asal' => '', 'pulau' => '', 'bandara_keberangkatan' => '',
+                'nomor_paspor' => '', 'paspor_terbit' => null, 'paspor_expired' => null,
+                'paspor_diterbitkan_di' => '', 'tempat_lahir' => '', 'tanggal_lahir' => '',
+                'is_pembuatan_passport' => false, 'pendampingan_fee' => 0,
+                'pendampingan_fee_petugas' => 0, 'file_ktp_kk' => null, 'file_vaksin' => null,
+                'file_visa' => null, 'file_paspor' => null, 'upgrade_hotels' => [],
+            ]];
+        }
+
         return view('keluargas.edit', compact(
             'keluarga',
             'produkPakets',
             'kotaAsals',
             'hubunganOptions',
             'diskons',
-            'hotelOptions'
+            'hotelOptions',
+            'jamaahData'
         ));
     }
 
+    // ==========================================
+    // UPDATE
+    // ==========================================
     public function update(Request $request, $id)
     {
         $validated = $request->validate([
@@ -218,7 +301,6 @@ class KeluargaController extends Controller
             'jamaahs.*.hubungan_keluarga' => 'nullable|string|max:30',
             'jamaahs.*.is_kepala_keluarga' => 'nullable|boolean',
             'jamaahs.*.jenis_kelamin' => 'required|in:L,P',
-            // ✅ NEW: Status kawin per jamaah
             'jamaahs.*.status_kawin' => 'nullable|in:Belum Kawin,Kawin,Cerai Hidup,Cerai Mati',
             'jamaahs.*.telepon' => 'required|string|max:20',
             'jamaahs.*.wa' => 'required|string|max:20',
@@ -230,7 +312,6 @@ class KeluargaController extends Controller
             'jamaahs.*.pulau' => 'nullable|string|max:20',
             'jamaahs.*.bandara_keberangkatan' => 'nullable|string|max:50',
             'jamaahs.*.nomor_paspor' => 'nullable|string|max:20',
-            // ✅ NEW: Field passport lengkap
             'jamaahs.*.paspor_terbit' => 'nullable|date',
             'jamaahs.*.paspor_expired' => 'nullable|date',
             'jamaahs.*.paspor_diterbitkan_di' => 'nullable|string|max:100',
@@ -267,8 +348,14 @@ class KeluargaController extends Controller
         try {
             $keluarga = $this->service->update($id, $validated);
 
+            $msg = "Keluarga '{$keluarga->nama_keluarga}' berhasil diperbarui!";
+
+            if ($keluarga->sisa_kelebihan_bayar > 0) {
+                $msg .= " ⚠️ Ada kelebihan bayar: {$keluarga->sisa_kelebihan_bayar_formatted} — silakan proses refund di halaman pembayaran.";
+            }
+
             return redirect()->route('transaksional.keluarga.index')
-                ->with('success', "Keluarga '{$keluarga->nama_keluarga}' berhasil diperbarui!");
+                ->with('success', $msg);
         } catch (\Exception $e) {
             $this->cleanupUploadedFiles($validated);
 
@@ -291,6 +378,9 @@ class KeluargaController extends Controller
         }
     }
 
+    // ==========================================
+    // DESTROY
+    // ==========================================
     public function destroy($id)
     {
         $nama = $this->service->delete($id);
@@ -299,17 +389,26 @@ class KeluargaController extends Controller
             ->with('success', "Keluarga '{$nama}' berhasil dihapus!");
     }
 
+    // ==========================================
+    // PEMBAYARAN
+    // ==========================================
     public function pembayaran($id)
     {
         $keluarga = $this->service->getById($id);
         $metodePembayarans = MetodePembayaran::active()->get();
-        $jenisTransaksis = \App\Models\JenisTransaksi::all();
+        $jenisTransaksis = JenisTransaksi::all();
 
         return view('keluargas.pembayaran', compact('keluarga', 'metodePembayarans', 'jenisTransaksis'));
     }
 
+    // ==========================================
+    // BAYAR
+    // ==========================================
     public function bayar(Request $request, $id)
     {
+        $jumlahRaw = preg_replace('/[^\d]/', '', $request->input('jumlah_bayar'));
+        $request->merge(['jumlah_bayar' => (int) $jumlahRaw]);
+
         $validated = $request->validate([
             'id_metode_pembayaran' => 'required|exists:metode_pembayarans,id_metode',
             'id_jenis_transaksi' => 'required|exists:jenis_transaksis,id_jenis',
@@ -323,14 +422,21 @@ class KeluargaController extends Controller
         $totalTagihan = $keluarga->total_tagihan_setelah_diskon;
         $totalDibayarSaatIni = $keluarga->total_dibayar;
         $jumlahBayar = $validated['jumlah_bayar'];
-        $jenisTransaksi = \App\Models\JenisTransaksi::find($validated['id_jenis_transaksi']);
+        $jenisTransaksi = JenisTransaksi::find($validated['id_jenis_transaksi']);
 
-        if ($jenisTransaksi->kode == 'LUNAS' && $jumlahBayar < ($totalTagihan - $totalDibayarSaatIni)) {
+        // ✅ Cek pelunasan via nama (bukan kode)
+        $namaJenis = strtolower(trim((string) $jenisTransaksi->nama));
+        $isLunas = str_contains($namaJenis, 'lunas') || str_contains($namaJenis, 'pelunasan');
+        $isDp = str_contains($namaJenis, 'down payment') || preg_match('/\bdp\b/', $namaJenis) || str_contains($namaJenis, 'pembayaran awal');
+
+        $sisaSaatIni = max(0, $totalTagihan - $totalDibayarSaatIni);
+
+        if ($isLunas && $jumlahBayar < $sisaSaatIni) {
             return redirect()->back()
-                ->with('error', 'Jumlah bayar untuk pelunasan harus sebesar sisa tagihan: ' . number_format($totalTagihan - $totalDibayarSaatIni, 0, ',', '.'));
+                ->with('error', 'Jumlah bayar untuk pelunasan harus sebesar sisa tagihan: ' . number_format($sisaSaatIni, 0, ',', '.'));
         }
 
-        if ($jumlahBayar > ($totalTagihan - $totalDibayarSaatIni)) {
+        if ($jumlahBayar > $sisaSaatIni) {
             return redirect()->back()
                 ->with('error', 'Jumlah bayar melebihi sisa tagihan!');
         }
@@ -343,11 +449,15 @@ class KeluargaController extends Controller
         }
 
         $totalDibayarBaru = $totalDibayarSaatIni + $jumlahBayar;
-        $sisaTagihanBaru = $totalTagihan - $totalDibayarBaru;
+
+        // ✅ Sisa tagihan tidak boleh negatif
+        $sisaTagihanBaru = max(0, $totalTagihan - $totalDibayarBaru);
+        $kelebihanBaru = max(0, $totalDibayarBaru - $totalTagihan);
+        $totalRefund = (int) ($keluarga->total_refund ?? 0);
 
         if ($sisaTagihanBaru <= 0) {
             $status = 'Lunas';
-        } elseif ($jenisTransaksi->kode == 'DP') {
+        } elseif ($isDp) {
             $status = 'DP';
         } else {
             $status = 'Setoran';
@@ -356,18 +466,32 @@ class KeluargaController extends Controller
         $keluarga->update([
             'total_dibayar' => $totalDibayarBaru,
             'sisa_tagihan' => $sisaTagihanBaru,
-            'status_pembayaran' => $status
+            'status_pembayaran' => $status,
+            'sisa_kelebihan_bayar' => max(0, $kelebihanBaru - $totalRefund),
         ]);
 
+        // Distribusi ke jamaah secara proporsional
         $jamaahs = $keluarga->jamaahs;
         $totalTagihanKeluarga = $keluarga->total_tagihan_setelah_diskon;
+        $sisaPembagian = $jumlahBayar;
 
-        foreach ($jamaahs as $jamaah) {
-            $proporsi = $jamaah->total_tagihan_setelah_diskon / $totalTagihanKeluarga;
-            $bayarPerJamaah = $jumlahBayar * $proporsi;
+        foreach ($jamaahs as $index => $jamaah) {
+            if ($index === $jamaahs->count() - 1) {
+                $bayarPerJamaah = $sisaPembagian;
+            } else {
+                $proporsi = $totalTagihanKeluarga > 0
+                    ? $jamaah->total_tagihan_setelah_diskon / $totalTagihanKeluarga
+                    : 1 / max(1, $jamaahs->count());
+                $bayarPerJamaah = (int) round($jumlahBayar * $proporsi);
+                $sisaPembagian -= $bayarPerJamaah;
+            }
+            $bayarPerJamaah = max(0, $bayarPerJamaah);
 
             $totalDibayarJamaah = $jamaah->total_dibayar + $bayarPerJamaah;
-            $sisaTagihanJamaah = $jamaah->total_tagihan_setelah_diskon - $totalDibayarJamaah;
+            // ✅ Sisa jamaah non-negatif
+            $sisaTagihanJamaah = max(0, $jamaah->total_tagihan_setelah_diskon - $totalDibayarJamaah);
+            $kelebihanJamaah = max(0, $totalDibayarJamaah - $jamaah->total_tagihan_setelah_diskon);
+            $totalRefundJamaah = (int) ($jamaah->total_refund ?? 0);
 
             if ($sisaTagihanJamaah <= 0) {
                 $statusJamaah = 'Lunas';
@@ -380,52 +504,121 @@ class KeluargaController extends Controller
             $jamaah->update([
                 'total_dibayar' => $totalDibayarJamaah,
                 'sisa_tagihan' => $sisaTagihanJamaah,
-                'status_pembayaran' => $statusJamaah
+                'status_pembayaran' => $statusJamaah,
+                'sisa_kelebihan_bayar' => max(0, $kelebihanJamaah - $totalRefundJamaah),
             ]);
 
-            TransaksiPembayaran::create([
-                'id_jamaah' => $jamaah->id_jamaah,
-                'id_metode_pembayaran' => $validated['id_metode_pembayaran'],
-                'id_jenis_transaksi' => $validated['id_jenis_transaksi'],
-                'tanggal_transaksi' => $validated['tanggal_transaksi'],
-                'jumlah_bayar' => round($bayarPerJamaah),
-                'bukti_pembayaran' => $buktiPath,
-                'keterangan' => $validated['keterangan'] . ' (Dari pembayaran keluarga)',
-                'created_by' => Auth::user()->name ?? 'System',
-            ]);
+            if ($bayarPerJamaah > 0) {
+                TransaksiPembayaran::create([
+                    'id_jamaah' => $jamaah->id_jamaah,
+                    'id_metode_pembayaran' => $validated['id_metode_pembayaran'],
+                    'id_jenis_transaksi' => $validated['id_jenis_transaksi'],
+                    'tanggal_transaksi' => $validated['tanggal_transaksi'],
+                    'jumlah_bayar' => $bayarPerJamaah,
+                    'jenis_mutasi' => 'masuk',
+                    'bukti_pembayaran' => $buktiPath,
+                    'keterangan' => ($validated['keterangan'] ?? '') . ' (Dari pembayaran keluarga)',
+                    'created_by' => Auth::user()->name ?? 'System',
+                ]);
+            }
         }
 
         return redirect()->route('transaksional.keluarga.show', $id)
             ->with('success', "Pembayaran keluarga sebesar Rp " . number_format($jumlahBayar, 0, ',', '.') . " berhasil dan telah masuk ke riwayat pembayaran jamaah masing-masing!");
     }
 
+    // ==========================================
+    // ✅ PROSES REFUND (PENGEMBALIAN DANA)
+    // ==========================================
+    public function prosesRefund(Request $request, $id)
+    {
+        $jumlahRefundRaw = preg_replace('/[^\d]/', '', $request->input('jumlah_refund'));
+        $request->merge(['jumlah_refund' => (int) $jumlahRefundRaw]);
+
+        $validated = $request->validate([
+            'id_metode_pembayaran' => 'required|exists:metode_pembayarans,id_metode',
+            'tanggal_transaksi'    => 'required|date',
+            'jumlah_refund'        => 'required|integer|min:1',
+            'bukti_pembayaran'     => 'nullable|file|mimes:jpeg,png,jpg,pdf|max:2048',
+            'keterangan'           => 'nullable|string',
+            'keterangan_refund'    => 'nullable|string',
+        ]);
+
+        $keluarga = $this->service->getById($id);
+
+        if ($validated['jumlah_refund'] > (int) $keluarga->sisa_kelebihan_bayar) {
+            return redirect()->back()
+                ->with('error', 'Jumlah refund melebihi sisa kelebihan bayar (maks: ' . $keluarga->sisa_kelebihan_bayar_formatted . ').');
+        }
+
+        $buktiPath = null;
+        if ($request->hasFile('bukti_pembayaran')) {
+            $file = $request->file('bukti_pembayaran');
+            $filename = time() . '_refund_keluarga_' . $keluarga->id_keluarga . '.' . $file->getClientOriginalExtension();
+            $buktiPath = $file->storeAs('jamaah/bukti-refund', $filename, 'public');
+        }
+
+        try {
+            $validated['bukti_pembayaran'] = $buktiPath;
+            $this->service->prosesRefund($id, $validated);
+
+            return redirect()->route('transaksional.keluarga.pembayaran', $id)
+                ->with('success', 'Refund sebesar Rp ' . number_format($validated['jumlah_refund'], 0, ',', '.') . ' berhasil diproses!');
+        } catch (\Exception $e) {
+            if ($buktiPath && Storage::disk('public')->exists($buktiPath)) {
+                Storage::disk('public')->delete($buktiPath);
+            }
+            return redirect()->back()
+                ->withInput()
+                ->with('error', 'Gagal memproses refund: ' . $e->getMessage());
+        }
+    }
+
+    // ==========================================
+    // HAPUS TRANSAKSI
+    // ==========================================
     public function hapusTransaksi($idTransaksi)
     {
         return DB::transaction(function () use ($idTransaksi) {
             $transaksi = TransaksiPembayaran::findOrFail($idTransaksi);
+            $isRefund = ($transaksi->jenis_mutasi ?? 'masuk') === 'keluar';
 
             $jamaah = \App\Models\Jamaah::find($transaksi->id_jamaah);
             $keluarga = $jamaah ? \App\Models\Keluarga::find($jamaah->id_keluarga) : null;
 
             if ($jamaah) {
-                $totalDibayarBaru = max(0, $jamaah->total_dibayar - $transaksi->jumlah_bayar);
-                $sisaTagihanBaru = $jamaah->total_tagihan_setelah_diskon - $totalDibayarBaru;
-
-                if ($sisaTagihanBaru <= 0) {
-                    $statusJamaah = 'Lunas';
-                } elseif ($totalDibayarBaru == 0) {
-                    $statusJamaah = 'Belum Bayar';
-                } elseif ($totalDibayarBaru >= $jamaah->total_tagihan_setelah_diskon * 0.5) {
-                    $statusJamaah = 'Setoran';
+                if ($isRefund) {
+                    // ✅ Kalau yang dihapus transaksi refund, kurangi total_refund
+                    $totalRefundBaru = max(0, (int) $jamaah->total_refund - (int) $transaksi->jumlah_bayar);
+                    $sisaKelebihanBaru = max(0, $jamaah->kelebihan_bayar - $totalRefundBaru);
+                    $jamaah->update([
+                        'total_refund' => $totalRefundBaru,
+                        'sisa_kelebihan_bayar' => $sisaKelebihanBaru,
+                    ]);
                 } else {
-                    $statusJamaah = 'DP';
-                }
+                    // Transaksi masuk → kurangi total_dibayar
+                    $totalDibayarBaru = max(0, $jamaah->total_dibayar - $transaksi->jumlah_bayar);
+                    $sisaTagihanBaru = max(0, $jamaah->total_tagihan_setelah_diskon - $totalDibayarBaru);
+                    $kelebihanBaru = max(0, $totalDibayarBaru - $jamaah->total_tagihan_setelah_diskon);
+                    $totalRefundJamaah = (int) ($jamaah->total_refund ?? 0);
 
-                $jamaah->update([
-                    'total_dibayar' => $totalDibayarBaru,
-                    'sisa_tagihan' => $sisaTagihanBaru,
-                    'status_pembayaran' => $statusJamaah,
-                ]);
+                    if ($sisaTagihanBaru <= 0) {
+                        $statusJamaah = 'Lunas';
+                    } elseif ($totalDibayarBaru == 0) {
+                        $statusJamaah = 'Belum Bayar';
+                    } elseif ($totalDibayarBaru >= $jamaah->total_tagihan_setelah_diskon * 0.5) {
+                        $statusJamaah = 'Setoran';
+                    } else {
+                        $statusJamaah = 'DP';
+                    }
+
+                    $jamaah->update([
+                        'total_dibayar' => $totalDibayarBaru,
+                        'sisa_tagihan' => $sisaTagihanBaru,
+                        'status_pembayaran' => $statusJamaah,
+                        'sisa_kelebihan_bayar' => max(0, $kelebihanBaru - $totalRefundJamaah),
+                    ]);
+                }
             }
 
             if ($transaksi->bukti_pembayaran && Storage::disk('public')->exists($transaksi->bukti_pembayaran)) {
@@ -438,11 +631,16 @@ class KeluargaController extends Controller
                 $this->service->recalculateKeluarga($keluarga->id_keluarga);
             }
 
+            $msg = $isRefund ? 'Transaksi refund berhasil dihapus!' : 'Transaksi pembayaran berhasil dihapus dan total tagihan telah diperbarui.';
+
             return redirect()->route('transaksional.keluarga.show', $keluarga->id_keluarga ?? null)
-                ->with('success', 'Transaksi pembayaran berhasil dihapus dan total tagihan telah diperbarui.');
+                ->with('success', $msg);
         });
     }
 
+    // ==========================================
+    // CETAK PEMBAYARAN (PDF)
+    // ==========================================
     public function cetakPembayaran($id)
     {
         $keluarga = $this->service->getById($id);
@@ -570,6 +768,9 @@ class KeluargaController extends Controller
         ];
     }
 
+    // ==========================================
+    // AJAX — KEBERANGKATAN BY PRODUK
+    // ==========================================
     public function getKeberangkatanByProduk(Request $request)
     {
         $request->validate([
@@ -595,6 +796,9 @@ class KeluargaController extends Controller
         ]);
     }
 
+    // ==========================================
+    // AJAX — HARGA PRODUK BY BULAN
+    // ==========================================
     public function getHargaProdukByBulan(Request $request)
     {
         $request->validate([
@@ -635,6 +839,9 @@ class KeluargaController extends Controller
         ], 404);
     }
 
+    // ==========================================
+    // AJAX — KAMAR BY HOTEL
+    // ==========================================
     public function getKamarsByHotel($idHotel)
     {
         $hotel = Hotel::findOrFail($idHotel);

@@ -55,6 +55,7 @@
                                     {{ $keluarga->kode_keluarga }}
                                 </span>
                                 {!! $keluarga->status_pembayaran_badge !!}
+                                {!! $keluarga->kelebihan_bayar_badge !!}
                             </div>
 
                             <div class="flex flex-wrap items-center gap-2 mt-2">
@@ -94,6 +95,11 @@
                             <p class="text-gray-500 text-sm">
                                 <i class="fas fa-user-tie mr-1"></i> Agent: {{ $keluarga->agent ?? '-' }}
                                 <span class="ml-2 text-yellow-600">{{ $keluarga->fee_agent_formatted ?? 'Rp 0' }}</span>
+                                @if ($keluarga->jamaahs->count() > 0)
+                                    <span class="ml-1 text-xs text-gray-400">
+                                        (≈ {{ $keluarga->fee_agent_per_jamaah_formatted }} / jamaah)
+                                    </span>
+                                @endif
                             </p>
                             @if ($keluarga->catatan_tambahan)
                                 <p class="text-gray-500 text-sm mt-1">
@@ -107,10 +113,45 @@
                             <p class="text-sm text-gray-500">Total Tagihan</p>
                             <p class="text-sm text-red-600">Diskon: -{{ $keluarga->total_diskon_formatted }}</p>
                             <p class="text-sm text-green-600">{{ $keluarga->total_dibayar_formatted }} dibayar</p>
+                            @if ($keluarga->total_refund > 0)
+                                <p class="text-sm text-amber-600">−{{ $keluarga->total_refund_formatted }} refund</p>
+                            @endif
                             <p class="text-sm text-red-500">{{ $keluarga->sisa_tagihan_formatted }} sisa</p>
+                            @if ($keluarga->sisa_kelebihan_bayar > 0)
+                                <p class="text-sm text-amber-600 font-bold">
+                                    <i class="fas fa-hand-holding-usd mr-1"></i>
+                                    {{ $keluarga->sisa_kelebihan_bayar_formatted }} kelebihan
+                                </p>
+                            @endif
                         </div>
                     </div>
                 </div>
+
+                {{-- ✅ ALERT KELEBIHAN BAYAR --}}
+                @if ($keluarga->sisa_kelebihan_bayar > 0)
+                    <div
+                        class="bg-amber-50 border-2 border-amber-400 rounded-xl p-4 mb-6 flex flex-wrap items-center justify-between gap-3">
+                        <div>
+                            <p class="text-sm font-bold text-amber-800 flex items-center gap-2">
+                                <i class="fas fa-hand-holding-usd text-lg"></i>
+                                ADA KELEBIHAN BAYAR
+                            </p>
+                            <p class="text-xs text-amber-700 mt-1">
+                                Sisa kelebihan yang belum di-refund:
+                                <strong>{{ $keluarga->sisa_kelebihan_bayar_formatted }}</strong>
+                            </p>
+                            @if ($keluarga->total_refund > 0)
+                                <p class="text-xs text-gray-500 mt-1">
+                                    Sudah di-refund: <strong>{{ $keluarga->total_refund_formatted }}</strong>
+                                </p>
+                            @endif
+                        </div>
+                        <a href="{{ route('transaksional.keluarga.pembayaran', $keluarga->id_keluarga) }}"
+                            class="inline-flex items-center px-4 py-2 bg-amber-500 text-white rounded-lg hover:bg-amber-600 transition text-sm font-medium whitespace-nowrap">
+                            <i class="fas fa-undo-alt mr-2"></i> Proses Refund
+                        </a>
+                    </div>
+                @endif
 
                 <!-- Ringkasan Keuangan -->
                 <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 mb-6">
@@ -126,6 +167,9 @@
                     <div class="bg-blue-50 rounded-xl p-4 border border-blue-200 text-center">
                         <p class="text-xs text-gray-500">Total Dibayar</p>
                         <p class="text-xl font-bold text-blue-600">{{ $keluarga->total_dibayar_formatted }}</p>
+                        @if ($keluarga->total_refund > 0)
+                            <p class="text-[10px] text-gray-400 mt-1">Net: {{ $keluarga->net_dibayar_formatted }}</p>
+                        @endif
                     </div>
                     <div class="bg-red-50 rounded-xl p-4 border border-red-200 text-center">
                         <p class="text-xs text-gray-500">Sisa Tagihan</p>
@@ -169,7 +213,6 @@
                                         <th
                                             class="px-3 py-2 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
                                             JK</th>
-                                        {{-- ✅ NEW: Kolom Status Kawin --}}
                                         <th
                                             class="px-3 py-2 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
                                             Status Kawin</th>
@@ -191,6 +234,9 @@
                                         <th
                                             class="px-3 py-2 text-right text-xs font-semibold text-gray-500 uppercase tracking-wider">
                                             Passport</th>
+                                        <th
+                                            class="px-3 py-2 text-right text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                                            Fee Agent</th>
                                         <th
                                             class="px-3 py-2 text-right text-xs font-semibold text-gray-500 uppercase tracking-wider">
                                             Kotor</th>
@@ -240,7 +286,6 @@
                                                     <span class="text-xs text-gray-400">-</span>
                                                 @endif
                                             </td>
-                                            {{-- ✅ NEW: Kolom Status Kawin dengan badge berwarna --}}
                                             <td class="px-3 py-2 text-center">
                                                 {!! $jamaah->status_kawin_badge !!}
                                             </td>
@@ -254,7 +299,6 @@
                                                 @endif
                                             </td>
 
-                                            {{-- Alamat Lengkap --}}
                                             <td class="px-3 py-2 text-gray-600 text-xs max-w-xs">
                                                 <div class="text-gray-700">{{ $jamaah->alamat ?? '-' }}</div>
                                                 @if ($jamaah->kelurahan || $jamaah->kecamatan || $jamaah->kota_kabupaten)
@@ -277,6 +321,9 @@
                                             </td>
                                             <td class="px-3 py-2 text-right text-purple-600">
                                                 {{ $jamaah->total_pembuatan_passport_formatted }}
+                                            </td>
+                                            <td class="px-3 py-2 text-right text-emerald-600 font-medium">
+                                                {{ $jamaah->fee_agent_formatted }}
                                             </td>
                                             <td class="px-3 py-2 text-right text-gray-800">
                                                 {{ $jamaah->total_tagihan_sebelum_diskon_formatted }}
@@ -303,6 +350,92 @@
                                         </tr>
                                     @endforeach
                                 </tbody>
+                            </table>
+                        </div>
+                    @else
+                        <div class="text-center py-4">
+                            <p class="text-sm text-gray-400">Tidak ada jamaah dalam keluarga / kelompok ini</p>
+                        </div>
+                    @endif
+                </div>
+
+                <!-- Detail Fee Agent Per Jamaah -->
+                <div class="bg-emerald-50 rounded-xl p-5 border border-emerald-200 mb-6">
+                    <h6 class="text-sm font-semibold text-gray-700 mb-4 flex items-center justify-between">
+                        <span>
+                            <i class="fas fa-user-tie text-emerald-500 mr-2"></i> Fee Agent Per Jamaah
+                        </span>
+                        <span class="text-xs bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded-full">
+                            Total: {{ $keluarga->fee_agent_formatted }}
+                        </span>
+                    </h6>
+
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-3 mb-4">
+                        <div class="bg-white rounded-lg p-3 border border-emerald-200 text-center">
+                            <p class="text-xs text-gray-500">Total Fee Agent</p>
+                            <p class="text-sm font-bold text-emerald-600">{{ $keluarga->fee_agent_formatted }}</p>
+                        </div>
+                        <div class="bg-white rounded-lg p-3 border border-blue-200 text-center">
+                            <p class="text-xs text-gray-500">Jumlah Jamaah</p>
+                            <p class="text-sm font-bold text-blue-600">{{ $keluarga->jamaahs->count() }} Orang</p>
+                        </div>
+                        <div class="bg-white rounded-lg p-3 border border-purple-200 text-center">
+                            <p class="text-xs text-gray-500">Rata-rata / Jamaah</p>
+                            <p class="text-sm font-bold text-purple-600">{{ $keluarga->fee_agent_per_jamaah_formatted }}
+                            </p>
+                        </div>
+                    </div>
+
+                    @if ($keluarga->jamaahs->count() > 0)
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-sm bg-white rounded-lg overflow-hidden">
+                                <thead class="bg-gray-100">
+                                    <tr>
+                                        <th class="px-3 py-2 text-left text-xs font-semibold text-gray-500 uppercase">#
+                                        </th>
+                                        <th class="px-3 py-2 text-left text-xs font-semibold text-gray-500 uppercase">Nama
+                                            Jamaah</th>
+                                        <th class="px-3 py-2 text-left text-xs font-semibold text-gray-500 uppercase">Agent
+                                        </th>
+                                        <th class="px-3 py-2 text-right text-xs font-semibold text-gray-500 uppercase">Fee
+                                            Agent</th>
+                                        <th class="px-3 py-2 text-center text-xs font-semibold text-gray-500 uppercase">
+                                            Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="divide-y divide-gray-100">
+                                    @foreach ($keluarga->jamaahs as $idx => $jamaah)
+                                        <tr class="hover:bg-gray-50 transition-colors">
+                                            <td class="px-3 py-2 text-gray-500">{{ $loop->iteration }}</td>
+                                            <td class="px-3 py-2">
+                                                <span class="font-medium text-gray-700">{{ $jamaah->nama_lengkap }}</span>
+                                                @if ($jamaah->is_kepala_keluarga)
+                                                    <span
+                                                        class="ml-1 px-1.5 py-0.5 bg-yellow-100 text-yellow-700 rounded text-xs">Kepala</span>
+                                                @endif
+                                            </td>
+                                            <td class="px-3 py-2 text-gray-600 text-xs">
+                                                {{ $jamaah->agent_name_formatted }}
+                                            </td>
+                                            <td class="px-3 py-2 text-right font-bold text-emerald-600">
+                                                {{ $jamaah->fee_agent_formatted }}
+                                            </td>
+                                            <td class="px-3 py-2 text-center">
+                                                {!! $jamaah->fee_agent_badge !!}
+                                            </td>
+                                        </tr>
+                                    @endforeach
+                                </tbody>
+                                <tfoot class="bg-emerald-100 border-t-2 border-emerald-300">
+                                    <tr>
+                                        <td colspan="3" class="px-3 py-2 text-right font-bold text-gray-700">
+                                            TOTAL FEE AGENT</td>
+                                        <td class="px-3 py-2 text-right font-bold text-emerald-700">
+                                            {{ $keluarga->fee_agent_formatted }}
+                                        </td>
+                                        <td></td>
+                                    </tr>
+                                </tfoot>
                             </table>
                         </div>
                     @else
@@ -392,7 +525,6 @@
                             </span>
                         </h6>
 
-                        {{-- Ringkasan --}}
                         <div class="grid grid-cols-1 md:grid-cols-3 gap-3 mb-4">
                             <div class="bg-white rounded-lg p-3 border border-orange-200 text-center">
                                 <p class="text-xs text-gray-500">Upgrade Keluarga</p>
@@ -410,7 +542,6 @@
                             </div>
                         </div>
 
-                        {{-- Detail Upgrade Keluarga --}}
                         @if ($keluarga->upgradeHotels->count() > 0)
                             <div class="mb-4">
                                 <h6 class="text-xs font-semibold text-gray-600 mb-2 flex items-center">
@@ -482,7 +613,6 @@
                             </div>
                         @endif
 
-                        {{-- Detail Upgrade Personal per Jamaah --}}
                         @php
                             $jamaahWithUpgrade = $keluarga->jamaahs->filter(fn($j) => $j->upgradeHotels->count() > 0);
                         @endphp
@@ -524,14 +654,6 @@
                                 </div>
                             </div>
                         @endif
-
-                        <div class="mt-3 pt-3 border-t border-orange-200">
-                            <p class="text-xs text-gray-500">
-                                <i class="fas fa-info-circle mr-1"></i>
-                                Upgrade hotel keluarga dibagi rata ke semua jamaah. Upgrade personal hanya dibebankan ke
-                                jamaah masing-masing.
-                            </p>
-                        </div>
                     </div>
                 @endif
 
@@ -582,7 +704,21 @@
                                 </thead>
                                 <tbody class="divide-y divide-gray-100">
                                     @foreach ($transaksis as $index => $transaksi)
-                                        <tr class="hover:bg-gray-50 transition-colors">
+                                        @php
+                                            $isRefund = ($transaksi->jenis_mutasi ?? 'masuk') === 'keluar';
+                                            $rowClass = $isRefund ? 'bg-amber-50/40' : '';
+                                            $namaJenis = strtolower(
+                                                trim((string) ($transaksi->jenisTransaksi->nama ?? '')),
+                                            );
+                                            $isLunasJenis =
+                                                str_contains($namaJenis, 'lunas') ||
+                                                str_contains($namaJenis, 'pelunasan');
+                                            $isDpJenis =
+                                                str_contains($namaJenis, 'down payment') ||
+                                                preg_match('/\bdp\b/', $namaJenis) ||
+                                                str_contains($namaJenis, 'pembayaran awal');
+                                        @endphp
+                                        <tr class="hover:bg-gray-50 transition-colors {{ $rowClass }}">
                                             <td class="px-3 py-2 text-gray-400 text-xs">{{ $loop->iteration }}</td>
                                             <td class="px-3 py-2 text-gray-600 whitespace-nowrap">
                                                 {{ $transaksi->tanggal_transaksi ? date('d M Y', strtotime($transaksi->tanggal_transaksi)) : '-' }}
@@ -601,18 +737,38 @@
                                                 </p>
                                             </td>
                                             <td class="px-3 py-2">
-                                                <span
-                                                    class="px-2 py-1 rounded-full text-xs font-medium
-                                                    {{ $transaksi->jenisTransaksi->kode == 'DP'
-                                                        ? 'bg-yellow-100 text-yellow-700'
-                                                        : ($transaksi->jenisTransaksi->kode == 'LUNAS'
-                                                            ? 'bg-green-100 text-green-700'
-                                                            : 'bg-blue-100 text-blue-700') }}">
-                                                    {{ $transaksi->jenisTransaksi->nama ?? '-' }}
-                                                </span>
+                                                @if ($isRefund)
+                                                    <span
+                                                        class="px-2 py-1 rounded-full text-xs font-bold bg-amber-200 text-amber-800">
+                                                        <i class="fas fa-undo-alt mr-1"></i>REFUND
+                                                    </span>
+                                                @elseif ($isLunasJenis)
+                                                    <span
+                                                        class="px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-700">
+                                                        {{ $transaksi->jenisTransaksi->nama ?? '-' }}
+                                                    </span>
+                                                @elseif ($isDpJenis)
+                                                    <span
+                                                        class="px-2 py-1 rounded-full text-xs font-medium bg-yellow-100 text-yellow-700">
+                                                        {{ $transaksi->jenisTransaksi->nama ?? '-' }}
+                                                    </span>
+                                                @else
+                                                    <span
+                                                        class="px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-700">
+                                                        {{ $transaksi->jenisTransaksi->nama ?? '-' }}
+                                                    </span>
+                                                @endif
                                             </td>
-                                            <td class="px-3 py-2 text-right font-medium text-gray-800">
-                                                {{ $transaksi->jumlah_bayar_formatted }}
+                                            <td
+                                                class="px-3 py-2 text-right font-medium {{ $isRefund ? 'text-amber-600' : 'text-gray-800' }}">
+                                                @if ($isRefund)
+                                                    <span class="inline-flex items-center gap-1">
+                                                        <i class="fas fa-arrow-down text-[10px]"></i>
+                                                        −{{ $transaksi->jumlah_bayar_formatted }}
+                                                    </span>
+                                                @else
+                                                    {{ $transaksi->jumlah_bayar_formatted }}
+                                                @endif
                                             </td>
                                             <td class="px-3 py-2 text-center">
                                                 @if ($transaksi->bukti_pembayaran)
@@ -632,7 +788,7 @@
                                                 <button type="button"
                                                     onclick="confirmDeleteTransaksiKeluarga({{ $transaksi->id_transaksi }})"
                                                     class="text-red-500 hover:text-red-700 transition-colors duration-200"
-                                                    title="Hapus Transaksi">
+                                                    title="{{ $isRefund ? 'Hapus Refund' : 'Hapus Transaksi' }}">
                                                     <i class="fas fa-trash text-sm"></i>
                                                 </button>
                                                 <form id="delete-transaksi-keluarga-form-{{ $transaksi->id_transaksi }}"
@@ -645,6 +801,38 @@
                                         </tr>
                                     @endforeach
                                 </tbody>
+                                <tfoot class="bg-gray-100 border-t-2 border-gray-300">
+                                    <tr>
+                                        <td colspan="5" class="px-3 py-2 text-right font-bold text-gray-700">
+                                            Total Masuk:
+                                        </td>
+                                        <td class="px-3 py-2 text-right font-bold text-green-700">
+                                            {{ $keluarga->total_dibayar_formatted }}
+                                        </td>
+                                        <td colspan="3"></td>
+                                    </tr>
+                                    @if ($keluarga->total_refund > 0)
+                                        <tr>
+                                            <td colspan="5" class="px-3 py-2 text-right font-bold text-gray-700">
+                                                Total Refund:
+                                            </td>
+                                            <td class="px-3 py-2 text-right font-bold text-amber-700">
+                                                <i class="fas fa-arrow-down text-[10px] mr-1"></i>
+                                                −{{ $keluarga->total_refund_formatted }}
+                                            </td>
+                                            <td colspan="3"></td>
+                                        </tr>
+                                        <tr class="bg-amber-100">
+                                            <td colspan="5" class="px-3 py-2 text-right font-bold text-gray-800">
+                                                NET DITERIMA:
+                                            </td>
+                                            <td class="px-3 py-2 text-right font-bold text-gray-800">
+                                                {{ $keluarga->net_dibayar_formatted }}
+                                            </td>
+                                            <td colspan="3"></td>
+                                        </tr>
+                                    @endif
+                                </tfoot>
                             </table>
                         </div>
                     @else
@@ -709,10 +897,10 @@
     <script>
         function confirmDeleteTransaksiKeluarga(id) {
             if (confirm(
-                    'Yakin ingin menghapus transaksi pembayaran ini?\n\n' +
+                    'Yakin ingin menghapus transaksi ini?\n\n' +
                     'Data yang dihapus:\n' +
-                    '- Jumlah pembayaran jamaah akan dikurangi\n' +
-                    '- Sisa tagihan jamaah akan dihitung ulang\n' +
+                    '- Jumlah pembayaran/refund akan dikembalikan\n' +
+                    '- Sisa tagihan & kelebihan bayar jamaah akan dihitung ulang\n' +
                     '- Status pembayaran keluarga akan diperbarui\n' +
                     '- Bukti pembayaran akan dihapus dari storage'
                 )) {

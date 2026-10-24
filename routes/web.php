@@ -18,6 +18,7 @@ use App\Http\Controllers\Transaksional\JamaahController;
 use App\Http\Controllers\Transaksional\KeluargaController;
 use App\Http\Controllers\Transaksional\DepartureController;
 use App\Http\Controllers\Master\DokumenController;
+use App\Http\Controllers\Transaksional\RekapKeuanganController;
 
 Route::get('/', [DashboardController::class, 'index'])->name('dashboard');
 
@@ -95,7 +96,7 @@ Route::prefix('transaksional')->name('transaksional.')->group(function () {
     Route::get('keluarga/{id}/pembayaran', [KeluargaController::class, 'pembayaran'])->name('keluarga.pembayaran');
     Route::post('keluarga/{id}/bayar', [KeluargaController::class, 'bayar'])->name('keluarga.bayar');
     Route::get('keluarga/{id}/cetak-pembayaran', [KeluargaController::class, 'cetakPembayaran'])->name('keluarga.cetak_pembayaran');
-
+Route::post('keluarga/{id}/proses-refund', [KeluargaController::class, 'prosesRefund'])->name('keluarga.proses-refund');
     // ==========================================
     // KELUARGA - RESOURCE
     // ==========================================
@@ -122,7 +123,11 @@ Route::prefix('transaksional')->name('transaksional.')->group(function () {
     Route::delete('jamaah/bukti/{id}', [JamaahController::class, 'hapusBukti'])->name('jamaah.hapus-bukti');
     Route::delete('jamaah/transaksi/{id}', [JamaahController::class, 'hapusTransaksi'])->name('jamaah.hapus-transaksi');
     Route::get('jamaah/{id}/cetak-pdf', [JamaahController::class, 'cetakPdfRiwayat'])->name('jamaah.cetak-pdf');
+    Route::post('jamaah/{id}/proses-refund', [JamaahController::class, 'prosesRefund'])->name('jamaah.proses-refund');
+     Route::get('jamaah/{id}/cetak-rekomendasi-passport', [JamaahController::class, 'cetakPdfRekomendasiPassport'])
+        ->name('jamaah.cetak-rekomendasi-passport');
 
+    Route::post('jamaah/{id}/proses-refund', [JamaahController::class, 'prosesRefund'])->name('jamaah.proses-refund');
     // ==========================================
     // JAMAAH - RESOURCE
     // ==========================================
@@ -246,6 +251,10 @@ Route::prefix('transaksional')->name('transaksional.')->group(function () {
     Route::post('departure/{id}/sync-jamaahs', [DepartureController::class, 'syncJamaahs'])
         ->name('departure.sync-jamaahs');
 
+               Route::post('departure/{id}/mark-selesai', [DepartureController::class, 'markSelesai'])
+            ->name('departure.mark-selesai');
+        Route::post('departure/{id}/batalkan-selesai', [DepartureController::class, 'batalkanSelesai'])
+            ->name('departure.batalkan-selesai');
     // ==========================================
     // AJAX HELPER ROUTES (untuk Departure)
     // ==========================================
@@ -257,4 +266,34 @@ Route::prefix('transaksional')->name('transaksional.')->group(function () {
         ->name('get-kamars-by-hotel-with-selected');
     Route::get('get-kamars-by-hotel-for-tour/{idHotel}/{departureId}', [DepartureController::class, 'getKamarsByHotelForTour'])
         ->name('get-kamars-for-tour');
+    // ==========================================
+    // REKAP KEUANGAN
+    // ==========================================
+    Route::get('rekap-keuangan', [RekapKeuanganController::class, 'index'])
+        ->name('rekap-keuangan.index');
+
+    Route::get('rekap-keuangan/create', [RekapKeuanganController::class, 'create'])
+        ->name('rekap-keuangan.create');
+
+    Route::post('rekap-keuangan/pengeluaran', [RekapKeuanganController::class, 'storePengeluaran'])
+        ->name('rekap-keuangan.pengeluaran.store');
+
+    Route::get('rekap-keuangan/export-pdf', [RekapKeuanganController::class, 'exportPdf'])
+        ->name('rekap-keuangan.export-pdf');
+
+    Route::get('rekap-keuangan/{id}', [RekapKeuanganController::class, 'show'])
+        ->name('rekap-keuangan.show')
+        ->where('id', '[0-9]+');
+
+    Route::get('rekap-keuangan/{id}/edit', [RekapKeuanganController::class, 'edit'])
+        ->name('rekap-keuangan.edit')
+        ->where('id', '[0-9]+');
+
+    Route::put('rekap-keuangan/{id}', [RekapKeuanganController::class, 'updatePengeluaran'])
+        ->name('rekap-keuangan.pengeluaran.update')
+        ->where('id', '[0-9]+');
+
+    Route::delete('rekap-keuangan/{id}', [RekapKeuanganController::class, 'destroyPengeluaran'])
+        ->name('rekap-keuangan.pengeluaran.destroy')
+        ->where('id', '[0-9]+');
 });

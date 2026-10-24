@@ -43,7 +43,7 @@ return new class extends Migration
             $table->string('tempat_lahir', 100)->nullable();
             $table->enum('jenis_kelamin', ['L', 'P'])->nullable();
 
-            // === ✅ STATUS KAWIN (PER JAMAAH) ===
+            // === STATUS KAWIN (PER JAMAAH) ===
             $table->enum('status_kawin', ['Belum Kawin', 'Kawin', 'Cerai Hidup', 'Cerai Mati'])
                 ->nullable()
                 ->comment('Status pernikahan jamaah');
@@ -97,6 +97,13 @@ return new class extends Migration
             $table->bigInteger('total_diskon')->default(0);
             $table->bigInteger('total_tagihan_setelah_diskon')->default(0);
             $table->bigInteger('total_dibayar')->default(0);
+
+            // === REFUND / PENGEMBALIAN DANA ===
+            $table->bigInteger('total_refund')->default(0)
+                ->comment('Total dana yang sudah dikembalikan ke jamaah');
+            $table->bigInteger('sisa_kelebihan_bayar')->default(0)
+                ->comment('Kelebihan bayar yang BELUM di-refund (dibayar > tagihan)');
+
             $table->bigInteger('sisa_tagihan')->default(0);
             $table->enum('status_pembayaran', ['Belum Bayar', 'DP', 'Setoran', 'Lunas'])
                 ->default('Belum Bayar');

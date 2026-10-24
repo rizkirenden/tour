@@ -37,14 +37,12 @@
                     </td>
                     <td class="px-4 py-3 text-center">
                         @if ($item->keberangkatan->count() > 0)
-                            <div class="flex flex-wrap gap-1 justify-center">
-                                @foreach ($item->keberangkatan->sortBy(['tahun', 'bulan']) as $k)
-                                    <span
-                                        class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium {{ $k->is_active ? 'bg-purple-100 text-purple-700' : 'bg-gray-100 text-gray-500' }}">
-                                        {{ $k->bulan_formatted }} {{ $k->tahun }}
-                                    </span>
-                                @endforeach
-                            </div>
+                            <span
+                                class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-purple-100 text-purple-700"
+                                title="{{ $item->keberangkatan->sortBy(['tahun', 'bulan'])->map(fn($k) => $k->bulan_formatted . ' ' . $k->tahun)->join(', ') }}">
+                                <i class="fas fa-plane-departure mr-1"></i>
+                                {{ $item->keberangkatan->count() }}
+                            </span>
                         @else
                             <span class="text-xs text-gray-400">-</span>
                         @endif

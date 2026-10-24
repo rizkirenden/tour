@@ -494,99 +494,10 @@
         }
 
         /* ==========================================
-           LAMPIRAN BUKTI
+           PAGE BREAK (masih dipakai untuk Syarat & Ketentuan)
            ========================================== */
         .page-break {
             page-break-after: always;
-        }
-
-        .lampiran-header {
-            text-align: center;
-            padding: 15px 0 12px;
-            border-bottom: 2px solid #D4A017;
-            margin-bottom: 18px;
-        }
-
-        .lampiran-header h2 {
-            color: #D4A017;
-            font-size: 18px;
-            font-weight: 700;
-        }
-
-        .lampiran-header p {
-            color: #888;
-            font-size: 11px;
-            margin-top: 3px;
-        }
-
-        .lampiran-grid {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 15px;
-        }
-
-        .lampiran-item {
-            background: #fff;
-            border: 1px solid #e9ecef;
-            border-radius: 10px;
-            padding: 12px;
-            text-align: center;
-        }
-
-        .lampiran-item .lampiran-info {
-            font-size: 9px;
-            color: #666;
-            margin-bottom: 6px;
-        }
-
-        .lampiran-item .lampiran-info strong {
-            color: #333;
-        }
-
-        .lampiran-item .lampiran-info .lampiran-date {
-            color: #999;
-            font-size: 8px;
-        }
-
-        .lampiran-item .lampiran-image {
-            margin: 6px 0;
-        }
-
-        .lampiran-item .lampiran-image img {
-            max-width: 100%;
-            max-height: 130px;
-            border-radius: 6px;
-            border: 1px solid #eee;
-        }
-
-        .lampiran-item .lampiran-file {
-            padding: 15px;
-            background: #f8f9fa;
-            border-radius: 6px;
-        }
-
-        .lampiran-item .lampiran-file .icon {
-            font-size: 32px;
-            display: block;
-        }
-
-        .lampiran-item .lampiran-file .filename {
-            font-size: 9px;
-            color: #666;
-            margin-top: 3px;
-        }
-
-        .lampiran-item .lampiran-amount {
-            font-size: 13px;
-            font-weight: 700;
-            color: #28a745;
-            margin-top: 6px;
-        }
-
-        .lampiran-item .lampiran-keterangan {
-            font-size: 8px;
-            color: #888;
-            margin-top: 2px;
         }
 
         /* ==========================================
@@ -634,7 +545,6 @@
             margin-bottom: 8px;
         }
 
-        /* TTD di TENGAH */
         .ttd-cap-signature-area .ttd-image {
             position: absolute;
             top: 50%;
@@ -645,7 +555,6 @@
             z-index: 2;
         }
 
-        /* Cap geser kanan, overlap ~30% dengan TTD */
         .ttd-cap-signature-area .cap-image {
             position: absolute;
             top: 55%;
@@ -854,7 +763,17 @@
             </thead>
             <tbody>
                 @forelse ($transaksis as $index => $transaksi)
-                    <tr>
+                    @php
+                        $isRefund = ($transaksi->jenis_mutasi ?? 'masuk') === 'keluar';
+                        $namaJenis = strtolower(trim((string) ($transaksi->jenisTransaksi->nama ?? '')));
+                        $isLunasJenis = str_contains($namaJenis, 'lunas') || str_contains($namaJenis, 'pelunasan');
+                        $isDpJenis =
+                            str_contains($namaJenis, 'down payment') ||
+                            preg_match('/\bdp\b/', $namaJenis) ||
+                            str_contains($namaJenis, 'pembayaran awal');
+                        $isAngsurJenis = str_contains($namaJenis, 'angsuran') || str_contains($namaJenis, 'cicilan');
+                    @endphp
+                    <tr style="{{ $isRefund ? 'background:#FEF3C7;' : '' }}">
                         <td class="text-center text-muted">{{ $loop->iteration }}</td>
                         <td>{{ $transaksi->tanggal_transaksi_formatted ?? ($transaksi->tanggal_transaksi ? date('d/m/Y', strtotime($transaksi->tanggal_transaksi)) : '-') }}
                         </td>
@@ -875,21 +794,37 @@
                             @endphp
                         </td>
                         <td>
-                            @php
-                                $jenisKode = $transaksi->jenisTransaksi->kode ?? '';
-                                $jenisClass =
-                                    $jenisKode == 'DP'
-                                        ? 'badge-dp-trans'
-                                        : ($jenisKode == 'LUNAS'
-                                            ? 'badge-lunas-trans'
-                                            : 'badge-angsur-trans');
-                            @endphp
-                            <span class="badge-jenis {{ $jenisClass }}">
-                                {{ $transaksi->jenisTransaksi->nama ?? '-' }}
-                            </span>
+                            @if ($isRefund)
+                                <span class="badge-jenis" style="background:#FCD34D; color:#78350F;">
+                                    ↩ REFUND
+                                </span>
+                            @elseif ($isLunasJenis)
+                                <span class="badge-jenis badge-lunas-trans">
+                                    {{ $transaksi->jenisTransaksi->nama ?? '-' }}
+                                </span>
+                            @elseif ($isDpJenis)
+                                <span class="badge-jenis badge-dp-trans">
+                                    {{ $transaksi->jenisTransaksi->nama ?? '-' }}
+                                </span>
+                            @elseif ($isAngsurJenis)
+                                <span class="badge-jenis badge-angsur-trans">
+                                    {{ $transaksi->jenisTransaksi->nama ?? '-' }}
+                                </span>
+                            @else
+                                <span class="badge-jenis badge-angsur-trans">
+                                    {{ $transaksi->jenisTransaksi->nama ?? '-' }}
+                                </span>
+                            @endif
                         </td>
-                        <td class="text-right"><strong>Rp
-                                {{ number_format($transaksi->jumlah_bayar, 0, ',', '.') }}</strong></td>
+                        <td class="text-right">
+                            <strong style="{{ $isRefund ? 'color:#D97706;' : 'color:#28a745;' }}">
+                                @if ($isRefund)
+                                    −Rp {{ number_format($transaksi->jumlah_bayar, 0, ',', '.') }}
+                                @else
+                                    Rp {{ number_format($transaksi->jumlah_bayar, 0, ',', '.') }}
+                                @endif
+                            </strong>
+                        </td>
                         <td>{{ $transaksi->keterangan ?? '-' }}</td>
                     </tr>
                 @empty
@@ -949,76 +884,6 @@
             </ol>
         </div>
     </div>
-
-    <!-- ==========================================
-         LEMBAR 3: LAMPIRAN BUKTI PEMBAYARAN
-         ========================================== -->
-    @php
-        $transaksiDenganBukti = $transaksis->filter(function ($t) {
-            return ($t->bukti_exists ?? false) && !empty($t->bukti_base64);
-        });
-    @endphp
-
-    @if ($transaksiDenganBukti->count() > 0)
-        <div class="page-break"></div>
-
-        <div class="lampiran-header">
-            <h2>Lampiran Bukti Pembayaran</h2>
-            <p>{{ $transaksiDenganBukti->count() }} Bukti pembayaran dari {{ $transaksis->count() }} transaksi</p>
-        </div>
-
-        <div class="lampiran-grid">
-            @foreach ($transaksiDenganBukti as $index => $transaksi)
-                @php
-                    $isImage = in_array($transaksi->bukti_extension ?? '', [
-                        'jpg',
-                        'jpeg',
-                        'png',
-                        'gif',
-                        'webp',
-                        'bmp',
-                    ]);
-                    $isPdf = ($transaksi->bukti_extension ?? '') == 'pdf';
-                    $buktiBase64 = $transaksi->bukti_base64 ?? '';
-                    $buktiName = $transaksi->bukti_name ?? 'file';
-                    $tanggal =
-                        $transaksi->tanggal_transaksi_formatted ??
-                        ($transaksi->tanggal_transaksi ? date('d/m/Y', strtotime($transaksi->tanggal_transaksi)) : '-');
-                    $jumlah = number_format($transaksi->jumlah_bayar, 0, ',', '.');
-                    $jenis = $transaksi->jenisTransaksi->nama ?? '-';
-                @endphp
-                <div class="lampiran-item">
-                    <div class="lampiran-info">
-                        <strong>#{{ $loop->iteration }}</strong> - {{ $jenis }}
-                        <div class="lampiran-date">{{ $tanggal }}</div>
-                    </div>
-
-                    @if ($isImage && $buktiBase64)
-                        <div class="lampiran-image">
-                            <img src="{{ $buktiBase64 }}" alt="Bukti {{ $loop->iteration }}">
-                        </div>
-                    @elseif($isPdf)
-                        <div class="lampiran-file">
-                            <span class="icon">📄 PDF</span>
-                            <div class="filename">{{ Str::limit($buktiName, 25) }}</div>
-                            <div style="font-size: 8px; color: #999; margin-top: 3px;">File PDF</div>
-                        </div>
-                    @else
-                        <div class="lampiran-file">
-                            <span class="icon">📎 FILE</span>
-                            <div class="filename">{{ Str::limit($buktiName, 25) }}</div>
-                            <div style="font-size: 8px; color: #999; margin-top: 3px;">File</div>
-                        </div>
-                    @endif
-
-                    <div class="lampiran-amount">Rp {{ $jumlah }}</div>
-                    @if ($transaksi->keterangan)
-                        <div class="lampiran-keterangan">{{ $transaksi->keterangan }}</div>
-                    @endif
-                </div>
-            @endforeach
-        </div>
-    @endif
 
     <!-- ==========================================
          TANDA TANGAN & CAP PERUSAHAAN

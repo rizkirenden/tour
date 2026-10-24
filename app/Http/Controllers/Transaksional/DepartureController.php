@@ -29,6 +29,40 @@ class DepartureController extends Controller
         $this->service = $service;
     }
 
+    /**
+     * Blok semua aksi jika perjalanan sudah SELESAI.
+     */
+    private function assertUnlocked($id): void
+    {
+        if ($id === null) return;
+        $departure = \App\Models\Departure::find($id);
+        if ($departure && $departure->perjalanan_selesai) {
+            abort(403, 'Perjalanan sudah SELESAI. Data terkunci. Klik "Batalkan Selesai" untuk membuka.');
+        }
+    }
+
+    public function markSelesai(Request $request, $id)
+    {
+        try {
+            $this->service->markPerjalananSelesai($id, Auth::id());
+            return redirect()->route('transaksional.departure.show', $id)
+                ->with('success', 'Perjalanan ditandai SELESAI. Semua data terkunci.');
+        } catch (\Exception $e) {
+            return redirect()->back()->with('error', $e->getMessage());
+        }
+    }
+
+    public function batalkanSelesai(Request $request, $id)
+    {
+        try {
+            $this->service->batalkanPerjalananSelesai($id);
+            return redirect()->route('transaksional.departure.show', $id)
+                ->with('success', 'Status SELESAI dibatalkan. Data dapat diedit kembali.');
+        } catch (\Exception $e) {
+            return redirect()->back()->with('error', $e->getMessage());
+        }
+    }
+
     public function index(Request $request)
     {
         $filters = $request->only(['search', 'status']);
@@ -115,6 +149,8 @@ class DepartureController extends Controller
 
     public function update(Request $request, $id)
     {
+        $this->assertUnlocked($id);
+
         $validated = $request->validate([
             'id_produk' => 'required|exists:produk_pakets,id_produk',
             'nama_keberangkatan' => 'required|string|max:100',
@@ -129,19 +165,47 @@ class DepartureController extends Controller
         $departure = $this->service->update($id, $validated);
 
         return redirect()->route('transaksional.departure.show', $id)
-            ->with('success', "Informasi dasar keberangkatan berhasil diperbarui!");
+            ->with('success', "Informasi dasar keberangkatan berhasil diperbarui! (Produk: {$departure->produk_paket})");
     }
 
     public function destroy($id)
     {
+        $this->assertUnlocked($id);
+
         $nama = $this->service->delete($id);
 
         return redirect()->route('transaksional.departure.index')
             ->with('success', "Keberangkatan '{$nama}' berhasil dihapus!");
     }
 
+    public function syncProdukSnapshot(Request $request, $id = null)
+    {
+        $this->assertUnlocked($id);
+
+        try {
+            $result = $this->service->syncProdukSnapshot($id);
+
+            $message = "Sinkronisasi produk selesai. "
+                . "Departure di-update: {$result['departures_updated']}, "
+                . "Jamaah di-update: {$result['jamaahs_updated']}.";
+
+            if ($id) {
+                return redirect()->route('transaksional.departure.show', $id)
+                    ->with('success', $message);
+            }
+
+            return redirect()->route('transaksional.departure.index')
+                ->with('success', $message);
+        } catch (\Exception $e) {
+            return redirect()->back()
+                ->with('error', 'Gagal sinkronisasi produk: ' . $e->getMessage());
+        }
+    }
+
     public function updateHargaAsliUpgrade(Request $request, $id)
     {
+        $this->assertUnlocked($id);
+
         $jumlahRaw = preg_replace('/[^\d]/', '', $request->input('harga_asli_upgrade_total'));
         $request->merge(['harga_asli_upgrade_total' => (int) $jumlahRaw]);
 
@@ -165,6 +229,8 @@ class DepartureController extends Controller
 
     public function syncAll($id)
     {
+        $this->assertUnlocked($id);
+
         try {
             $departure = $this->service->syncAllDepartureData($id);
 
@@ -178,6 +244,8 @@ class DepartureController extends Controller
 
     public function syncJamaahs($id)
     {
+        $this->assertUnlocked($id);
+
         try {
             $availableJamaahs = $this->service->getAvailableJamaahsForSync($id);
             $departure = $this->service->getById($id);
@@ -469,6 +537,7 @@ class DepartureController extends Controller
         $belumTerima = $total - $sudahTerima;
         $departurePerlengkapanId = $departurePerlengkapan->id;
         $departureId = $departurePerlengkapan->id_departure;
+        $locked = (bool) ($departurePerlengkapan->departure->perjalanan_selesai ?? false);
 
         $html = '
         <div class="mb-4">
@@ -491,8 +560,10 @@ class DepartureController extends Controller
                 <div class="h-2 rounded-full ' . ($sudahTerima == $total ? 'bg-green-500' : 'bg-yellow-500') . '"
                     style="width: ' . ($total > 0 ? round(($sudahTerima / $total) * 100) : 0) . '%"></div>
             </div>
-        </div>
+        </div>';
 
+        if (!$locked) {
+            $html .= '
         <div class="flex items-center justify-between mb-3 pb-3 border-b border-gray-200">
             <label class="inline-flex items-center gap-2 cursor-pointer">
                 <input type="checkbox" id="perlengkapan-check-all-' . $departurePerlengkapanId . '"
@@ -511,8 +582,10 @@ class DepartureController extends Controller
                     <i class="fas fa-undo"></i> Batalkan Terpilih
                 </button>
             </div>
-        </div>
+        </div>';
+        }
 
+        $html .= '
         <div class="border-t border-gray-200 pt-4">
             <p class="text-xs font-medium text-gray-500 mb-3">Daftar Jamaah:</p>
             <div class="grid grid-cols-1 md:grid-cols-2 gap-2" id="perlengkapan-jamaah-list-' . $departurePerlengkapanId . '">';
@@ -526,24 +599,29 @@ class DepartureController extends Controller
                 ? '<span class="text-green-600 text-xs">Sudah Diterima</span>'
                 : '<span class="text-yellow-600 text-xs">Belum Diterima</span>';
 
+            $toggleBtn = $locked ? '' : '
+                    <button type="button"
+                        onclick="togglePerlengkapanStatusJamaah(' . $departurePerlengkapanId . ', ' . $item->id_jamaah . ', \'' . $item->status_terima . '\')"
+                        class="text-blue-500 hover:text-blue-700 text-xs" title="Ubah Status">
+                        <i class="fas fa-sync-alt"></i>
+                    </button>';
+
+            $checkbox = $locked ? '' : '<input type="checkbox"
+                        class="perlengkapan-jamaah-checkbox w-4 h-4 text-yellow-500 border-gray-300 rounded focus:ring-yellow-500 flex-shrink-0"
+                        value="' . $item->id_jamaah . '">';
+
             $html .= '
             <div class="flex items-center justify-between p-2 rounded-lg border ' . $statusClass . ' perlengkapan-jamaah-item"
                 data-jamaah-id="' . $item->id_jamaah . '"
                 data-departure-perlengkapan-id="' . $departurePerlengkapanId . '">
                 <div class="flex items-center gap-2 flex-1 min-w-0">
-                    <input type="checkbox"
-                        class="perlengkapan-jamaah-checkbox w-4 h-4 text-yellow-500 border-gray-300 rounded focus:ring-yellow-500 flex-shrink-0"
-                        value="' . $item->id_jamaah . '">
+                    ' . $checkbox . '
                     ' . $statusIcon . '
                     <span class="text-sm font-medium text-gray-700 truncate">' . $item->jamaah->nama_lengkap . '</span>
                 </div>
                 <div class="flex items-center gap-2 flex-shrink-0">
                     ' . $statusText . '
-                    <button type="button"
-                        onclick="togglePerlengkapanStatusJamaah(' . $departurePerlengkapanId . ', ' . $item->id_jamaah . ', \'' . $item->status_terima . '\')"
-                        class="text-blue-500 hover:text-blue-700 text-xs" title="Ubah Status">
-                        <i class="fas fa-sync-alt"></i>
-                    </button>
+                    ' . $toggleBtn . '
                 </div>
             </div>';
         }
@@ -556,6 +634,7 @@ class DepartureController extends Controller
             'html' => $html,
             'nama_perlengkapan' => $departurePerlengkapan->perlengkapan->nama_perlengkapan,
             'departure_id' => $departureId,
+            'locked' => $locked,
         ]);
     }
 
@@ -569,6 +648,7 @@ class DepartureController extends Controller
         $belumTerima = $total - $sudahTerima;
         $departureJenisTransaksiId = $departureJenisTransaksi->id;
         $departureId = $departureJenisTransaksi->id_departure;
+        $locked = (bool) ($departureJenisTransaksi->departure->perjalanan_selesai ?? false);
 
         $html = '
         <div class="mb-4">
@@ -591,8 +671,10 @@ class DepartureController extends Controller
                 <div class="h-2 rounded-full ' . ($sudahTerima == $total ? 'bg-green-500' : 'bg-yellow-500') . '"
                     style="width: ' . ($total > 0 ? round(($sudahTerima / $total) * 100) : 0) . '%"></div>
             </div>
-        </div>
+        </div>';
 
+        if (!$locked) {
+            $html .= '
         <div class="flex items-center justify-between mb-3 pb-3 border-b border-gray-200">
             <label class="inline-flex items-center gap-2 cursor-pointer">
                 <input type="checkbox" id="jenis-transaksi-check-all-' . $departureJenisTransaksiId . '"
@@ -611,8 +693,10 @@ class DepartureController extends Controller
                     <i class="fas fa-undo"></i> Batalkan Terpilih
                 </button>
             </div>
-        </div>
+        </div>';
+        }
 
+        $html .= '
         <div class="border-t border-gray-200 pt-4">
             <p class="text-xs font-medium text-gray-500 mb-3">Daftar Jamaah:</p>
             <div class="grid grid-cols-1 md:grid-cols-2 gap-2" id="jenis-transaksi-jamaah-list-' . $departureJenisTransaksiId . '">';
@@ -626,24 +710,29 @@ class DepartureController extends Controller
                 ? '<span class="text-green-600 text-xs">Sudah Diterima</span>'
                 : '<span class="text-yellow-600 text-xs">Belum Diterima</span>';
 
+            $toggleBtn = $locked ? '' : '
+                    <button type="button"
+                        onclick="toggleJenisTransaksiStatusJamaah(' . $departureJenisTransaksiId . ', ' . $item->id_jamaah . ', \'' . $item->status_terima . '\')"
+                        class="text-blue-500 hover:text-blue-700 text-xs" title="Ubah Status">
+                        <i class="fas fa-sync-alt"></i>
+                    </button>';
+
+            $checkbox = $locked ? '' : '<input type="checkbox"
+                        class="jenis-transaksi-jamaah-checkbox w-4 h-4 text-yellow-500 border-gray-300 rounded focus:ring-yellow-500 flex-shrink-0"
+                        value="' . $item->id_jamaah . '">';
+
             $html .= '
             <div class="flex items-center justify-between p-2 rounded-lg border ' . $statusClass . ' jenis-transaksi-jamaah-item"
                 data-jamaah-id="' . $item->id_jamaah . '"
                 data-departure-jenis-transaksi-id="' . $departureJenisTransaksiId . '">
                 <div class="flex items-center gap-2 flex-1 min-w-0">
-                    <input type="checkbox"
-                        class="jenis-transaksi-jamaah-checkbox w-4 h-4 text-yellow-500 border-gray-300 rounded focus:ring-yellow-500 flex-shrink-0"
-                        value="' . $item->id_jamaah . '">
+                    ' . $checkbox . '
                     ' . $statusIcon . '
                     <span class="text-sm font-medium text-gray-700 truncate">' . $item->jamaah->nama_lengkap . '</span>
                 </div>
                 <div class="flex items-center gap-2 flex-shrink-0">
                     ' . $statusText . '
-                    <button type="button"
-                        onclick="toggleJenisTransaksiStatusJamaah(' . $departureJenisTransaksiId . ', ' . $item->id_jamaah . ', \'' . $item->status_terima . '\')"
-                        class="text-blue-500 hover:text-blue-700 text-xs" title="Ubah Status">
-                        <i class="fas fa-sync-alt"></i>
-                    </button>
+                    ' . $toggleBtn . '
                 </div>
             </div>';
         }
@@ -656,11 +745,14 @@ class DepartureController extends Controller
             'html' => $html,
             'nama_jenis_transaksi' => $departureJenisTransaksi->jenisTransaksi->nama,
             'departure_id' => $departureId,
+            'locked' => $locked,
         ]);
     }
 
     public function updateMaskapai(Request $request, $id)
     {
+        $this->assertUnlocked($id);
+
         $validated = $request->validate([
             'id_maskapai_domestik_berangkat' => 'nullable|exists:maskapais,id_maskapai',
             'harga_maskapai_domestik_berangkat' => 'nullable|integer|min:0',
@@ -680,6 +772,8 @@ class DepartureController extends Controller
 
     public function updateHotel(Request $request, $id)
     {
+        $this->assertUnlocked($id);
+
         $validated = $request->validate([
             'id_hotel_mekkah' => 'nullable|exists:hotels,id_hotel',
             'id_hotel_madinah' => 'nullable|exists:hotels,id_hotel',
@@ -699,6 +793,8 @@ class DepartureController extends Controller
 
     public function updateJamaah(Request $request, $id)
     {
+        $this->assertUnlocked($id);
+
         $validated = $request->validate([
             'jamaah_ids' => 'required|array|min:1',
             'jamaah_ids.*' => 'exists:jamaahs,id_jamaah',
@@ -712,9 +808,11 @@ class DepartureController extends Controller
 
     public function updatePerlengkapan(Request $request, $id)
     {
+        $this->assertUnlocked($id);
+
         $validated = $request->validate([
             'id_perlengkapan' => 'required|array|min:1',
-            'id_perlengkapan.*' => 'exists:perlengkapans,id_perlengkapan',
+            'id_perlengkapan.*' => 'exists:perlengkaps,id_perlengkapan',
             'jumlah_per_jamaah' => 'nullable|integer|min:1',
             'keterangan' => 'nullable|string',
         ]);
@@ -735,6 +833,8 @@ class DepartureController extends Controller
 
     public function removePerlengkapan($departureId, $departurePerlengkapanId)
     {
+        $this->assertUnlocked($departureId);
+
         $this->service->removePerlengkapanFromDeparture($departureId, $departurePerlengkapanId);
 
         return redirect()->route('transaksional.departure.show', $departureId)
@@ -743,6 +843,8 @@ class DepartureController extends Controller
 
     public function togglePerlengkapan($departureId, $departurePerlengkapanId)
     {
+        $this->assertUnlocked($departureId);
+
         $departurePerlengkapan = $this->service->togglePerlengkapanStatus($departureId, $departurePerlengkapanId);
         $status = $departurePerlengkapan->is_active ? 'diaktifkan' : 'dinonaktifkan';
 
@@ -752,6 +854,9 @@ class DepartureController extends Controller
 
     public function updatePerlengkapanStatusJamaah(Request $request, $departurePerlengkapanId, $jamaahId)
     {
+        $dp = DeparturePerlengkapan::find($departurePerlengkapanId);
+        if ($dp) $this->assertUnlocked($dp->id_departure);
+
         $validated = $request->validate([
             'status_terima' => 'required|in:Belum Diterima,Sudah Diterima',
         ]);
@@ -768,6 +873,9 @@ class DepartureController extends Controller
 
     public function updatePerlengkapanStatusJamaahAjax(Request $request, $departurePerlengkapanId, $jamaahId)
     {
+        $dp = DeparturePerlengkapan::find($departurePerlengkapanId);
+        if ($dp) $this->assertUnlocked($dp->id_departure);
+
         $validated = $request->validate([
             'status_terima' => 'required|in:Belum Diterima,Sudah Diterima',
         ]);
@@ -791,6 +899,8 @@ class DepartureController extends Controller
 
     public function bulkUpdatePerlengkapanStatusJamaah(Request $request, $departureId, $departurePerlengkapanId)
     {
+        $this->assertUnlocked($departureId);
+
         $validated = $request->validate([
             'jamaah_ids' => 'required|array|min:1',
             'jamaah_ids.*' => 'exists:jamaahs,id_jamaah',
@@ -819,6 +929,8 @@ class DepartureController extends Controller
 
     public function updateJenisTransaksi(Request $request, $id)
     {
+        $this->assertUnlocked($id);
+
         $validated = $request->validate([
             'id_jenis_transaksi' => 'required|array|min:1',
             'id_jenis_transaksi.*' => 'exists:jenis_transaksis,id_jenis',
@@ -850,6 +962,8 @@ class DepartureController extends Controller
 
     public function removeJenisTransaksi($departureId, $jenisTransaksiId)
     {
+        $this->assertUnlocked($departureId);
+
         $this->service->removeJenisTransaksiFromDeparture($departureId, $jenisTransaksiId);
 
         return redirect()->route('transaksional.departure.show', $departureId)
@@ -858,6 +972,8 @@ class DepartureController extends Controller
 
     public function updateJenisTransaksiHarga(Request $request, $departureId, $jenisTransaksiId)
     {
+        $this->assertUnlocked($departureId);
+
         $validated = $request->validate([
             'harga_total' => 'required|numeric|min:0',
         ]);
@@ -870,6 +986,9 @@ class DepartureController extends Controller
 
     public function updateJenisTransaksiStatusJamaah(Request $request, $departureJenisTransaksiId, $jamaahId)
     {
+        $jt = DepartureJenisTransaksi::find($departureJenisTransaksiId);
+        if ($jt) $this->assertUnlocked($jt->id_departure);
+
         $validated = $request->validate([
             'status_terima' => 'required|in:Belum Diterima,Sudah Diterima',
         ]);
@@ -886,6 +1005,9 @@ class DepartureController extends Controller
 
     public function updateJenisTransaksiStatusJamaahAjax(Request $request, $departureJenisTransaksiId, $jamaahId)
     {
+        $jt = DepartureJenisTransaksi::find($departureJenisTransaksiId);
+        if ($jt) $this->assertUnlocked($jt->id_departure);
+
         $validated = $request->validate([
             'status_terima' => 'required|in:Belum Diterima,Sudah Diterima',
         ]);
@@ -909,6 +1031,8 @@ class DepartureController extends Controller
 
     public function bulkUpdateJenisTransaksiStatusJamaah(Request $request, $departureId, $departureJenisTransaksiId)
     {
+        $this->assertUnlocked($departureId);
+
         $validated = $request->validate([
             'jamaah_ids' => 'required|array|min:1',
             'jamaah_ids.*' => 'exists:jamaahs,id_jamaah',
@@ -937,6 +1061,8 @@ class DepartureController extends Controller
 
     public function updateCatatan(Request $request, $id)
     {
+        $this->assertUnlocked($id);
+
         $validated = $request->validate([
             'catatan' => 'nullable|string',
         ]);
@@ -949,6 +1075,8 @@ class DepartureController extends Controller
 
     public function addJamaah(Request $request, $id)
     {
+        $this->assertUnlocked($id);
+
         $validated = $request->validate([
             'id_jamaah' => 'required|exists:jamaahs,id_jamaah',
             'catatan' => 'nullable|string',
@@ -966,6 +1094,8 @@ class DepartureController extends Controller
 
     public function removeJamaah($departureId, $jamaahId)
     {
+        $this->assertUnlocked($departureId);
+
         $this->service->removeJamaah($departureId, $jamaahId);
 
         return redirect()->route('transaksional.departure.show', $departureId)
@@ -974,6 +1104,8 @@ class DepartureController extends Controller
 
     public function updateStatus(Request $request, $id)
     {
+        $this->assertUnlocked($id);
+
         $validated = $request->validate([
             'id_status' => 'required|exists:status_keberangkatans,id_status',
         ]);
@@ -986,6 +1118,8 @@ class DepartureController extends Controller
 
     public function recalculate($id)
     {
+        $this->assertUnlocked($id);
+
         $departure = $this->service->getById($id);
         $departure->recalculate();
 
@@ -998,11 +1132,13 @@ class DepartureController extends Controller
         $this->service->recalculateAll();
 
         return redirect()->route('transaksional.departure.index')
-            ->with('success', 'Semua perhitungan keuangan berhasil diperbarui!');
+            ->with('success', 'Semua perhitungan keuangan berhasil diperbarui! (Data yang sudah SELESAI tidak dihitung ulang)');
     }
 
     public function updatePaketTourHotel(Request $request, $id)
     {
+        $this->assertUnlocked($id);
+
         $validated = $request->validate([
             'id_paket_tour' => 'required|exists:paket_tours,id_paket_tour',
             'paket_tour_hotels' => 'nullable|array',
@@ -1077,6 +1213,8 @@ class DepartureController extends Controller
 
     public function storePembayaranTakTerduga(Request $request, $id)
     {
+        $this->assertUnlocked($id);
+
         $jumlahRaw = preg_replace('/[^\d]/', '', $request->input('total_pembayaran'));
         $request->merge(['total_pembayaran' => (int) $jumlahRaw]);
 
@@ -1099,6 +1237,8 @@ class DepartureController extends Controller
 
     public function updatePembayaranTakTerduga(Request $request, $departureId, $pembayaranId)
     {
+        $this->assertUnlocked($departureId);
+
         $jumlahRaw = preg_replace('/[^\d]/', '', $request->input('total_pembayaran'));
         $request->merge(['total_pembayaran' => (int) $jumlahRaw]);
 
@@ -1121,6 +1261,8 @@ class DepartureController extends Controller
 
     public function removePembayaranTakTerduga($departureId, $pembayaranId)
     {
+        $this->assertUnlocked($departureId);
+
         try {
             $this->service->removePembayaranTakTerduga($departureId, $pembayaranId);
 

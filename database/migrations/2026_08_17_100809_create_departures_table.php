@@ -22,6 +22,11 @@ return new class extends Migration
             $table->integer('jamaah_terdaftar')->default(0);
             $table->unsignedBigInteger('id_status')->nullable();
 
+            // LOCK: PERJALANAN SELESAI
+            $table->boolean('perjalanan_selesai')->default(false);
+            $table->timestamp('perjalanan_selesai_at')->nullable();
+            $table->unsignedBigInteger('perjalanan_selesai_by')->nullable();
+
             // Maskapai
             $table->unsignedBigInteger('id_maskapai_domestik_berangkat')->nullable();
             $table->bigInteger('harga_maskapai_domestik_berangkat')->default(0);
@@ -46,7 +51,7 @@ return new class extends Migration
             $table->bigInteger('keuntungan')->default(0);
             $table->decimal('margin_laba', 10, 2)->default(0);
 
-            // ✅ UPGRADE HOTEL
+            // UPGRADE HOTEL
             $table->bigInteger('harga_asli_upgrade_total')->default(0);
             $table->bigInteger('total_upgrade_hotel')->default(0);
             $table->bigInteger('selisih_upgrade_hotel')->default(0);
@@ -76,6 +81,7 @@ return new class extends Migration
             $table->index('kode_keberangkatan');
             $table->index('tanggal_keberangkatan');
             $table->index('id_status');
+            $table->index('perjalanan_selesai');
         });
     }
 

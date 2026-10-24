@@ -19,7 +19,8 @@
         </thead>
         <tbody class="divide-y divide-gray-100">
             @forelse($data as $index => $item)
-                <tr class="hover:bg-gray-50 transition-colors duration-150">
+                <tr
+                    class="hover:bg-gray-50 transition-colors duration-150 {{ $item->perjalanan_selesai ? 'bg-gray-50/60' : '' }}">
                     <td class="px-4 py-3">
                         <span
                             class="inline-flex px-2.5 py-1 bg-yellow-100 text-yellow-700 rounded-lg text-xs font-mono font-semibold">
@@ -62,14 +63,15 @@
                         </div>
                     </td>
                     <td class="px-4 py-3 text-center">
-                        {!! $item->status_badge !!}
+                        <div>{!! $item->status_badge !!}</div>
+                        <div class="mt-1">{!! $item->perjalanan_selesai_badge !!}</div>
                     </td>
                     <td class="px-4 py-3 text-right font-bold text-yellow-600">
                         {{ $item->total_pendapatan_bersih_formatted }}
                     </td>
                     <td class="px-4 py-3">
-                        <div class="flex items-center justify-center gap-1.5">
-                            {{-- PRINT MANIFEST (PDF) --}}
+                        <div class="flex items-center justify-center gap-1.5 flex-wrap">
+                            {{-- PRINT MANIFEST (PDF) - selalu boleh --}}
                             <a href="{{ route('transaksional.departure.manifest', $item->id_departure) }}"
                                 target="_blank"
                                 class="p-2 text-green-600 hover:bg-green-50 rounded-lg transition-all duration-200"
@@ -77,31 +79,49 @@
                                 <i class="fas fa-file-pdf text-sm"></i>
                             </a>
 
-                            {{-- DETAIL --}}
+                            {{-- DETAIL - selalu boleh --}}
                             <a href="{{ route('transaksional.departure.show', $item->id_departure) }}"
                                 class="p-2 text-blue-500 hover:bg-blue-50 rounded-lg transition-all duration-200"
                                 title="Detail">
                                 <i class="fas fa-eye text-sm"></i>
                             </a>
 
-                            {{-- EDIT --}}
-                            <a href="{{ route('transaksional.departure.edit', $item->id_departure) }}"
-                                class="p-2 text-amber-500 hover:bg-amber-50 rounded-lg transition-all duration-200"
-                                title="Edit">
-                                <i class="fas fa-edit text-sm"></i>
-                            </a>
+                            @if ($item->perjalanan_selesai)
+                                {{-- SUDAH SELESAI: hanya tombol batalkan selesai --}}
+                                <button onclick="confirmBatalkanSelesai({{ $item->id_departure }})"
+                                    class="p-2 text-orange-500 hover:bg-orange-50 rounded-lg transition-all duration-200"
+                                    title="Batalkan Selesai (buka kunci)">
+                                    <i class="fas fa-lock-open text-sm"></i>
+                                </button>
+                                <form id="batalkan-selesai-form-{{ $item->id_departure }}"
+                                    action="{{ route('transaksional.departure.batalkan-selesai', $item->id_departure) }}"
+                                    method="POST" class="hidden">@csrf</form>
+                            @else
+                                {{-- BELUM SELESAI: edit + delete + tombol selesai --}}
+                                <a href="{{ route('transaksional.departure.edit', $item->id_departure) }}"
+                                    class="p-2 text-amber-500 hover:bg-amber-50 rounded-lg transition-all duration-200"
+                                    title="Edit">
+                                    <i class="fas fa-edit text-sm"></i>
+                                </a>
 
-                            {{-- DELETE --}}
-                            <button onclick="confirmDelete({{ $item->id_departure }})"
-                                class="p-2 text-red-500 hover:bg-red-50 rounded-lg transition-all duration-200"
-                                title="Hapus">
-                                <i class="fas fa-trash text-sm"></i>
-                            </button>
-                            <form id="delete-form-{{ $item->id_departure }}"
-                                action="{{ route('transaksional.departure.destroy', $item->id_departure) }}"
-                                method="POST" class="hidden">
-                                @csrf @method('DELETE')
-                            </form>
+                                <button onclick="confirmDelete({{ $item->id_departure }})"
+                                    class="p-2 text-red-500 hover:bg-red-50 rounded-lg transition-all duration-200"
+                                    title="Hapus">
+                                    <i class="fas fa-trash text-sm"></i>
+                                </button>
+                                <form id="delete-form-{{ $item->id_departure }}"
+                                    action="{{ route('transaksional.departure.destroy', $item->id_departure) }}"
+                                    method="POST" class="hidden">@csrf @method('DELETE')</form>
+
+                                <button onclick="confirmSelesai({{ $item->id_departure }})"
+                                    class="p-2 text-emerald-600 hover:bg-emerald-50 rounded-lg transition-all duration-200"
+                                    title="Tandai Perjalanan Selesai (kunci data)">
+                                    <i class="fas fa-flag-checkered text-sm"></i>
+                                </button>
+                                <form id="selesai-form-{{ $item->id_departure }}"
+                                    action="{{ route('transaksional.departure.mark-selesai', $item->id_departure) }}"
+                                    method="POST" class="hidden">@csrf</form>
+                            @endif
                         </div>
                     </td>
                 </tr>
@@ -132,6 +152,20 @@
         function confirmDelete(id) {
             if (confirm('Yakin ingin menghapus keberangkatan ini? Semua data terkait akan dihapus.')) {
                 document.getElementById('delete-form-' + id).submit();
+            }
+        }
+
+        function confirmSelesai(id) {
+            if (confirm(
+                    'Tandai perjalanan SELESAI?\n\nSetelah selesai, semua data keberangkatan ini TIDAK dapat diedit/ditambah/dihapus sampai dibatalkan.'
+                    )) {
+                document.getElementById('selesai-form-' + id).submit();
+            }
+        }
+
+        function confirmBatalkanSelesai(id) {
+            if (confirm('Batalkan status SELESAI?\n\nData akan dapat diedit kembali.')) {
+                document.getElementById('batalkan-selesai-form-' + id).submit();
             }
         }
     </script>

@@ -352,6 +352,46 @@
                 </ul>
             </li>
 
+
+            <!-- Rekap Keuangan (collapsible) -->
+            <li x-data="{ open: {{ request()->routeIs('transaksional.rekap-keuangan.*') ? 'true' : 'false' }} }">
+
+                <a @click="open = !open"
+                    class="flex items-center justify-between px-3 py-2.5 rounded-xl cursor-pointer transition-all duration-200
+                {{ request()->routeIs('transaksional.rekap-keuangan.*')
+                    ? 'bg-white/15 text-white'
+                    : 'text-yellow-100 hover:bg-white/10 hover:text-white' }}">
+
+                    <div class="flex items-center">
+                        <i class="fas fa-chart-line w-5 text-center text-sm"></i>
+
+                        <span class="ml-3 text-sm font-medium">
+                            Rekap Keuangan
+                        </span>
+                    </div>
+
+                    <i class="fas fa-chevron-down text-[10px] transition-transform duration-200"
+                        :class="open ? 'rotate-180' : ''"></i>
+                </a>
+
+                <ul x-show="open" x-transition class="ml-3 mt-1 space-y-1">
+
+                    <!-- Dashboard Rekap -->
+                    <li>
+                        <a href="{{ route('transaksional.rekap-keuangan.index') }}"
+                            class="flex items-center px-3 py-2 rounded-lg text-sm transition-all duration-200
+                        {{ request()->routeIs('transaksional.rekap-keuangan.index')
+                            ? 'bg-white/15 text-white'
+                            : 'text-yellow-200 hover:bg-white/10 hover:text-white' }}">
+
+                            <i class="fas fa-money-bill-wave w-5 text-center text-xs"></i>
+                            <span class="ml-3">Rekap Keuangan</span>
+                        </a>
+                    </li>
+
+                </ul>
+            </li>
+
         </ul>
     </nav>
 

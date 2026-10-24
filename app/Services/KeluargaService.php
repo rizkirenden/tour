@@ -11,8 +11,12 @@ use App\Models\ProdukHargaBulanan;
 use App\Models\ProdukKeberangkatan;
 use App\Models\KotaAsal;
 use App\Models\Diskon;
+use App\Models\JenisTransaksi;
+use App\Models\TransaksiPembayaran;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 
 class KeluargaService
 {
@@ -32,6 +36,11 @@ class KeluargaService
             $query->where('status_pembayaran', $filters['status_pembayaran']);
         }
 
+        // ✅ Filter punya kelebihan bayar
+        if (!empty($filters['has_kelebihan'])) {
+            $query->where('sisa_kelebihan_bayar', '>', 0);
+        }
+
         return $query->orderBy('created_at', 'desc')->paginate(10);
     }
 
@@ -40,6 +49,7 @@ class KeluargaService
         return Keluarga::with([
             'jamaahs.upgradeHotels.hotel',
             'jamaahs.upgradeHotels.kamar',
+            'jamaahs.keberangkatan',
             'upgradeHotels.hotel',
             'upgradeHotels.kamar',
             'diskon',
@@ -49,7 +59,7 @@ class KeluargaService
     }
 
     // ==========================================
-    // CREATE - DENGAN FEE AGENT PER JAMAAH
+    // CREATE
     // ==========================================
     public function create(array $data)
     {
@@ -57,7 +67,9 @@ class KeluargaService
             $data['kode_keluarga'] = Keluarga::generateKodeKeluarga();
             $data['fee_agent'] = (int) ($data['fee_agent'] ?? 0);
             $data['total_dibayar'] = (int) ($data['total_dibayar'] ?? 0);
+            $data['total_refund'] = 0;
 
+            // ... (kode create tetap sama seperti sebelumnya)
             $hargaProduk = 0;
             $hargaBulanan = null;
             $idHargaBulanan = $data['id_produk_harga_bulanan'] ?? null;
@@ -89,14 +101,10 @@ class KeluargaService
             $jumlahAnggota = count($data['jamaahs'] ?? []);
             $this->validateKuota($idHargaBulanan, $jumlahAnggota);
 
-            // ✅ FEE AGENT DIBAGI PER JAMAAH
             $feeAgentTotal = (int) ($data['fee_agent'] ?? 0);
-            $feeAgentPerJamaah = $jumlahAnggota > 0
-                ? (int) round($feeAgentTotal / $jumlahAnggota)
-                : 0;
+            $feeAgentPerJamaah = $jumlahAnggota > 0 ? (int) round($feeAgentTotal / $jumlahAnggota) : 0;
             $sisaPembulatanFeeAgent = $feeAgentTotal - ($feeAgentPerJamaah * $jumlahAnggota);
 
-            // Diskon
             $totalDiskonKelompok = 0;
             $diskonData = null;
             if (!empty($data['id_diskon'])) {
@@ -106,12 +114,9 @@ class KeluargaService
                 }
             }
 
-            $diskonPerOrang = $jumlahAnggota > 0
-                ? (int) round($totalDiskonKelompok / $jumlahAnggota)
-                : 0;
+            $diskonPerOrang = $jumlahAnggota > 0 ? (int) round($totalDiskonKelompok / $jumlahAnggota) : 0;
             $sisaPembulatanDiskon = (int) ($totalDiskonKelompok - ($diskonPerOrang * $jumlahAnggota));
 
-            // Upgrade keluarga
             $totalUpgradeKeluarga = 0;
             $upgradeKeluargaData = $data['upgrade_hotels'] ?? [];
             foreach ($upgradeKeluargaData as $up) {
@@ -120,11 +125,8 @@ class KeluargaService
                 $harga = (int) ($up['harga_per_malam'] ?? 0);
                 $totalUpgradeKeluarga += $jumlahKamar * $harga * $durasi;
             }
-            $upgradeKeluargaPerJamaah = $jumlahAnggota > 0
-                ? (int) round($totalUpgradeKeluarga / $jumlahAnggota)
-                : 0;
+            $upgradeKeluargaPerJamaah = $jumlahAnggota > 0 ? (int) round($totalUpgradeKeluarga / $jumlahAnggota) : 0;
 
-            // Total tagihan kotor
             $totalTagihanKotor = 0;
             if (!empty($data['jamaahs'])) {
                 foreach ($data['jamaahs'] as $j) {
@@ -150,7 +152,13 @@ class KeluargaService
             $data['nilai_diskon'] = (int) $diskonPerOrang;
             $data['total_diskon'] = (int) $totalDiskonKelompok;
             $data['total_tagihan_setelah_diskon'] = (int) $totalTagihanSetelahDiskon;
-            $data['sisa_tagihan'] = (int) ($totalTagihanSetelahDiskon - $data['total_dibayar']);
+
+            // ✅ Sisa tagihan tidak boleh negatif
+            $sisa = max(0, $totalTagihanSetelahDiskon - $data['total_dibayar']);
+            $kelebihan = max(0, $data['total_dibayar'] - $totalTagihanSetelahDiskon);
+
+            $data['sisa_tagihan'] = (int) $sisa;
+            $data['sisa_kelebihan_bayar'] = (int) $kelebihan;
             $data['status_pembayaran'] = $this->determinePaymentStatus(
                 $data['total_dibayar'],
                 $totalTagihanSetelahDiskon
@@ -174,7 +182,6 @@ class KeluargaService
                     $jamaahData['is_kepala_keluarga'] = $jamaahData['is_kepala_keluarga'] ?? false;
                     $jamaahData['produk_paket'] = $data['produk_paket'];
 
-                    // ✅ FEE AGENT PER JAMAAH
                     $feeAgentJamaah = $feeAgentPerJamaah;
                     if ($index === 0 && $sisaPembulatanFeeAgent != 0) {
                         $feeAgentJamaah += $sisaPembulatanFeeAgent;
@@ -182,7 +189,6 @@ class KeluargaService
                     $jamaahData['fee_agent'] = $feeAgentJamaah;
                     $jamaahData['agent_name'] = $data['agent'] ?? null;
 
-                    // ✅ Status kawin
                     $jamaahData['status_kawin'] = $jamaahData['status_kawin'] ?? null;
 
                     $jamaahData['is_pembuatan_passport'] = (bool) ($jamaahData['is_pembuatan_passport'] ?? false);
@@ -194,7 +200,6 @@ class KeluargaService
                     }
 
                     $jamaahData = $this->handleFileUploads($jamaahData, $index);
-
                     $jamaahData['id_keberangkatan'] = $this->generateIdKeberangkatan('PKT', $index);
 
                     $jamaahData['bulan_keberangkatan'] = $data['bulan_keberangkatan'];
@@ -235,6 +240,8 @@ class KeluargaService
                     $jamaahData['total_diskon'] = (int) $diskonJamaah;
                     $jamaahData['total_tagihan_setelah_diskon'] = (int) $tagihanSetelahDiskonJamaah;
                     $jamaahData['total_dibayar'] = 0;
+                    $jamaahData['total_refund'] = 0;
+                    $jamaahData['sisa_kelebihan_bayar'] = 0;
                     $jamaahData['sisa_tagihan'] = (int) $tagihanSetelahDiskonJamaah;
                     $jamaahData['status_pembayaran'] = 'Belum Bayar';
 
@@ -311,7 +318,6 @@ class KeluargaService
                 $this->validateKuota($idHargaBulanan, $jamaahBaru, $excludeJamaahIds);
             }
 
-            // Diskon
             $totalDiskonKelompok = 0;
             $diskonData = null;
             if (!empty($data['id_diskon'])) {
@@ -322,19 +328,13 @@ class KeluargaService
             }
 
             $jumlahJamaah = collect($data['jamaahs'] ?? [])->count();
-            $diskonPerOrang = $jumlahJamaah > 0
-                ? (int) round($totalDiskonKelompok / $jumlahJamaah)
-                : 0;
+            $diskonPerOrang = $jumlahJamaah > 0 ? (int) round($totalDiskonKelompok / $jumlahJamaah) : 0;
             $sisaPembulatanDiskon = (int) ($totalDiskonKelompok - ($diskonPerOrang * $jumlahJamaah));
 
-            // ✅ FEE AGENT DIBAGI PER JAMAAH
             $feeAgentTotal = (int) ($data['fee_agent'] ?? 0);
-            $feeAgentPerJamaah = $jumlahJamaah > 0
-                ? (int) round($feeAgentTotal / $jumlahJamaah)
-                : 0;
+            $feeAgentPerJamaah = $jumlahJamaah > 0 ? (int) round($feeAgentTotal / $jumlahJamaah) : 0;
             $sisaPembulatanFeeAgent = $feeAgentTotal - ($feeAgentPerJamaah * $jumlahJamaah);
 
-            // Upgrade keluarga
             $totalUpgradeKeluarga = 0;
             $upgradeKeluargaData = $data['upgrade_hotels'] ?? [];
             foreach ($upgradeKeluargaData as $up) {
@@ -343,9 +343,7 @@ class KeluargaService
                 $harga = (int) ($up['harga_per_malam'] ?? 0);
                 $totalUpgradeKeluarga += $jumlahKamar * $harga * $durasi;
             }
-            $upgradeKeluargaPerJamaah = $jumlahJamaah > 0
-                ? (int) round($totalUpgradeKeluarga / $jumlahJamaah)
-                : 0;
+            $upgradeKeluargaPerJamaah = $jumlahJamaah > 0 ? (int) round($totalUpgradeKeluarga / $jumlahJamaah) : 0;
 
             $data['fee_agent'] = $feeAgentTotal;
             $data['nilai_diskon'] = (int) $diskonPerOrang;
@@ -377,7 +375,6 @@ class KeluargaService
                     $jamaahData['produk_paket'] = $data['produk_paket'];
                     $jamaahData['nilai_diskon'] = (int) $diskonPerOrang;
 
-                    // ✅ FEE AGENT PER JAMAAH
                     $feeAgentJamaah = $feeAgentPerJamaah;
                     if ($index === 0 && $sisaPembulatanFeeAgent != 0) {
                         $feeAgentJamaah += $sisaPembulatanFeeAgent;
@@ -385,7 +382,6 @@ class KeluargaService
                     $jamaahData['fee_agent'] = $feeAgentJamaah;
                     $jamaahData['agent_name'] = $data['agent'] ?? null;
 
-                    // ✅ Status kawin
                     $jamaahData['status_kawin'] = $jamaahData['status_kawin'] ?? null;
 
                     $jamaahData['is_pembuatan_passport'] = (bool) ($jamaahData['is_pembuatan_passport'] ?? false);
@@ -437,6 +433,8 @@ class KeluargaService
                         $jamaahData['total_diskon'] = (int) $diskonJamaah;
                         $jamaahData['total_tagihan_setelah_diskon'] = (int) $tagihanSetelahDiskonJamaah;
                         $jamaahData['total_dibayar'] = 0;
+                        $jamaahData['total_refund'] = 0;
+                        $jamaahData['sisa_kelebihan_bayar'] = 0;
                         $jamaahData['sisa_tagihan'] = (int) $tagihanSetelahDiskonJamaah;
                         $jamaahData['status_pembayaran'] = 'Belum Bayar';
 
@@ -459,7 +457,10 @@ class KeluargaService
                     } else {
                         $jamaah = Jamaah::find($jamaahData['id_jamaah']);
                         if ($jamaah) {
+                            // ✅ Sisa tagihan non-negatif
                             $sisaTagihanBaru = max(0, $tagihanSetelahDiskonJamaah - (int) $jamaah->total_dibayar);
+                            $totalRefund = (int) ($jamaah->total_refund ?? 0);
+                            $kelebihanBaru = max(0, (int) $jamaah->total_dibayar - $tagihanSetelahDiskonJamaah);
 
                             if ($sisaTagihanBaru <= 0 && $jamaah->total_dibayar > 0) {
                                 $statusBaru = 'Lunas';
@@ -476,6 +477,7 @@ class KeluargaService
                             $jamaahData['total_diskon'] = (int) $diskonJamaah;
                             $jamaahData['total_tagihan_setelah_diskon'] = (int) $tagihanSetelahDiskonJamaah;
                             $jamaahData['sisa_tagihan'] = (int) $sisaTagihanBaru;
+                            $jamaahData['sisa_kelebihan_bayar'] = max(0, $kelebihanBaru - $totalRefund);
                             $jamaahData['status_pembayaran'] = $statusBaru;
 
                             $jamaah->update($jamaahData);
@@ -565,9 +567,6 @@ class KeluargaService
         }
     }
 
-    // ==========================================
-    // VALIDASI KUOTA
-    // ==========================================
     private function validateKuota($idHargaBulanan, $jumlahOrang, $excludeJamaahIds = [])
     {
         if (!$idHargaBulanan) return;
@@ -599,9 +598,6 @@ class KeluargaService
         }
     }
 
-    // ==========================================
-    // FILE UPLOADS
-    // ==========================================
     private function handleFileUploads(array $jamaahData, $index, $idJamaah = null)
     {
         $fileFields = [
@@ -625,9 +621,6 @@ class KeluargaService
         return $jamaahData;
     }
 
-    // ==========================================
-    // CLEANUP FILES
-    // ==========================================
     public function cleanupUploadedFiles(array $validated)
     {
         if (empty($validated['jamaahs'])) return;
@@ -641,9 +634,6 @@ class KeluargaService
         }
     }
 
-    // ==========================================
-    // DELETE
-    // ==========================================
     public function delete($id)
     {
         return DB::transaction(function () use ($id) {
@@ -664,7 +654,7 @@ class KeluargaService
     }
 
     // ==========================================
-    // RECALCULATE
+    // RECALCULATE — ✅ UPDATE total_refund & sisa_kelebihan_bayar
     // ==========================================
     public function recalculateKeluarga($keluargaId)
     {
@@ -682,7 +672,11 @@ class KeluargaService
             $baseKotor = (int) $jamaah->total_tagihan_sebelum_diskon - ((int) $jamaah->upgradeHotels->sum('total_harga') + (int) $upgradePerJamaah);
             $totalKotor = (int) $baseKotor + (int) $totalUpgradeJamaah;
             $setelahDiskon = max(0, $totalKotor - (int) $jamaah->total_diskon);
+
+            // ✅ Sisa non-negatif
             $sisa = max(0, $setelahDiskon - (int) $jamaah->total_dibayar);
+            $totalRefundJamaah = (int) ($jamaah->total_refund ?? 0);
+            $kelebihanJamaah = max(0, (int) $jamaah->total_dibayar - $setelahDiskon);
 
             $status = $this->determinePaymentStatus((int) $jamaah->total_dibayar, (int) $setelahDiskon);
 
@@ -690,6 +684,7 @@ class KeluargaService
                 'total_tagihan_sebelum_diskon' => (int) $totalKotor,
                 'total_tagihan_setelah_diskon' => (int) $setelahDiskon,
                 'sisa_tagihan' => (int) $sisa,
+                'sisa_kelebihan_bayar' => max(0, $kelebihanJamaah - $totalRefundJamaah),
                 'status_pembayaran' => $status,
             ]);
         }
@@ -699,9 +694,13 @@ class KeluargaService
 
         $totalKotor = (int) $jamaahs->sum('total_tagihan_sebelum_diskon');
         $totalDibayar = (int) $jamaahs->sum('total_dibayar');
+        $totalRefund = (int) $jamaahs->sum('total_refund');
         $totalDiskon = (int) $jamaahs->sum('total_diskon');
         $totalSetelahDiskon = max(0, $totalKotor - $totalDiskon);
+
+        // ✅ Sisa non-negatif
         $sisaTagihan = max(0, $totalSetelahDiskon - $totalDibayar);
+        $kelebihanBayar = max(0, $totalDibayar - $totalSetelahDiskon);
         $diskonPerOrang = $jamaahs->count() > 0 ? (int) round($totalDiskon / $jamaahs->count()) : 0;
 
         $keluarga->update([
@@ -710,6 +709,8 @@ class KeluargaService
             'total_diskon' => (int) $totalDiskon,
             'total_tagihan_setelah_diskon' => (int) $totalSetelahDiskon,
             'total_dibayar' => (int) $totalDibayar,
+            'total_refund' => (int) $totalRefund,
+            'sisa_kelebihan_bayar' => max(0, $kelebihanBayar - $totalRefund),
             'sisa_tagihan' => (int) $sisaTagihan,
             'status_pembayaran' => $this->determinePaymentStatus($totalDibayar, $totalSetelahDiskon),
         ]);
@@ -732,9 +733,6 @@ class KeluargaService
         return "{$kodeProduk}-{$year}{$month}-{$number}";
     }
 
-    // ==========================================
-    // OPTIONS
-    // ==========================================
     public function getProdukPakets()
     {
         return ProdukPaket::orderBy('nama_produk')->get();
@@ -748,16 +746,8 @@ class KeluargaService
     public function getHubunganOptions()
     {
         return [
-            'Kepala Keluarga',
-            'Istri',
-            'Suami',
-            'Anak',
-            'Orang Tua',
-            'Saudara',
-            'Mertua',
-            'Cucu',
-            'Keponakan',
-            'Lainnya'
+            'Kepala Keluarga', 'Istri', 'Suami', 'Anak', 'Orang Tua',
+            'Saudara', 'Mertua', 'Cucu', 'Keponakan', 'Lainnya'
         ];
     }
 
@@ -766,11 +756,9 @@ class KeluargaService
         return Diskon::available()->orderBy('nama_diskon')->get();
     }
 
-    // ==========================================
-    // AJAX: KEBERANGKATAN BY PRODUK
-    // ==========================================
     public function getKeberangkatanByProduk($namaProduk, $excludeJamaahIds = [])
     {
+        // ... (kode tetap sama)
         $produk = ProdukPaket::where('nama_produk', $namaProduk)->first();
         if (!$produk) return ['keberangkatan' => [], 'harga_bulanan' => []];
 
@@ -787,7 +775,6 @@ class KeluargaService
                 }
 
                 $terpakai = $query->count();
-
                 $isFull = $h->kuota > 0 && $terpakai >= $h->kuota;
                 $sisa = $h->kuota > 0 ? max(0, $h->kuota - $terpakai) : -1;
 
@@ -796,16 +783,12 @@ class KeluargaService
                 else $kuotaFormatted = 'Sisa ' . $sisa . '/' . $h->kuota;
 
                 return [
-                    'id' => $h->id,
-                    'bulan' => $h->bulan,
-                    'tahun' => $h->tahun,
+                    'id' => $h->id, 'bulan' => $h->bulan, 'tahun' => $h->tahun,
                     'bulan_formatted' => $h->bulan_formatted,
                     'harga' => (int) $h->harga,
                     'harga_formatted' => 'Rp ' . number_format($h->harga, 0, ',', '.'),
-                    'kuota' => $h->kuota ?? 0,
-                    'kuota_terpakai' => $terpakai,
-                    'kuota_sisa' => $sisa,
-                    'is_full' => $isFull,
+                    'kuota' => $h->kuota ?? 0, 'kuota_terpakai' => $terpakai,
+                    'kuota_sisa' => $sisa, 'is_full' => $isFull,
                     'kuota_formatted' => $kuotaFormatted,
                 ];
             })->values()->toArray();
@@ -818,11 +801,8 @@ class KeluargaService
                 $hargaDefault = collect($hargaBulanan)->first(function ($h) use ($k) {
                     return $h['bulan'] == $k->bulan && $h['tahun'] == $k->tahun;
                 });
-
                 return [
-                    'id' => $k->id,
-                    'bulan' => $k->bulan,
-                    'tahun' => $k->tahun,
+                    'id' => $k->id, 'bulan' => $k->bulan, 'tahun' => $k->tahun,
                     'bulan_formatted' => $k->bulan_formatted,
                     'keberangkatan_formatted' => $k->keberangkatan_formatted,
                     'harga_default' => $hargaDefault ? (int) $hargaDefault['harga'] : 0,
@@ -834,9 +814,105 @@ class KeluargaService
                 ];
             })->values()->toArray();
 
-        return [
-            'keberangkatan' => $keberangkatan,
-            'harga_bulanan' => $hargaBulanan,
-        ];
+        return ['keberangkatan' => $keberangkatan, 'harga_bulanan' => $hargaBulanan];
+    }
+
+    // ==========================================
+    // ✅ PROSES REFUND
+    // ==========================================
+    public function prosesRefund($keluargaId, array $data)
+    {
+        return DB::transaction(function () use ($keluargaId, $data) {
+            $keluarga = $this->getById($keluargaId);
+
+            $jumlahRefund = (int) ($data['jumlah_refund'] ?? 0);
+            $maxRefund    = (int) $keluarga->sisa_kelebihan_bayar;
+
+            if ($jumlahRefund <= 0) {
+                throw new \Exception('Jumlah refund harus lebih dari 0.');
+            }
+            if ($jumlahRefund > $maxRefund) {
+                throw new \Exception(
+                    'Jumlah refund melebihi sisa kelebihan bayar. Maksimal: Rp ' .
+                    number_format($maxRefund, 0, ',', '.')
+                );
+            }
+
+            // Cari jenis transaksi REFUND berdasarkan nama
+            $jenisRefund = JenisTransaksi::where(function ($q) {
+                $q->where('nama', 'like', '%refund%')
+                    ->orWhere('nama', 'like', '%pengembalian%');
+            })->first();
+
+            if (!$jenisRefund) {
+                $jenisRefund = JenisTransaksi::create([
+                    'nama'       => 'Pengembalian Dana (Refund)',
+                    'keterangan' => 'Transaksi pengembalian dana ke jamaah (kelebihan bayar / pindah produk)',
+                ]);
+            }
+
+            // Distribusi refund ke jamaah berdasarkan proporsi tagihan
+            $jamaahs = $keluarga->jamaahs;
+            $totalTagihanKeluarga = (int) $keluarga->total_tagihan_setelah_diskon;
+
+            $refundPerJamaah = [];
+            $sisaRefund = $jumlahRefund;
+
+            foreach ($jamaahs as $idx => $jamaah) {
+                if ($idx === $jamaahs->count() - 1) {
+                    // Jamaah terakhir menerima sisa pembulatan
+                    $nominal = $sisaRefund;
+                } else {
+                    $proporsi = $totalTagihanKeluarga > 0
+                        ? $jamaah->total_tagihan_setelah_diskon / $totalTagihanKeluarga
+                        : 1 / $jamaahs->count();
+                    $nominal = (int) round($jumlahRefund * $proporsi);
+                    $sisaRefund -= $nominal;
+                }
+                $refundPerJamaah[] = [
+                    'jamaah' => $jamaah,
+                    'nominal' => max(0, $nominal),
+                ];
+            }
+
+            // Buat transaksi refund per jamaah
+            foreach ($refundPerJamaah as $item) {
+                if ($item['nominal'] <= 0) continue;
+                $jamaah = $item['jamaah'];
+
+                TransaksiPembayaran::create([
+                    'id_jamaah'            => $jamaah->id_jamaah,
+                    'id_metode_pembayaran' => $data['id_metode_pembayaran'],
+                    'id_jenis_transaksi'   => $jenisRefund->id_jenis,
+                    'tanggal_transaksi'    => $data['tanggal_transaksi'] ?? now()->toDateString(),
+                    'jumlah_bayar'         => $item['nominal'],
+                    'jenis_mutasi'         => 'keluar',
+                    'bukti_pembayaran'     => $data['bukti_pembayaran'] ?? null,
+                    'keterangan'           => $data['keterangan'] ?? 'Pengembalian kelebihan bayar keluarga',
+                    'keterangan_refund'    => $data['keterangan_refund'] ?? null,
+                    'created_by'           => Auth::user()->name ?? 'System',
+                ]);
+
+                // Update total_refund & sisa_kelebihan_bayar di jamaah
+                $totalRefundJamaah = (int) ($jamaah->total_refund ?? 0) + $item['nominal'];
+                $sisaKelebihanJamaah = max(0, $jamaah->kelebihan_bayar - $totalRefundJamaah);
+
+                $jamaah->update([
+                    'total_refund'         => $totalRefundJamaah,
+                    'sisa_kelebihan_bayar' => $sisaKelebihanJamaah,
+                ]);
+            }
+
+            // Update total_refund keluarga
+            $totalRefundKeluarga = (int) ($keluarga->total_refund ?? 0) + $jumlahRefund;
+            $sisaKelebihanKeluarga = max(0, $keluarga->kelebihan_bayar - $totalRefundKeluarga);
+
+            $keluarga->update([
+                'total_refund'         => $totalRefundKeluarga,
+                'sisa_kelebihan_bayar' => $sisaKelebihanKeluarga,
+            ]);
+
+            return $keluarga->fresh();
+        });
     }
 }

@@ -1,0 +1,7 @@
+{
+    "[blade]": {
+        "editor.formatOnSave": false,
+        "editor.defaultFormatter": null
+    },
+    "bladeFormatter.format.enabled": false
+}

@@ -1,3 +1,4 @@
+{{-- blade-formatter-disable --}}
 @extends('layouts.app')
 
 @section('title', 'Edit Keluarga / Kelompok - Arrum Tour')
@@ -385,108 +386,18 @@
                         </div>
 
                         <div id="jamaahContainer">
-                            @php
-                                $jamaahData =
-                                    old('jamaahs') ??
-                                    $keluarga->jamaahs
-                                        ->map(function ($jamaah) {
-                                            return [
-                                                'id_jamaah' => $jamaah->id_jamaah,
-                                                'nama_lengkap' => $jamaah->nama_lengkap,
-                                                'nik' => $jamaah->nik,
-                                                'nama_ayah' => $jamaah->nama_ayah,
-                                                'pekerjaan' => $jamaah->pekerjaan,
-                                                'hubungan_keluarga' => $jamaah->hubungan_keluarga,
-                                                'is_kepala_keluarga' => $jamaah->is_kepala_keluarga,
-                                                'jenis_kelamin' => $jamaah->jenis_kelamin,
-                                                'status_kawin' => $jamaah->status_kawin,
-                                                'telepon' => $jamaah->telepon,
-                                                'wa' => $jamaah->wa,
-                                                'alamat' => $jamaah->alamat,
-                                                'kota_kabupaten' => $jamaah->kota_kabupaten,
-                                                'kecamatan' => $jamaah->kecamatan,
-                                                'kelurahan' => $jamaah->kelurahan,
-                                                'kota_asal' => $jamaah->kota_asal,
-                                                'pulau' => $jamaah->pulau,
-                                                'bandara_keberangkatan' => $jamaah->bandara_keberangkatan,
-                                                'nomor_paspor' => $jamaah->nomor_paspor,
-                                                'paspor_terbit' => $jamaah->paspor_terbit
-                                                    ? $jamaah->paspor_terbit->format('Y-m-d')
-                                                    : null,
-                                                'paspor_expired' => $jamaah->paspor_expired
-                                                    ? $jamaah->paspor_expired->format('Y-m-d')
-                                                    : null,
-                                                'paspor_diterbitkan_di' => $jamaah->paspor_diterbitkan_di,
-                                                'tempat_lahir' => $jamaah->tempat_lahir,
-                                                'tanggal_lahir' => $jamaah->tanggal_lahir
-                                                    ? $jamaah->tanggal_lahir->format('Y-m-d')
-                                                    : null,
-                                                'is_pembuatan_passport' => $jamaah->is_pembuatan_passport,
-                                                'pendampingan_fee' => $jamaah->pendampingan_fee,
-                                                'pendampingan_fee_petugas' => $jamaah->pendampingan_fee_petugas,
-                                                'file_ktp_kk' => $jamaah->file_ktp_kk,
-                                                'file_vaksin' => $jamaah->file_vaksin,
-                                                'file_visa' => $jamaah->file_visa,
-                                                'file_paspor' => $jamaah->file_paspor,
-                                                'upgrade_hotels' => $jamaah->upgradeHotels
-                                                    ->map(function ($u) {
-                                                        return [
-                                                            'id_hotel' => $u->id_hotel,
-                                                            'id_kamar' => $u->id_kamar,
-                                                            'tipe_kamar' => $u->tipe_kamar,
-                                                            'jumlah_kamar' => $u->jumlah_kamar,
-                                                            'durasi_menginap' => $u->durasi_menginap,
-                                                            'harga_per_malam' => $u->harga_per_malam,
-                                                        ];
-                                                    })
-                                                    ->toArray(),
-                                            ];
-                                        })
-                                        ->toArray();
-
-                                if (empty($jamaahData)) {
-                                    $jamaahData = [
-                                        [
-                                            'id_jamaah' => '',
-                                            'nama_lengkap' => '',
-                                            'nik' => '',
-                                            'nama_ayah' => '',
-                                            'pekerjaan' => '',
-                                            'hubungan_keluarga' => '',
-                                            'is_kepala_keluarga' => true,
-                                            'jenis_kelamin' => '',
-                                            'status_kawin' => '',
-                                            'telepon' => '',
-                                            'wa' => '',
-                                            'alamat' => '',
-                                            'kota_kabupaten' => '',
-                                            'kecamatan' => '',
-                                            'kelurahan' => '',
-                                            'kota_asal' => '',
-                                            'pulau' => '',
-                                            'bandara_keberangkatan' => '',
-                                            'nomor_paspor' => '',
-                                            'paspor_terbit' => null,
-                                            'paspor_expired' => null,
-                                            'paspor_diterbitkan_di' => '',
-                                            'tempat_lahir' => '',
-                                            'tanggal_lahir' => '',
-                                            'is_pembuatan_passport' => false,
-                                            'pendampingan_fee' => 0,
-                                            'pendampingan_fee_petugas' => 0,
-                                            'file_ktp_kk' => null,
-                                            'file_vaksin' => null,
-                                            'file_visa' => null,
-                                            'file_paspor' => null,
-                                            'upgrade_hotels' => [],
-                                        ],
-                                    ];
-                                }
-                            @endphp
-
                             @foreach ($jamaahData as $index => $jamaah)
                                 @php
                                     $jamaahUpgradeList = $jamaah['upgrade_hotels'] ?? [];
+                                    $isPassport = ($jamaah['is_pembuatan_passport'] ?? 0) == 1;
+                                    $jamaahUpgradeTotal = $jamaah['upgrade_hotels'] ?? [];
+                                    $totalJamaahUp = 0;
+                                    foreach ($jamaahUpgradeTotal as $up) {
+                                        $totalJamaahUp +=
+                                            (int) ($up['jumlah_kamar'] ?? 1) *
+                                            (int) ($up['harga_per_malam'] ?? 0) *
+                                            (int) ($up['durasi_menginap'] ?? 1);
+                                    }
                                 @endphp
                                 <div class="jamaah-row bg-gray-50 rounded-xl p-4 mb-3 border border-gray-200"
                                     id="jamaah-row-{{ $index }}">
@@ -558,7 +469,6 @@
                                                     Perempuan</option>
                                             </select>
                                         </div>
-                                        {{-- ✅ Status Kawin --}}
                                         <div>
                                             <label class="block text-xs font-medium text-gray-600 mb-1">
                                                 Status Kawin <span class="text-red-500">*</span>
@@ -790,9 +700,6 @@
 
                                         <!-- Pembuatan Passport -->
                                         <div class="mt-3 pt-3 border-t border-gray-200">
-                                            @php
-                                                $isPassport = ($jamaah['is_pembuatan_passport'] ?? 0) == 1;
-                                            @endphp
                                             <div class="mb-3">
                                                 <label class="block text-xs font-medium text-gray-600 mb-1.5">
                                                     Apakah ada Pembuatan Passport? <span class="text-red-500">*</span>
@@ -954,16 +861,6 @@
                                                 </span>
                                                 <span id="totalUpgradeJamaah-{{ $index }}"
                                                     class="text-sm font-bold text-orange-600">
-                                                    @php
-                                                        $jamaahUpgradeTotal = $jamaah['upgrade_hotels'] ?? [];
-                                                        $totalJamaahUp = 0;
-                                                        foreach ($jamaahUpgradeTotal as $up) {
-                                                            $totalJamaahUp +=
-                                                                (int) ($up['jumlah_kamar'] ?? 1) *
-                                                                (int) ($up['harga_per_malam'] ?? 0) *
-                                                                (int) ($up['durasi_menginap'] ?? 1);
-                                                        }
-                                                    @endphp
                                                     Rp {{ number_format($totalJamaahUp, 0, ',', '.') }}
                                                 </span>
                                             </div>
@@ -1057,7 +954,7 @@
                             @endforeach
                         </div>
 
-                        {{-- ✅ Tombol Tambah Jamaah dipindah ke BAWAH --}}
+                        {{-- Tombol Tambah Jamaah --}}
                         <div class="mt-4 flex justify-center">
                             <button type="button" onclick="addJamaah()"
                                 class="inline-flex items-center px-6 py-2.5 bg-green-500 text-white rounded-lg hover:bg-green-600 transition text-sm font-medium shadow-sm">
@@ -1088,6 +985,44 @@
         </div>
     </div>
 
+    {{-- Data upgrade hotel disiapkan di PHP agar tidak memicu ParseError pada @json() --}}
+    @php
+        $existingUpgradeKeluarga = $keluarga->upgradeHotels
+            ->map(function ($u) {
+                return [
+                    'id_hotel' => $u->id_hotel,
+                    'id_kamar' => $u->id_kamar,
+                    'tipe_kamar' => $u->tipe_kamar,
+                    'jumlah_kamar' => $u->jumlah_kamar,
+                    'durasi_menginap' => $u->durasi_menginap,
+                    'harga_per_malam' => $u->harga_per_malam,
+                ];
+            })
+            ->values()
+            ->toArray();
+
+        $existingUpgradeJamaah = $keluarga->jamaahs
+            ->mapWithKeys(function ($j) {
+                return [
+                    $j->id_jamaah => $j->upgradeHotels
+                        ->map(function ($u) {
+                            return [
+                                'id_hotel' => $u->id_hotel,
+                                'id_kamar' => $u->id_kamar,
+                                'tipe_kamar' => $u->tipe_kamar,
+                                'jumlah_kamar' => $u->jumlah_kamar,
+                                'durasi_menginap' => $u->durasi_menginap,
+                                'harga_per_malam' => $u->harga_per_malam,
+                            ];
+                        })
+                        ->values()
+                        ->toArray(),
+                ];
+            })
+            ->toArray();
+    @endphp
+
+    {{-- ⬇️⬇️⬇️ JS LAMA ANDA TETAP DI SINI ⬇️⬇️⬇️ --}}
     @push('scripts')
         <script>
             // ==========================================
@@ -1096,7 +1031,6 @@
             var globalKeberangkatanList = [];
             var globalHargaBulananList = [];
 
-            // ✅ FIX: Data server-side untuk template JS
             window.__KELUARGA_DATA__ = {
                 hotelOptions: @json($hotelOptions),
                 hubunganOptions: @json($hubunganOptions),
@@ -1108,33 +1042,9 @@
             var OLD_ID_KEBERANGKATAN = parseInt(
                 "{{ old('id_produk_keberangkatan', $keluarga->id_produk_keberangkatan) ?: 0 }}") || 0;
 
-            var EXISTING_UPGRADE_KELUARGA = @json(
-                $keluarga->upgradeHotels->map(function ($u) {
-                        return [
-                            'id_hotel' => $u->id_hotel,
-                            'id_kamar' => $u->id_kamar,
-                            'tipe_kamar' => $u->tipe_kamar,
-                            'jumlah_kamar' => $u->jumlah_kamar,
-                            'durasi_menginap' => $u->durasi_menginap,
-                            'harga_per_malam' => $u->harga_per_malam,
-                        ];
-                    })->values()->toArray());
+          var EXISTING_UPGRADE_KELUARGA = {{ Illuminate\Support\Js::from($existingUpgradeKeluarga) }};
 
-            var EXISTING_UPGRADE_JAMAAH = @json(
-                $keluarga->jamaahs->mapWithKeys(function ($j) {
-                        return [
-                            $j->id_jamaah => $j->upgradeHotels->map(function ($u) {
-                                    return [
-                                        'id_hotel' => $u->id_hotel,
-                                        'id_kamar' => $u->id_kamar,
-                                        'tipe_kamar' => $u->tipe_kamar,
-                                        'jumlah_kamar' => $u->jumlah_kamar,
-                                        'durasi_menginap' => $u->durasi_menginap,
-                                        'harga_per_malam' => $u->harga_per_malam,
-                                    ];
-                                })->values()->toArray(),
-                        ];
-                    })->toArray());
+var EXISTING_UPGRADE_JAMAAH = {{ Illuminate\Support\Js::from($existingUpgradeJamaah) }};
 
             // ==========================================
             // FORMAT RUPIAH
@@ -1847,7 +1757,7 @@
             }
 
             // ==========================================
-            // LOAD KAMARS
+            // LOAD KAMARS (FIXED — pakai string concatenation)
             // ==========================================
             function loadKamarsUpgrade(scope, hotelId, container) {
                 container.innerHTML =
@@ -1862,11 +1772,14 @@
                             return;
                         }
 
-                        container.innerHTML = '<div class="grid grid-cols-1 gap-2">' + data.html + '</div>' +
-                            `<div class="mt-1 flex items-center justify-between bg-orange-50 rounded px-2 py-1">
-                                <span class="text-[10px] font-medium text-gray-600">Subtotal hotel ini:</span>
-                                <span class="text-xs font-bold text-orange-600 subtotal-hotel-${scope}-${hotelId}">Rp 0</span>
-                            </div>`;
+                        var subtotalClass = 'subtotal-hotel-' + scope + '-' + hotelId;
+
+                        container.innerHTML =
+                            '<div class="grid grid-cols-1 gap-2">' + data.html + '</div>' +
+                            '<div class="mt-1 flex items-center justify-between bg-orange-50 rounded px-2 py-1">' +
+                            '<span class="text-[10px] font-medium text-gray-600">Subtotal hotel ini:</span>' +
+                            '<span class="text-xs font-bold text-orange-600 ' + subtotalClass + '">Rp 0</span>' +
+                            '</div>';
 
                         container.querySelectorAll('.kamar-checkbox').forEach(cb => {
                             cb.addEventListener('change', () => {
@@ -1893,7 +1806,6 @@
                             });
                         });
 
-                        // Auto-restore existing upgrades
                         restoreExistingUpgrades(scope, hotelId, container);
                     })
                     .catch(err => {
@@ -1965,7 +1877,7 @@
             }
 
             // ==========================================
-            // HIDDEN INPUTS
+            // HIDDEN INPUTS (FIXED — pakai concatenation)
             // ==========================================
             function updateUpgradeHiddenInputs(scope, hotelId, container) {
                 removeUpgradeHiddenInputs(scope, hotelId);
@@ -1975,11 +1887,11 @@
 
                 if (scope === 'keluarga') {
                     parentForm = document.getElementById('keluargaForm');
-                    fieldPrefix = `upgrade_hotels`;
+                    fieldPrefix = 'upgrade_hotels';
                 } else {
                     const idx = parseInt(scope.replace('jamaah-', ''));
                     parentForm = document.getElementById('jamaah-row-' + idx);
-                    fieldPrefix = `jamaahs[${idx}][upgrade_hotels]`;
+                    fieldPrefix = 'jamaahs[' + idx + '][upgrade_hotels]';
                 }
 
                 if (!parentForm) return;
@@ -1996,23 +1908,27 @@
                     const durasi = parseInt(item.querySelector('.kamar-durasi').value) || 1;
                     subtotal += jumlah * harga * durasi;
 
-                    const uniqueKey = `${fieldPrefix}[${hotelId}_${cb.value}]`;
-                    const grp = document.createElement('div');
+                    var uniqueKey = fieldPrefix + '[' + hotelId + '_' + cb.value + ']';
+                    var tipeKamar = cb.dataset.tipe || '';
+
+                    var grp = document.createElement('div');
                     grp.className = 'upgrade-hidden-group';
                     grp.dataset.scope = scope;
                     grp.dataset.hotelId = hotelId;
-                    grp.innerHTML = `
-                        <input type="hidden" name="${uniqueKey}[id_hotel]" value="${hotelId}">
-                        <input type="hidden" name="${uniqueKey}[id_kamar]" value="${cb.value}">
-                        <input type="hidden" name="${uniqueKey}[tipe_kamar]" value="${cb.dataset.tipe}">
-                        <input type="hidden" name="${uniqueKey}[jumlah_kamar]" value="${jumlah}">
-                        <input type="hidden" name="${uniqueKey}[durasi_menginap]" value="${durasi}">
-                        <input type="hidden" name="${uniqueKey}[harga_per_malam]" value="${harga}">
-                    `;
+
+                    grp.innerHTML =
+                        '<input type="hidden" name="' + uniqueKey + '[id_hotel]" value="' + hotelId + '">' +
+                        '<input type="hidden" name="' + uniqueKey + '[id_kamar]" value="' + cb.value + '">' +
+                        '<input type="hidden" name="' + uniqueKey + '[tipe_kamar]" value="' + tipeKamar + '">' +
+                        '<input type="hidden" name="' + uniqueKey + '[jumlah_kamar]" value="' + jumlah + '">' +
+                        '<input type="hidden" name="' + uniqueKey + '[durasi_menginap]" value="' + durasi + '">' +
+                        '<input type="hidden" name="' + uniqueKey + '[harga_per_malam]" value="' + harga + '">';
+
                     parentForm.appendChild(grp);
                 });
 
-                const subtotalEl = container.querySelector(`.subtotal-hotel-${scope}-${hotelId}`);
+                var subtotalSelector = '.subtotal-hotel-' + scope + '-' + hotelId;
+                const subtotalEl = container.querySelector(subtotalSelector);
                 if (subtotalEl) subtotalEl.textContent = 'Rp ' + subtotal.toLocaleString('id-ID');
             }
 
@@ -2025,23 +1941,22 @@
                     parentForm = document.getElementById('jamaah-row-' + idx);
                 }
                 if (!parentForm) return;
-                parentForm.querySelectorAll(`.upgrade-hidden-group[data-scope="${scope}"][data-hotel-id="${hotelId}"]`)
-                    .forEach(el => el.remove());
+
+                var selector = '.upgrade-hidden-group[data-scope="' + scope + '"][data-hotel-id="' + hotelId + '"]';
+                parentForm.querySelectorAll(selector).forEach(el => el.remove());
             }
 
             // ==========================================
-            // ✅ ADD JAMAAH — FIX untuk semua 3 bug
+            // ADD JAMAAH
             // ==========================================
             function addJamaah() {
                 const container = document.getElementById('jamaahContainer');
                 const row = document.createElement('div');
                 row.className = 'jamaah-row bg-gray-50 rounded-xl p-4 mb-3 border border-gray-200';
 
-                // ✅ SIMPAN INDEX LOKAL SEBELUM INCREMENT
                 const idx = jamaahIndex;
                 row.id = 'jamaah-row-' + idx;
 
-                // ✅ BUILD hotelUpgradeOptions pakai concatenation
                 var hotelUpgradeOptions = '';
                 var hotelList = window.__KELUARGA_DATA__.hotelOptions || [];
                 hotelList.forEach(function(hotel) {
@@ -2414,7 +2329,6 @@
 
                 container.appendChild(row);
 
-                // ✅ Auto-setup kota-asal listener
                 var kotaAsalSelect = row.querySelector('.kota-asal-select');
                 if (kotaAsalSelect) {
                     kotaAsalSelect.addEventListener('change', function() {
@@ -2426,7 +2340,6 @@
                     });
                 }
 
-                // ✅ INCREMENT SETELAH ROW SELESAI
                 jamaahIndex++;
                 hitungDiskonKelompok();
                 updateTotalUpgradeKeluarga();
@@ -2501,7 +2414,6 @@
                 hitungDiskonKelompok();
                 updateFeeAgentPerJamaah();
 
-                // Auto-restore existing upgrades
                 setTimeout(function() {
                     if (EXISTING_UPGRADE_KELUARGA.length > 0) {
                         document.querySelectorAll(
@@ -2565,7 +2477,8 @@
                             if (keberangkatanFull || selectedHargaFull) {
                                 e.preventDefault();
                                 alert(
-                                    '⚠️ Kuota bulan/tahun yang dipilih sudah PENUH!\n\nSilakan pilih bulan/tahun lain.');
+                                    '⚠️ Kuota bulan/tahun yang dipilih sudah PENUH!\n\nSilakan pilih bulan/tahun lain.'
+                                );
                                 return false;
                             }
                         }
@@ -2575,3 +2488,5 @@
         </script>
     @endpush
 @endsection
+
+{{-- blade-formatter-enable --}}

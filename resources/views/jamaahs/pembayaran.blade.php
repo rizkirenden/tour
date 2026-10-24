@@ -52,6 +52,7 @@
                                     {{ $jamaah->id_keberangkatan }}
                                 </span>
                                 {!! $jamaah->status_pembayaran_badge !!}
+                                {!! $jamaah->kelebihan_bayar_badge !!}
                             </div>
                             <p class="text-gray-500 text-sm mt-1">
                                 <i class="fas fa-box mr-1"></i> Produk: {{ $jamaah->produk_paket }}
@@ -62,7 +63,6 @@
                             <p class="text-gray-500 text-sm">
                                 <i class="fas fa-phone mr-1"></i> Telepon: {{ $jamaah->telepon ?? '-' }}
                             </p>
-                            {{-- ✅ NEW: Status Kawin --}}
                             <p class="text-gray-500 text-sm">
                                 <i class="fas fa-heart mr-1"></i> Status Kawin:
                                 <span class="font-medium text-gray-700">{{ $jamaah->status_kawin ?? '-' }}</span>
@@ -84,6 +84,11 @@
                     <div class="bg-green-50 rounded-xl p-4 border border-green-200 text-center">
                         <p class="text-xs text-gray-500">Total Dibayar</p>
                         <p class="text-xl font-bold text-green-600">{{ $jamaah->total_dibayar_formatted }}</p>
+                        @if ($jamaah->total_refund > 0)
+                            <p class="text-[10px] text-gray-400 mt-1">
+                                Net: {{ $jamaah->net_dibayar_formatted }}
+                            </p>
+                        @endif
                     </div>
                     <div class="bg-red-50 rounded-xl p-4 border border-red-200 text-center">
                         <p class="text-xs text-gray-500">Sisa Tagihan</p>
@@ -94,6 +99,142 @@
                         <p class="text-xl font-bold text-blue-600">{!! $jamaah->status_pembayaran_badge !!}</p>
                     </div>
                 </div>
+
+                {{-- ✅ ALERT KELEBIHAN BAYAR + TOMBOL REFUND --}}
+                @if ($jamaah->sisa_kelebihan_bayar > 0)
+                    <div class="bg-amber-50 border-2 border-amber-400 rounded-xl p-4 mb-6">
+                        <div class="flex flex-wrap items-start justify-between gap-3">
+                            <div class="flex-1 min-w-[250px]">
+                                <p class="text-sm font-bold text-amber-800 flex items-center gap-2">
+                                    <i class="fas fa-hand-holding-usd text-lg"></i>
+                                    ADA KELEBIHAN BAYAR
+                                </p>
+                                <p class="text-xs text-amber-700 mt-1">
+                                    Jamaah sudah membayar melebihi tagihan (kemungkinan pindah produk / harga lebih murah).
+                                    Silakan proses pengembalian dana (refund).
+                                </p>
+                                <div class="mt-2 grid grid-cols-2 md:grid-cols-3 gap-2 text-xs">
+                                    <div class="bg-white rounded p-2 border border-amber-200">
+                                        <span class="text-gray-500">Total Dibayar:</span>
+                                        <span class="font-bold text-gray-700">{{ $jamaah->total_dibayar_formatted }}</span>
+                                    </div>
+                                    <div class="bg-white rounded p-2 border border-amber-200">
+                                        <span class="text-gray-500">Total Tagihan:</span>
+                                        <span
+                                            class="font-bold text-gray-700">{{ $jamaah->total_tagihan_setelah_diskon_formatted }}</span>
+                                    </div>
+                                    <div class="bg-white rounded p-2 border border-amber-300">
+                                        <span class="text-gray-500">Sisa Kelebihan:</span>
+                                        <span
+                                            class="font-bold text-amber-700">{{ $jamaah->sisa_kelebihan_bayar_formatted }}</span>
+                                    </div>
+                                </div>
+                                @if ($jamaah->total_refund > 0)
+                                    <p class="text-xs text-gray-500 mt-1">
+                                        Sudah di-refund: <strong>{{ $jamaah->total_refund_formatted }}</strong>
+                                    </p>
+                                @endif
+                            </div>
+                            <button type="button" onclick="openRefundModal()"
+                                class="inline-flex items-center px-4 py-2 bg-amber-500 text-white rounded-lg hover:bg-amber-600 transition text-sm font-medium whitespace-nowrap">
+                                <i class="fas fa-undo-alt mr-2"></i> Proses Refund
+                            </button>
+                        </div>
+                    </div>
+
+                    {{-- MODAL REFUND --}}
+                    <div id="refundModal" class="fixed inset-0 bg-black/50 z-50 hidden flex items-center justify-center p-4">
+                        <div class="bg-white rounded-2xl max-w-md w-full max-h-[90vh] overflow-y-auto">
+                            <div
+                                class="sticky top-0 bg-white px-6 py-4 border-b border-gray-200 flex items-center justify-between">
+                                <h5 class="text-lg font-semibold text-gray-800 flex items-center">
+                                    <i class="fas fa-hand-holding-usd text-amber-500 mr-2"></i> Proses Refund
+                                </h5>
+                                <button type="button" onclick="closeRefundModal()"
+                                    class="text-gray-400 hover:text-gray-600">
+                                    <i class="fas fa-times text-xl"></i>
+                                </button>
+                            </div>
+                            <form action="{{ route('transaksional.jamaah.proses-refund', $jamaah->id_jamaah) }}"
+                                method="POST" enctype="multipart/form-data" class="p-6 space-y-4">
+                                @csrf
+
+                                <div class="bg-amber-50 rounded-lg p-3 border border-amber-200">
+                                    <p class="text-xs text-amber-700">
+                                        <i class="fas fa-info-circle mr-1"></i>
+                                        Sisa kelebihan yang bisa di-refund:
+                                        <strong class="text-amber-800">{{ $jamaah->sisa_kelebihan_bayar_formatted }}</strong>
+                                    </p>
+                                </div>
+
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-1.5">
+                                        Metode Pengembalian <span class="text-red-500">*</span>
+                                    </label>
+                                    <select name="id_metode_pembayaran" required
+                                        class="w-full px-4 py-2 border border-gray-200 rounded-xl focus:ring-2 focus:ring-amber-500 focus:border-amber-500 text-sm">
+                                        <option value="">-- Pilih Metode --</option>
+                                        @foreach ($metodePembayarans as $m)
+                                            <option value="{{ $m->id_metode }}">
+                                                {{ $m->kode_bank ?? ($m->e_wallet_type ?? $m->jenis_pembayaran) }}
+                                                - {{ $m->nama_bank ?? $m->jenis_pembayaran }}
+                                            </option>
+                                        @endforeach
+                                    </select>
+                                </div>
+
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-1.5">
+                                        Tanggal Refund <span class="text-red-500">*</span>
+                                    </label>
+                                    <input type="date" name="tanggal_transaksi" value="{{ date('Y-m-d') }}" required
+                                        class="w-full px-4 py-2 border border-gray-200 rounded-xl focus:ring-2 focus:ring-amber-500 focus:border-amber-500 text-sm">
+                                </div>
+
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-1.5">
+                                        Jumlah Refund <span class="text-red-500">*</span>
+                                    </label>
+                                    <div class="relative">
+                                        <span
+                                            class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm">Rp</span>
+                                        <input type="text" name="jumlah_refund" id="jumlah_refund"
+                                            value="{{ number_format($jamaah->sisa_kelebihan_bayar, 0, ',', '.') }}"
+                                            required oninput="formatRupiahRefund(this)"
+                                            class="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-xl focus:ring-2 focus:ring-amber-500 focus:border-amber-500 text-lg">
+                                    </div>
+                                    <p class="text-xs text-gray-400 mt-1">
+                                        Maksimal: {{ $jamaah->sisa_kelebihan_bayar_formatted }}
+                                    </p>
+                                </div>
+
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-1.5">
+                                        Bukti Refund <span class="text-xs text-gray-400">(opsional)</span>
+                                    </label>
+                                    <input type="file" name="bukti_pembayaran" accept=".pdf,.jpg,.jpeg,.png"
+                                        class="w-full px-3 py-2 border border-gray-200 rounded-xl text-sm file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-sm file:font-medium file:bg-amber-50 file:text-amber-700 hover:file:bg-amber-100">
+                                </div>
+
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-1.5">Keterangan</label>
+                                    <textarea name="keterangan" rows="2"
+                                        class="w-full px-4 py-2 border border-gray-200 rounded-xl focus:ring-2 focus:ring-amber-500 focus:border-amber-500 text-sm"
+                                        placeholder="Contoh: Pengembalian kelebihan bayar karena pindah produk"></textarea>
+                                </div>
+
+                                <div class="flex items-center justify-end gap-3 pt-4 border-t border-gray-100">
+                                    <button type="button" onclick="closeRefundModal()"
+                                        class="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition">Batal</button>
+                                    <button type="submit"
+                                        class="px-4 py-2 bg-amber-500 text-white rounded-lg hover:bg-amber-600 transition">
+                                        <i class="fas fa-check-circle mr-2"></i> Proses Refund
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                @endif
 
                 <!-- Detail Tagihan -->
                 <div class="bg-gray-50 rounded-xl p-5 border border-gray-100 mb-6">
@@ -232,7 +373,6 @@
                             <span class="ml-2 text-xs text-gray-400">(sudah termasuk total tagihan)</span>
                         </h6>
 
-                        {{-- Ringkasan --}}
                         <div class="grid grid-cols-1 md:grid-cols-3 gap-3 mb-4">
                             <div class="bg-white rounded-lg p-3 border border-orange-200 text-center">
                                 <p class="text-xs text-gray-500">Upgrade Personal</p>
@@ -253,7 +393,6 @@
                             </div>
                         </div>
 
-                        {{-- Detail Personal --}}
                         @if ($jamaah->upgradeHotels->count() > 0)
                             <div class="overflow-x-auto mb-3">
                                 <table class="w-full text-sm bg-white rounded-lg overflow-hidden">
@@ -299,7 +438,6 @@
                             </div>
                         @endif
 
-                        {{-- Info Share Keluarga --}}
                         @if ($jamaah->id_keluarga && $jamaah->keluarga && $jamaah->keluarga->upgradeHotels->count() > 0)
                             <div class="bg-purple-100 rounded-lg p-3 border border-purple-300">
                                 <p class="text-xs text-purple-700">
@@ -368,7 +506,18 @@
                                         $sortedTransaksis = $transaksis->sortBy('created_at');
                                     @endphp
                                     @foreach ($sortedTransaksis as $index => $transaksi)
-                                        <tr class="hover:bg-gray-50 transition-colors">
+                                        @php
+                                            $isRefund = ($transaksi->jenis_mutasi ?? 'masuk') === 'keluar';
+                                            $rowClass = $isRefund ? 'bg-amber-50/40' : '';
+                                            $jenisNama = strtolower(trim((string) ($transaksi->jenisTransaksi->nama ?? '')));
+                                            $isLunasJenis =
+                                                str_contains($jenisNama, 'lunas') || str_contains($jenisNama, 'pelunasan');
+                                            $isDpJenis =
+                                                str_contains($jenisNama, 'down payment') ||
+                                                preg_match('/\bdp\b/', $jenisNama) ||
+                                                str_contains($jenisNama, 'pembayaran awal');
+                                        @endphp
+                                        <tr class="hover:bg-gray-50 transition-colors {{ $rowClass }}">
                                             <td class="px-3 py-2 text-gray-400 text-xs">{{ $loop->iteration }}</td>
                                             <td class="px-3 py-2 text-gray-600">
                                                 {{ $transaksi->tanggal_transaksi_formatted }}
@@ -382,18 +531,38 @@
                                                 </p>
                                             </td>
                                             <td class="px-3 py-2">
-                                                <span
-                                                    class="px-2 py-1 rounded-full text-xs font-medium
-                                                    {{ $transaksi->jenisTransaksi->kode == 'DP'
-                                                        ? 'bg-yellow-100 text-yellow-700'
-                                                        : ($transaksi->jenisTransaksi->kode == 'LUNAS'
-                                                            ? 'bg-green-100 text-green-700'
-                                                            : 'bg-blue-100 text-blue-700') }}">
-                                                    {{ $transaksi->jenisTransaksi->nama ?? '-' }}
-                                                </span>
+                                                @if ($isRefund)
+                                                    <span
+                                                        class="px-2 py-1 rounded-full text-xs font-bold bg-amber-200 text-amber-800">
+                                                        <i class="fas fa-undo-alt mr-1"></i>REFUND
+                                                    </span>
+                                                @elseif ($isLunasJenis)
+                                                    <span
+                                                        class="px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-700">
+                                                        {{ $transaksi->jenisTransaksi->nama ?? '-' }}
+                                                    </span>
+                                                @elseif ($isDpJenis)
+                                                    <span
+                                                        class="px-2 py-1 rounded-full text-xs font-medium bg-yellow-100 text-yellow-700">
+                                                        {{ $transaksi->jenisTransaksi->nama ?? '-' }}
+                                                    </span>
+                                                @else
+                                                    <span
+                                                        class="px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-700">
+                                                        {{ $transaksi->jenisTransaksi->nama ?? '-' }}
+                                                    </span>
+                                                @endif
                                             </td>
-                                            <td class="px-3 py-2 text-right font-medium text-gray-800">
-                                                {{ $transaksi->jumlah_bayar_formatted }}
+                                            <td
+                                                class="px-3 py-2 text-right font-medium {{ $isRefund ? 'text-amber-600' : 'text-gray-800' }}">
+                                                @if ($isRefund)
+                                                    <span class="inline-flex items-center gap-1">
+                                                        <i class="fas fa-arrow-down text-[10px]"></i>
+                                                        −{{ $transaksi->jumlah_bayar_formatted }}
+                                                    </span>
+                                                @else
+                                                    {{ $transaksi->jumlah_bayar_formatted }}
+                                                @endif
                                             </td>
                                             <td class="px-3 py-2 text-center">
                                                 @if ($transaksi->bukti_pembayaran_url)
@@ -409,9 +578,10 @@
                                                 {{ $transaksi->keterangan ?? '-' }}
                                             </td>
                                             <td class="px-3 py-2 text-center">
-                                                <button onclick="confirmDeleteTransaksi({{ $transaksi->id_transaksi }})"
+                                                <button
+                                                    onclick="confirmDeleteTransaksi({{ $transaksi->id_transaksi }})"
                                                     class="text-red-500 hover:text-red-700 transition-colors duration-200"
-                                                    title="Hapus Transaksi">
+                                                    title="{{ $isRefund ? 'Hapus Refund' : 'Hapus Transaksi' }}">
                                                     <i class="fas fa-trash text-sm"></i>
                                                 </button>
                                                 <form id="delete-transaksi-form-{{ $transaksi->id_transaksi }}"
@@ -424,6 +594,38 @@
                                         </tr>
                                     @endforeach
                                 </tbody>
+                                <tfoot class="bg-gray-100 border-t-2 border-gray-300">
+                                    <tr>
+                                        <td colspan="4" class="px-3 py-2 text-right font-bold text-gray-700">
+                                            Total Masuk:
+                                        </td>
+                                        <td class="px-3 py-2 text-right font-bold text-green-700">
+                                            {{ $jamaah->total_dibayar_formatted }}
+                                        </td>
+                                        <td colspan="3"></td>
+                                    </tr>
+                                    @if ($jamaah->total_refund > 0)
+                                        <tr>
+                                            <td colspan="4" class="px-3 py-2 text-right font-bold text-gray-700">
+                                                Total Refund:
+                                            </td>
+                                            <td class="px-3 py-2 text-right font-bold text-amber-700">
+                                                <i class="fas fa-arrow-down text-[10px] mr-1"></i>
+                                                −{{ $jamaah->total_refund_formatted }}
+                                            </td>
+                                            <td colspan="3"></td>
+                                        </tr>
+                                        <tr class="bg-amber-100">
+                                            <td colspan="4" class="px-3 py-2 text-right font-bold text-gray-800">
+                                                NET DITERIMA:
+                                            </td>
+                                            <td class="px-3 py-2 text-right font-bold text-gray-800">
+                                                {{ $jamaah->net_dibayar_formatted }}
+                                            </td>
+                                            <td colspan="3"></td>
+                                        </tr>
+                                    @endif
+                                </tfoot>
                             </table>
                         </div>
                     @else
@@ -507,18 +709,36 @@
                                 required>
                                 <option value="">-- Pilih Jenis Transaksi --</option>
                                 @foreach ($jenisTransaksis as $jenis)
-                                    <option value="{{ $jenis->id_jenis }}"
-                                        {{ old('id_jenis_transaksi') == $jenis->id_jenis ? 'selected' : '' }}
-                                        data-kode="{{ $jenis->kode }}">
-                                        {{ $jenis->nama }}
-                                        @if ($jenis->kode == 'DP')
-                                            (Pembayaran Awal)
-                                        @elseif ($jenis->kode == 'ANGSURAN')
-                                            (Cicilan)
-                                        @elseif ($jenis->kode == 'LUNAS')
-                                            (Pelunasan)
-                                        @endif
-                                    </option>
+                                    @php
+                                        $namaJenis = strtolower(trim((string) ($jenis->nama ?? '')));
+                                        $isRefundJenis =
+                                            str_contains($namaJenis, 'refund') ||
+                                            str_contains($namaJenis, 'pengembalian');
+                                        $isLunasJenis =
+                                            str_contains($namaJenis, 'lunas') || str_contains($namaJenis, 'pelunasan');
+                                        $isDpJenis =
+                                            str_contains($namaJenis, 'down payment') ||
+                                            preg_match('/\bdp\b/', $namaJenis) ||
+                                            str_contains($namaJenis, 'pembayaran awal');
+                                        $isAngsuranJenis =
+                                            str_contains($namaJenis, 'angsuran') || str_contains($namaJenis, 'cicilan');
+                                    @endphp
+                                    @if (!$isRefundJenis)
+                                        <option value="{{ $jenis->id_jenis }}"
+                                            {{ old('id_jenis_transaksi') == $jenis->id_jenis ? 'selected' : '' }}
+                                            data-is-lunas="{{ $isLunasJenis ? '1' : '0' }}"
+                                            data-is-dp="{{ $isDpJenis ? '1' : '0' }}"
+                                            data-is-angsuran="{{ $isAngsuranJenis ? '1' : '0' }}">
+                                            {{ $jenis->nama }}
+                                            @if ($isDpJenis)
+                                                (Pembayaran Awal)
+                                            @elseif ($isAngsuranJenis)
+                                                (Cicilan)
+                                            @elseif ($isLunasJenis)
+                                                (Pelunasan)
+                                            @endif
+                                        </option>
+                                    @endif
                                 @endforeach
                             </select>
                             @error('id_jenis_transaksi')
@@ -625,7 +845,24 @@
 
 @push('scripts')
     <script>
+        // ==========================================
+        // FORMAT RUPIAH
+        // ==========================================
         function formatRupiah(input) {
+            let value = input.value.replace(/[^\d]/g, '');
+            if (value === '') {
+                input.value = '';
+                return;
+            }
+            let number = parseInt(value);
+            if (isNaN(number)) {
+                input.value = '';
+                return;
+            }
+            input.value = number.toLocaleString('id-ID');
+        }
+
+        function formatRupiahRefund(input) {
             let value = input.value.replace(/[^\d]/g, '');
             if (value === '') {
                 input.value = '';
@@ -684,24 +921,29 @@
 
         function confirmDeleteTransaksi(id) {
             if (confirm(
-                    'Yakin ingin menghapus transaksi pembayaran ini?\n\nData yang dihapus:\n- Jumlah pembayaran akan dikembalikan\n- Status pembayaran akan diperbarui otomatis\n- Bukti pembayaran akan dihapus'
+                    'Yakin ingin menghapus transaksi ini?\n\nData yang dihapus:\n- Jumlah pembayaran/refund akan dikembalikan\n- Status pembayaran akan diperbarui otomatis\n- Bukti pembayaran akan dihapus'
                 )) {
                 document.getElementById('delete-transaksi-form-' + id).submit();
             }
         }
 
+        // ==========================================
+        // JENIS TRANSAKSI INFO (berdasarkan data-attribute, bukan kode)
+        // ==========================================
         document.getElementById('id_jenis_transaksi').addEventListener('change', function() {
             const selectedOption = this.options[this.selectedIndex];
-            const kode = selectedOption.dataset.kode || '';
+            const isLunas = selectedOption.dataset.isLunas === '1';
+            const isDp = selectedOption.dataset.isDp === '1';
+            const isAngsuran = selectedOption.dataset.isAngsuran === '1';
             const info = document.getElementById('jenisInfo');
 
-            if (kode === 'DP') {
+            if (isDp) {
                 info.innerHTML =
                     '<i class="fas fa-info-circle mr-1"></i> DP: Pembayaran awal minimal 50% dari total tagihan';
-            } else if (kode === 'ANGSURAN') {
+            } else if (isAngsuran) {
                 info.innerHTML =
                     '<i class="fas fa-info-circle mr-1"></i> Angsuran: Pembayaran cicilan 50% - 99% dari total tagihan';
-            } else if (kode === 'LUNAS') {
+            } else if (isLunas) {
                 info.innerHTML =
                     '<i class="fas fa-info-circle mr-1"></i> Lunas: Pembayaran 100% dari total tagihan';
             } else {
@@ -709,9 +951,12 @@
             }
         });
 
+        // ==========================================
+        // TOMBOL CEPAT JUMLAH BAYAR
+        // ==========================================
         function setJumlahBayar(persen) {
             const totalTagihan = {{ $jamaah->total_tagihan_setelah_diskon }};
-            const sisaTagihan = {{ $jamaah->sisa_tagihan }};
+            const sisaTagihan = {{ max(0, $jamaah->sisa_tagihan) }};
             let jumlah = Math.round((totalTagihan * persen) / 100);
             if (persen === 100) {
                 jumlah = sisaTagihan;
@@ -725,7 +970,7 @@
         }
 
         function setJumlahBayarSisa() {
-            const sisa = {{ $jamaah->sisa_tagihan }};
+            const sisa = {{ max(0, $jamaah->sisa_tagihan) }};
             const input = document.getElementById('jumlah_bayar');
             input.value = sisa.toLocaleString('id-ID');
             document.getElementById('jumlahInfo').innerHTML =
@@ -734,18 +979,46 @@
                 sisa.toLocaleString('id-ID') + '</span>';
         }
 
+        // ==========================================
+        // MODAL REFUND
+        // ==========================================
+        function openRefundModal() {
+            const modal = document.getElementById('refundModal');
+            if (modal) modal.classList.remove('hidden');
+        }
+
+        function closeRefundModal() {
+            const modal = document.getElementById('refundModal');
+            if (modal) modal.classList.add('hidden');
+        }
+
+        // ==========================================
+        // DOM CONTENT LOADED
+        // ==========================================
         document.addEventListener('DOMContentLoaded', function() {
             const oldJenis = '{{ old('id_jenis_transaksi') }}';
             if (oldJenis) {
-                document.getElementById('id_jenis_transaksi').value = oldJenis;
-                document.getElementById('id_jenis_transaksi').dispatchEvent(new Event('change'));
+                const sel = document.getElementById('id_jenis_transaksi');
+                sel.value = oldJenis;
+                sel.dispatchEvent(new Event('change'));
             }
             const jumlahBayarInput = document.getElementById('jumlah_bayar');
             if (jumlahBayarInput.value) {
                 formatRupiah(jumlahBayarInput);
             }
+
+            // Tutup modal kalau klik backdrop
+            const refundModal = document.getElementById('refundModal');
+            if (refundModal) {
+                refundModal.addEventListener('click', function(e) {
+                    if (e.target === this) closeRefundModal();
+                });
+            }
         });
 
+        // ==========================================
+        // SUBMIT FORM PEMBAYARAN
+        // ==========================================
         document.getElementById('formPembayaran').addEventListener('submit', function(e) {
             const buktiInput = document.getElementById('bukti_pembayaran');
             if (!buktiInput.files || buktiInput.files.length === 0) {
@@ -762,5 +1035,30 @@
             const rawValue = getRawValue(input);
             input.value = rawValue;
         });
+
+        // ==========================================
+        // VALIDASI REFUND
+        // ==========================================
+        const refundForm = document.querySelector('#refundModal form');
+        if (refundForm) {
+            refundForm.addEventListener('submit', function(e) {
+                const jumlahInput = document.getElementById('jumlah_refund');
+                const rawValue = getRawValue(jumlahInput);
+                const maxRefund = {{ (int) $jamaah->sisa_kelebihan_bayar }};
+
+                if (rawValue <= 0) {
+                    e.preventDefault();
+                    alert('Jumlah refund harus lebih dari 0.');
+                    return false;
+                }
+                if (rawValue > maxRefund) {
+                    e.preventDefault();
+                    alert('Jumlah refund melebihi sisa kelebihan bayar (maks: Rp ' + maxRefund.toLocaleString(
+                        'id-ID') + ').');
+                    return false;
+                }
+                jumlahInput.value = rawValue;
+            });
+        }
     </script>
 @endpush
