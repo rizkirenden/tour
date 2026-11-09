@@ -103,7 +103,6 @@
                                     </option>
                                 </select>
                             </div>
-                            {{-- ✅ NEW: Status Kawin --}}
                             <div>
                                 <label class="block text-sm font-medium text-gray-700 mb-1.5">
                                     Status Kawin <span class="text-red-500">*</span>
@@ -127,15 +126,8 @@
                             </div>
                         </div>
 
-                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4">
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-1.5">
-                                    Telepon <span class="text-red-500">*</span>
-                                </label>
-                                <input type="text" name="telepon" id="telepon" value="{{ old('telepon') }}"
-                                    class="w-full px-4 py-2 border border-gray-200 rounded-xl focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500 text-sm wajib-pribadi"
-                                    placeholder="08xxxxxxxxxx" required>
-                            </div>
+                        {{-- ✅ Telepon DIHAPUS — hanya WhatsApp --}}
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
                             <div>
                                 <label class="block text-sm font-medium text-gray-700 mb-1.5">
                                     WhatsApp <span class="text-red-500">*</span>
@@ -143,6 +135,9 @@
                                 <input type="text" name="wa" id="wa" value="{{ old('wa') }}"
                                     class="w-full px-4 py-2 border border-gray-200 rounded-xl focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500 text-sm wajib-pribadi"
                                     placeholder="08xxxxxxxxxx" required>
+                                @error('wa')
+                                    <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+                                @enderror
                             </div>
                             <div>
                                 <label class="block text-sm font-medium text-gray-700 mb-1.5">
@@ -317,7 +312,6 @@
                             </div>
                         </div>
 
-                        <!-- Pilih Tahun Dulu, Baru Keberangkatan -->
                         <div class="mt-4">
                             <label class="block text-sm font-medium text-gray-700 mb-1.5">
                                 Bulan & Tahun Keberangkatan <span class="text-red-500">*</span>
@@ -699,9 +693,6 @@
         var globalHargaBulananList = [];
         var globalOldData = [];
 
-        // ==========================================
-        // FORMAT RUPIAH
-        // ==========================================
         function formatRupiah(element) {
             let raw = element.value.replace(/[^,\d]/g, '');
             if (raw === '') {
@@ -725,9 +716,6 @@
             input.value = 'Rp ' + number.toLocaleString('id-ID');
         }
 
-        // ==========================================
-        // VALIDASI INFORMASI PRIBADI
-        // ==========================================
         function validateInformasiPribadi() {
             var fields = document.querySelectorAll('.wajib-pribadi');
             var labels = {
@@ -737,7 +725,6 @@
                 pekerjaan: 'Pekerjaan',
                 jenis_kelamin: 'Jenis Kelamin',
                 status_kawin: 'Status Kawin',
-                telepon: 'Telepon',
                 wa: 'WhatsApp',
                 tempat_lahir: 'Tempat Lahir',
                 tanggal_lahir: 'Tanggal Lahir',
@@ -781,9 +768,6 @@
             return true;
         }
 
-        // ==========================================
-        // TOGGLE PEMBUATAN PASSPORT
-        // ==========================================
         function togglePembuatanPassport() {
             var isYa = document.querySelector('input[name="is_pembuatan_passport"]:checked');
             var container = document.getElementById('feePetugasContainer');
@@ -854,9 +838,6 @@
             }
         }
 
-        // ==========================================
-        // LOAD KEBERANGKATAN
-        // ==========================================
         function loadKeberangkatan() {
             var produkPaket = document.getElementById('produk_paket');
             var tahunSelect = document.getElementById('filter-tahun');
@@ -1196,9 +1177,6 @@
             }
         });
 
-        // ==========================================
-        // UPGRADE HOTEL
-        // ==========================================
         function toggleUpgradeHotel() {
             const container = document.getElementById('upgradeHotelContainer');
             container.classList.toggle('hidden');
@@ -1343,9 +1321,6 @@
             parentForm.querySelectorAll(`.upgrade-hidden-group[data-hotel-id="${hotelId}"]`).forEach(el => el.remove());
         }
 
-        // ==========================================
-        // DOM CONTENT LOADED
-        // ==========================================
         document.addEventListener('DOMContentLoaded', function() {
             var kotaAsal = document.getElementById('kota_asal');
             if (kotaAsal.value) {

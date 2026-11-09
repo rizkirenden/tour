@@ -1,4 +1,5 @@
 <?php
+// app/Models/Departure.php
 
 namespace App\Models;
 
@@ -554,7 +555,7 @@ class Departure extends Model
     }
 
     // ==========================================
-    // ACCESSORS - TAGIHAN vs DIBAYAR (CASH BASIS)
+    // ACCESSORS - TAGIHAN vs DIBAYAR (NET SETELAH REFUND)
     // ==========================================
 
     public function getTotalTagihanJamaahAttribute()
@@ -579,9 +580,32 @@ class Departure extends Model
         return 'Rp ' . number_format($this->total_dibayar_jamaah, 0, ',', '.');
     }
 
+    /** ✅ Total refund seluruh jamaah */
+    public function getTotalRefundJamaahAttribute()
+    {
+        return $this->jamaahs->sum(fn($j) => (int) ($j->total_refund ?? 0));
+    }
+
+    public function getTotalRefundJamaahFormattedAttribute()
+    {
+        return 'Rp ' . number_format($this->total_refund_jamaah, 0, ',', '.');
+    }
+
+    /** ✅ Net dibayar = gross - refund */
+    public function getTotalNetDibayarJamaahAttribute()
+    {
+        return max(0, $this->total_dibayar_jamaah - $this->total_refund_jamaah);
+    }
+
+    public function getTotalNetDibayarJamaahFormattedAttribute()
+    {
+        return 'Rp ' . number_format($this->total_net_dibayar_jamaah, 0, ',', '.');
+    }
+
+    /** ✅ Sisa tagihan dihitung dari NET dibayar */
     public function getTotalSisaTagihanAttribute()
     {
-        return max(0, $this->total_tagihan_jamaah - $this->total_dibayar_jamaah);
+        return max(0, $this->total_tagihan_jamaah - $this->total_net_dibayar_jamaah);
     }
 
     public function getTotalSisaTagihanFormattedAttribute()
@@ -770,13 +794,18 @@ class Departure extends Model
                 'pembayaranTakTerduga',
             ]);
 
-            // 1. TOTAL PENDAPATAN KOTOR (CASH BASIS)
+            // ==========================================
+            // 1. TOTAL PENDAPATAN KOTOR (NET SETELAH REFUND)
+            // ==========================================
             $totalDibayarJamaah = 0;
+            $totalRefundJamaah  = 0;
             foreach ($this->jamaahs as $jamaah) {
-                $dibayar = $jamaah->total_dibayar ?? 0;
-                $totalDibayarJamaah += $dibayar;
+                $totalDibayarJamaah += (int) ($jamaah->total_dibayar ?? 0);
+                $totalRefundJamaah  += (int) ($jamaah->total_refund ?? 0);
             }
-            $totalPendapatanKotor = $totalDibayarJamaah;
+
+            // ✅ Pendapatan bersih = uang masuk - uang keluar (refund)
+            $totalPendapatanKotor = max(0, $totalDibayarJamaah - $totalRefundJamaah);
             $this->total_pendapatan_kotor = $totalPendapatanKotor;
 
             $totalPendapatanPerusahaanPassport = 0;
@@ -784,7 +813,7 @@ class Departure extends Model
                 $totalPendapatanPerusahaanPassport += $jamaah->pendapatan_perusahaan_untuk_pendapatan;
             }
 
-            // 2. Total Diskon
+            // 2. Total Diskon (info only)
             $totalDiskon = 0;
             foreach ($this->jamaahs as $jamaah) {
                 $totalDiskon += $jamaah->total_diskon ?? 0;

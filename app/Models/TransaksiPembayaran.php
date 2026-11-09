@@ -18,6 +18,7 @@ class TransaksiPembayaran extends Model
         'id_jamaah',
         'id_metode_pembayaran',
         'id_jenis_transaksi',
+        'id_jenis_pembayaran',       // ← BARU
         'tanggal_transaksi',
         'jumlah_bayar',
         'jenis_mutasi',
@@ -49,6 +50,12 @@ class TransaksiPembayaran extends Model
     public function jenisTransaksi()
     {
         return $this->belongsTo(JenisTransaksi::class, 'id_jenis_transaksi', 'id_jenis');
+    }
+
+    /** ✅ Relasi baru ke JenisPembayaran */
+    public function jenisPembayaran()
+    {
+        return $this->belongsTo(JenisPembayaran::class, 'id_jenis_pembayaran', 'id_jenis_pembayaran');
     }
 
     // ==========================================
@@ -96,5 +103,32 @@ class TransaksiPembayaran extends Model
         return $this->bukti_pembayaran
             ? asset('storage/' . $this->bukti_pembayaran)
             : null;
+    }
+
+    /** ✅ Nama jenis (prioritas jenisPembayaran) */
+    public function getJenisNamaAttribute()
+    {
+        return $this->jenisPembayaran->nama
+            ?? $this->jenisTransaksi->nama
+            ?? '-';
+    }
+
+    /** ✅ Kode jenis untuk badge */
+    public function getJenisKodeAttribute()
+    {
+        $kode = strtoupper(trim((string) ($this->jenisPembayaran->kode ?? '')));
+
+        if ($kode !== '') {
+            return $kode;
+        }
+
+        $nama = strtolower(trim((string) $this->jenis_nama));
+
+        if (str_contains($nama, 'refund') || str_contains($nama, 'pengembalian')) return 'REFUND';
+        if (str_contains($nama, 'down payment') || preg_match('/\bdp\b/', $nama) || str_contains($nama, 'pembayaran awal')) return 'DP';
+        if (str_contains($nama, 'angsuran') || str_contains($nama, 'cicilan')) return 'ANGSURAN';
+        if (str_contains($nama, 'lunas') || str_contains($nama, 'pelunasan')) return 'LUNAS';
+
+        return null;
     }
 }

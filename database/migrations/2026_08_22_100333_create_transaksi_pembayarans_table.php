@@ -13,7 +13,13 @@ return new class extends Migration
             $table->id('id_transaksi');
             $table->unsignedBigInteger('id_jamaah');
             $table->unsignedBigInteger('id_metode_pembayaran');
-            $table->unsignedBigInteger('id_jenis_transaksi');
+
+            // ⚠️ id_jenis_transaksi dibuat NULLABLE (opsional, hanya untuk kompatibilitas)
+            $table->unsignedBigInteger('id_jenis_transaksi')->nullable();
+
+            // ✅ id_jenis_pembayaran — sumber utama sekarang
+            $table->unsignedBigInteger('id_jenis_pembayaran')->nullable();
+
             $table->date('tanggal_transaksi');
             $table->bigInteger('jumlah_bayar');
 
@@ -23,14 +29,13 @@ return new class extends Migration
 
             $table->string('bukti_pembayaran', 255)->nullable();
             $table->text('keterangan')->nullable();
-
-            // === KETERANGAN REFUND (audit trail) ===
             $table->text('keterangan_refund')->nullable()
                 ->comment('Alasan / catatan khusus refund');
 
             $table->string('created_by', 100)->nullable();
             $table->timestamps();
 
+            // === FOREIGN KEYS ===
             $table->foreign('id_jamaah')
                 ->references('id_jamaah')
                 ->on('jamaahs')
@@ -44,11 +49,18 @@ return new class extends Migration
             $table->foreign('id_jenis_transaksi')
                 ->references('id_jenis')
                 ->on('jenis_transaksis')
-                ->onDelete('cascade');
+                ->onDelete('set null');       // ← set null, bukan cascade
 
+            $table->foreign('id_jenis_pembayaran')
+                ->references('id_jenis_pembayaran')
+                ->on('jenis_pembayarans')
+                ->onDelete('set null');
+
+            // === INDEX ===
             $table->index('id_jamaah', 'idx_transaksi_jamaah');
             $table->index('tanggal_transaksi', 'idx_transaksi_tanggal');
             $table->index('jenis_mutasi', 'idx_transaksi_mutasi');
+            $table->index('id_jenis_pembayaran', 'idx_transaksi_jenis_pembayaran');
         });
     }
 

@@ -29,7 +29,6 @@
                     <p class="text-xs text-gray-400 mt-0.5">Kelola data keberangkatan secara bertahap</p>
                 </div>
                 <div class="flex items-center gap-2 flex-wrap">
-                    {{-- LOCK: header buttons --}}
                     @if ($locked)
                         <span
                             class="inline-flex items-center px-3 py-2 bg-gray-800 text-white rounded-lg text-sm font-semibold">
@@ -70,7 +69,7 @@
                 </div>
             </div>
 
-            {{-- LOCK: banner --}}
+            {{-- LOCK BANNER --}}
             @if ($locked)
                 <div class="mx-6 mt-4 rounded-xl border-2 border-gray-800 bg-gray-100 p-4">
                     <p class="text-sm font-semibold text-gray-800">
@@ -152,9 +151,7 @@
                     </div>
                 </div>
 
-                {{-- ============================================================ --}}
-                {{-- 1. PENDAPATAN (CASH BASIS)                                     --}}
-                {{-- ============================================================ --}}
+                {{-- 1. PENDAPATAN --}}
                 <div class="mb-6">
                     <h6 class="text-sm font-semibold text-gray-700 mb-3 flex items-center">
                         <i class="fas fa-money-bill-wave text-green-500 mr-2"></i> Pendapatan
@@ -164,24 +161,26 @@
                     </h6>
                 </div>
 
+                @php
+                    $pendapatanPerusahaanPassport = $departure->total_pendapatan_perusahaan_passport;
+                    $pembayaranPassport = $departure->total_pembayaran_passport;
+                    $totalTagihanJamaah       = $departure->total_tagihan_jamaah;
+                    $totalSudahDibayarJamaah  = $departure->total_dibayar_jamaah;
+                    $totalRefundJamaah        = $departure->total_refund_jamaah;
+                    $totalNetDibayarJamaah    = $departure->total_net_dibayar_jamaah;
+                    $totalSisaTagihan         = $departure->total_sisa_tagihan;
+                @endphp
+
                 <div class="bg-gray-50 rounded-xl p-5 border border-gray-100 mb-6">
                     <h6 class="text-sm font-semibold text-gray-700 mb-4 flex items-center">
                         <i class="fas fa-money-bill-wave text-green-500 mr-2"></i> Ringkasan Pendapatan
                     </h6>
 
-                    @php
-                        $pendapatanPerusahaanPassport = $departure->total_pendapatan_perusahaan_passport;
-                        $pembayaranPassport = $departure->total_pembayaran_passport;
-                        $totalTagihanJamaah = $departure->total_tagihan_jamaah;
-                        $totalSudahDibayarJamaah = $departure->total_dibayar_jamaah;
-                        $totalSisaTagihan = $departure->total_sisa_tagihan;
-                    @endphp
-
                     <div class="mb-4 bg-blue-50 rounded-lg p-3 border border-blue-200">
                         <p class="text-xs text-blue-700">
                             <i class="fas fa-info-circle mr-1"></i>
                             <strong>Pendapatan dihitung CASH BASIS</strong> = hanya uang yang <strong>sudah dibayar</strong>
-                            jamaah.
+                            jamaah, <strong>dikurangi refund</strong>.
                             Tagihan invoice hanya <strong>informasi</strong> dan tidak dihitung sebagai pendapatan sampai
                             ada pembayaran masuk.
                         </p>
@@ -195,17 +194,26 @@
                             <p class="text-[10px] text-gray-400 mt-0.5">Hanya informasi</p>
                         </div>
                         <div class="bg-white rounded-lg p-3 border-2 border-emerald-400 text-center">
-                            <p class="text-xs text-emerald-700 font-semibold">Sudah Dibayar</p>
+                            <p class="text-xs text-emerald-700 font-semibold">Dibayar (Gross)</p>
                             <p class="text-sm font-bold text-emerald-600">Rp
                                 {{ number_format($totalSudahDibayarJamaah, 0, ',', '.') }}</p>
-                            <p class="text-[10px] text-emerald-500 mt-0.5 font-semibold">✓ DIHITUNG
-                                ({{ $departure->jamaahs->count() }} jamaah)</p>
+                            @if ($totalRefundJamaah > 0)
+                                <p class="text-[10px] text-amber-600 mt-0.5">− Refund: Rp
+                                    {{ number_format($totalRefundJamaah, 0, ',', '.') }}</p>
+                                <p class="text-xs text-emerald-700 font-bold mt-0.5">NET: Rp
+                                    {{ number_format($totalNetDibayarJamaah, 0, ',', '.') }}</p>
+                                <p class="text-[10px] text-emerald-500 mt-0.5 font-semibold">✓ DIHITUNG
+                                    ({{ $departure->jamaahs->count() }} jamaah)</p>
+                            @else
+                                <p class="text-[10px] text-emerald-500 mt-0.5 font-semibold">✓ DIHITUNG
+                                    ({{ $departure->jamaahs->count() }} jamaah)</p>
+                            @endif
                         </div>
                         <div class="bg-white rounded-lg p-3 border border-red-200 text-center">
                             <p class="text-xs text-gray-500">Sisa Tagihan</p>
                             <p class="text-sm font-bold text-red-600">Rp
                                 {{ number_format($totalSisaTagihan, 0, ',', '.') }}</p>
-                            <p class="text-[10px] text-gray-400 mt-0.5">Belum dibayar</p>
+                            <p class="text-[10px] text-gray-400 mt-0.5">Belum dibayar (net)</p>
                         </div>
                         <div class="bg-white rounded-lg p-3 border border-purple-200 text-center">
                             <p class="text-xs text-gray-500">Pendapatan Perusahaan Passport</p>
@@ -249,7 +257,7 @@
                             <p class="text-xs text-gray-500">Pendapatan Kotor</p>
                             <p class="text-sm font-bold text-emerald-600">
                                 {{ $departure->total_pendapatan_kotor_formatted }}</p>
-                            <p class="text-[10px] text-gray-400 mt-0.5">= sudah dibayar</p>
+                            <p class="text-[10px] text-gray-400 mt-0.5">= sudah dibayar − refund</p>
                         </div>
                         <div class="bg-white rounded-lg p-3 border border-gray-200 text-center">
                             <p class="text-xs text-gray-500">Total Diskon</p>
@@ -259,7 +267,7 @@
                         <div class="bg-white rounded-lg p-3 border border-gray-200 text-center">
                             <p class="text-xs text-gray-500">Total Pendapatan</p>
                             <p class="text-sm font-bold text-blue-600">{{ $departure->total_pendapatan_formatted }}</p>
-                            <p class="text-[10px] text-gray-400 mt-0.5">Cash + Passport</p>
+                            <p class="text-[10px] text-gray-400 mt-0.5">Net + Passport</p>
                         </div>
                         <div class="bg-white rounded-lg p-3 border-2 border-emerald-400 text-center">
                             <p class="text-xs text-emerald-700 font-semibold">Pendapatan Bersih</p>
@@ -275,7 +283,7 @@
                                 <p class="text-sm font-bold text-green-800"><i class="fas fa-calculator mr-2"></i>TOTAL
                                     KESELURUHAN PENDAPATAN</p>
                                 <p class="text-[10px] text-green-600 mt-0.5"><strong>Hanya uang yang sudah masuk</strong>
-                                    (Sudah Dibayar + Passport Perusahaan)</p>
+                                    (Net Dibayar + Passport Perusahaan)</p>
                             </div>
                             <div class="text-right">
                                 <p class="text-xl md:text-2xl font-extrabold text-green-700">
@@ -285,10 +293,22 @@
                         </div>
                         <div class="mt-3 pt-3 border-t border-green-300 grid grid-cols-2 md:grid-cols-4 gap-2 text-xs">
                             <div class="flex justify-between">
-                                <span class="text-green-700">Sudah Dibayar:</span>
+                                <span class="text-green-700">Dibayar (Gross):</span>
                                 <span class="font-bold text-emerald-700">Rp
                                     {{ number_format($totalSudahDibayarJamaah, 0, ',', '.') }}</span>
                             </div>
+                            @if ($totalRefundJamaah > 0)
+                                <div class="flex justify-between">
+                                    <span class="text-amber-700">Refund:</span>
+                                    <span class="font-bold text-amber-700">−Rp
+                                        {{ number_format($totalRefundJamaah, 0, ',', '.') }}</span>
+                                </div>
+                                <div class="flex justify-between">
+                                    <span class="text-emerald-700 font-semibold">Net Diterima:</span>
+                                    <span class="font-bold text-emerald-800">Rp
+                                        {{ number_format($totalNetDibayarJamaah, 0, ',', '.') }}</span>
+                                </div>
+                            @endif
                             <div class="flex justify-between">
                                 <span class="text-green-700">Passport Perusahaan:</span>
                                 <span
@@ -308,35 +328,15 @@
                     </div>
                 </div>
 
-                {{-- FEE PASSPORT & JAMAAH --}}
+                {{-- FEE PASSPORT & DAFTAR JAMAAH --}}
                 @php
                     $bulanNama = [
-                        1 => 'Jan',
-                        2 => 'Feb',
-                        3 => 'Mar',
-                        4 => 'Apr',
-                        5 => 'Mei',
-                        6 => 'Jun',
-                        7 => 'Jul',
-                        8 => 'Agu',
-                        9 => 'Sep',
-                        10 => 'Okt',
-                        11 => 'Nov',
-                        12 => 'Des',
+                        1 => 'Jan', 2 => 'Feb', 3 => 'Mar', 4 => 'Apr', 5 => 'Mei', 6 => 'Jun',
+                        7 => 'Jul', 8 => 'Agu', 9 => 'Sep', 10 => 'Okt', 11 => 'Nov', 12 => 'Des',
                     ];
                     $bulanFull = [
-                        1 => 'Januari',
-                        2 => 'Februari',
-                        3 => 'Maret',
-                        4 => 'April',
-                        5 => 'Mei',
-                        6 => 'Juni',
-                        7 => 'Juli',
-                        8 => 'Agustus',
-                        9 => 'September',
-                        10 => 'Oktober',
-                        11 => 'November',
-                        12 => 'Desember',
+                        1 => 'Januari', 2 => 'Februari', 3 => 'Maret', 4 => 'April', 5 => 'Mei', 6 => 'Juni',
+                        7 => 'Juli', 8 => 'Agustus', 9 => 'September', 10 => 'Oktober', 11 => 'November', 12 => 'Desember',
                     ];
                     $totalFeePassport = $departure->total_fee_passport;
                     $totalPembayaranPassport = $departure->total_pembayaran_passport;
@@ -355,7 +355,6 @@
                         </h6>
                         <div class="flex items-center gap-2">
                             {!! $departure->jamaah_status_badge !!}
-                            {{-- LOCK: tombol sync + atur jamaah --}}
                             @unless ($locked)
                                 <form action="{{ route('transaksional.departure.sync-jamaahs', $departure->id_departure) }}"
                                     method="POST"
@@ -426,7 +425,7 @@
                         <span class="inline-flex items-center gap-1.5">
                             <span
                                 class="px-1.5 py-0.5 bg-emerald-100 text-emerald-700 text-[9px] rounded font-bold">DIHITUNG</span>
-                            <span class="text-gray-500">Sudah dibayar = masuk perhitungan</span>
+                            <span class="text-gray-500">Net dibayar (setelah refund) = masuk perhitungan</span>
                         </span>
                     </div>
 
@@ -498,10 +497,12 @@
                                                 number_format($jamaah->total_tagihan_setelah_diskon, 0, ',', '.');
                                         }
                                     }
-                                    $jamaahSudahDibayar = $jamaah->total_dibayar ?? 0;
-                                    $jamaahTagihan =
-                                        $jamaah->total_tagihan_setelah_diskon ?? ($jamaah->total_tagihan ?? 0);
-                                    $jamaahSisa = max(0, $jamaahTagihan - $jamaahSudahDibayar);
+                                    // ✅ FIX: net dibayar setelah refund
+                                    $jamaahSudahDibayar = (int) ($jamaah->total_dibayar ?? 0);
+                                    $jamaahTotalRefund  = (int) ($jamaah->total_refund ?? 0);
+                                    $jamaahNetDibayar   = max(0, $jamaahSudahDibayar - $jamaahTotalRefund);
+                                    $jamaahTagihan      = (int) ($jamaah->total_tagihan_setelah_diskon ?? ($jamaah->total_tagihan ?? 0));
+                                    $jamaahSisa         = max(0, $jamaahTagihan - $jamaahNetDibayar);
                                 @endphp
                                 <div class="p-3 rounded-lg {{ $borderClass }} {{ $bgClass }} jamaah-item"
                                     data-name="{{ strtolower($jamaah->nama_lengkap) }}"
@@ -543,11 +544,26 @@
                                                 </p>
                                             @endif
                                             <p class="text-[11px] text-emerald-700 font-semibold mt-0.5">
-                                                <i class="fas fa-wallet mr-0.5"></i> Sudah Dibayar: <strong>Rp
+                                                <i class="fas fa-wallet mr-0.5"></i> Dibayar: <strong>Rp
                                                     {{ number_format($jamaahSudahDibayar, 0, ',', '.') }}</strong>
-                                                <span
-                                                    class="ml-1 px-1.5 py-0.5 bg-emerald-100 text-emerald-700 text-[9px] rounded font-bold">DIHITUNG</span>
                                             </p>
+                                            @if ($jamaahTotalRefund > 0)
+                                                <p class="text-[11px] text-amber-700 font-semibold mt-0.5">
+                                                    <i class="fas fa-undo-alt mr-0.5"></i> Refund: <strong>−Rp
+                                                        {{ number_format($jamaahTotalRefund, 0, ',', '.') }}</strong>
+                                                </p>
+                                                <p class="text-[11px] text-emerald-700 font-bold mt-0.5">
+                                                    <i class="fas fa-check-circle mr-0.5"></i> NET Dibayar: <strong>Rp
+                                                        {{ number_format($jamaahNetDibayar, 0, ',', '.') }}</strong>
+                                                    <span
+                                                        class="ml-1 px-1.5 py-0.5 bg-emerald-100 text-emerald-700 text-[9px] rounded font-bold">DIHITUNG</span>
+                                                </p>
+                                            @else
+                                                <p class="text-[10px] text-emerald-500 mt-0.5">
+                                                    <span
+                                                        class="px-1.5 py-0.5 bg-emerald-100 text-emerald-700 text-[9px] rounded font-bold">DIHITUNG</span>
+                                                </p>
+                                            @endif
                                             @if ($jamaahSisa > 0)
                                                 <p class="text-[10px] text-red-600 mt-0.5">
                                                     <i class="fas fa-exclamation-circle mr-0.5"></i> Sisa Tagihan: Rp
@@ -580,10 +596,15 @@
                                             @endif
                                         </div>
                                         <div class="flex flex-col items-end gap-1 flex-shrink-0">
-                                            <span
-                                                class="text-xs text-emerald-600 font-bold">{{ $jamaah->total_dibayar_formatted }}</span>
-                                            <span class="text-[9px] text-gray-400">Dibayar</span>
-                                            {{-- LOCK: tombol hapus jamaah --}}
+                                            @if ($jamaahTotalRefund > 0)
+                                                <span class="text-xs text-gray-400 line-through">{{ $jamaah->total_dibayar_formatted }}</span>
+                                                <span class="text-xs text-amber-600">−{{ $jamaah->total_refund_formatted }}</span>
+                                                <span class="text-xs text-emerald-600 font-bold">Rp {{ number_format($jamaahNetDibayar, 0, ',', '.') }}</span>
+                                                <span class="text-[9px] text-gray-400">NET</span>
+                                            @else
+                                                <span class="text-xs text-emerald-600 font-bold">{{ $jamaah->total_dibayar_formatted }}</span>
+                                                <span class="text-[9px] text-gray-400">Dibayar</span>
+                                            @endif
                                             @unless ($locked)
                                                 <button
                                                     onclick="removeJamaah({{ $departure->id_departure }}, {{ $jamaah->id_jamaah }})"
@@ -609,10 +630,22 @@
                                     {{ number_format($totalTagihanJamaah, 0, ',', '.') }}</span>
                             </div>
                             <div class="flex items-center justify-between text-sm mt-1">
-                                <span class="text-emerald-700 font-semibold">Total Sudah Dibayar (dihitung)</span>
+                                <span class="text-emerald-700 font-semibold">Total Dibayar (Gross)</span>
                                 <span class="font-bold text-emerald-700">Rp
                                     {{ number_format($totalSudahDibayarJamaah, 0, ',', '.') }}</span>
                             </div>
+                            @if ($totalRefundJamaah > 0)
+                                <div class="flex items-center justify-between text-sm mt-1">
+                                    <span class="text-amber-700 font-semibold">Total Refund</span>
+                                    <span class="font-bold text-amber-700">−Rp
+                                        {{ number_format($totalRefundJamaah, 0, ',', '.') }}</span>
+                                </div>
+                                <div class="flex items-center justify-between text-sm mt-1">
+                                    <span class="text-emerald-700 font-bold">Net Diterima (dihitung)</span>
+                                    <span class="font-bold text-emerald-800">Rp
+                                        {{ number_format($totalNetDibayarJamaah, 0, ',', '.') }}</span>
+                                </div>
+                            @endif
                             @if ($totalSisaTagihan > 0)
                                 <div class="flex items-center justify-between text-sm text-red-600 mt-1">
                                     <span>Total Sisa Tagihan</span>
@@ -1762,8 +1795,7 @@
                                     <p class="text-sm font-medium text-gray-600 mb-2 flex items-center gap-2">
                                         <i class="fas fa-user text-gray-400"></i> Jamaah Tanpa Agent
                                         <span
-                                            class="text-xs bg-orange-100 text-orange-700 px-2 py-0.5 rounded-full">{{ $jamaahsWithoutAgent->count() }}
-                                            jamaah</span>
+                                            class="text-xs bg-orange-100 text-orange-700 px-2 py-0.5 rounded-full">{{ $jamaahsWithoutAgent->count() }} jamaah</span>
                                     </p>
                                     <div class="overflow-x-auto">
                                         <table class="w-full text-sm border border-gray-200 rounded-lg">
@@ -1924,7 +1956,7 @@
                         <p class="text-xs text-blue-700">
                             <i class="fas fa-info-circle mr-1"></i>
                             <strong>Catatan:</strong> Perhitungan ini menggunakan <strong>CASH BASIS</strong> — pendapatan =
-                            uang yang sudah dibayar jamaah.
+                            uang yang sudah dibayar jamaah <strong>dikurangi refund</strong>.
                             Jika masih ada sisa tagihan (Rp {{ $departure->total_sisa_tagihan_formatted }}), maka belum
                             masuk perhitungan sampai dibayar.
                         </p>
@@ -2622,32 +2654,12 @@
                             @php
                                 $selectedJamaahs = $departure->jamaahs->pluck('id_jamaah')->toArray();
                                 $bulanNamaModal = [
-                                    1 => 'Jan',
-                                    2 => 'Feb',
-                                    3 => 'Mar',
-                                    4 => 'Apr',
-                                    5 => 'Mei',
-                                    6 => 'Jun',
-                                    7 => 'Jul',
-                                    8 => 'Agu',
-                                    9 => 'Sep',
-                                    10 => 'Okt',
-                                    11 => 'Nov',
-                                    12 => 'Des',
+                                    1 => 'Jan', 2 => 'Feb', 3 => 'Mar', 4 => 'Apr', 5 => 'Mei', 6 => 'Jun',
+                                    7 => 'Jul', 8 => 'Agu', 9 => 'Sep', 10 => 'Okt', 11 => 'Nov', 12 => 'Des',
                                 ];
                                 $bulanFullModal = [
-                                    1 => 'Januari',
-                                    2 => 'Februari',
-                                    3 => 'Maret',
-                                    4 => 'April',
-                                    5 => 'Mei',
-                                    6 => 'Juni',
-                                    7 => 'Juli',
-                                    8 => 'Agustus',
-                                    9 => 'September',
-                                    10 => 'Oktober',
-                                    11 => 'November',
-                                    12 => 'Desember',
+                                    1 => 'Januari', 2 => 'Februari', 3 => 'Maret', 4 => 'April', 5 => 'Mei', 6 => 'Juni',
+                                    7 => 'Juli', 8 => 'Agustus', 9 => 'September', 10 => 'Oktober', 11 => 'November', 12 => 'Desember',
                                 ];
                             @endphp
                             @forelse($jamaahs as $jamaah)
@@ -2673,9 +2685,10 @@
                                     }
                                     $jamaahFeePassport = $jamaah->fee_passport;
                                     $jamaahSudahDibayar = $jamaah->total_dibayar ?? 0;
-                                    $jamaahTagihan =
-                                        $jamaah->total_tagihan_setelah_diskon ?? ($jamaah->total_tagihan ?? 0);
-                                    $jamaahSisa = max(0, $jamaahTagihan - $jamaahSudahDibayar);
+                                    $jamaahTotalRefund  = (int) ($jamaah->total_refund ?? 0);
+                                    $jamaahNetDibayar   = max(0, $jamaahSudahDibayar - $jamaahTotalRefund);
+                                    $jamaahTagihan      = $jamaah->total_tagihan_setelah_diskon ?? ($jamaah->total_tagihan ?? 0);
+                                    $jamaahSisa         = max(0, $jamaahTagihan - $jamaahNetDibayar);
                                 @endphp
                                 <label
                                     class="jamaah-modal-item relative flex items-start p-2.5 {{ $borderClass }} {{ $bgClass }} rounded-lg hover:shadow-md transition cursor-pointer"
@@ -2693,9 +2706,19 @@
                                             {{ $jamaah->nama_lengkap }}</p>
                                         <p class="text-xs text-gray-500 truncate">{{ $jamaah->produk_paket }}</p>
                                         <p class="text-[10px] text-emerald-700 font-semibold truncate mt-0.5">
-                                            <i class="fas fa-wallet mr-0.5"></i> Sudah Dibayar:
+                                            <i class="fas fa-wallet mr-0.5"></i> Dibayar:
                                             <strong>Rp {{ number_format($jamaahSudahDibayar, 0, ',', '.') }}</strong>
                                         </p>
+                                        @if ($jamaahTotalRefund > 0)
+                                            <p class="text-[10px] text-amber-700 font-semibold truncate mt-0.5">
+                                                <i class="fas fa-undo-alt mr-0.5"></i> Refund:
+                                                <strong>−Rp {{ number_format($jamaahTotalRefund, 0, ',', '.') }}</strong>
+                                            </p>
+                                            <p class="text-[10px] text-emerald-700 font-bold truncate mt-0.5">
+                                                <i class="fas fa-check-circle mr-0.5"></i> NET:
+                                                <strong>Rp {{ number_format($jamaahNetDibayar, 0, ',', '.') }}</strong>
+                                            </p>
+                                        @endif
                                         @if ($hasPassport)
                                             <p class="text-[10px] text-green-600 font-semibold truncate mt-0.5">
                                                 <i

@@ -84,7 +84,7 @@
                     </div>
                 </div>
 
-                {{-- ✅ ALERT KELEBIHAN BAYAR + TOMBOL REFUND --}}
+                {{-- ALERT KELEBIHAN BAYAR + TOMBOL REFUND --}}
                 @if ($keluarga->sisa_kelebihan_bayar > 0)
                     <div class="bg-amber-50 border-2 border-amber-400 rounded-xl p-4 mb-6">
                         <div class="flex flex-wrap items-start justify-between gap-3">
@@ -245,9 +245,7 @@
                     </div>
                 </div>
 
-                <!-- ============================================ -->
-                <!-- ✅ RINCIAN TAGIHAN PER JAMAAH (dengan refund) -->
-                <!-- ============================================ -->
+                <!-- Rincian Tagihan per Jamaah -->
                 <div class="bg-gray-50 rounded-xl p-5 border border-gray-100 mb-6">
                     <h6 class="text-sm font-semibold text-gray-700 mb-4 flex items-center justify-between flex-wrap gap-2">
                         <span>
@@ -281,11 +279,9 @@
                                     </th>
                                     <th class="px-3 py-2 text-right text-xs font-semibold text-gray-600 uppercase">Dibayar
                                     </th>
-                                    {{-- ✅ NEW: Refund --}}
                                     <th
                                         class="px-3 py-2 text-right text-xs font-semibold text-amber-700 uppercase bg-amber-50">
                                         Refund</th>
-                                    {{-- ✅ NEW: Net Dibayar --}}
                                     <th class="px-3 py-2 text-right text-xs font-semibold text-gray-600 uppercase">Net
                                         Dibayar</th>
                                     <th class="px-3 py-2 text-center text-xs font-semibold text-gray-600 uppercase">Status
@@ -334,7 +330,6 @@
                                         <td class="px-3 py-2 text-right text-green-600 font-medium">
                                             {{ $jamaah->total_dibayar_formatted }}
                                         </td>
-                                        {{-- ✅ NEW: Refund --}}
                                         <td
                                             class="px-3 py-2 text-right font-medium {{ $jamaahTotalRefund > 0 ? 'text-amber-700 bg-amber-50' : 'text-gray-400' }}">
                                             @if ($jamaahTotalRefund > 0)
@@ -346,7 +341,6 @@
                                                 -
                                             @endif
                                         </td>
-                                        {{-- ✅ NEW: Net Dibayar --}}
                                         <td
                                             class="px-3 py-2 text-right font-bold {{ $jamaahTotalRefund > 0 ? 'text-gray-900' : 'text-gray-700' }}">
                                             Rp {{ number_format($jamaahNetDibayar, 0, ',', '.') }}
@@ -370,7 +364,6 @@
                                     <td class="px-3 py-2 text-right text-green-700">
                                         {{ $keluarga->total_dibayar_formatted }}
                                     </td>
-                                    {{-- ✅ NEW: total refund --}}
                                     <td class="px-3 py-2 text-right text-amber-700 bg-amber-50">
                                         @if ($keluarga->total_refund > 0)
                                             <span class="inline-flex items-center gap-1">
@@ -381,7 +374,6 @@
                                             Rp 0
                                         @endif
                                     </td>
-                                    {{-- ✅ NEW: total net --}}
                                     <td class="px-3 py-2 text-right text-gray-900">
                                         {{ $keluarga->net_dibayar_formatted }}
                                     </td>
@@ -391,7 +383,6 @@
                         </table>
                     </div>
 
-                    {{-- Ringkasan kecil di bawah tabel --}}
                     @if ($keluarga->total_refund > 0 || $keluarga->sisa_kelebihan_bayar > 0)
                         <div class="mt-3 pt-3 border-t border-gray-200 grid grid-cols-1 md:grid-cols-3 gap-2 text-xs">
                             <div class="bg-white rounded p-2 border border-green-200">
@@ -436,8 +427,7 @@
                             <div class="bg-white rounded-lg p-3 border border-orange-200 text-center">
                                 <p class="text-xs text-gray-500">Upgrade Keluarga</p>
                                 <p class="text-sm font-bold text-orange-600">
-                                    {{ $keluarga->total_upgrade_hotel_formatted }}
-                                </p>
+                                    {{ $keluarga->total_upgrade_hotel_formatted }}</p>
                             </div>
                             <div class="bg-white rounded-lg p-3 border border-blue-200 text-center">
                                 <p class="text-xs text-gray-500">Jamaah</p>
@@ -480,14 +470,12 @@
                                                 <td class="px-3 py-2 text-gray-600">{{ $upgrade->tipe_kamar ?? '-' }}</td>
                                                 <td class="px-3 py-2 text-right text-gray-600">
                                                     {{ $upgrade->jumlah_kamar }}</td>
-                                                <td class="px-3 py-2 text-right text-gray-600">
-                                                    Rp {{ number_format($upgrade->harga_per_malam, 0, ',', '.') }}
-                                                </td>
+                                                <td class="px-3 py-2 text-right text-gray-600">Rp
+                                                    {{ number_format($upgrade->harga_per_malam, 0, ',', '.') }}</td>
                                                 <td class="px-3 py-2 text-right text-gray-600">
                                                     {{ $upgrade->durasi_menginap }}</td>
-                                                <td class="px-3 py-2 text-right font-bold text-orange-600">
-                                                    Rp {{ number_format($upgrade->total_harga, 0, ',', '.') }}
-                                                </td>
+                                                <td class="px-3 py-2 text-right font-bold text-orange-600">Rp
+                                                    {{ number_format($upgrade->total_harga, 0, ',', '.') }}</td>
                                             </tr>
                                         @endforeach
                                     </tbody>
@@ -496,8 +484,7 @@
                                             <td colspan="5" class="px-3 py-2 text-right font-bold text-gray-700">TOTAL
                                             </td>
                                             <td class="px-3 py-2 text-right font-bold text-orange-700">
-                                                {{ $keluarga->total_upgrade_hotel_formatted }}
-                                            </td>
+                                                {{ $keluarga->total_upgrade_hotel_formatted }}</td>
                                         </tr>
                                     </tfoot>
                                 </table>
@@ -520,13 +507,11 @@
                                             <div>
                                                 <span
                                                     class="font-medium text-gray-700 text-sm">{{ $jamaah->nama_lengkap }}</span>
-                                                <p class="text-xs text-gray-400">
-                                                    {{ $jamaah->upgradeHotels->count() }} item upgrade
-                                                </p>
+                                                <p class="text-xs text-gray-400">{{ $jamaah->upgradeHotels->count() }}
+                                                    item upgrade</p>
                                             </div>
-                                            <span class="text-sm font-bold text-blue-600">
-                                                {{ $jamaah->total_upgrade_hotel_formatted }}
-                                            </span>
+                                            <span
+                                                class="text-sm font-bold text-blue-600">{{ $jamaah->total_upgrade_hotel_formatted }}</span>
                                         </div>
                                     @endforeach
                                 </div>
@@ -597,32 +582,37 @@
                             @enderror
                         </div>
 
+                        <!-- ✅ Jenis Pembayaran -->
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-1.5">
-                                Jenis Transaksi <span class="text-red-500">*</span>
+                                Jenis Pembayaran <span class="text-red-500">*</span>
                             </label>
-                            <select name="id_jenis_transaksi"
+                            <select name="id_jenis_pembayaran" id="id_jenis_pembayaran"
                                 class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500"
                                 required>
-                                <option value="">-- Pilih --</option>
-                                @foreach ($jenisTransaksis as $jenis)
-                                    @php
-                                        $namaJenis = strtolower(trim((string) ($jenis->nama ?? '')));
-                                        $isRefundJenis =
-                                            str_contains($namaJenis, 'refund') ||
-                                            str_contains($namaJenis, 'pengembalian');
-                                    @endphp
-                                    @if (!$isRefundJenis)
-                                        <option value="{{ $jenis->id_jenis }}"
-                                            {{ old('id_jenis_transaksi') == $jenis->id_jenis ? 'selected' : '' }}>
-                                            {{ $jenis->nama }}
-                                        </option>
-                                    @endif
+                                <option value="">-- Pilih Jenis Pembayaran --</option>
+                                @foreach ($jenisPembayarans as $jenis)
+                                    @php $kodeJenis = $jenis->kode; @endphp
+                                    <option value="{{ $jenis->id_jenis_pembayaran }}"
+                                        {{ old('id_jenis_pembayaran') == $jenis->id_jenis_pembayaran ? 'selected' : '' }}
+                                        data-kode="{{ $kodeJenis ?? '' }}">
+                                        {{ $jenis->nama }}
+                                        @if ($kodeJenis === 'DP')
+                                            (Pembayaran Awal)
+                                        @elseif ($kodeJenis === 'ANGSURAN')
+                                            (Cicilan)
+                                        @elseif ($kodeJenis === 'LUNAS')
+                                            (Pelunasan)
+                                        @endif
+                                    </option>
                                 @endforeach
                             </select>
-                            @error('id_jenis_transaksi')
+                            @error('id_jenis_pembayaran')
                                 <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
                             @enderror
+                            <p id="jenisInfo" class="text-xs text-gray-400 mt-2">
+                                <i class="fas fa-info-circle mr-1"></i> Pilih jenis pembayaran yang sesuai
+                            </p>
                         </div>
                     </div>
 
@@ -799,9 +789,25 @@
             }
         }
 
-        // ==========================================
+        // ✅ JENIS PEMBAYARAN INFO
+        document.getElementById('id_jenis_pembayaran')?.addEventListener('change', function() {
+            const opt = this.options[this.selectedIndex];
+            const kode = opt.dataset.kode || '';
+            const info = document.getElementById('jenisInfo');
+
+            if (kode === 'DP') {
+                info.innerHTML =
+                    '<i class="fas fa-info-circle mr-1"></i> DP: Pembayaran awal (biasanya minimal 50% dari total tagihan)';
+            } else if (kode === 'ANGSURAN') {
+                info.innerHTML = '<i class="fas fa-info-circle mr-1"></i> Angsuran: Pembayaran cicilan';
+            } else if (kode === 'LUNAS') {
+                info.innerHTML = '<i class="fas fa-info-circle mr-1"></i> Lunas: Pembayaran 100% dari sisa tagihan';
+            } else {
+                info.innerHTML = '<i class="fas fa-info-circle mr-1"></i> Pilih jenis pembayaran yang sesuai';
+            }
+        });
+
         // MODAL REFUND
-        // ==========================================
         function openRefundModal() {
             const modal = document.getElementById('refundModal');
             if (modal) modal.classList.remove('hidden');
@@ -812,9 +818,25 @@
             if (modal) modal.classList.add('hidden');
         }
 
-        // ==========================================
-        // SUBMIT FORM PEMBAYARAN
-        // ==========================================
+        // DOM LOADED
+        document.addEventListener('DOMContentLoaded', function() {
+            const oldJenis = '{{ old('id_jenis_pembayaran') }}';
+            if (oldJenis) {
+                const sel = document.getElementById('id_jenis_pembayaran');
+                if (sel) {
+                    sel.value = oldJenis;
+                    sel.dispatchEvent(new Event('change'));
+                }
+            }
+            const refundModal = document.getElementById('refundModal');
+            if (refundModal) {
+                refundModal.addEventListener('click', function(e) {
+                    if (e.target === this) closeRefundModal();
+                });
+            }
+        });
+
+        // SUBMIT FORM
         document.getElementById('formPembayaranKeluarga').addEventListener('submit', function(e) {
             const buktiInput = document.getElementById('bukti_pembayaran');
             if (!buktiInput.files || buktiInput.files.length === 0) {
@@ -831,9 +853,7 @@
             jumlahInput.value = getRawValue(jumlahInput);
         });
 
-        // ==========================================
         // VALIDASI REFUND
-        // ==========================================
         const refundForm = document.querySelector('#refundModal form');
         if (refundForm) {
             refundForm.addEventListener('submit', function(e) {
@@ -848,22 +868,11 @@
                 if (rawValue > maxRefundKeluarga) {
                     e.preventDefault();
                     alert('Jumlah refund melebihi sisa kelebihan bayar (maks: Rp ' + maxRefundKeluarga
-                        .toLocaleString(
-                            'id-ID') + ').');
+                        .toLocaleString('id-ID') + ').');
                     return false;
                 }
                 jumlahInput.value = rawValue;
             });
         }
-
-        // Tutup modal kalau klik backdrop
-        document.addEventListener('DOMContentLoaded', function() {
-            const refundModal = document.getElementById('refundModal');
-            if (refundModal) {
-                refundModal.addEventListener('click', function(e) {
-                    if (e.target === this) closeRefundModal();
-                });
-            }
-        });
     </script>
 @endpush

@@ -61,7 +61,14 @@
                                 <i class="fas fa-map-marker-alt mr-1"></i> Kota Asal: {{ $jamaah->kota_asal ?? '-' }}
                             </p>
                             <p class="text-gray-500 text-sm">
-                                <i class="fas fa-phone mr-1"></i> Telepon: {{ $jamaah->telepon ?? '-' }}
+                                <i class="fab fa-whatsapp mr-1 text-green-500"></i> WhatsApp:
+                                @if ($jamaah->wa)
+                                    <a href="https://wa.me/{{ preg_replace('/^0/', '62', preg_replace('/[^0-9]/', '', $jamaah->wa)) }}"
+                                        target="_blank"
+                                        class="text-green-600 hover:text-green-700 font-medium">{{ $jamaah->wa }}</a>
+                                @else
+                                    -
+                                @endif
                             </p>
                             <p class="text-gray-500 text-sm">
                                 <i class="fas fa-heart mr-1"></i> Status Kawin:
@@ -143,7 +150,8 @@
                     </div>
 
                     {{-- MODAL REFUND --}}
-                    <div id="refundModal" class="fixed inset-0 bg-black/50 z-50 hidden flex items-center justify-center p-4">
+                    <div id="refundModal"
+                        class="fixed inset-0 bg-black/50 z-50 hidden flex items-center justify-center p-4">
                         <div class="bg-white rounded-2xl max-w-md w-full max-h-[90vh] overflow-y-auto">
                             <div
                                 class="sticky top-0 bg-white px-6 py-4 border-b border-gray-200 flex items-center justify-between">
@@ -163,7 +171,8 @@
                                     <p class="text-xs text-amber-700">
                                         <i class="fas fa-info-circle mr-1"></i>
                                         Sisa kelebihan yang bisa di-refund:
-                                        <strong class="text-amber-800">{{ $jamaah->sisa_kelebihan_bayar_formatted }}</strong>
+                                        <strong
+                                            class="text-amber-800">{{ $jamaah->sisa_kelebihan_bayar_formatted }}</strong>
                                     </p>
                                 </div>
 
@@ -509,13 +518,8 @@
                                         @php
                                             $isRefund = ($transaksi->jenis_mutasi ?? 'masuk') === 'keluar';
                                             $rowClass = $isRefund ? 'bg-amber-50/40' : '';
-                                            $jenisNama = strtolower(trim((string) ($transaksi->jenisTransaksi->nama ?? '')));
-                                            $isLunasJenis =
-                                                str_contains($jenisNama, 'lunas') || str_contains($jenisNama, 'pelunasan');
-                                            $isDpJenis =
-                                                str_contains($jenisNama, 'down payment') ||
-                                                preg_match('/\bdp\b/', $jenisNama) ||
-                                                str_contains($jenisNama, 'pembayaran awal');
+                                            $jenisNama = $transaksi->jenis_nama; // accessor
+                                            $kodeJenis = $transaksi->jenis_kode; // accessor
                                         @endphp
                                         <tr class="hover:bg-gray-50 transition-colors {{ $rowClass }}">
                                             <td class="px-3 py-2 text-gray-400 text-xs">{{ $loop->iteration }}</td>
@@ -534,22 +538,27 @@
                                                 @if ($isRefund)
                                                     <span
                                                         class="px-2 py-1 rounded-full text-xs font-bold bg-amber-200 text-amber-800">
-                                                        <i class="fas fa-undo-alt mr-1"></i>REFUND
+                                                        <i class="fas fa-undo-alt mr-1"></i>{{ $jenisNama }}
                                                     </span>
-                                                @elseif ($isLunasJenis)
+                                                @elseif ($kodeJenis === 'LUNAS')
                                                     <span
                                                         class="px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-700">
-                                                        {{ $transaksi->jenisTransaksi->nama ?? '-' }}
+                                                        {{ $jenisNama }}
                                                     </span>
-                                                @elseif ($isDpJenis)
+                                                @elseif ($kodeJenis === 'DP')
                                                     <span
                                                         class="px-2 py-1 rounded-full text-xs font-medium bg-yellow-100 text-yellow-700">
-                                                        {{ $transaksi->jenisTransaksi->nama ?? '-' }}
+                                                        {{ $jenisNama }}
+                                                    </span>
+                                                @elseif ($kodeJenis === 'ANGSURAN')
+                                                    <span
+                                                        class="px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-700">
+                                                        {{ $jenisNama }}
                                                     </span>
                                                 @else
                                                     <span
-                                                        class="px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-700">
-                                                        {{ $transaksi->jenisTransaksi->nama ?? '-' }}
+                                                        class="px-2 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-700">
+                                                        {{ $jenisNama }}
                                                     </span>
                                                 @endif
                                             </td>
@@ -578,8 +587,7 @@
                                                 {{ $transaksi->keterangan ?? '-' }}
                                             </td>
                                             <td class="px-3 py-2 text-center">
-                                                <button
-                                                    onclick="confirmDeleteTransaksi({{ $transaksi->id_transaksi }})"
+                                                <button onclick="confirmDeleteTransaksi({{ $transaksi->id_transaksi }})"
                                                     class="text-red-500 hover:text-red-700 transition-colors duration-200"
                                                     title="{{ $isRefund ? 'Hapus Refund' : 'Hapus Transaksi' }}">
                                                     <i class="fas fa-trash text-sm"></i>
@@ -699,49 +707,32 @@
                             @enderror
                         </div>
 
-                        <!-- Jenis Transaksi -->
+                        <!-- ✅ Jenis Pembayaran (bukan lagi Jenis Transaksi) -->
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-1.5">
-                                Jenis Transaksi <span class="text-red-500">*</span>
+                                Jenis Pembayaran <span class="text-red-500">*</span>
                             </label>
-                            <select name="id_jenis_transaksi" id="id_jenis_transaksi"
+                            <select name="id_jenis_pembayaran" id="id_jenis_pembayaran"
                                 class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500 text-sm"
                                 required>
-                                <option value="">-- Pilih Jenis Transaksi --</option>
-                                @foreach ($jenisTransaksis as $jenis)
-                                    @php
-                                        $namaJenis = strtolower(trim((string) ($jenis->nama ?? '')));
-                                        $isRefundJenis =
-                                            str_contains($namaJenis, 'refund') ||
-                                            str_contains($namaJenis, 'pengembalian');
-                                        $isLunasJenis =
-                                            str_contains($namaJenis, 'lunas') || str_contains($namaJenis, 'pelunasan');
-                                        $isDpJenis =
-                                            str_contains($namaJenis, 'down payment') ||
-                                            preg_match('/\bdp\b/', $namaJenis) ||
-                                            str_contains($namaJenis, 'pembayaran awal');
-                                        $isAngsuranJenis =
-                                            str_contains($namaJenis, 'angsuran') || str_contains($namaJenis, 'cicilan');
-                                    @endphp
-                                    @if (!$isRefundJenis)
-                                        <option value="{{ $jenis->id_jenis }}"
-                                            {{ old('id_jenis_transaksi') == $jenis->id_jenis ? 'selected' : '' }}
-                                            data-is-lunas="{{ $isLunasJenis ? '1' : '0' }}"
-                                            data-is-dp="{{ $isDpJenis ? '1' : '0' }}"
-                                            data-is-angsuran="{{ $isAngsuranJenis ? '1' : '0' }}">
-                                            {{ $jenis->nama }}
-                                            @if ($isDpJenis)
-                                                (Pembayaran Awal)
-                                            @elseif ($isAngsuranJenis)
-                                                (Cicilan)
-                                            @elseif ($isLunasJenis)
-                                                (Pelunasan)
-                                            @endif
-                                        </option>
-                                    @endif
+                                <option value="">-- Pilih Jenis Pembayaran --</option>
+                                @foreach ($jenisPembayarans as $jenis)
+                                    @php $kodeJenis = $jenis->kode; @endphp
+                                    <option value="{{ $jenis->id_jenis_pembayaran }}"
+                                        {{ old('id_jenis_pembayaran') == $jenis->id_jenis_pembayaran ? 'selected' : '' }}
+                                        data-kode="{{ $kodeJenis ?? '' }}">
+                                        {{ $jenis->nama }}
+                                        @if ($kodeJenis === 'DP')
+                                            (Pembayaran Awal)
+                                        @elseif ($kodeJenis === 'ANGSURAN')
+                                            (Cicilan)
+                                        @elseif ($kodeJenis === 'LUNAS')
+                                            (Pelunasan)
+                                        @endif
+                                    </option>
                                 @endforeach
                             </select>
-                            @error('id_jenis_transaksi')
+                            @error('id_jenis_pembayaran')
                                 <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
                             @enderror
                             <p id="jenisInfo" class="text-xs text-gray-400 mt-2">
@@ -928,24 +919,22 @@
         }
 
         // ==========================================
-        // JENIS TRANSAKSI INFO (berdasarkan data-attribute, bukan kode)
+        // ✅ JENIS PEMBAYARAN INFO (pakai data-kode)
         // ==========================================
-        document.getElementById('id_jenis_transaksi').addEventListener('change', function() {
+        document.getElementById('id_jenis_pembayaran')?.addEventListener('change', function() {
             const selectedOption = this.options[this.selectedIndex];
-            const isLunas = selectedOption.dataset.isLunas === '1';
-            const isDp = selectedOption.dataset.isDp === '1';
-            const isAngsuran = selectedOption.dataset.isAngsuran === '1';
+            const kode = selectedOption.dataset.kode || '';
             const info = document.getElementById('jenisInfo');
 
-            if (isDp) {
+            if (kode === 'DP') {
                 info.innerHTML =
-                    '<i class="fas fa-info-circle mr-1"></i> DP: Pembayaran awal minimal 50% dari total tagihan';
-            } else if (isAngsuran) {
+                    '<i class="fas fa-info-circle mr-1"></i> DP: Pembayaran awal (biasanya minimal 50% dari total tagihan)';
+            } else if (kode === 'ANGSURAN') {
                 info.innerHTML =
-                    '<i class="fas fa-info-circle mr-1"></i> Angsuran: Pembayaran cicilan 50% - 99% dari total tagihan';
-            } else if (isLunas) {
+                    '<i class="fas fa-info-circle mr-1"></i> Angsuran: Pembayaran cicilan';
+            } else if (kode === 'LUNAS') {
                 info.innerHTML =
-                    '<i class="fas fa-info-circle mr-1"></i> Lunas: Pembayaran 100% dari total tagihan';
+                    '<i class="fas fa-info-circle mr-1"></i> Lunas: Pembayaran 100% dari sisa tagihan';
             } else {
                 info.innerHTML = '<i class="fas fa-info-circle mr-1"></i> Pilih jenis pembayaran yang sesuai';
             }
@@ -996,12 +985,16 @@
         // DOM CONTENT LOADED
         // ==========================================
         document.addEventListener('DOMContentLoaded', function() {
-            const oldJenis = '{{ old('id_jenis_transaksi') }}';
+            // ✅ Restore old value dari validasi gagal
+            const oldJenis = '{{ old('id_jenis_pembayaran') }}';
             if (oldJenis) {
-                const sel = document.getElementById('id_jenis_transaksi');
-                sel.value = oldJenis;
-                sel.dispatchEvent(new Event('change'));
+                const sel = document.getElementById('id_jenis_pembayaran');
+                if (sel) {
+                    sel.value = oldJenis;
+                    sel.dispatchEvent(new Event('change'));
+                }
             }
+
             const jumlahBayarInput = document.getElementById('jumlah_bayar');
             if (jumlahBayarInput.value) {
                 formatRupiah(jumlahBayarInput);

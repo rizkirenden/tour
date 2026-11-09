@@ -43,7 +43,13 @@
                         </label>
                         <input type="text" name="nama" value="{{ old('nama', $jenis->nama) }}"
                             class="w-full px-4 py-2 border border-gray-200 rounded-xl focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500 text-sm"
-                            placeholder="Contoh: DP, Angsuran, Pelunasan" required>
+                            placeholder="Contoh: Pemasukan, Pengeluaran, Transfer, Koreksi" required>
+                        <p class="text-xs text-gray-400 mt-1.5">
+                            Contoh penulisan: <span class="font-medium text-gray-500">Pemasukan</span>,
+                            <span class="font-medium text-gray-500">Pengeluaran</span>,
+                            <span class="font-medium text-gray-500">Transfer</span>,
+                            <span class="font-medium text-gray-500">Koreksi</span>.
+                        </p>
                         @error('nama')
                             <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
                         @enderror

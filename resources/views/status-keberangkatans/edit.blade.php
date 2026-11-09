@@ -51,28 +51,6 @@
                     </div>
 
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1.5">Warna</label>
-                        <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3">
-                            @foreach ($warnaOptions as $key => $label)
-                                <label
-                                    class="flex items-center gap-2 p-3 border border-gray-200 rounded-lg hover:bg-gray-50 cursor-pointer transition {{ old('warna', $status->warna) == $key ? 'border-yellow-500 bg-yellow-50' : '' }}">
-                                    <input type="radio" name="warna" value="{{ $key }}"
-                                        {{ old('warna', $status->warna) == $key ? 'checked' : '' }}
-                                        class="w-4 h-4 text-yellow-500 focus:ring-yellow-500">
-                                    <div class="flex items-center gap-2">
-                                        <span class="w-4 h-4 rounded-full inline-block"
-                                            style="background-color: {{ $key }};"></span>
-                                        <span class="text-sm text-gray-700">{{ $label }}</span>
-                                    </div>
-                                </label>
-                            @endforeach
-                        </div>
-                        @error('warna')
-                            <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
-                        @enderror
-                    </div>
-
-                    <div>
                         <label class="block text-sm font-medium text-gray-700 mb-1.5">Keterangan</label>
                         <textarea name="keterangan" rows="3"
                             class="w-full px-4 py-2 border border-gray-200 rounded-xl focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500 text-sm"

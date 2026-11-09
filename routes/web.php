@@ -19,6 +19,7 @@ use App\Http\Controllers\Transaksional\KeluargaController;
 use App\Http\Controllers\Transaksional\DepartureController;
 use App\Http\Controllers\Master\DokumenController;
 use App\Http\Controllers\Transaksional\RekapKeuanganController;
+use App\Http\Controllers\Master\JenisPembayaranController;
 
 Route::get('/', [DashboardController::class, 'index'])->name('dashboard');
 
@@ -68,6 +69,7 @@ Route::prefix('master')->name('master.')->group(function () {
     Route::resource('perlengkapan', PerlengkapanController::class);
     Route::resource('paket-hotel', PaketHotelController::class);
     Route::resource('paket-tour', PaketTourController::class);
+      Route::resource('jenis-pembayaran', JenisPembayaranController::class)->parameters(['jenis-pembayaran' => 'jenis_pembayaran']);
 });
 
 // ============================================

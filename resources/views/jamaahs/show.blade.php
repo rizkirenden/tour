@@ -164,14 +164,22 @@
                                 <dd class="font-medium text-gray-700">{{ $jamaah->tempat_lahir ?? '-' }},
                                     {{ $jamaah->tanggal_lahir_formatted }}</dd>
                             </div>
-                            <div class="flex justify-between text-sm border-b border-gray-100 pb-2">
-                                <dt class="text-gray-500">Telepon</dt>
-                                <dd class="font-medium text-gray-700">{{ $jamaah->telepon ?? '-' }}</dd>
-                            </div>
+
+                            {{-- ✅ WhatsApp saja (Telepon DIHAPUS) --}}
                             <div class="flex justify-between text-sm border-b border-gray-100 pb-2">
                                 <dt class="text-gray-500">WhatsApp</dt>
-                                <dd class="font-medium text-gray-700">{{ $jamaah->wa ?? '-' }}</dd>
+                                <dd class="font-medium text-gray-700">
+                                    @if ($jamaah->wa)
+                                        <a href="https://wa.me/{{ preg_replace('/^0/', '62', preg_replace('/[^0-9]/', '', $jamaah->wa)) }}"
+                                            target="_blank" class="text-green-600 hover:text-green-700">
+                                            <i class="fab fa-whatsapp mr-1"></i>{{ $jamaah->wa }}
+                                        </a>
+                                    @else
+                                        -
+                                    @endif
+                                </dd>
                             </div>
+
                             <div class="flex justify-between text-sm border-b border-gray-100 pb-2">
                                 <dt class="text-gray-500">Alamat</dt>
                                 <dd class="font-medium text-gray-700 text-right">{{ $jamaah->alamat ?? '-' }}</dd>
@@ -503,8 +511,8 @@
                                     <p class="text-xs text-purple-700"><i class="fas fa-info-circle mr-1"></i>
                                         Upgrade hotel keluarga sebesar <span
                                             class="font-bold">{{ $jamaah->keluarga->total_upgrade_hotel_formatted }}</span>
-                                        dibagi rata ke <span
-                                            class="font-bold">{{ $jamaah->keluarga->jamaahs->count() }} jamaah</span>.
+                                        dibagi rata ke <span class="font-bold">{{ $jamaah->keluarga->jamaahs->count() }}
+                                            jamaah</span>.
                                         Bagian Anda: <span
                                             class="font-bold">{{ $jamaah->keluarga->upgrade_hotel_per_jamaah_formatted }}</span>
                                     </p>

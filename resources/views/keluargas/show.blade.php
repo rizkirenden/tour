@@ -127,7 +127,7 @@
                     </div>
                 </div>
 
-                {{-- ✅ ALERT KELEBIHAN BAYAR --}}
+                {{-- ALERT KELEBIHAN BAYAR --}}
                 @if ($keluarga->sisa_kelebihan_bayar > 0)
                     <div
                         class="bg-amber-50 border-2 border-amber-400 rounded-xl p-4 mb-6 flex flex-wrap items-center justify-between gap-3">
@@ -161,8 +161,8 @@
                     </div>
                     <div class="bg-green-50 rounded-xl p-4 border border-green-200 text-center">
                         <p class="text-xs text-gray-500">Total Tagihan</p>
-                        <p class="text-xl font-bold text-gray-800">
-                            {{ $keluarga->total_tagihan_setelah_diskon_formatted }}</p>
+                        <p class="text-xl font-bold text-gray-800">{{ $keluarga->total_tagihan_setelah_diskon_formatted }}
+                        </p>
                     </div>
                     <div class="bg-blue-50 rounded-xl p-4 border border-blue-200 text-center">
                         <p class="text-xs text-gray-500">Total Dibayar</p>
@@ -216,9 +216,6 @@
                                         <th
                                             class="px-3 py-2 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
                                             Status Kawin</th>
-                                        <th
-                                            class="px-3 py-2 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
-                                            Telepon</th>
                                         <th
                                             class="px-3 py-2 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
                                             WhatsApp</th>
@@ -289,8 +286,20 @@
                                             <td class="px-3 py-2 text-center">
                                                 {!! $jamaah->status_kawin_badge !!}
                                             </td>
-                                            <td class="px-3 py-2 text-gray-600 text-xs">{{ $jamaah->telepon ?? '-' }}</td>
-                                            <td class="px-3 py-2 text-gray-600 text-xs">{{ $jamaah->wa ?? '-' }}</td>
+
+                                            {{-- ✅ WhatsApp saja (Telepon DIHAPUS) --}}
+                                            <td class="px-3 py-2 text-gray-600 text-xs">
+                                                @if ($jamaah->wa)
+                                                    <a href="https://wa.me/{{ preg_replace('/^0/', '62', preg_replace('/[^0-9]/', '', $jamaah->wa)) }}"
+                                                        target="_blank"
+                                                        class="text-green-600 hover:text-green-700 font-medium">
+                                                        <i class="fab fa-whatsapp mr-1"></i>{{ $jamaah->wa }}
+                                                    </a>
+                                                @else
+                                                    -
+                                                @endif
+                                            </td>
+
                                             <td class="px-3 py-2 text-gray-600 text-xs">
                                                 {{ $jamaah->tempat_lahir ?? '-' }}
                                                 @if ($jamaah->tanggal_lahir)
@@ -298,7 +307,6 @@
                                                         class="text-gray-400">{{ $jamaah->tanggal_lahir->format('d/m/Y') }}</span>
                                                 @endif
                                             </td>
-
                                             <td class="px-3 py-2 text-gray-600 text-xs max-w-xs">
                                                 <div class="text-gray-700">{{ $jamaah->alamat ?? '-' }}</div>
                                                 @if ($jamaah->kelurahan || $jamaah->kecamatan || $jamaah->kota_kabupaten)
@@ -315,31 +323,21 @@
                                                     </div>
                                                 @endif
                                             </td>
-
                                             <td class="px-3 py-2 text-right text-gray-600">
-                                                {{ $jamaah->harga_produk_formatted }}
-                                            </td>
+                                                {{ $jamaah->harga_produk_formatted }}</td>
                                             <td class="px-3 py-2 text-right text-purple-600">
-                                                {{ $jamaah->total_pembuatan_passport_formatted }}
-                                            </td>
+                                                {{ $jamaah->total_pembuatan_passport_formatted }}</td>
                                             <td class="px-3 py-2 text-right text-emerald-600 font-medium">
-                                                {{ $jamaah->fee_agent_formatted }}
-                                            </td>
+                                                {{ $jamaah->fee_agent_formatted }}</td>
                                             <td class="px-3 py-2 text-right text-gray-800">
-                                                {{ $jamaah->total_tagihan_sebelum_diskon_formatted }}
-                                            </td>
+                                                {{ $jamaah->total_tagihan_sebelum_diskon_formatted }}</td>
                                             <td class="px-3 py-2 text-right text-red-600">
-                                                {{ $jamaah->total_diskon_formatted }}
-                                            </td>
+                                                {{ $jamaah->total_diskon_formatted }}</td>
                                             <td class="px-3 py-2 text-right font-bold text-gray-800">
-                                                {{ $jamaah->total_tagihan_setelah_diskon_formatted }}
-                                            </td>
+                                                {{ $jamaah->total_tagihan_setelah_diskon_formatted }}</td>
                                             <td class="px-3 py-2 text-right text-green-600">
-                                                {{ $jamaah->total_dibayar_formatted }}
-                                            </td>
-                                            <td class="px-3 py-2 text-center">
-                                                {!! $jamaah->status_pembayaran_badge !!}
-                                            </td>
+                                                {{ $jamaah->total_dibayar_formatted }}</td>
+                                            <td class="px-3 py-2 text-center">{!! $jamaah->status_pembayaran_badge !!}</td>
                                             <td class="px-3 py-2 text-center">
                                                 <a href="{{ route('transaksional.jamaah.show', $jamaah->id_jamaah) }}"
                                                     class="text-blue-500 hover:text-blue-700 text-sm"
@@ -415,24 +413,19 @@
                                                 @endif
                                             </td>
                                             <td class="px-3 py-2 text-gray-600 text-xs">
-                                                {{ $jamaah->agent_name_formatted }}
-                                            </td>
+                                                {{ $jamaah->agent_name_formatted }}</td>
                                             <td class="px-3 py-2 text-right font-bold text-emerald-600">
-                                                {{ $jamaah->fee_agent_formatted }}
-                                            </td>
-                                            <td class="px-3 py-2 text-center">
-                                                {!! $jamaah->fee_agent_badge !!}
-                                            </td>
+                                                {{ $jamaah->fee_agent_formatted }}</td>
+                                            <td class="px-3 py-2 text-center">{!! $jamaah->fee_agent_badge !!}</td>
                                         </tr>
                                     @endforeach
                                 </tbody>
                                 <tfoot class="bg-emerald-100 border-t-2 border-emerald-300">
                                     <tr>
-                                        <td colspan="3" class="px-3 py-2 text-right font-bold text-gray-700">
-                                            TOTAL FEE AGENT</td>
+                                        <td colspan="3" class="px-3 py-2 text-right font-bold text-gray-700">TOTAL FEE
+                                            AGENT</td>
                                         <td class="px-3 py-2 text-right font-bold text-emerald-700">
-                                            {{ $keluarga->fee_agent_formatted }}
-                                        </td>
+                                            {{ $keluarga->fee_agent_formatted }}</td>
                                         <td></td>
                                     </tr>
                                 </tfoot>
@@ -478,22 +471,19 @@
                                         <div class="flex justify-between">
                                             <dt class="text-gray-500">Pembayaran Passport</dt>
                                             <dd class="font-medium text-green-600">
-                                                {{ $jamaah->pendampingan_fee_formatted }}
-                                            </dd>
+                                                {{ $jamaah->pendampingan_fee_formatted }}</dd>
                                         </div>
                                         @if ($jamaah->is_pembuatan_passport)
                                             <div class="flex justify-between">
                                                 <dt class="text-gray-500">Pendapatan Perusahaan</dt>
                                                 <dd class="font-medium text-purple-600">
-                                                    {{ $jamaah->pendampingan_fee_petugas_formatted }}
-                                                </dd>
+                                                    {{ $jamaah->pendampingan_fee_petugas_formatted }}</dd>
                                             </div>
                                         @endif
                                         <div class="flex justify-between pt-1.5 border-t border-gray-100">
                                             <dt class="text-gray-600 font-medium">Total Pembuatan Passport</dt>
                                             <dd class="font-bold text-blue-600">
-                                                {{ $jamaah->total_pembuatan_passport_formatted }}
-                                            </dd>
+                                                {{ $jamaah->total_pembuatan_passport_formatted }}</dd>
                                         </div>
                                     </dl>
                                 </div>
@@ -588,14 +578,12 @@
                                                     </td>
                                                     <td class="px-3 py-2 text-right text-gray-600">
                                                         {{ $upgrade->jumlah_kamar }}</td>
-                                                    <td class="px-3 py-2 text-right text-gray-600">
-                                                        Rp {{ number_format($upgrade->harga_per_malam, 0, ',', '.') }}
-                                                    </td>
+                                                    <td class="px-3 py-2 text-right text-gray-600">Rp
+                                                        {{ number_format($upgrade->harga_per_malam, 0, ',', '.') }}</td>
                                                     <td class="px-3 py-2 text-right text-gray-600">
                                                         {{ $upgrade->durasi_menginap }}</td>
-                                                    <td class="px-3 py-2 text-right font-bold text-orange-600">
-                                                        Rp {{ number_format($upgrade->total_harga, 0, ',', '.') }}
-                                                    </td>
+                                                    <td class="px-3 py-2 text-right font-bold text-orange-600">Rp
+                                                        {{ number_format($upgrade->total_harga, 0, ',', '.') }}</td>
                                                 </tr>
                                             @endforeach
                                         </tbody>
@@ -604,8 +592,7 @@
                                                 <td colspan="6" class="px-3 py-2 text-right font-bold text-gray-700">
                                                     TOTAL KELUARGA</td>
                                                 <td class="px-3 py-2 text-right font-bold text-orange-700">
-                                                    {{ $keluarga->total_upgrade_hotel_formatted }}
-                                                </td>
+                                                    {{ $keluarga->total_upgrade_hotel_formatted }}</td>
                                             </tr>
                                         </tfoot>
                                     </table>
@@ -630,9 +617,8 @@
                                                     <i class="fas fa-user text-blue-500 mr-1"></i>
                                                     {{ $jamaah->nama_lengkap }}
                                                 </span>
-                                                <span class="text-xs font-bold text-blue-600">
-                                                    {{ $jamaah->total_upgrade_hotel_formatted }}
-                                                </span>
+                                                <span
+                                                    class="text-xs font-bold text-blue-600">{{ $jamaah->total_upgrade_hotel_formatted }}</span>
                                             </div>
                                             <ul class="space-y-1">
                                                 @foreach ($jamaah->upgradeHotels as $upgrade)
@@ -643,9 +629,8 @@
                                                             ({{ $upgrade->jumlah_kamar }}x{{ $upgrade->durasi_menginap }}
                                                             mlm)
                                                         </span>
-                                                        <span class="font-medium text-orange-600">
-                                                            Rp {{ number_format($upgrade->total_harga, 0, ',', '.') }}
-                                                        </span>
+                                                        <span class="font-medium text-orange-600">Rp
+                                                            {{ number_format($upgrade->total_harga, 0, ',', '.') }}</span>
                                                     </li>
                                                 @endforeach
                                             </ul>
@@ -707,16 +692,8 @@
                                         @php
                                             $isRefund = ($transaksi->jenis_mutasi ?? 'masuk') === 'keluar';
                                             $rowClass = $isRefund ? 'bg-amber-50/40' : '';
-                                            $namaJenis = strtolower(
-                                                trim((string) ($transaksi->jenisTransaksi->nama ?? '')),
-                                            );
-                                            $isLunasJenis =
-                                                str_contains($namaJenis, 'lunas') ||
-                                                str_contains($namaJenis, 'pelunasan');
-                                            $isDpJenis =
-                                                str_contains($namaJenis, 'down payment') ||
-                                                preg_match('/\bdp\b/', $namaJenis) ||
-                                                str_contains($namaJenis, 'pembayaran awal');
+                                            $jenisNama = $transaksi->jenis_nama;
+                                            $kodeJenis = $transaksi->jenis_kode;
                                         @endphp
                                         <tr class="hover:bg-gray-50 transition-colors {{ $rowClass }}">
                                             <td class="px-3 py-2 text-gray-400 text-xs">{{ $loop->iteration }}</td>
@@ -740,22 +717,27 @@
                                                 @if ($isRefund)
                                                     <span
                                                         class="px-2 py-1 rounded-full text-xs font-bold bg-amber-200 text-amber-800">
-                                                        <i class="fas fa-undo-alt mr-1"></i>REFUND
+                                                        <i class="fas fa-undo-alt mr-1"></i>{{ $jenisNama }}
                                                     </span>
-                                                @elseif ($isLunasJenis)
+                                                @elseif ($kodeJenis === 'LUNAS')
                                                     <span
                                                         class="px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-700">
-                                                        {{ $transaksi->jenisTransaksi->nama ?? '-' }}
+                                                        {{ $jenisNama }}
                                                     </span>
-                                                @elseif ($isDpJenis)
+                                                @elseif ($kodeJenis === 'DP')
                                                     <span
                                                         class="px-2 py-1 rounded-full text-xs font-medium bg-yellow-100 text-yellow-700">
-                                                        {{ $transaksi->jenisTransaksi->nama ?? '-' }}
+                                                        {{ $jenisNama }}
+                                                    </span>
+                                                @elseif ($kodeJenis === 'ANGSURAN')
+                                                    <span
+                                                        class="px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-700">
+                                                        {{ $jenisNama }}
                                                     </span>
                                                 @else
                                                     <span
-                                                        class="px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-700">
-                                                        {{ $transaksi->jenisTransaksi->nama ?? '-' }}
+                                                        class="px-2 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-700">
+                                                        {{ $jenisNama }}
                                                     </span>
                                                 @endif
                                             </td>

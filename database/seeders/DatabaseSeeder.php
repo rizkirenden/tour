@@ -12,6 +12,7 @@ class DatabaseSeeder extends Seeder
             StatusKeberangkatanSeeder::class,
             HotelSeeder::class,
             JenisTransaksiSeeder::class,
+            JenisPembayaranSeeder::class,
             KategoriPengeluaranSeeder::class,
             KotaAsalSeeder::class,
             MaskapaiSeeder::class,

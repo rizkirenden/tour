@@ -24,7 +24,6 @@ class Jamaah extends Model
         'nik',
         'nama_ayah',
         'pekerjaan',
-        'telepon',
         'wa',
         'alamat',
         'kota_kabupaten',
@@ -330,7 +329,7 @@ class Jamaah extends Model
     }
 
     // ==========================================
-    // ACCESSORS - FEE PASSPORT (untuk Departure)
+    // ACCESSORS - FEE PASSPORT
     // ==========================================
 
     public function getIsPembuatanPassportEfektifAttribute()
@@ -529,7 +528,7 @@ class Jamaah extends Model
     }
 
     // ==========================================
-    // ACCESSORS - KEBERANGKATAN (MULTIPLE)
+    // ACCESSORS - KEBERANGKATAN
     // ==========================================
 
     public function getKeberangkatanListAttribute()
@@ -649,9 +648,10 @@ class Jamaah extends Model
     {
         $colors = [
             'Belum Bayar' => 'bg-red-100 text-red-700',
-            'DP' => 'bg-yellow-100 text-yellow-700',
-            'Setoran' => 'bg-blue-100 text-blue-700',
-            'Lunas' => 'bg-green-100 text-green-700'
+            'DP'          => 'bg-yellow-100 text-yellow-700',
+            'Setoran'     => 'bg-blue-100 text-blue-700',
+            'Lunas'       => 'bg-green-100 text-green-700',
+            'Angsuran'    => 'bg-blue-100 text-blue-700',
         ];
         $color = $colors[$this->status_pembayaran] ?? 'bg-gray-100 text-gray-700';
         return '<span class="px-2 py-1 rounded-full text-xs font-medium ' . $color . '">' . $this->status_pembayaran . '</span>';
@@ -712,14 +712,13 @@ class Jamaah extends Model
         return 'Rp ' . number_format($this->total_dibayar, 0, ',', '.');
     }
 
-       public function getSisaTagihanFormattedAttribute()
+    public function getSisaTagihanFormattedAttribute()
     {
-        // ✅ Paksa tampil 0 kalau negatif (data lama)
         $nilai = max(0, (int) ($this->sisa_tagihan ?? 0));
         return 'Rp ' . number_format($nilai, 0, ',', '.');
     }
 
-        public function getSisaTagihanAttribute($value)
+    public function getSisaTagihanAttribute($value)
     {
         return max(0, (int) $value);
     }
@@ -734,10 +733,6 @@ class Jamaah extends Model
         return $this->diskon ? $this->diskon->nilai_diskon : 0;
     }
 
-    // ==========================================
-    // PEMBUATAN PASSPORT
-    // ==========================================
-
     public function getTotalPembuatanPassportAttribute()
     {
         return ($this->pendampingan_fee ?? 0) + ($this->pendampingan_fee_petugas ?? 0);
@@ -747,10 +742,6 @@ class Jamaah extends Model
     {
         return 'Rp ' . number_format($this->total_pembuatan_passport, 0, ',', '.');
     }
-
-    // ==========================================
-    // HARGA PRODUK (dari pivot keberangkatan)
-    // ==========================================
 
     public function getHargaProdukAttribute()
     {
@@ -772,13 +763,9 @@ class Jamaah extends Model
     }
 
     // ==========================================
-    // ✅ ACCESSORS - REFUND / KELEBIHAN BAYAR
+    // ACCESSORS - REFUND / KELEBIHAN BAYAR
     // ==========================================
 
-    /**
-     * Kelebihan bayar = total_dibayar - total_tagihan_setelah_diskon.
-     * Selalu >= 0. Kalau 0 berarti tidak ada kelebihan.
-     */
     public function getKelebihanBayarAttribute()
     {
         $dibayar = (int) ($this->total_dibayar ?? 0);
@@ -791,10 +778,6 @@ class Jamaah extends Model
         return 'Rp ' . number_format($this->kelebihan_bayar, 0, ',', '.');
     }
 
-    /**
-     * Sisa kelebihan yang BELUM di-refund.
-     * = kelebihan_bayar - total_refund (minimum 0).
-     */
     public function getSisaKelebihanBayarAttribute()
     {
         if (isset($this->attributes['sisa_kelebihan_bayar'])) {
@@ -828,10 +811,6 @@ class Jamaah extends Model
         return '';
     }
 
-    /**
-     * Net dibayar = total_dibayar - total_refund.
-     * Uang yang benar-benar dipegang perusahaan.
-     */
     public function getNetDibayarAttribute()
     {
         return max(0, (int) ($this->total_dibayar ?? 0) - (int) ($this->total_refund ?? 0));
@@ -877,11 +856,8 @@ class Jamaah extends Model
             }
         });
 
-        // ✅ Filter jamaah yang punya kelebihan bayar
         $query->when(!empty($filters['has_kelebihan']), function ($query) {
             $query->where('sisa_kelebihan_bayar', '>', 0);
         });
     }
-
-
 }

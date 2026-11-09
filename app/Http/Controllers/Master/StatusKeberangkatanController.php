@@ -30,15 +30,13 @@ class StatusKeberangkatanController extends Controller
 
     public function create()
     {
-        $warnaOptions = $this->service->getWarnaOptions();
-        return view('status-keberangkatans.create', compact('warnaOptions'));
+        return view('status-keberangkatans.create');
     }
 
     public function store(Request $request)
     {
         $validated = $request->validate([
             'nama_status' => 'required|string|max:50|unique:status_keberangkatans,nama_status',
-            'warna' => 'nullable|string|max:20',
             'keterangan' => 'nullable|string',
         ]);
 
@@ -57,15 +55,13 @@ class StatusKeberangkatanController extends Controller
     public function edit($id)
     {
         $status = $this->service->getById($id);
-        $warnaOptions = $this->service->getWarnaOptions();
-        return view('status-keberangkatans.edit', compact('status', 'warnaOptions'));
+        return view('status-keberangkatans.edit', compact('status'));
     }
 
     public function update(Request $request, $id)
     {
         $validated = $request->validate([
             'nama_status' => ['required', 'string', 'max:50', Rule::unique('status_keberangkatans', 'nama_status')->ignore($id, 'id_status')],
-            'warna' => 'nullable|string|max:20',
             'keterangan' => 'nullable|string',
         ]);
 

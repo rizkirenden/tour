@@ -11,7 +11,7 @@ use App\Models\ProdukHargaBulanan;
 use App\Models\ProdukKeberangkatan;
 use App\Models\KotaAsal;
 use App\Models\Diskon;
-use App\Models\JenisTransaksi;
+use App\Models\JenisPembayaran;         // ← BARU (pengganti JenisTransaksi)
 use App\Models\TransaksiPembayaran;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
@@ -20,6 +20,9 @@ use Illuminate\Support\Facades\Log;
 
 class KeluargaService
 {
+    // ==========================================
+    // READ
+    // ==========================================
     public function getAll(array $filters = [])
     {
         $query = Keluarga::with(['jamaahs', 'diskon', 'upgradeHotels.hotel']);
@@ -36,7 +39,6 @@ class KeluargaService
             $query->where('status_pembayaran', $filters['status_pembayaran']);
         }
 
-        // ✅ Filter punya kelebihan bayar
         if (!empty($filters['has_kelebihan'])) {
             $query->where('sisa_kelebihan_bayar', '>', 0);
         }
@@ -69,7 +71,6 @@ class KeluargaService
             $data['total_dibayar'] = (int) ($data['total_dibayar'] ?? 0);
             $data['total_refund'] = 0;
 
-            // ... (kode create tetap sama seperti sebelumnya)
             $hargaProduk = 0;
             $hargaBulanan = null;
             $idHargaBulanan = $data['id_produk_harga_bulanan'] ?? null;
@@ -153,7 +154,6 @@ class KeluargaService
             $data['total_diskon'] = (int) $totalDiskonKelompok;
             $data['total_tagihan_setelah_diskon'] = (int) $totalTagihanSetelahDiskon;
 
-            // ✅ Sisa tagihan tidak boleh negatif
             $sisa = max(0, $totalTagihanSetelahDiskon - $data['total_dibayar']);
             $kelebihan = max(0, $data['total_dibayar'] - $totalTagihanSetelahDiskon);
 
@@ -457,7 +457,6 @@ class KeluargaService
                     } else {
                         $jamaah = Jamaah::find($jamaahData['id_jamaah']);
                         if ($jamaah) {
-                            // ✅ Sisa tagihan non-negatif
                             $sisaTagihanBaru = max(0, $tagihanSetelahDiskonJamaah - (int) $jamaah->total_dibayar);
                             $totalRefund = (int) ($jamaah->total_refund ?? 0);
                             $kelebihanBaru = max(0, (int) $jamaah->total_dibayar - $tagihanSetelahDiskonJamaah);
@@ -654,7 +653,7 @@ class KeluargaService
     }
 
     // ==========================================
-    // RECALCULATE — ✅ UPDATE total_refund & sisa_kelebihan_bayar
+    // RECALCULATE
     // ==========================================
     public function recalculateKeluarga($keluargaId)
     {
@@ -673,7 +672,6 @@ class KeluargaService
             $totalKotor = (int) $baseKotor + (int) $totalUpgradeJamaah;
             $setelahDiskon = max(0, $totalKotor - (int) $jamaah->total_diskon);
 
-            // ✅ Sisa non-negatif
             $sisa = max(0, $setelahDiskon - (int) $jamaah->total_dibayar);
             $totalRefundJamaah = (int) ($jamaah->total_refund ?? 0);
             $kelebihanJamaah = max(0, (int) $jamaah->total_dibayar - $setelahDiskon);
@@ -698,7 +696,6 @@ class KeluargaService
         $totalDiskon = (int) $jamaahs->sum('total_diskon');
         $totalSetelahDiskon = max(0, $totalKotor - $totalDiskon);
 
-        // ✅ Sisa non-negatif
         $sisaTagihan = max(0, $totalSetelahDiskon - $totalDibayar);
         $kelebihanBayar = max(0, $totalDibayar - $totalSetelahDiskon);
         $diskonPerOrang = $jamaahs->count() > 0 ? (int) round($totalDiskon / $jamaahs->count()) : 0;
@@ -758,7 +755,6 @@ class KeluargaService
 
     public function getKeberangkatanByProduk($namaProduk, $excludeJamaahIds = [])
     {
-        // ... (kode tetap sama)
         $produk = ProdukPaket::where('nama_produk', $namaProduk)->first();
         if (!$produk) return ['keberangkatan' => [], 'harga_bulanan' => []];
 
@@ -818,7 +814,7 @@ class KeluargaService
     }
 
     // ==========================================
-    // ✅ PROSES REFUND
+    // ✅ PROSES REFUND — pakai JenisPembayaran
     // ==========================================
     public function prosesRefund($keluargaId, array $data)
     {
@@ -838,16 +834,13 @@ class KeluargaService
                 );
             }
 
-            // Cari jenis transaksi REFUND berdasarkan nama
-            $jenisRefund = JenisTransaksi::where(function ($q) {
-                $q->where('nama', 'like', '%refund%')
-                    ->orWhere('nama', 'like', '%pengembalian%');
-            })->first();
+            // ✅ Cari jenis pembayaran REFUND berdasarkan kode
+            $jenisRefund = JenisPembayaran::byKode('REFUND')->first();
 
             if (!$jenisRefund) {
-                $jenisRefund = JenisTransaksi::create([
-                    'nama'       => 'Pengembalian Dana (Refund)',
-                    'keterangan' => 'Transaksi pengembalian dana ke jamaah (kelebihan bayar / pindah produk)',
+                $jenisRefund = JenisPembayaran::create([
+                    'nama'       => 'Refund',
+                    'keterangan' => 'Pengembalian dana ke jamaah (kelebihan bayar / pindah produk)',
                 ]);
             }
 
@@ -860,7 +853,6 @@ class KeluargaService
 
             foreach ($jamaahs as $idx => $jamaah) {
                 if ($idx === $jamaahs->count() - 1) {
-                    // Jamaah terakhir menerima sisa pembulatan
                     $nominal = $sisaRefund;
                 } else {
                     $proporsi = $totalTagihanKeluarga > 0
@@ -883,7 +875,8 @@ class KeluargaService
                 TransaksiPembayaran::create([
                     'id_jamaah'            => $jamaah->id_jamaah,
                     'id_metode_pembayaran' => $data['id_metode_pembayaran'],
-                    'id_jenis_transaksi'   => $jenisRefund->id_jenis,
+                    'id_jenis_transaksi'   => null,
+                    'id_jenis_pembayaran'  => $jenisRefund->id_jenis_pembayaran,
                     'tanggal_transaksi'    => $data['tanggal_transaksi'] ?? now()->toDateString(),
                     'jumlah_bayar'         => $item['nominal'],
                     'jenis_mutasi'         => 'keluar',
@@ -893,7 +886,6 @@ class KeluargaService
                     'created_by'           => Auth::user()->name ?? 'System',
                 ]);
 
-                // Update total_refund & sisa_kelebihan_bayar di jamaah
                 $totalRefundJamaah = (int) ($jamaah->total_refund ?? 0) + $item['nominal'];
                 $sisaKelebihanJamaah = max(0, $jamaah->kelebihan_bayar - $totalRefundJamaah);
 

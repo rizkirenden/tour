@@ -1,5 +1,4 @@
 <?php
-// database/migrations/xxxx_xx_xx_create_jamaahs_table.php
 
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
@@ -23,7 +22,6 @@ return new class extends Migration
             $table->string('nik', 20)->nullable()->comment('Nomor Induk Kependudukan');
             $table->string('nama_ayah', 100)->nullable()->comment('Nama ayah kandung');
             $table->string('pekerjaan', 100)->nullable()->comment('Pekerjaan jamaah');
-            $table->string('telepon', 20)->nullable();
             $table->string('wa', 20)->nullable()->comment('Nomor WhatsApp');
 
             // === ALAMAT LENGKAP ===
@@ -43,7 +41,7 @@ return new class extends Migration
             $table->string('tempat_lahir', 100)->nullable();
             $table->enum('jenis_kelamin', ['L', 'P'])->nullable();
 
-            // === STATUS KAWIN (PER JAMAAH) ===
+            // === STATUS KAWIN ===
             $table->enum('status_kawin', ['Belum Kawin', 'Kawin', 'Cerai Hidup', 'Cerai Mati'])
                 ->nullable()
                 ->comment('Status pernikahan jamaah');
@@ -68,15 +66,12 @@ return new class extends Migration
 
             // === AGENT ===
             $table->string('agent_name', 100)->nullable()->comment('Nama Agent');
-            $table->bigInteger('fee_agent')->default(0)
-                ->comment('Fee agent per jamaah (hasil bagi dari total keluarga)');
+            $table->bigInteger('fee_agent')->default(0);
 
             // === PEMBUATAN PASSPORT ===
             $table->boolean('is_pembuatan_passport')->default(false);
-            $table->bigInteger('pendampingan_fee')->default(0)
-                ->comment('Pembayaran passport');
-            $table->bigInteger('pendampingan_fee_petugas')->default(0)
-                ->comment('Pendapatan perusahaan');
+            $table->bigInteger('pendampingan_fee')->default(0);
+            $table->bigInteger('pendampingan_fee_petugas')->default(0);
 
             // === TIKET ===
             $table->bigInteger('harga_tiket_pergi_domestik')->default(0);
@@ -97,13 +92,8 @@ return new class extends Migration
             $table->bigInteger('total_diskon')->default(0);
             $table->bigInteger('total_tagihan_setelah_diskon')->default(0);
             $table->bigInteger('total_dibayar')->default(0);
-
-            // === REFUND / PENGEMBALIAN DANA ===
-            $table->bigInteger('total_refund')->default(0)
-                ->comment('Total dana yang sudah dikembalikan ke jamaah');
-            $table->bigInteger('sisa_kelebihan_bayar')->default(0)
-                ->comment('Kelebihan bayar yang BELUM di-refund (dibayar > tagihan)');
-
+            $table->bigInteger('total_refund')->default(0);
+            $table->bigInteger('sisa_kelebihan_bayar')->default(0);
             $table->bigInteger('sisa_tagihan')->default(0);
             $table->enum('status_pembayaran', ['Belum Bayar', 'DP', 'Setoran', 'Lunas'])
                 ->default('Belum Bayar');

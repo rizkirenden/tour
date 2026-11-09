@@ -45,15 +45,7 @@
                     <div class="flex flex-wrap items-start justify-between gap-4">
                         <div>
                             <div class="flex items-center gap-3 flex-wrap">
-                                @php
-                                    $service = app(\App\Services\StatusKeberangkatanService::class);
-                                    $badgeClass = $service->getBadgeColor($status->warna);
-                                @endphp
                                 <h2 class="text-2xl font-bold text-gray-800">{{ $status->nama_status }}</h2>
-                                <span class="inline-flex px-3 py-1 rounded-full text-xs font-medium {{ $badgeClass }}">
-                                    <i class="fas fa-circle mr-1.5 text-xs"></i>
-                                    {{ $status->warna ? ucfirst($status->warna) : 'Tanpa Warna' }}
-                                </span>
                             </div>
                         </div>
                         <div class="text-right">
@@ -71,16 +63,6 @@
                             <div class="flex justify-between text-sm">
                                 <dt class="text-gray-500">Nama Status</dt>
                                 <dd class="font-medium text-gray-700">{{ $status->nama_status }}</dd>
-                            </div>
-                            <div class="flex justify-between text-sm">
-                                <dt class="text-gray-500">Warna</dt>
-                                <dd>
-                                    <span
-                                        class="inline-flex px-3 py-1 rounded-full text-xs font-medium {{ $badgeClass }}">
-                                        <i class="fas fa-circle mr-1.5 text-xs"></i>
-                                        {{ $status->warna ? ucfirst($status->warna) : '-' }}
-                                    </span>
-                                </dd>
                             </div>
                             <div class="flex justify-between text-sm">
                                 <dt class="text-gray-500">Keterangan</dt>

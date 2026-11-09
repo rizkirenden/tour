@@ -80,7 +80,7 @@
                             : 'text-yellow-200 hover:bg-white/10 hover:text-white' }}">
 
                             <i class="fas fa-credit-card w-5 text-center text-xs"></i>
-                            <span class="ml-3">Metode Pembayaran</span>
+                            <span class="ml-3">Metode Pembayaran Bank</span>
                         </a>
                     </li>
 
@@ -93,7 +93,7 @@
                             : 'text-yellow-200 hover:bg-white/10 hover:text-white' }}">
 
                             <i class="fas fa-tags w-5 text-center text-xs"></i>
-                            <span class="ml-3">Kategori Pengeluaran</span>
+                            <span class="ml-3">Kategori Pengeluaran Bulanan</span>
                         </a>
                     </li>
 
@@ -119,7 +119,20 @@
                             : 'text-yellow-200 hover:bg-white/10 hover:text-white' }}">
 
                             <i class="fas fa-exchange-alt w-5 text-center text-xs"></i>
-                            <span class="ml-3">Jenis Transaksi</span>
+                            <span class="ml-3">Jenis Transaksi Keberangkatan</span>
+                        </a>
+                    </li>
+
+                    <!-- Jenis Pembayaran -->
+                    <li>
+                        <a href="{{ route('master.jenis-pembayaran.index') }}"
+                            class="flex items-center px-3 py-2 rounded-lg text-sm transition-all duration-200
+                        {{ request()->routeIs('master.jenis-pembayaran.*')
+                            ? 'bg-white/15 text-white'
+                            : 'text-yellow-200 hover:bg-white/10 hover:text-white' }}">
+
+                            <i class="fas fa-money-check-alt w-5 text-center text-xs"></i>
+                            <span class="ml-3">Jenis Pembayaran</span>
                         </a>
                     </li>
 

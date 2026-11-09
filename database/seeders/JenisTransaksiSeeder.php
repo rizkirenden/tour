@@ -11,10 +11,17 @@ class JenisTransaksiSeeder extends Seeder
     public function run(): void
     {
         $data = [
-            ['nama' => 'DP',                         'keterangan' => 'Pembayaran awal / down payment'],
-            ['nama' => 'Angsuran',                   'keterangan' => 'Pembayaran cicilan'],
-            ['nama' => 'Pelunasan',                  'keterangan' => 'Pembayaran pelunasan'],
-            ['nama' => 'Pengembalian Dana (Refund)', 'keterangan' => 'Pengembalian dana ke jamaah (kelebihan bayar / pindah produk)'],
+            ['nama' => 'Air Zam Zam',     'keterangan' => 'Biaya air zam zam'],
+            ['nama' => 'Handling Pergi',  'keterangan' => 'Biaya handling keberangkatan'],
+            ['nama' => 'Handling Pulang', 'keterangan' => 'Biaya handling kepulangan'],
+            ['nama' => 'Visa',            'keterangan' => 'Biaya pengurusan visa'],
+            ['nama' => 'Asuransi',        'keterangan' => 'Biaya asuransi perjalanan'],
+            ['nama' => 'Tiket Pesawat',   'keterangan' => 'Biaya tiket pesawat'],
+            ['nama' => 'Hotel',           'keterangan' => 'Biaya akomodasi hotel'],
+            ['nama' => 'Transportasi',    'keterangan' => 'Biaya transportasi lokal'],
+            ['nama' => 'Konsumsi',        'keterangan' => 'Biaya konsumsi jamaah'],
+            ['nama' => 'Perlengkapan',    'keterangan' => 'Biaya perlengkapan jamaah'],
+            ['nama' => 'Lain-lain',       'keterangan' => 'Biaya operasional lainnya'],
         ];
 
         foreach ($data as $item) {

@@ -10,7 +10,7 @@ use App\Models\ProdukHargaBulanan;
 use App\Models\ProdukKeberangkatan;
 use App\Models\KotaAsal;
 use App\Models\Diskon;
-use App\Models\JenisTransaksi;
+use App\Models\JenisPembayaran;
 use App\Models\TransaksiPembayaran;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
@@ -89,6 +89,7 @@ class JamaahService
             'keluarga.upgradeHotels.hotel',
             'keluarga.jamaahs',
             'transaksis.metodePembayaran',
+            'transaksis.jenisPembayaran',
             'transaksis.jenisTransaksi',
             'diskon',
             'keberangkatan',
@@ -188,12 +189,11 @@ class JamaahService
             $data['total_diskon'] = $nilaiDiskon;
             $data['total_tagihan_setelah_diskon'] = $totalTagihanSetelahDiskon;
 
-            // ✅ Sisa tagihan TIDAK BOLEH negatif — kalau sudah bayar lebih, sisa = 0
-$sisa = max(0, $totalTagihanSetelahDiskon - $data['total_dibayar']);
-$kelebihan = max(0, $data['total_dibayar'] - $totalTagihanSetelahDiskon);
+            $sisa = max(0, $totalTagihanSetelahDiskon - $data['total_dibayar']);
+            $kelebihan = max(0, $data['total_dibayar'] - $totalTagihanSetelahDiskon);
 
-$data['sisa_tagihan'] = $sisa;
-$data['sisa_kelebihan_bayar'] = max(0, $kelebihan - (int) ($data['total_refund'] ?? 0));
+            $data['sisa_tagihan'] = $sisa;
+            $data['sisa_kelebihan_bayar'] = max(0, $kelebihan - (int) ($data['total_refund'] ?? 0));
 
             if ($sisa <= 0) {
                 $data['status_pembayaran'] = 'Lunas';
@@ -352,15 +352,14 @@ $data['sisa_kelebihan_bayar'] = max(0, $kelebihan - (int) ($data['total_refund']
             $data['total_diskon'] = $nilaiDiskon;
             $data['total_tagihan_setelah_diskon'] = $totalTagihanSetelahDiskon;
 
-           $totalDibayar = (int) $data['total_dibayar'];
-$totalRefund  = (int) ($jamaah->total_refund ?? 0);
+            $totalDibayar = (int) $data['total_dibayar'];
+            $totalRefund  = (int) ($jamaah->total_refund ?? 0);
 
-// ✅ Sisa tagihan TIDAK BOLEH negatif
-$sisa = max(0, $totalTagihanSetelahDiskon - $totalDibayar);
-$kelebihan = max(0, $totalDibayar - $totalTagihanSetelahDiskon);
+            $sisa = max(0, $totalTagihanSetelahDiskon - $totalDibayar);
+            $kelebihan = max(0, $totalDibayar - $totalTagihanSetelahDiskon);
 
-$data['sisa_tagihan'] = $sisa;
-$data['sisa_kelebihan_bayar'] = max(0, $kelebihan - $totalRefund);
+            $data['sisa_tagihan'] = $sisa;
+            $data['sisa_kelebihan_bayar'] = max(0, $kelebihan - $totalRefund);
 
             if ($sisa <= 0) {
                 $data['status_pembayaran'] = 'Lunas';
@@ -371,6 +370,9 @@ $data['sisa_kelebihan_bayar'] = max(0, $kelebihan - $totalRefund);
             $jamaah->update($data);
 
             $this->saveUpgradeHotels($jamaah->id_jamaah, $upgradeHotels);
+
+            $produkBaru = $data['produk_paket'] ?? $produkLama;
+            $hargaBerubah = ($hargaProduk !== $hargaProdukLama) || ($produkBaru !== $produkLama);
 
             if (!empty($keberangkatanData)) {
                 $pivotData = [];
@@ -406,11 +408,23 @@ $data['sisa_kelebihan_bayar'] = max(0, $kelebihan - $totalRefund);
                     $jamaah->keberangkatan()->detach();
                 }
             } else {
-                $jamaah->keberangkatan()->detach();
+                // ✅ FIX: Kalau $keberangkatanData kosong TAPI produk/harga berubah,
+                // update harga di pivot yang sudah ada tanpa detach.
+                if ($hargaBerubah && $jamaah->keberangkatan->isNotEmpty()) {
+                    $existingPivot = [];
+                    foreach ($jamaah->keberangkatan as $keb) {
+                        $existingPivot[$keb->id] = [
+                            'id_produk_harga_bulanan' => $keb->pivot->id_produk_harga_bulanan,
+                            'bulan_keberangkatan' => $keb->pivot->bulan_keberangkatan,
+                            'tahun_keberangkatan' => $keb->pivot->tahun_keberangkatan,
+                            'bulan_harga' => $keb->pivot->bulan_harga,
+                            'tahun_harga' => $keb->pivot->tahun_harga,
+                            'harga' => (int) $hargaProduk, // ← pakai harga baru
+                        ];
+                    }
+                    $jamaah->keberangkatan()->sync($existingPivot);
+                }
             }
-
-            $produkBaru = $data['produk_paket'] ?? $produkLama;
-            $hargaBerubah = ($hargaProduk !== $hargaProdukLama) || ($produkBaru !== $produkLama);
 
             if ($hargaBerubah) {
                 $this->logPerubahanProduk($jamaah, [
@@ -531,7 +545,7 @@ $data['sisa_kelebihan_bayar'] = max(0, $kelebihan - $totalRefund);
     }
 
     // ==========================================
-    // ✅ PROSES REFUND (BERDASARKAN NAMA, TANPA KOLOM `kode`)
+    // PROSES REFUND — pakai JenisPembayaran
     // ==========================================
     public function prosesRefund($jamaahId, array $data)
     {
@@ -552,31 +566,27 @@ $data['sisa_kelebihan_bayar'] = max(0, $kelebihan - $totalRefund);
                 );
             }
 
-            // ✅ Cari jenis transaksi REFUND berdasarkan NAMA (tidak ada kolom kode)
-            $jenisRefund = JenisTransaksi::where(function ($q) {
-                $q->where('nama', 'like', '%refund%')
-                    ->orWhere('nama', 'like', '%pengembalian%');
-            })->first();
+            $jenisRefund = JenisPembayaran::byKode('REFUND')->first();
 
-            // Kalau belum ada → auto-create
             if (!$jenisRefund) {
-                $jenisRefund = JenisTransaksi::create([
-                    'nama'       => 'Pengembalian Dana (Refund)',
-                    'keterangan' => 'Transaksi pengembalian dana ke jamaah (kelebihan bayar / pindah produk)',
+                $jenisRefund = JenisPembayaran::create([
+                    'nama'       => 'Refund',
+                    'keterangan' => 'Pengembalian dana ke jamaah (kelebihan bayar / pindah produk)',
                 ]);
             }
 
             TransaksiPembayaran::create([
-                'id_jamaah'            => $jamaahId,
-                'id_metode_pembayaran' => $data['id_metode_pembayaran'],
-                'id_jenis_transaksi'   => $jenisRefund->id_jenis,
-                'tanggal_transaksi'    => $data['tanggal_transaksi'] ?? now()->toDateString(),
-                'jumlah_bayar'         => $jumlahRefund,
-                'jenis_mutasi'         => 'keluar',
-                'bukti_pembayaran'     => $data['bukti_pembayaran'] ?? null,
-                'keterangan'           => $data['keterangan'] ?? 'Pengembalian kelebihan bayar',
-                'keterangan_refund'    => $data['keterangan_refund'] ?? null,
-                'created_by'           => Auth::user()->name ?? 'System',
+                'id_jamaah'             => $jamaahId,
+                'id_metode_pembayaran'  => $data['id_metode_pembayaran'],
+                'id_jenis_transaksi'    => null,
+                'id_jenis_pembayaran'   => $jenisRefund->id_jenis_pembayaran,
+                'tanggal_transaksi'     => $data['tanggal_transaksi'] ?? now()->toDateString(),
+                'jumlah_bayar'          => $jumlahRefund,
+                'jenis_mutasi'          => 'keluar',
+                'bukti_pembayaran'      => $data['bukti_pembayaran'] ?? null,
+                'keterangan'            => $data['keterangan'] ?? 'Pengembalian kelebihan bayar',
+                'keterangan_refund'     => $data['keterangan_refund'] ?? null,
+                'created_by'            => Auth::user()->name ?? 'System',
             ]);
 
             $totalRefundBaru   = (int) ($jamaah->total_refund ?? 0) + $jumlahRefund;

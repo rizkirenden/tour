@@ -1,0 +1,56 @@
+<?php
+// app/Services/JenisPembayaranService.php
+
+namespace App\Services;
+
+use App\Models\JenisPembayaran;
+use Illuminate\Support\Facades\DB;
+
+class JenisPembayaranService
+{
+    public function getAll(array $filters = [])
+    {
+        $query = JenisPembayaran::query();
+
+        if (!empty($filters['search'])) {
+            $search = $filters['search'];
+            $query->where(function ($q) use ($search) {
+                $q->where('nama', 'like', "%{$search}%")
+                    ->orWhere('keterangan', 'like', "%{$search}%");
+            });
+        }
+
+        return $query->orderBy('nama', 'asc')->paginate(10);
+    }
+
+    public function getById($id)
+    {
+        return JenisPembayaran::findOrFail($id);
+    }
+
+    public function create(array $data)
+    {
+        return DB::transaction(function () use ($data) {
+            return JenisPembayaran::create($data);
+        });
+    }
+
+    public function update($id, array $data)
+    {
+        return DB::transaction(function () use ($id, $data) {
+            $jenis = $this->getById($id);
+            $jenis->update($data);
+            return $jenis->fresh();
+        });
+    }
+
+    public function delete($id)
+    {
+        return DB::transaction(function () use ($id) {
+            $jenis = $this->getById($id);
+            $nama = $jenis->nama;
+            $jenis->delete();
+            return $nama;
+        });
+    }
+}

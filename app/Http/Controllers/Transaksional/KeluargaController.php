@@ -7,12 +7,12 @@ use App\Http\Controllers\Controller;
 use App\Services\KeluargaService;
 use App\Models\TransaksiPembayaran;
 use App\Models\MetodePembayaran;
+use App\Models\JenisPembayaran;
 use App\Models\ProdukPaket;
 use App\Models\ProdukKeberangkatan;
 use App\Models\ProdukHargaBulanan;
 use App\Models\Hotel;
 use App\Models\Kamar;
-use App\Models\JenisTransaksi;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Auth;
@@ -96,7 +96,6 @@ class KeluargaController extends Controller
             'jamaahs.*.is_kepala_keluarga' => 'nullable|boolean',
             'jamaahs.*.jenis_kelamin' => 'required|in:L,P',
             'jamaahs.*.status_kawin' => 'nullable|in:Belum Kawin,Kawin,Cerai Hidup,Cerai Mati',
-            'jamaahs.*.telepon' => 'required|string|max:20',
             'jamaahs.*.wa' => 'required|string|max:20',
             'jamaahs.*.alamat' => 'nullable|string',
             'jamaahs.*.kota_kabupaten' => 'nullable|string|max:100',
@@ -161,7 +160,7 @@ class KeluargaController extends Controller
         $keluarga = $this->service->getById($id);
 
         $jamaahIds = $keluarga->jamaahs->pluck('id_jamaah')->toArray();
-        $transaksis = TransaksiPembayaran::with(['metodePembayaran', 'jenisTransaksi', 'jamaah'])
+        $transaksis = TransaksiPembayaran::with(['metodePembayaran', 'jenisPembayaran', 'jenisTransaksi', 'jamaah'])
             ->whereIn('id_jamaah', $jamaahIds)
             ->orderBy('created_at', 'asc')
             ->get();
@@ -184,7 +183,7 @@ class KeluargaController extends Controller
     // ==========================================
     // EDIT
     // ==========================================
-       public function edit($id)
+    public function edit($id)
     {
         $keluarga = $this->service->getById($id);
         $produkPakets = $this->service->getProdukPakets();
@@ -207,7 +206,6 @@ class KeluargaController extends Controller
                     'is_kepala_keluarga' => $jamaah->is_kepala_keluarga,
                     'jenis_kelamin' => $jamaah->jenis_kelamin,
                     'status_kawin' => $jamaah->status_kawin,
-                    'telepon' => $jamaah->telepon,
                     'wa' => $jamaah->wa,
                     'alamat' => $jamaah->alamat,
                     'kota_kabupaten' => $jamaah->kota_kabupaten,
@@ -247,7 +245,8 @@ class KeluargaController extends Controller
             $jamaahData = [[
                 'id_jamaah' => '', 'nama_lengkap' => '', 'nik' => '', 'nama_ayah' => '',
                 'pekerjaan' => '', 'hubungan_keluarga' => '', 'is_kepala_keluarga' => true,
-                'jenis_kelamin' => '', 'status_kawin' => '', 'telepon' => '', 'wa' => '',
+                'jenis_kelamin' => '', 'status_kawin' => '',
+                'wa' => '',
                 'alamat' => '', 'kota_kabupaten' => '', 'kecamatan' => '', 'kelurahan' => '',
                 'kota_asal' => '', 'pulau' => '', 'bandara_keberangkatan' => '',
                 'nomor_paspor' => '', 'paspor_terbit' => null, 'paspor_expired' => null,
@@ -302,7 +301,6 @@ class KeluargaController extends Controller
             'jamaahs.*.is_kepala_keluarga' => 'nullable|boolean',
             'jamaahs.*.jenis_kelamin' => 'required|in:L,P',
             'jamaahs.*.status_kawin' => 'nullable|in:Belum Kawin,Kawin,Cerai Hidup,Cerai Mati',
-            'jamaahs.*.telepon' => 'required|string|max:20',
             'jamaahs.*.wa' => 'required|string|max:20',
             'jamaahs.*.alamat' => 'nullable|string',
             'jamaahs.*.kota_kabupaten' => 'nullable|string|max:100',
@@ -396,9 +394,20 @@ class KeluargaController extends Controller
     {
         $keluarga = $this->service->getById($id);
         $metodePembayarans = MetodePembayaran::active()->get();
-        $jenisTransaksis = JenisTransaksi::all();
 
-        return view('keluargas.pembayaran', compact('keluarga', 'metodePembayarans', 'jenisTransaksis'));
+        $jenisPembayarans = JenisPembayaran::query()
+            ->where(function ($q) {
+                $q->where('nama', 'not like', '%refund%')
+                  ->where('nama', 'not like', '%pengembalian%');
+            })
+            ->orderBy('nama', 'asc')
+            ->get();
+
+        return view('keluargas.pembayaran', compact(
+            'keluarga',
+            'metodePembayarans',
+            'jenisPembayarans'
+        ));
     }
 
     // ==========================================
@@ -411,29 +420,30 @@ class KeluargaController extends Controller
 
         $validated = $request->validate([
             'id_metode_pembayaran' => 'required|exists:metode_pembayarans,id_metode',
-            'id_jenis_transaksi' => 'required|exists:jenis_transaksis,id_jenis',
-            'tanggal_transaksi' => 'required|date',
-            'jumlah_bayar' => 'required|integer|min:1',
-            'bukti_pembayaran' => 'required|file|mimes:jpeg,png,jpg,pdf|max:2048',
-            'keterangan' => 'nullable|string'
+            'id_jenis_pembayaran'  => 'required|exists:jenis_pembayarans,id_jenis_pembayaran',
+            'tanggal_transaksi'    => 'required|date',
+            'jumlah_bayar'         => 'required|integer|min:1',
+            'bukti_pembayaran'     => 'required|file|mimes:jpeg,png,jpg,pdf|max:2048',
+            'keterangan'           => 'nullable|string'
         ]);
 
-        $keluarga = $this->service->getById($id);
-        $totalTagihan = $keluarga->total_tagihan_setelah_diskon;
+        $keluarga            = $this->service->getById($id);
+        $totalTagihan        = $keluarga->total_tagihan_setelah_diskon;
         $totalDibayarSaatIni = $keluarga->total_dibayar;
-        $jumlahBayar = $validated['jumlah_bayar'];
-        $jenisTransaksi = JenisTransaksi::find($validated['id_jenis_transaksi']);
-
-        // ✅ Cek pelunasan via nama (bukan kode)
-        $namaJenis = strtolower(trim((string) $jenisTransaksi->nama));
-        $isLunas = str_contains($namaJenis, 'lunas') || str_contains($namaJenis, 'pelunasan');
-        $isDp = str_contains($namaJenis, 'down payment') || preg_match('/\bdp\b/', $namaJenis) || str_contains($namaJenis, 'pembayaran awal');
+        $jumlahBayar         = $validated['jumlah_bayar'];
+        $jenisPembayaran     = JenisPembayaran::find($validated['id_jenis_pembayaran']);
+        $kode                = $jenisPembayaran->kode;
 
         $sisaSaatIni = max(0, $totalTagihan - $totalDibayarSaatIni);
 
-        if ($isLunas && $jumlahBayar < $sisaSaatIni) {
+        if ($kode === 'LUNAS' && $jumlahBayar < $sisaSaatIni) {
             return redirect()->back()
                 ->with('error', 'Jumlah bayar untuk pelunasan harus sebesar sisa tagihan: ' . number_format($sisaSaatIni, 0, ',', '.'));
+        }
+
+        if ($kode === 'REFUND') {
+            return redirect()->back()
+                ->with('error', 'Refund tidak bisa dilakukan lewat form pembayaran. Gunakan tombol "Proses Refund".');
         }
 
         if ($jumlahBayar > $sisaSaatIni) {
@@ -449,28 +459,23 @@ class KeluargaController extends Controller
         }
 
         $totalDibayarBaru = $totalDibayarSaatIni + $jumlahBayar;
-
-        // ✅ Sisa tagihan tidak boleh negatif
-        $sisaTagihanBaru = max(0, $totalTagihan - $totalDibayarBaru);
-        $kelebihanBaru = max(0, $totalDibayarBaru - $totalTagihan);
-        $totalRefund = (int) ($keluarga->total_refund ?? 0);
+        $sisaTagihanBaru  = max(0, $totalTagihan - $totalDibayarBaru);
+        $kelebihanBaru    = max(0, $totalDibayarBaru - $totalTagihan);
+        $totalRefund      = (int) ($keluarga->total_refund ?? 0);
 
         if ($sisaTagihanBaru <= 0) {
             $status = 'Lunas';
-        } elseif ($isDp) {
-            $status = 'DP';
         } else {
-            $status = 'Setoran';
+            $status = $this->mapJenisPembayaranToStatus($kode);
         }
 
         $keluarga->update([
-            'total_dibayar' => $totalDibayarBaru,
-            'sisa_tagihan' => $sisaTagihanBaru,
-            'status_pembayaran' => $status,
-            'sisa_kelebihan_bayar' => max(0, $kelebihanBaru - $totalRefund),
+            'total_dibayar'         => $totalDibayarBaru,
+            'sisa_tagihan'          => $sisaTagihanBaru,
+            'status_pembayaran'     => $status,
+            'sisa_kelebihan_bayar'  => max(0, $kelebihanBaru - $totalRefund),
         ]);
 
-        // Distribusi ke jamaah secara proporsional
         $jamaahs = $keluarga->jamaahs;
         $totalTagihanKeluarga = $keluarga->total_tagihan_setelah_diskon;
         $sisaPembagian = $jumlahBayar;
@@ -487,38 +492,36 @@ class KeluargaController extends Controller
             }
             $bayarPerJamaah = max(0, $bayarPerJamaah);
 
-            $totalDibayarJamaah = $jamaah->total_dibayar + $bayarPerJamaah;
-            // ✅ Sisa jamaah non-negatif
-            $sisaTagihanJamaah = max(0, $jamaah->total_tagihan_setelah_diskon - $totalDibayarJamaah);
-            $kelebihanJamaah = max(0, $totalDibayarJamaah - $jamaah->total_tagihan_setelah_diskon);
-            $totalRefundJamaah = (int) ($jamaah->total_refund ?? 0);
+            $totalDibayarJamaah  = $jamaah->total_dibayar + $bayarPerJamaah;
+            $sisaTagihanJamaah   = max(0, $jamaah->total_tagihan_setelah_diskon - $totalDibayarJamaah);
+            $kelebihanJamaah     = max(0, $totalDibayarJamaah - $jamaah->total_tagihan_setelah_diskon);
+            $totalRefundJamaah   = (int) ($jamaah->total_refund ?? 0);
 
             if ($sisaTagihanJamaah <= 0) {
                 $statusJamaah = 'Lunas';
-            } elseif ($jamaah->total_dibayar == 0) {
-                $statusJamaah = 'DP';
             } else {
-                $statusJamaah = 'Setoran';
+                $statusJamaah = $this->mapJenisPembayaranToStatus($kode);
             }
 
             $jamaah->update([
-                'total_dibayar' => $totalDibayarJamaah,
-                'sisa_tagihan' => $sisaTagihanJamaah,
-                'status_pembayaran' => $statusJamaah,
-                'sisa_kelebihan_bayar' => max(0, $kelebihanJamaah - $totalRefundJamaah),
+                'total_dibayar'         => $totalDibayarJamaah,
+                'sisa_tagihan'          => $sisaTagihanJamaah,
+                'status_pembayaran'     => $statusJamaah,
+                'sisa_kelebihan_bayar'  => max(0, $kelebihanJamaah - $totalRefundJamaah),
             ]);
 
             if ($bayarPerJamaah > 0) {
                 TransaksiPembayaran::create([
-                    'id_jamaah' => $jamaah->id_jamaah,
-                    'id_metode_pembayaran' => $validated['id_metode_pembayaran'],
-                    'id_jenis_transaksi' => $validated['id_jenis_transaksi'],
-                    'tanggal_transaksi' => $validated['tanggal_transaksi'],
-                    'jumlah_bayar' => $bayarPerJamaah,
-                    'jenis_mutasi' => 'masuk',
-                    'bukti_pembayaran' => $buktiPath,
-                    'keterangan' => ($validated['keterangan'] ?? '') . ' (Dari pembayaran keluarga)',
-                    'created_by' => Auth::user()->name ?? 'System',
+                    'id_jamaah'             => $jamaah->id_jamaah,
+                    'id_metode_pembayaran'  => $validated['id_metode_pembayaran'],
+                    'id_jenis_transaksi'    => null,
+                    'id_jenis_pembayaran'   => $jenisPembayaran->id_jenis_pembayaran,
+                    'tanggal_transaksi'     => $validated['tanggal_transaksi'],
+                    'jumlah_bayar'          => $bayarPerJamaah,
+                    'jenis_mutasi'          => 'masuk',
+                    'bukti_pembayaran'      => $buktiPath,
+                    'keterangan'            => ($validated['keterangan'] ?? '') . ' (Dari pembayaran keluarga)',
+                    'created_by'            => Auth::user()->name ?? 'System',
                 ]);
             }
         }
@@ -528,7 +531,7 @@ class KeluargaController extends Controller
     }
 
     // ==========================================
-    // ✅ PROSES REFUND (PENGEMBALIAN DANA)
+    // PROSES REFUND
     // ==========================================
     public function prosesRefund(Request $request, $id)
     {
@@ -588,7 +591,6 @@ class KeluargaController extends Controller
 
             if ($jamaah) {
                 if ($isRefund) {
-                    // ✅ Kalau yang dihapus transaksi refund, kurangi total_refund
                     $totalRefundBaru = max(0, (int) $jamaah->total_refund - (int) $transaksi->jumlah_bayar);
                     $sisaKelebihanBaru = max(0, $jamaah->kelebihan_bayar - $totalRefundBaru);
                     $jamaah->update([
@@ -596,20 +598,26 @@ class KeluargaController extends Controller
                         'sisa_kelebihan_bayar' => $sisaKelebihanBaru,
                     ]);
                 } else {
-                    // Transaksi masuk → kurangi total_dibayar
                     $totalDibayarBaru = max(0, $jamaah->total_dibayar - $transaksi->jumlah_bayar);
                     $sisaTagihanBaru = max(0, $jamaah->total_tagihan_setelah_diskon - $totalDibayarBaru);
                     $kelebihanBaru = max(0, $totalDibayarBaru - $jamaah->total_tagihan_setelah_diskon);
                     $totalRefundJamaah = (int) ($jamaah->total_refund ?? 0);
 
+                    $lastTransaksi = TransaksiPembayaran::with('jenisPembayaran')
+                        ->where('id_jamaah', $jamaah->id_jamaah)
+                        ->where('jenis_mutasi', 'masuk')
+                        ->where('id_transaksi', '!=', $transaksi->id_transaksi)
+                        ->orderBy('created_at', 'desc')
+                        ->first();
+
+                    $lastKode = $lastTransaksi->jenisPembayaran->kode ?? null;
+
                     if ($sisaTagihanBaru <= 0) {
                         $statusJamaah = 'Lunas';
                     } elseif ($totalDibayarBaru == 0) {
                         $statusJamaah = 'Belum Bayar';
-                    } elseif ($totalDibayarBaru >= $jamaah->total_tagihan_setelah_diskon * 0.5) {
-                        $statusJamaah = 'Setoran';
                     } else {
-                        $statusJamaah = 'DP';
+                        $statusJamaah = $this->mapJenisPembayaranToStatus($lastKode);
                     }
 
                     $jamaah->update([
@@ -638,6 +646,16 @@ class KeluargaController extends Controller
         });
     }
 
+    private function mapJenisPembayaranToStatus(?string $kode): string
+    {
+        return match (strtoupper(trim((string) $kode))) {
+            'DP'       => 'DP',
+            'ANGSURAN' => 'Setoran',
+            'LUNAS'    => 'Lunas',
+            default    => 'Setoran',
+        };
+    }
+
     // ==========================================
     // CETAK PEMBAYARAN (PDF)
     // ==========================================
@@ -646,7 +664,7 @@ class KeluargaController extends Controller
         $keluarga = $this->service->getById($id);
 
         $jamaahIds = $keluarga->jamaahs->pluck('id_jamaah')->toArray();
-        $transaksis = TransaksiPembayaran::with(['metodePembayaran', 'jenisTransaksi', 'jamaah'])
+        $transaksis = TransaksiPembayaran::with(['metodePembayaran', 'jenisPembayaran', 'jenisTransaksi', 'jamaah'])
             ->whereIn('id_jamaah', $jamaahIds)
             ->orderBy('created_at', 'asc')
             ->get();

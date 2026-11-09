@@ -11,7 +11,6 @@ return new class extends Migration
         Schema::create('status_keberangkatans', function (Blueprint $table) {
             $table->id('id_status');
             $table->string('nama_status', 50);
-            $table->string('warna', 20)->nullable();
             $table->text('keterangan')->nullable();
             $table->timestamps();
         });

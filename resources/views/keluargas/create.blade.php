@@ -435,7 +435,6 @@
                                                         Perempuan</option>
                                                 </select>
                                             </div>
-                                            {{-- ✅ NEW: Status Kawin --}}
                                             <div>
                                                 <label class="block text-xs font-medium text-gray-600 mb-1">
                                                     Status Kawin <span class="text-red-500">*</span>
@@ -460,17 +459,8 @@
                                             </div>
                                         </div>
 
-                                        <!-- Baris 3 -->
-                                        <div class="grid grid-cols-1 md:grid-cols-3 gap-3 mt-3">
-                                            <div>
-                                                <label class="block text-xs font-medium text-gray-600 mb-1">
-                                                    Telepon <span class="text-red-500">*</span>
-                                                </label>
-                                                <input type="text" name="jamaahs[{{ $index }}][telepon]"
-                                                    value="{{ $jamaah['telepon'] ?? '' }}"
-                                                    class="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-yellow-500 text-sm wajib-jamaah"
-                                                    placeholder="08xxxxxxxxxx" required>
-                                            </div>
+                                        {{-- ✅ Baris 3: WhatsApp + Tempat Lahir (Telepon DIHAPUS) --}}
+                                        <div class="grid grid-cols-1 md:grid-cols-2 gap-3 mt-3">
                                             <div>
                                                 <label class="block text-xs font-medium text-gray-600 mb-1">
                                                     WhatsApp <span class="text-red-500">*</span>
@@ -503,7 +493,7 @@
                                             </div>
                                         </div>
 
-                                        {{-- SECTION: ALAMAT DOMISILI --}}
+                                        {{-- ALAMAT DOMISILI --}}
                                         <div class="mt-3 pt-3 border-t border-gray-200">
                                             <h6 class="text-xs font-semibold text-gray-700 mb-2 flex items-center">
                                                 <i class="fas fa-map-marker-alt text-yellow-500 mr-1.5"></i>
@@ -564,7 +554,7 @@
                                             </div>
                                         </div>
 
-                                        {{-- SECTION: KEBERANGKATAN --}}
+                                        {{-- KEBERANGKATAN --}}
                                         <div class="mt-3 pt-3 border-t border-gray-200">
                                             <div class="bg-blue-50 rounded-lg p-3 border border-blue-100">
                                                 <h6 class="text-xs font-semibold text-blue-700 mb-2 flex items-center">
@@ -610,7 +600,7 @@
                                             </div>
                                         </div>
 
-                                        {{-- SECTION: PASSPORT & DOKUMEN --}}
+                                        {{-- PASSPORT & DOKUMEN --}}
                                         <div class="mt-3 pt-3 border-t border-gray-200">
                                             <h6 class="text-xs font-semibold text-gray-700 mb-2 flex items-center">
                                                 <i class="fas fa-passport text-yellow-500 mr-1.5"></i>
@@ -639,7 +629,6 @@
                                                 </div>
                                             </div>
 
-                                            {{-- ✅ NEW: Field passport lengkap (sama dengan form jamaah) --}}
                                             <div class="grid grid-cols-1 md:grid-cols-3 gap-3 mt-3">
                                                 <div>
                                                     <label class="block text-xs font-medium text-gray-600 mb-1">
@@ -765,7 +754,7 @@
                                             </div>
                                         </div>
 
-                                        {{-- SECTION: UPGRADE HOTEL JAMAAH --}}
+                                        {{-- UPGRADE HOTEL JAMAAH --}}
                                         <div class="mt-3 pt-3 border-t border-gray-200">
                                             <div class="flex items-center justify-between mb-2">
                                                 <h6 class="text-xs font-semibold text-gray-700 flex items-center">
@@ -935,7 +924,6 @@
                                                 <option value="P">Perempuan</option>
                                             </select>
                                         </div>
-                                        {{-- ✅ NEW: Status Kawin --}}
                                         <div>
                                             <label class="block text-xs font-medium text-gray-600 mb-1">
                                                 Status Kawin <span class="text-red-500">*</span>
@@ -952,15 +940,8 @@
                                         </div>
                                     </div>
 
-                                    <div class="grid grid-cols-1 md:grid-cols-3 gap-3 mt-3">
-                                        <div>
-                                            <label class="block text-xs font-medium text-gray-600 mb-1">
-                                                Telepon <span class="text-red-500">*</span>
-                                            </label>
-                                            <input type="text" name="jamaahs[0][telepon]"
-                                                class="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-yellow-500 text-sm wajib-jamaah"
-                                                placeholder="08xxxxxxxxxx" required>
-                                        </div>
+                                    {{-- ✅ Baris 3: WhatsApp + Tempat Lahir (Telepon DIHAPUS) --}}
+                                    <div class="grid grid-cols-1 md:grid-cols-2 gap-3 mt-3">
                                         <div>
                                             <label class="block text-xs font-medium text-gray-600 mb-1">
                                                 WhatsApp <span class="text-red-500">*</span>
@@ -989,7 +970,7 @@
                                         </div>
                                     </div>
 
-                                    {{-- SECTION: ALAMAT DOMISILI --}}
+                                    {{-- ALAMAT DOMISILI --}}
                                     <div class="mt-3 pt-3 border-t border-gray-200">
                                         <h6 class="text-xs font-semibold text-gray-700 mb-2 flex items-center">
                                             <i class="fas fa-map-marker-alt text-yellow-500 mr-1.5"></i>
@@ -1042,7 +1023,7 @@
                                         </div>
                                     </div>
 
-                                    {{-- SECTION: KEBERANGKATAN --}}
+                                    {{-- KEBERANGKATAN --}}
                                     <div class="mt-3 pt-3 border-t border-gray-200">
                                         <div class="bg-blue-50 rounded-lg p-3 border border-blue-100">
                                             <h6 class="text-xs font-semibold text-blue-700 mb-2 flex items-center">
@@ -1084,7 +1065,7 @@
                                         </div>
                                     </div>
 
-                                    {{-- SECTION: PASSPORT & DOKUMEN --}}
+                                    {{-- PASSPORT & DOKUMEN --}}
                                     <div class="mt-3 pt-3 border-t border-gray-200">
                                         <h6 class="text-xs font-semibold text-gray-700 mb-2 flex items-center">
                                             <i class="fas fa-passport text-yellow-500 mr-1.5"></i>
@@ -1109,7 +1090,6 @@
                                             </div>
                                         </div>
 
-                                        {{-- ✅ NEW: Field passport lengkap --}}
                                         <div class="grid grid-cols-1 md:grid-cols-3 gap-3 mt-3">
                                             <div>
                                                 <label class="block text-xs font-medium text-gray-600 mb-1">
@@ -1207,7 +1187,7 @@
                                         </div>
                                     </div>
 
-                                    {{-- SECTION: UPGRADE HOTEL JAMAAH --}}
+                                    {{-- UPGRADE HOTEL JAMAAH --}}
                                     <div class="mt-3 pt-3 border-t border-gray-200">
                                         <div class="flex items-center justify-between mb-2">
                                             <h6 class="text-xs font-semibold text-gray-700 flex items-center">
@@ -1311,7 +1291,6 @@
                             @endif
                         </div>
 
-                        {{-- ✅ Tombol Tambah Jamaah dipindah ke BAWAH --}}
                         <div class="mt-4 flex justify-center">
                             <button type="button" onclick="addJamaah()"
                                 class="inline-flex items-center px-6 py-2.5 bg-green-500 text-white rounded-lg hover:bg-green-600 transition text-sm font-medium shadow-sm">
@@ -1347,7 +1326,6 @@
             var globalKeberangkatanList = [];
             var globalHargaBulananList = [];
 
-            // ✅ FIX: Data server-side untuk template JS
             window.__KELUARGA_DATA__ = {
                 hotelOptions: @json($hotelOptions),
                 hubunganOptions: @json($hubunganOptions),
@@ -1409,9 +1387,6 @@
 
             let jamaahIndex = {{ count(old('jamaahs', [0])) }};
 
-            // ==========================================
-            // PEMBUATAN PASSPORT
-            // ==========================================
             function setPembuatanPassportKeluarga(index, value) {
                 var hidden = document.getElementById('is_pembuatan_passport-' + index);
                 var btnYa = document.getElementById('btnYa-' + index);
@@ -1453,9 +1428,6 @@
                 }
             }
 
-            // ==========================================
-            // DISKON
-            // ==========================================
             function hitungDiskonKelompok() {
                 var selectDiskon = document.getElementById('id_diskon');
                 if (!selectDiskon) return;
@@ -1482,9 +1454,6 @@
                 }
             }
 
-            // ==========================================
-            // VALIDASI
-            // ==========================================
             function validateJamaahForm() {
                 var labels = {
                     nama_lengkap: 'Nama Lengkap',
@@ -1493,7 +1462,6 @@
                     pekerjaan: 'Pekerjaan',
                     jenis_kelamin: 'Jenis Kelamin',
                     status_kawin: 'Status Kawin',
-                    telepon: 'Telepon',
                     wa: 'WhatsApp',
                     tempat_lahir: 'Tempat Lahir'
                 };
@@ -1552,9 +1520,6 @@
                 }
             });
 
-            // ==========================================
-            // LOAD KEBERANGKATAN
-            // ==========================================
             function loadKeberangkatan() {
                 var produkPaket = document.getElementById('produk_paket');
                 var tahunSelect = document.getElementById('filter-tahun');
@@ -1917,9 +1882,6 @@
                 return namaBulan[parseInt(bulan) - 1] || bulan;
             }
 
-            // ==========================================
-            // UPGRADE HOTEL KELUARGA
-            // ==========================================
             function toggleUpgradeKeluarga() {
                 const container = document.getElementById('upgradeKeluargaContainer');
                 container.classList.toggle('hidden');
@@ -1975,9 +1937,6 @@
                 if (perEl) perEl.textContent = 'Rp ' + perJamaah.toLocaleString('id-ID');
             }
 
-            // ==========================================
-            // UPGRADE HOTEL JAMAAH
-            // ==========================================
             function toggleUpgradeJamaah(index) {
                 const container = document.getElementById('upgradeJamaahContainer-' + index);
                 if (container) container.classList.toggle('hidden');
@@ -2028,9 +1987,6 @@
                 if (totalEl) totalEl.textContent = 'Rp ' + total.toLocaleString('id-ID');
             }
 
-            // ==========================================
-            // LOAD KAMARS
-            // ==========================================
             function loadKamarsUpgrade(scope, hotelId, container) {
                 container.innerHTML =
                     '<div class="text-xs text-gray-400 text-center py-2"><i class="fas fa-spinner fa-spin mr-1"></i> Memuat tipe kamar...</div>';
@@ -2091,9 +2047,6 @@
                 }
             }
 
-            // ==========================================
-            // HIDDEN INPUTS
-            // ==========================================
             function updateUpgradeHiddenInputs(scope, hotelId, container) {
                 removeUpgradeHiddenInputs(scope, hotelId);
 
@@ -2156,19 +2109,14 @@
                     .forEach(el => el.remove());
             }
 
-            // ==========================================
-            // ✅ ADD JAMAAH — FIX untuk semua 3 bug
-            // ==========================================
             function addJamaah() {
                 const container = document.getElementById('jamaahContainer');
                 const row = document.createElement('div');
                 row.className = 'jamaah-row bg-gray-50 rounded-xl p-4 mb-3 border border-gray-200';
 
-                // ✅ SIMPAN INDEX LOKAL SEBELUM INCREMENT
                 const idx = jamaahIndex;
                 row.id = 'jamaah-row-' + idx;
 
-                // ✅ BUILD hotelUpgradeOptions pakai concatenation
                 var hotelUpgradeOptions = '';
                 var hotelList = window.__KELUARGA_DATA__.hotelOptions || [];
                 hotelList.forEach(function(hotel) {
@@ -2221,7 +2169,6 @@
                         '</option>';
                 });
 
-                // ✅ FULL ROW HTML — string concatenation
                 row.innerHTML =
                     '<div class="flex items-center justify-between mb-3">' +
                     '<span class="text-sm font-medium text-gray-700">Jamaah #' + (idx + 1) + '</span>' +
@@ -2280,14 +2227,8 @@
                     '</div>' +
                     '</div>' +
 
-                    // Baris 3
-                    '<div class="grid grid-cols-1 md:grid-cols-3 gap-3 mt-3">' +
-                    '<div>' +
-                    '<label class="block text-xs font-medium text-gray-600 mb-1">Telepon <span class="text-red-500">*</span></label>' +
-                    '<input type="text" name="jamaahs[' + idx + '][telepon]" ' +
-                    'class="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-yellow-500 text-sm wajib-jamaah" ' +
-                    'placeholder="08xxxxxxxxxx" required>' +
-                    '</div>' +
+                    // ✅ Baris 3: WhatsApp + Tempat Lahir (Telepon DIHAPUS)
+                    '<div class="grid grid-cols-1 md:grid-cols-2 gap-3 mt-3">' +
                     '<div>' +
                     '<label class="block text-xs font-medium text-gray-600 mb-1">WhatsApp <span class="text-red-500">*</span></label>' +
                     '<input type="text" name="jamaahs[' + idx + '][wa]" ' +
@@ -2542,7 +2483,6 @@
 
                 container.appendChild(row);
 
-                // ✅ Auto-setup kota-asal listener untuk row baru
                 var kotaAsalSelect = row.querySelector('.kota-asal-select');
                 if (kotaAsalSelect) {
                     kotaAsalSelect.addEventListener('change', function() {
@@ -2554,7 +2494,6 @@
                     });
                 }
 
-                // ✅ INCREMENT SETELAH ROW SELESAI
                 jamaahIndex++;
                 hitungDiskonKelompok();
                 updateTotalUpgradeKeluarga();
@@ -2579,9 +2518,6 @@
                 }
             }
 
-            // ==========================================
-            // EVENT LISTENERS
-            // ==========================================
             document.getElementById('filter-tahun').addEventListener('change', function() {
                 renderKeberangkatanByTahun(this.value);
             });
@@ -2608,9 +2544,6 @@
                 }
             });
 
-            // ==========================================
-            // DOM READY
-            // ==========================================
             document.addEventListener('DOMContentLoaded', function() {
                 document.querySelectorAll('.kota-asal-select').forEach(select => {
                     if (select.value) select.dispatchEvent(new Event('change'));

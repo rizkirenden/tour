@@ -7,6 +7,7 @@ use App\Http\Controllers\Controller;
 use App\Services\JamaahService;
 use App\Models\MetodePembayaran;
 use App\Models\JenisTransaksi;
+use App\Models\JenisPembayaran;
 use App\Models\TransaksiPembayaran;
 use App\Models\Diskon;
 use App\Models\Hotel;
@@ -70,7 +71,6 @@ class JamaahController extends Controller
             'nik' => 'nullable|string|max:20',
             'nama_ayah' => 'nullable|string|max:100',
             'pekerjaan' => 'nullable|string|max:100',
-            'telepon' => 'nullable|string|max:20',
             'wa' => 'nullable|string|max:20',
             'alamat' => 'nullable|string',
             'kota_kabupaten' => 'nullable|string|max:100',
@@ -222,7 +222,6 @@ class JamaahController extends Controller
             'nik' => ['nullable', 'string', 'max:20'],
             'nama_ayah' => 'nullable|string|max:100',
             'pekerjaan' => 'nullable|string|max:100',
-            'telepon' => 'nullable|string|max:20',
             'wa' => 'nullable|string|max:20',
             'alamat' => 'nullable|string',
             'kota_kabupaten' => 'nullable|string|max:100',
@@ -386,13 +385,26 @@ class JamaahController extends Controller
     {
         $jamaah = $this->service->getById($id);
         $metodePembayarans = MetodePembayaran::active()->get();
-        $jenisTransaksis = JenisTransaksi::all();
-        $transaksis = TransaksiPembayaran::with(['metodePembayaran', 'jenisTransaksi'])
+
+        $jenisPembayarans = JenisPembayaran::query()
+            ->where(function ($q) {
+                $q->where('nama', 'not like', '%refund%')
+                  ->where('nama', 'not like', '%pengembalian%');
+            })
+            ->orderBy('nama', 'asc')
+            ->get();
+
+        $transaksis = TransaksiPembayaran::with(['metodePembayaran', 'jenisPembayaran', 'jenisTransaksi'])
             ->where('id_jamaah', $id)
             ->orderBy('created_at', 'asc')
             ->get();
 
-        return view('jamaahs.pembayaran', compact('jamaah', 'metodePembayarans', 'jenisTransaksis', 'transaksis'));
+        return view('jamaahs.pembayaran', compact(
+            'jamaah',
+            'metodePembayarans',
+            'jenisPembayarans',
+            'transaksis'
+        ));
     }
 
     public function bayar(Request $request, $id)
@@ -402,33 +414,34 @@ class JamaahController extends Controller
 
         $validated = $request->validate([
             'id_metode_pembayaran' => 'required|exists:metode_pembayarans,id_metode',
-            'id_jenis_transaksi' => 'required|exists:jenis_transaksis,id_jenis',
-            'tanggal_transaksi' => 'required|date',
-            'jumlah_bayar' => 'required|integer|min:1',
-            'bukti_pembayaran' => 'required|file|mimes:jpeg,png,jpg,pdf|max:2048',
-            'keterangan' => 'nullable|string'
+            'id_jenis_pembayaran'  => 'required|exists:jenis_pembayarans,id_jenis_pembayaran',
+            'tanggal_transaksi'    => 'required|date',
+            'jumlah_bayar'         => 'required|integer|min:1',
+            'bukti_pembayaran'     => 'required|file|mimes:jpeg,png,jpg,pdf|max:2048',
+            'keterangan'           => 'nullable|string',
         ]);
 
-        $jamaah = $this->service->getById($id);
-        $totalTagihan = $jamaah->total_tagihan_setelah_diskon;
-        $totalDibayarSaatIni = $jamaah->total_dibayar;
-        $jumlahBayar = $validated['jumlah_bayar'];
-        $jenisTransaksi = JenisTransaksi::find($validated['id_jenis_transaksi']);
+        $jamaah          = $this->service->getById($id);
+        $totalTagihan    = $jamaah->total_tagihan_setelah_diskon;
+        $totalDibayar    = $jamaah->total_dibayar;
+        $jumlahBayar     = $validated['jumlah_bayar'];
+        $jenisPembayaran = JenisPembayaran::find($validated['id_jenis_pembayaran']);
+        $kode            = $jenisPembayaran->kode;
 
-        $sisaSaatIni = max(0, $totalTagihan - $totalDibayarSaatIni);
+        $sisaSaatIni = max(0, $totalTagihan - $totalDibayar);
 
-        // ✅ Cek apakah jenis transaksi adalah pelunasan (berdasarkan NAMA)
-        $namaJenis = strtolower(trim((string) $jenisTransaksi->nama));
-        $isLunas = str_contains($namaJenis, 'lunas') || str_contains($namaJenis, 'pelunasan');
-
-        if ($isLunas && $jumlahBayar < $sisaSaatIni) {
+        if ($kode === 'LUNAS' && $jumlahBayar < $sisaSaatIni) {
             return redirect()->back()
                 ->with('error', 'Jumlah bayar untuk pelunasan harus sebesar sisa tagihan: Rp ' . number_format($sisaSaatIni, 0, ',', '.'));
         }
 
-        if ($jumlahBayar > $sisaSaatIni) {
+        if ($kode === 'REFUND') {
             return redirect()->back()
-                ->with('error', 'Jumlah bayar melebihi sisa tagihan!');
+                ->with('error', 'Refund tidak bisa dilakukan lewat form pembayaran. Gunakan tombol "Proses Refund".');
+        }
+
+        if ($jumlahBayar > $sisaSaatIni) {
+            return redirect()->back()->with('error', 'Jumlah bayar melebihi sisa tagihan!');
         }
 
         $buktiPath = null;
@@ -439,38 +452,34 @@ class JamaahController extends Controller
         }
 
         TransaksiPembayaran::create([
-            'id_jamaah' => $id,
-            'id_metode_pembayaran' => $validated['id_metode_pembayaran'],
-            'id_jenis_transaksi' => $validated['id_jenis_transaksi'],
-            'tanggal_transaksi' => $validated['tanggal_transaksi'],
-            'jumlah_bayar' => $jumlahBayar,
-            'jenis_mutasi' => 'masuk',
-            'bukti_pembayaran' => $buktiPath,
-            'keterangan' => $validated['keterangan'],
-            'created_by' => Auth::user()->name ?? 'System',
+            'id_jamaah'             => $id,
+            'id_metode_pembayaran'  => $validated['id_metode_pembayaran'],
+            'id_jenis_transaksi'    => null,
+            'id_jenis_pembayaran'   => $jenisPembayaran->id_jenis_pembayaran,
+            'tanggal_transaksi'     => $validated['tanggal_transaksi'],
+            'jumlah_bayar'          => $jumlahBayar,
+            'jenis_mutasi'          => 'masuk',
+            'bukti_pembayaran'      => $buktiPath,
+            'keterangan'            => $validated['keterangan'],
+            'created_by'            => Auth::user()->name ?? 'System',
         ]);
 
-       $totalDibayarBaru = $totalDibayarSaatIni + $jumlahBayar;
-// ✅ Sisa tagihan tidak boleh negatif
-$sisaTagihanBaru = max(0, $totalTagihan - $totalDibayarBaru);
-$totalRefund = (int) ($jamaah->total_refund ?? 0);
-$kelebihanBaru = max(0, $totalDibayarBaru - $totalTagihan);
+        $totalDibayarBaru = $totalDibayar + $jumlahBayar;
+        $sisaTagihanBaru  = max(0, $totalTagihan - $totalDibayarBaru);
+        $totalRefund      = (int) ($jamaah->total_refund ?? 0);
+        $kelebihanBaru    = max(0, $totalDibayarBaru - $totalTagihan);
 
         if ($sisaTagihanBaru <= 0) {
             $status = 'Lunas';
-        } elseif ($totalDibayarBaru == 0) {
-            $status = 'Belum Bayar';
-        } elseif ($totalDibayarBaru >= $totalTagihan * 0.5) {
-            $status = 'Setoran';
         } else {
-            $status = 'DP';
+            $status = $this->mapJenisPembayaranToStatus($kode);
         }
 
         $jamaah->update([
-            'total_dibayar' => $totalDibayarBaru,
-            'sisa_tagihan' => $sisaTagihanBaru,
-            'status_pembayaran' => $status,
-            'sisa_kelebihan_bayar' => max(0, $kelebihanBaru - $totalRefund),
+            'total_dibayar'         => $totalDibayarBaru,
+            'sisa_tagihan'          => $sisaTagihanBaru,
+            'status_pembayaran'     => $status,
+            'sisa_kelebihan_bayar'  => max(0, $kelebihanBaru - $totalRefund),
         ]);
 
         if ($jamaah->id_keluarga) {
@@ -479,12 +488,9 @@ $kelebihanBaru = max(0, $totalDibayarBaru - $totalTagihan);
         }
 
         return redirect()->route('transaksional.jamaah.pembayaran', $id)
-            ->with('success', "Pembayaran {$jenisTransaksi->nama} sebesar Rp " . number_format($jumlahBayar, 0, ',', '.') . " berhasil!");
+            ->with('success', "Pembayaran {$jenisPembayaran->nama} sebesar Rp " . number_format($jumlahBayar, 0, ',', '.') . " berhasil!");
     }
 
-    // ==========================================
-    // ✅ PROSES REFUND (BERDASARKAN NAMA)
-    // ==========================================
     public function prosesRefund(Request $request, $id)
     {
         $jumlahRefundRaw = preg_replace('/[^\d]/', '', $request->input('jumlah_refund'));
@@ -515,7 +521,6 @@ $kelebihanBaru = max(0, $totalDibayarBaru - $totalTagihan);
 
         try {
             $validated['bukti_pembayaran'] = $buktiPath;
-
             $this->service->prosesRefund($id, $validated);
 
             return redirect()->route('transaksional.jamaah.pembayaran', $id)
@@ -561,7 +566,6 @@ $kelebihanBaru = max(0, $totalDibayarBaru - $totalTagihan);
         $jamaah = $this->service->getById($jamaahId);
         $totalTagihan = $jamaah->total_tagihan_setelah_diskon;
 
-        // Hitung ulang dari transaksi tersisa
         $totalDibayarBaru = TransaksiPembayaran::where('id_jamaah', $jamaahId)
             ->where('jenis_mutasi', 'masuk')
             ->sum('jumlah_bayar');
@@ -569,18 +573,23 @@ $kelebihanBaru = max(0, $totalDibayarBaru - $totalTagihan);
             ->where('jenis_mutasi', 'keluar')
             ->sum('jumlah_bayar');
 
-            // ✅ Sisa tagihan tidak boleh negatif
-$sisaTagihanBaru = max(0, $totalTagihan - $totalDibayarBaru);
-$kelebihanBaru   = max(0, $totalDibayarBaru - $totalTagihan);
+        $sisaTagihanBaru = max(0, $totalTagihan - $totalDibayarBaru);
+        $kelebihanBaru   = max(0, $totalDibayarBaru - $totalTagihan);
+
+        $lastTransaksi = TransaksiPembayaran::with('jenisPembayaran')
+            ->where('id_jamaah', $jamaahId)
+            ->where('jenis_mutasi', 'masuk')
+            ->orderBy('created_at', 'desc')
+            ->first();
+
+        $lastKode = $lastTransaksi->jenisPembayaran->kode ?? null;
 
         if ($sisaTagihanBaru <= 0) {
             $status = 'Lunas';
         } elseif ($totalDibayarBaru == 0) {
             $status = 'Belum Bayar';
-        } elseif ($totalDibayarBaru >= $totalTagihan * 0.5) {
-            $status = 'Setoran';
         } else {
-            $status = 'DP';
+            $status = $this->mapJenisPembayaranToStatus($lastKode);
         }
 
         $jamaah->update([
@@ -602,6 +611,16 @@ $kelebihanBaru   = max(0, $totalDibayarBaru - $totalTagihan);
             ->with('success', $msg);
     }
 
+    private function mapJenisPembayaranToStatus(?string $kode): string
+    {
+        return match (strtoupper(trim((string) $kode))) {
+            'DP'       => 'DP',
+            'ANGSURAN' => 'Setoran',
+            'LUNAS'    => 'Lunas',
+            default    => 'Setoran',
+        };
+    }
+
     public function cetakPdfRiwayat($id)
     {
         set_time_limit(300);
@@ -609,7 +628,7 @@ $kelebihanBaru   = max(0, $totalDibayarBaru - $totalTagihan);
         try {
             $jamaah = $this->service->getByIdWithRelations($id);
 
-            $transaksis = TransaksiPembayaran::with(['metodePembayaran', 'jenisTransaksi'])
+            $transaksis = TransaksiPembayaran::with(['metodePembayaran', 'jenisPembayaran', 'jenisTransaksi'])
                 ->where('id_jamaah', $id)
                 ->orderBy('created_at', 'desc')
                 ->limit(100)
@@ -924,103 +943,86 @@ $kelebihanBaru   = max(0, $totalDibayarBaru - $totalTagihan);
         ]);
     }
 
-   public function cetakPdfRekomendasiPassport($id)
-{
-    set_time_limit(300);
+    public function cetakPdfRekomendasiPassport($id)
+    {
+        set_time_limit(300);
 
-    try {
-        $jamaah = $this->service->getByIdWithRelations($id);
+        try {
+            $jamaah = $this->service->getByIdWithRelations($id);
 
-        // Ambil keberangkatan pertama (paling awal)
-        $keberangkatan = $jamaah->keberangkatan->sortBy([
-            'pivot.tahun_keberangkatan',
-            'pivot.bulan_keberangkatan',
-        ])->first();
+            $keberangkatan = $jamaah->keberangkatan->sortBy([
+                'pivot.tahun_keberangkatan',
+                'pivot.bulan_keberangkatan',
+            ])->first();
 
-        $bulanNama = [
-            1 => 'Januari', 2 => 'Februari', 3 => 'Maret', 4 => 'April',
-            5 => 'Mei', 6 => 'Juni', 7 => 'Juli', 8 => 'Agustus',
-            9 => 'September', 10 => 'Oktober', 11 => 'November', 12 => 'Desember'
-        ];
+            $bulanNama = [
+                1 => 'Januari', 2 => 'Februari', 3 => 'Maret', 4 => 'April',
+                5 => 'Mei', 6 => 'Juni', 7 => 'Juli', 8 => 'Agustus',
+                9 => 'September', 10 => 'Oktober', 11 => 'November', 12 => 'Desember'
+            ];
 
-        // Format bulan keberangkatan
-        $bulanKeberangkatan = '-';
-        $tahunKeberangkatan = '-';
-        if ($keberangkatan) {
-            $bulanKeberangkatan = $bulanNama[$keberangkatan->pivot->bulan_keberangkatan] ?? '-';
-            $tahunKeberangkatan = $keberangkatan->pivot->tahun_keberangkatan ?? '-';
-        } elseif ($jamaah->bulan_keberangkatan && $jamaah->tahun_keberangkatan) {
-            $bulanKeberangkatan = $bulanNama[$jamaah->bulan_keberangkatan] ?? '-';
-            $tahunKeberangkatan = $jamaah->tahun_keberangkatan;
+            $bulanKeberangkatan = '-';
+            $tahunKeberangkatan = '-';
+            if ($keberangkatan) {
+                $bulanKeberangkatan = $bulanNama[$keberangkatan->pivot->bulan_keberangkatan] ?? '-';
+                $tahunKeberangkatan = $keberangkatan->pivot->tahun_keberangkatan ?? '-';
+            } elseif ($jamaah->bulan_keberangkatan && $jamaah->tahun_keberangkatan) {
+                $bulanKeberangkatan = $bulanNama[$jamaah->bulan_keberangkatan] ?? '-';
+                $tahunKeberangkatan = $jamaah->tahun_keberangkatan;
+            }
+
+            $headerBase64 = $this->loadFileBase64(public_path('assets/header.png'));
+            $footer1Base64 = $this->loadFileBase64(public_path('assets/footer1.png'));
+            $footer2Base64 = $this->loadFileBase64(public_path('assets/footer2.png'));
+
+            $data = [
+                'jamaah'              => $jamaah,
+                'bulanKeberangkatan'  => $bulanKeberangkatan,
+                'tahunKeberangkatan'  => $tahunKeberangkatan,
+                'tanggal_cetak'       => now()->format('d/m/Y'),
+                'dicetak_oleh'        => Auth::user()->name ?? 'System',
+                'logoBase64'          => $this->loadDokumenBase64('logo'),
+                'headerBase64'        => $headerBase64,
+                'ttdBase64'           => $this->loadDokumenBase64('ttd'),
+                'capBase64'           => $this->loadDokumenBase64('cap'),
+                'footer1Base64'       => $footer1Base64,
+                'footer2Base64'       => $footer2Base64,
+            ];
+
+            $pdf = Pdf::loadView('jamaahs.pdf-rekomendasi-passport', $data);
+            $pdf->setPaper('A4', 'portrait');
+
+            $pdf->setOptions([
+                'defaultFont' => 'sans-serif',
+                'isHtml5ParserEnabled' => true,
+                'isRemoteEnabled' => false,
+                'isPhpEnabled' => false,
+                'dpi' => 96,
+                'isFontSubsettingEnabled' => false,
+                'isJavascriptEnabled' => false,
+            ]);
+
+            return $pdf->download(
+                'Surat_Rekomendasi_Passport_' . str_replace(' ', '_', $jamaah->nama_lengkap)
+                . '_' . date('Ymd_His') . '.pdf'
+            );
+        } catch (\Exception $e) {
+            \Log::error('PDF Rekomendasi Passport Error: ' . $e->getMessage());
+            return back()->with('error', 'Gagal generate PDF: ' . $e->getMessage());
         }
-
-        // Load header.png dari public/assets/header.png
-        $headerBase64 = $this->loadFileBase64(public_path('assets/header.png'));
-
-        // Load footer1.png dan footer2.png dari public/assets/
-        $footer1Base64 = $this->loadFileBase64(public_path('assets/footer1.png'));
-        $footer2Base64 = $this->loadFileBase64(public_path('assets/footer2.png'));
-
-        // Log untuk memastikan gambar terbaca
-        \Log::info('PDF Rekomendasi Passport - Asset Check', [
-            'header_exists'  => !is_null($headerBase64),
-            'footer1_exists' => !is_null($footer1Base64),
-            'footer1_len'    => $footer1Base64 ? strlen($footer1Base64) : 0,
-            'footer2_exists' => !is_null($footer2Base64),
-            'footer2_len'    => $footer2Base64 ? strlen($footer2Base64) : 0,
-        ]);
-
-        $data = [
-            'jamaah'              => $jamaah,
-            'bulanKeberangkatan'  => $bulanKeberangkatan,
-            'tahunKeberangkatan'  => $tahunKeberangkatan,
-            'tanggal_cetak'       => now()->format('d/m/Y'),
-            'dicetak_oleh'        => Auth::user()->name ?? 'System',
-            'logoBase64'          => $this->loadDokumenBase64('logo'),
-            'headerBase64'        => $headerBase64,
-            'ttdBase64'           => $this->loadDokumenBase64('ttd'),
-            'capBase64'           => $this->loadDokumenBase64('cap'),
-            'footer1Base64'       => $footer1Base64,
-            'footer2Base64'       => $footer2Base64,
-        ];
-
-        $pdf = Pdf::loadView('jamaahs.pdf-rekomendasi-passport', $data);
-        $pdf->setPaper('A4', 'portrait');
-
-        $pdf->setOptions([
-            'defaultFont' => 'sans-serif',
-            'isHtml5ParserEnabled' => true,
-            'isRemoteEnabled' => false,
-            'isPhpEnabled' => false,
-            'dpi' => 96,
-            'isFontSubsettingEnabled' => false,
-            'isJavascriptEnabled' => false,
-        ]);
-
-        return $pdf->download(
-            'Surat_Rekomendasi_Passport_' . str_replace(' ', '_', $jamaah->nama_lengkap)
-            . '_' . date('Ymd_His') . '.pdf'
-        );
-    } catch (\Exception $e) {
-        \Log::error('PDF Rekomendasi Passport Error: ' . $e->getMessage());
-        return back()->with('error', 'Gagal generate PDF: ' . $e->getMessage());
     }
-}
 
-/**
- * Helper untuk mengubah file gambar ke base64.
- */
-private function loadFileBase64($path)
-{
-    if (!file_exists($path)) {
-        \Log::warning('File not found: ' . $path);
-        return null;
+    private function loadFileBase64($path)
+    {
+        if (!file_exists($path)) {
+            \Log::warning('File not found: ' . $path);
+            return null;
+        }
+        if (filesize($path) > 2000000) {
+            \Log::warning('File too large: ' . $path);
+            return null;
+        }
+        $mime = mime_content_type($path);
+        return 'data:' . $mime . ';base64,' . base64_encode(file_get_contents($path));
     }
-    if (filesize($path) > 2000000) {
-        \Log::warning('File too large: ' . $path);
-        return null;
-    }
-    $mime = mime_content_type($path);
-    return 'data:' . $mime . ';base64,' . base64_encode(file_get_contents($path));
-}
 }

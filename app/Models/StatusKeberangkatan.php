@@ -14,7 +14,6 @@ class StatusKeberangkatan extends Model
 
     protected $fillable = [
         'nama_status',
-        'warna',
         'keterangan'
     ];
 
@@ -25,7 +24,6 @@ class StatusKeberangkatan extends Model
 
     public function getBadgeAttribute()
     {
-        $warna = $this->warna ?? 'bg-gray-100 text-gray-700';
-        return '<span class="px-2 py-1 rounded-full text-xs font-medium ' . $warna . '">' . $this->nama_status . '</span>';
+        return '<span class="px-2 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-700">' . $this->nama_status . '</span>';
     }
 }
