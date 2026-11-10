@@ -130,6 +130,7 @@
                                 </p>
                             </div>
 
+                            {{-- Hidden input statis (backward compat) --}}
                             <input type="hidden" name="bulan_keberangkatan" id="bulan_keberangkatan_hidden"
                                 value="{{ old('bulan_keberangkatan', $keluarga->bulan_keberangkatan) }}">
                             <input type="hidden" name="tahun_keberangkatan" id="tahun_keberangkatan_hidden"
@@ -142,6 +143,9 @@
                                 value="{{ old('tahun_harga', $keluarga->tahun_harga) }}">
                             <input type="hidden" name="id_produk_harga_bulanan" id="id_produk_harga_bulanan_hidden"
                                 value="{{ old('id_produk_harga_bulanan', $keluarga->id_produk_harga_bulanan) }}">
+
+                            {{-- ✅ Wrapper untuk hidden input DINAMIS keberangkatan_data --}}
+                            <div id="keberangkatan-data-hidden-wrapper"></div>
 
                             @error('id_produk_keberangkatan')
                                 <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
@@ -1035,6 +1039,18 @@
             var EXISTING_UPGRADE_KELUARGA = {{ Illuminate\Support\Js::from($existingUpgradeKeluarga) }};
             var EXISTING_UPGRADE_JAMAAH = {{ Illuminate\Support\Js::from($existingUpgradeJamaah) }};
 
+            // ✅ SIMPAN NILAI AWAL dari server SEBELUM resetHiddenInputs() menghapusnya
+            // Variabel ini adalah "source of truth" untuk pre-select keberangkatan & harga.
+            // JANGAN di-reset kecuali user ganti produk paket.
+            var INITIAL_ID_KEBERANGKATAN = parseInt(document.getElementById('id_produk_keberangkatan_hidden')?.value || 0) || 0;
+            var INITIAL_ID_HARGA = parseInt(document.getElementById('id_produk_harga_bulanan_hidden')?.value || 0) || 0;
+            var INITIAL_BULAN_KEBERANGKATAN = parseInt(document.getElementById('bulan_keberangkatan_hidden')?.value || 0) || 0;
+            var INITIAL_TAHUN_KEBERANGKATAN = parseInt(document.getElementById('tahun_keberangkatan_hidden')?.value || 0) || 0;
+
+            // Sinkronkan dengan OLD_ID_* (dipakai untuk kuota check & comparison)
+            if (INITIAL_ID_KEBERANGKATAN > 0) OLD_ID_KEBERANGKATAN = INITIAL_ID_KEBERANGKATAN;
+            if (INITIAL_ID_HARGA > 0) OLD_ID_HARGA = INITIAL_ID_HARGA;
+
             // ==========================================
             // FORMAT RUPIAH
             // ==========================================
@@ -1068,6 +1084,58 @@
                 input.value = 'Rp ' + number.toLocaleString('id-ID');
             }
 
+            // ==========================================
+            // ✅ HELPER: Inject hidden input keberangkatan_data
+            // (konsisten dengan pola Jamaah)
+            // ==========================================
+            function injectKeberangkatanHiddenInputs(k, selectedHargaId) {
+                var wrapper = document.getElementById('keberangkatan-data-hidden-wrapper');
+                if (!wrapper) {
+                    wrapper = document.createElement('div');
+                    wrapper.id = 'keberangkatan-data-hidden-wrapper';
+                    var form = document.getElementById('keluargaForm');
+                    if (form) form.appendChild(wrapper);
+                }
+
+                if (!k) {
+                    wrapper.innerHTML = '';
+                    return;
+                }
+
+                var hargaSel = document.querySelector('.harga-bulanan-select');
+                var selectedOpt = (hargaSel && hargaSel.value)
+                    ? hargaSel.options[hargaSel.selectedIndex]
+                    : null;
+
+                var hargaBulananId = selectedHargaId || (selectedOpt ? hargaSel.value : '');
+
+                var bulanHarga, tahunHarga, harga;
+                if (hargaBulananId && selectedOpt) {
+                    bulanHarga = selectedOpt.dataset.bulan;
+                    tahunHarga = selectedOpt.dataset.tahun;
+                    harga = selectedOpt.dataset.harga;
+                } else {
+                    bulanHarga = k.bulan;
+                    tahunHarga = k.tahun;
+                    harga = k.harga_default;
+                }
+
+                var bulanKeberangkatan = parseInt(k.bulan);
+                var tahunKeberangkatan = parseInt(k.tahun);
+
+                wrapper.innerHTML = '' +
+                    '<input type="hidden" name="keberangkatan_data[0][id_produk_keberangkatan]" value="' + k.id + '">' +
+                    '<input type="hidden" name="keberangkatan_data[0][id_produk_harga_bulanan]" value="' + (hargaBulananId || '') + '">' +
+                    '<input type="hidden" name="keberangkatan_data[0][bulan_keberangkatan]" value="' + bulanKeberangkatan + '">' +
+                    '<input type="hidden" name="keberangkatan_data[0][tahun_keberangkatan]" value="' + tahunKeberangkatan + '">' +
+                    '<input type="hidden" name="keberangkatan_data[0][bulan_harga]" value="' + bulanHarga + '">' +
+                    '<input type="hidden" name="keberangkatan_data[0][tahun_harga]" value="' + tahunHarga + '">' +
+                    '<input type="hidden" name="keberangkatan_data[0][harga]" value="' + harga + '">';
+            }
+
+            // ==========================================
+            // FEE AGENT
+            // ==========================================
             function updateFeeAgentPerJamaah() {
                 var feeAgentInput = document.getElementById('fee_agent');
                 var container = document.getElementById('feeAgentPerJamaahInfo');
@@ -1236,7 +1304,9 @@
             });
 
             // ==========================================
-            // LOAD KEBERANGKATAN
+            // ✅ LOAD KEBERANGKATAN
+            // - TIDAK memanggil resetHiddenInputs() di awal
+            // - Baca tahun dari INITIAL_ID_KEBERANGKATAN / INITIAL_TAHUN_KEBERANGKATAN
             // ==========================================
             function loadKeberangkatan() {
                 var produkPaket = document.getElementById('produk_paket');
@@ -1250,10 +1320,13 @@
                 step1Container.classList.add('hidden');
                 step2Container.classList.add('hidden');
                 container.innerHTML = '';
-                resetHiddenInputs();
+
+                // ✅ JANGAN panggil resetHiddenInputs() di sini.
+                // Nilai awal sudah disimpan di INITIAL_* dan OLD_*.
 
                 if (!produkPaket.value) {
                     placeholder.classList.remove('hidden');
+                    resetHiddenInputs();
                     return;
                 }
 
@@ -1286,13 +1359,27 @@
                             option.textContent = tahun;
                             tahunSelect.appendChild(option);
                         });
-                        var selectedTahun = document.getElementById('tahun_keberangkatan_hidden').value;
-                        if (selectedTahun && tahunList.includes(parseInt(selectedTahun))) {
+
+                        // ✅ Tentukan tahun terpilih:
+                        // 1. Dari INITIAL_ID_KEBERANGKATAN (cocokkan dengan list)
+                        // 2. Fallback: INITIAL_TAHUN_KEBERANGKATAN
+                        // 3. Fallback: tahun pertama
+                        var selectedTahun = null;
+                        if (INITIAL_ID_KEBERANGKATAN > 0) {
+                            var matchK = globalKeberangkatanList.find(k => parseInt(k.id) === INITIAL_ID_KEBERANGKATAN);
+                            if (matchK) selectedTahun = parseInt(matchK.tahun);
+                        }
+                        if (!selectedTahun && INITIAL_TAHUN_KEBERANGKATAN > 0 && tahunList.includes(
+                                INITIAL_TAHUN_KEBERANGKATAN)) {
+                            selectedTahun = INITIAL_TAHUN_KEBERANGKATAN;
+                        }
+                        if (!selectedTahun && tahunList.length > 0) {
+                            selectedTahun = tahunList[0];
+                        }
+
+                        if (selectedTahun) {
                             tahunSelect.value = selectedTahun;
                             renderKeberangkatanByTahun(selectedTahun);
-                        } else if (tahunList.length > 0) {
-                            tahunSelect.value = tahunList[0];
-                            renderKeberangkatanByTahun(tahunList[0]);
                         }
                     })
                     .catch(err => {
@@ -1301,13 +1388,17 @@
                     });
             }
 
+            // ==========================================
+            // ✅ RENDER KEBERANGKATAN BY TAHUN
+            // - Baca dari INITIAL_ID_KEBERANGKATAN (BUKAN dari DOM)
+            // - Auto-select keberangkatan & harga yang tersimpan
+            // ==========================================
             function renderKeberangkatanByTahun(tahun) {
                 var step2Container = document.getElementById('step-2-container');
                 var container = document.getElementById('keberangkatan-container');
 
                 if (!tahun) {
                     step2Container.classList.add('hidden');
-                    resetHiddenInputs();
                     return;
                 }
                 step2Container.classList.remove('hidden');
@@ -1325,12 +1416,10 @@
                     return;
                 }
 
-                var selectedKeberangkatanId = document.getElementById('id_produk_keberangkatan_hidden').value;
-                var selectedHargaBulananId = document.getElementById('id_produk_harga_bulanan_hidden').value;
-
+                // ✅ Cari keberangkatan terpilih dari variabel global INITIAL_*
                 var selectedKeberangkatan = null;
-                if (selectedKeberangkatanId) {
-                    selectedKeberangkatan = filtered.find(k => parseInt(k.id) === parseInt(selectedKeberangkatanId)) || null;
+                if (INITIAL_ID_KEBERANGKATAN > 0) {
+                    selectedKeberangkatan = filtered.find(k => parseInt(k.id) === INITIAL_ID_KEBERANGKATAN) || null;
                 }
 
                 var options = '<option value="">-- Pilih Keberangkatan --</option>';
@@ -1348,7 +1437,7 @@
                 var hargaPanelHtml = '';
                 if (selectedKeberangkatan) {
                     var k = selectedKeberangkatan;
-                    var currentIdHarga = selectedHargaBulananId || '';
+                    var currentIdHarga = INITIAL_ID_HARGA > 0 ? INITIAL_ID_HARGA : '';
                     var currentHarga = parseInt(k.harga_default || 0);
                     var currentBulanHarga = k.bulan;
                     var currentTahunHarga = k.tahun;
@@ -1434,6 +1523,8 @@
                 if (hargaSel) hargaSel.addEventListener('change', handleHargaBulananChange);
 
                 if (selectedKeberangkatan) {
+                    // ✅ Set dropdown value & trigger handler agar hidden input dinamis terisi
+                    document.getElementById('keberangkatan-select').value = selectedKeberangkatan.id;
                     handleKeberangkatanSelectChange({
                         target: {
                             value: selectedKeberangkatan.id
@@ -1442,6 +1533,11 @@
                 }
             }
 
+            // ==========================================
+            // ✅ handleKeberangkatanSelectChange (DIUPDATE)
+            // - Baca currentIdHarga dari INITIAL_ID_HARGA (bukan dari DOM)
+            // - Reset harga hanya jika user GANTI keberangkatan
+            // ==========================================
             function handleKeberangkatanSelectChange(e) {
                 var selectedId = e.target.value;
                 var wrapper = document.getElementById('keberangkatan-harga-wrapper');
@@ -1453,6 +1549,7 @@
                     document.getElementById('tahun_keberangkatan_hidden').value = '';
                     document.getElementById('id_produk_harga_bulanan_hidden').value = '';
                     document.getElementById('hargaInfo').classList.add('hidden');
+                    injectKeberangkatanHiddenInputs(null);
                     return;
                 }
 
@@ -1462,13 +1559,15 @@
                     return;
                 }
 
-                var currentIdHarga = document.getElementById('id_produk_harga_bulanan_hidden').value || '';
+                // ✅ Baca dari INITIAL_ID_HARGA (BUKAN dari DOM hidden input)
+                var currentIdHarga = INITIAL_ID_HARGA > 0 ? INITIAL_ID_HARGA : '';
 
                 document.getElementById('id_produk_keberangkatan_hidden').value = k.id;
                 document.getElementById('bulan_keberangkatan_hidden').value = k.bulan;
                 document.getElementById('tahun_keberangkatan_hidden').value = k.tahun;
 
-                if (parseInt(selectedId) !== OLD_ID_KEBERANGKATAN) {
+                // ✅ Jika user pilih keberangkatan BERBEDA dari awal → reset harga
+                if (parseInt(selectedId) !== INITIAL_ID_KEBERANGKATAN) {
                     currentIdHarga = '';
                     document.getElementById('id_produk_harga_bulanan_hidden').value = '';
                     document.getElementById('bulan_harga_hidden').value = k.bulan;
@@ -1541,11 +1640,21 @@
                 `;
 
                 var hargaSel = wrapper.querySelector('.harga-bulanan-select');
-                if (hargaSel) hargaSel.addEventListener('change', handleHargaBulananChange);
+                if (hargaSel) {
+                    hargaSel.addEventListener('change', handleHargaBulananChange);
+                    // ✅ Set value dropdown harga bulanan
+                    hargaSel.value = currentIdHarga || '';
+                }
 
                 updateHargaInfo(currentBulanHarga, currentTahunHarga, currentHarga);
+
+                // ✅ Inject hidden input keberangkatan_data
+                injectKeberangkatanHiddenInputs(k, currentIdHarga);
             }
 
+            // ==========================================
+            // ✅ handleHargaBulananChange (DIUPDATE)
+            // ==========================================
             function handleHargaBulananChange(e) {
                 var sel = e.target;
                 var wrapper = sel.closest('.keberangkatan-harga-section');
@@ -1606,6 +1715,9 @@
                     kuotaInfoVal.textContent = kuotaText;
                     kuotaInfoVal.className = kuotaColor;
                 }
+
+                // ✅ Re-inject hidden input dengan harga baru
+                injectKeberangkatanHiddenInputs(k, hargaBulananId);
             }
 
             function updateHargaInfo(bulan, tahun, harga) {
@@ -1616,6 +1728,11 @@
                 document.getElementById('hargaInfo').classList.remove('hidden');
             }
 
+            // ==========================================
+            // ✅ resetHiddenInputs (DIUPDATE)
+            // - Reset hidden STATIS & DINAMIS
+            // - Reset juga INITIAL_* karena ini artinya user ganti produk
+            // ==========================================
             function resetHiddenInputs() {
                 document.getElementById('bulan_keberangkatan_hidden').value = '';
                 document.getElementById('tahun_keberangkatan_hidden').value = '';
@@ -1624,6 +1741,13 @@
                 document.getElementById('tahun_harga_hidden').value = '';
                 document.getElementById('id_produk_harga_bulanan_hidden').value = '';
                 document.getElementById('hargaInfo').classList.add('hidden');
+                injectKeberangkatanHiddenInputs(null);
+
+                // ✅ Reset state awal (karena ini hanya dipanggil saat user ganti produk / form kosong)
+                INITIAL_ID_KEBERANGKATAN = 0;
+                INITIAL_ID_HARGA = 0;
+                INITIAL_BULAN_KEBERANGKATAN = 0;
+                INITIAL_TAHUN_KEBERANGKATAN = 0;
             }
 
             function getBulanName(bulan) {
@@ -2352,11 +2476,18 @@
             document.getElementById('filter-tahun').addEventListener('change', function() {
                 renderKeberangkatanByTahun(this.value);
             });
+
+            // ✅ Saat user ganti produk → reset SEMUA state termasuk INITIAL_*
             document.getElementById('produk_paket').addEventListener('change', function() {
                 OLD_ID_HARGA = 0;
                 OLD_ID_KEBERANGKATAN = 0;
+                INITIAL_ID_KEBERANGKATAN = 0;
+                INITIAL_ID_HARGA = 0;
+                INITIAL_BULAN_KEBERANGKATAN = 0;
+                INITIAL_TAHUN_KEBERANGKATAN = 0;
                 loadKeberangkatan();
             });
+
             document.getElementById('id_diskon').addEventListener('change', hitungDiskonKelompok);
 
             document.addEventListener('change', function(e) {

@@ -11,7 +11,7 @@ use App\Models\ProdukHargaBulanan;
 use App\Models\ProdukKeberangkatan;
 use App\Models\KotaAsal;
 use App\Models\Diskon;
-use App\Models\JenisPembayaran;         // ← BARU (pengganti JenisTransaksi)
+use App\Models\JenisPembayaran;
 use App\Models\TransaksiPembayaran;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
@@ -61,6 +61,46 @@ class KeluargaService
     }
 
     // ==========================================
+    // ✅ HELPER: Normalisasi keberangkatan_data → field tunggal
+    // ==========================================
+    private function normalizeKeberangkatanData(array &$data): ?array
+    {
+        $keberangkatanData = $data['keberangkatan_data'] ?? [];
+        unset($data['keberangkatan_data']);
+
+        if (empty($keberangkatanData)) {
+            return null;
+        }
+
+        $primary = $keberangkatanData[0];
+
+        // Override field tunggal dengan nilai dari array (agar backward compat tetap jalan)
+        $data['id_produk_keberangkatan'] = $primary['id_produk_keberangkatan'] ?? $data['id_produk_keberangkatan'] ?? null;
+        $data['id_produk_harga_bulanan'] = $primary['id_produk_harga_bulanan'] ?? $data['id_produk_harga_bulanan'] ?? null;
+        $data['bulan_keberangkatan'] = $primary['bulan_keberangkatan'] ?? $data['bulan_keberangkatan'] ?? null;
+        $data['tahun_keberangkatan'] = $primary['tahun_keberangkatan'] ?? $data['tahun_keberangkatan'] ?? null;
+        $data['bulan_harga'] = $primary['bulan_harga'] ?? $data['bulan_harga'] ?? null;
+        $data['tahun_harga'] = $primary['tahun_harga'] ?? $data['tahun_harga'] ?? null;
+
+        return $primary;
+    }
+
+    // ==========================================
+    // ✅ HELPER: Build pivot payload dari data
+    // ==========================================
+    private function buildPivotPayload(array $data, ?array $primary, ProdukKeberangkatan $keberangkatan, int $hargaProduk): array
+    {
+        return [
+            'id_produk_harga_bulanan' => $data['id_produk_harga_bulanan'] ?? null,
+            'bulan_keberangkatan' => (int) ($primary['bulan_keberangkatan'] ?? $keberangkatan->bulan),
+            'tahun_keberangkatan' => (int) ($primary['tahun_keberangkatan'] ?? $keberangkatan->tahun),
+            'bulan_harga' => (int) ($data['bulan_harga'] ?? $keberangkatan->bulan),
+            'tahun_harga' => (int) ($data['tahun_harga'] ?? $keberangkatan->tahun),
+            'harga' => (int) $hargaProduk,
+        ];
+    }
+
+    // ==========================================
     // CREATE
     // ==========================================
     public function create(array $data)
@@ -70,6 +110,9 @@ class KeluargaService
             $data['fee_agent'] = (int) ($data['fee_agent'] ?? 0);
             $data['total_dibayar'] = (int) ($data['total_dibayar'] ?? 0);
             $data['total_refund'] = 0;
+
+            // ✅ Normalisasi keberangkatan_data
+            $primaryKeberangkatan = $this->normalizeKeberangkatanData($data);
 
             $hargaProduk = 0;
             $hargaBulanan = null;
@@ -97,6 +140,11 @@ class KeluargaService
                         $data['tahun_harga'] = $harga->tahun;
                     }
                 }
+            }
+
+            // ✅ Fallback: kalau primary punya harga sendiri, pakai itu
+            if ($primaryKeberangkatan && !empty($primaryKeberangkatan['harga'])) {
+                $hargaProduk = (int) $primaryKeberangkatan['harga'];
             }
 
             $jumlahAnggota = count($data['jamaahs'] ?? []);
@@ -279,6 +327,9 @@ class KeluargaService
         return DB::transaction(function () use ($id, $data) {
             $keluarga = $this->getById($id);
 
+            // ✅ Normalisasi keberangkatan_data (override field tunggal)
+            $primaryKeberangkatan = $this->normalizeKeberangkatanData($data);
+
             $hargaProduk = 0;
             $hargaBulanan = null;
             $idHargaBulanan = $data['id_produk_harga_bulanan'] ?? null;
@@ -305,6 +356,11 @@ class KeluargaService
                         $data['tahun_harga'] = $harga->tahun;
                     }
                 }
+            }
+
+            // ✅ Fallback: kalau primary punya harga sendiri, pakai itu
+            if ($primaryKeberangkatan && !empty($primaryKeberangkatan['harga'])) {
+                $hargaProduk = (int) $primaryKeberangkatan['harga'];
             }
 
             $jamaahBaru = 0;
@@ -441,17 +497,12 @@ class KeluargaService
                         $jamaah = Jamaah::create($jamaahData);
                         $this->saveUpgradeHotelsJamaah($jamaah->id_jamaah, $upgradeJamaahData);
 
+                        // ✅ ATTACH pivot untuk jamaah baru (sama seperti create)
                         if (!empty($data['id_produk_keberangkatan'])) {
                             $keberangkatan = ProdukKeberangkatan::find($data['id_produk_keberangkatan']);
                             if ($keberangkatan) {
-                                $jamaah->keberangkatan()->attach($keberangkatan->id, [
-                                    'id_produk_harga_bulanan' => $idHargaBulanan,
-                                    'bulan_keberangkatan' => $keberangkatan->bulan,
-                                    'tahun_keberangkatan' => $keberangkatan->tahun,
-                                    'bulan_harga' => $hargaBulanan->bulan ?? $keberangkatan->bulan,
-                                    'tahun_harga' => $hargaBulanan->tahun ?? $keberangkatan->tahun,
-                                    'harga' => (int) $hargaProduk,
-                                ]);
+                                $pivotPayload = $this->buildPivotPayload($data, $primaryKeberangkatan, $keberangkatan, $hargaProduk);
+                                $jamaah->keberangkatan()->attach($keberangkatan->id, $pivotPayload);
                             }
                         }
                     } else {
@@ -482,20 +533,16 @@ class KeluargaService
                             $jamaah->update($jamaahData);
                             $this->saveUpgradeHotelsJamaah($jamaah->id_jamaah, $upgradeJamaahData);
 
+                            // ✅ SYNC pivot untuk jamaah existing (sama seperti jamaah controller)
                             if (!empty($data['id_produk_keberangkatan'])) {
                                 $keberangkatan = ProdukKeberangkatan::find($data['id_produk_keberangkatan']);
                                 if ($keberangkatan) {
-                                    $jamaah->keberangkatan()->sync([
-                                        $keberangkatan->id => [
-                                            'id_produk_harga_bulanan' => $idHargaBulanan,
-                                            'bulan_keberangkatan' => $keberangkatan->bulan,
-                                            'tahun_keberangkatan' => $keberangkatan->tahun,
-                                            'bulan_harga' => $hargaBulanan->bulan ?? $keberangkatan->bulan,
-                                            'tahun_harga' => $hargaBulanan->tahun ?? $keberangkatan->tahun,
-                                            'harga' => (int) $hargaProduk,
-                                        ],
-                                    ]);
+                                    $pivotPayload = $this->buildPivotPayload($data, $primaryKeberangkatan, $keberangkatan, $hargaProduk);
+                                    $jamaah->keberangkatan()->sync([$keberangkatan->id => $pivotPayload]);
                                 }
+                            } else {
+                                // ✅ Jika keberangkatan dikosongkan, detach pivot lama
+                                $jamaah->keberangkatan()->detach();
                             }
                         }
                     }
@@ -813,9 +860,6 @@ class KeluargaService
         return ['keberangkatan' => $keberangkatan, 'harga_bulanan' => $hargaBulanan];
     }
 
-    // ==========================================
-    // ✅ PROSES REFUND — pakai JenisPembayaran
-    // ==========================================
     public function prosesRefund($keluargaId, array $data)
     {
         return DB::transaction(function () use ($keluargaId, $data) {
@@ -834,7 +878,6 @@ class KeluargaService
                 );
             }
 
-            // ✅ Cari jenis pembayaran REFUND berdasarkan kode
             $jenisRefund = JenisPembayaran::byKode('REFUND')->first();
 
             if (!$jenisRefund) {
@@ -844,7 +887,6 @@ class KeluargaService
                 ]);
             }
 
-            // Distribusi refund ke jamaah berdasarkan proporsi tagihan
             $jamaahs = $keluarga->jamaahs;
             $totalTagihanKeluarga = (int) $keluarga->total_tagihan_setelah_diskon;
 
@@ -867,7 +909,6 @@ class KeluargaService
                 ];
             }
 
-            // Buat transaksi refund per jamaah
             foreach ($refundPerJamaah as $item) {
                 if ($item['nominal'] <= 0) continue;
                 $jamaah = $item['jamaah'];
@@ -895,7 +936,6 @@ class KeluargaService
                 ]);
             }
 
-            // Update total_refund keluarga
             $totalRefundKeluarga = (int) ($keluarga->total_refund ?? 0) + $jumlahRefund;
             $sisaKelebihanKeluarga = max(0, $keluarga->kelebihan_bayar - $totalRefundKeluarga);
 

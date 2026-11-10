@@ -29,9 +29,6 @@ class KeluargaController extends Controller
         $this->service = $service;
     }
 
-    // ==========================================
-    // INDEX
-    // ==========================================
     public function index(Request $request)
     {
         $filters = $request->only(['search', 'status_pembayaran', 'has_kelebihan']);
@@ -44,9 +41,6 @@ class KeluargaController extends Controller
         return view('keluargas.index', compact('data'));
     }
 
-    // ==========================================
-    // CREATE
-    // ==========================================
     public function create()
     {
         $produkPakets = $this->service->getProdukPakets();
@@ -64,9 +58,6 @@ class KeluargaController extends Controller
         ));
     }
 
-    // ==========================================
-    // STORE
-    // ==========================================
     public function store(Request $request)
     {
         $validated = $request->validate([
@@ -76,10 +67,20 @@ class KeluargaController extends Controller
             'agent' => 'nullable|string|max:100',
             'fee_agent' => 'nullable|integer|min:0',
 
+            // ✅ NEW: keberangkatan_data (konsisten dengan Jamaah)
+            'keberangkatan_data' => 'nullable|array',
+            'keberangkatan_data.*.id_produk_keberangkatan' => 'required_with:keberangkatan_data|exists:produk_keberangkatans,id',
+            'keberangkatan_data.*.id_produk_harga_bulanan' => 'nullable|exists:produk_harga_bulanan,id',
+            'keberangkatan_data.*.bulan_keberangkatan' => 'nullable|integer|min:1|max:12',
+            'keberangkatan_data.*.tahun_keberangkatan' => 'nullable|integer|min:2000|max:' . (date('Y') + 10),
+            'keberangkatan_data.*.bulan_harga' => 'nullable|integer|min:1|max:12',
+            'keberangkatan_data.*.tahun_harga' => 'nullable|integer|min:2000|max:' . (date('Y') + 10),
+            'keberangkatan_data.*.harga' => 'nullable|integer|min:0',
+
+            // Field lama (backward compat)
             'bulan_keberangkatan' => 'nullable|integer|min:1|max:12',
             'tahun_keberangkatan' => 'nullable|integer|min:2000|max:' . (date('Y') + 10),
             'id_produk_keberangkatan' => 'nullable|exists:produk_keberangkatans,id',
-
             'bulan_harga' => 'nullable|integer|min:1|max:12',
             'tahun_harga' => 'nullable|integer|min:2000|max:' . (date('Y') + 10),
             'id_produk_harga_bulanan' => 'nullable|exists:produk_harga_bulanan,id',
@@ -152,9 +153,6 @@ class KeluargaController extends Controller
         }
     }
 
-    // ==========================================
-    // SHOW
-    // ==========================================
     public function show($id)
     {
         $keluarga = $this->service->getById($id);
@@ -180,9 +178,6 @@ class KeluargaController extends Controller
         return view('keluargas.show', compact('keluarga', 'transaksis', 'rekapJamaah'));
     }
 
-    // ==========================================
-    // EDIT
-    // ==========================================
     public function edit($id)
     {
         $keluarga = $this->service->getById($id);
@@ -268,9 +263,6 @@ class KeluargaController extends Controller
         ));
     }
 
-    // ==========================================
-    // UPDATE
-    // ==========================================
     public function update(Request $request, $id)
     {
         $validated = $request->validate([
@@ -280,10 +272,20 @@ class KeluargaController extends Controller
             'agent' => 'nullable|string|max:100',
             'fee_agent' => 'nullable|integer|min:0',
 
+            // ✅ NEW: keberangkatan_data (konsisten dengan Jamaah)
+            'keberangkatan_data' => 'nullable|array',
+            'keberangkatan_data.*.id_produk_keberangkatan' => 'required_with:keberangkatan_data|exists:produk_keberangkatans,id',
+            'keberangkatan_data.*.id_produk_harga_bulanan' => 'nullable|exists:produk_harga_bulanan,id',
+            'keberangkatan_data.*.bulan_keberangkatan' => 'nullable|integer|min:1|max:12',
+            'keberangkatan_data.*.tahun_keberangkatan' => 'nullable|integer|min:2000|max:' . (date('Y') + 10),
+            'keberangkatan_data.*.bulan_harga' => 'nullable|integer|min:1|max:12',
+            'keberangkatan_data.*.tahun_harga' => 'nullable|integer|min:2000|max:' . (date('Y') + 10),
+            'keberangkatan_data.*.harga' => 'nullable|integer|min:0',
+
+            // Field lama (backward compat)
             'bulan_keberangkatan' => 'nullable|integer|min:1|max:12',
             'tahun_keberangkatan' => 'nullable|integer|min:2000|max:' . (date('Y') + 10),
             'id_produk_keberangkatan' => 'nullable|exists:produk_keberangkatans,id',
-
             'bulan_harga' => 'nullable|integer|min:1|max:12',
             'tahun_harga' => 'nullable|integer|min:2000|max:' . (date('Y') + 10),
             'id_produk_harga_bulanan' => 'nullable|exists:produk_harga_bulanan,id',
@@ -376,9 +378,6 @@ class KeluargaController extends Controller
         }
     }
 
-    // ==========================================
-    // DESTROY
-    // ==========================================
     public function destroy($id)
     {
         $nama = $this->service->delete($id);
@@ -387,9 +386,6 @@ class KeluargaController extends Controller
             ->with('success', "Keluarga '{$nama}' berhasil dihapus!");
     }
 
-    // ==========================================
-    // PEMBAYARAN
-    // ==========================================
     public function pembayaran($id)
     {
         $keluarga = $this->service->getById($id);
@@ -410,9 +406,6 @@ class KeluargaController extends Controller
         ));
     }
 
-    // ==========================================
-    // BAYAR
-    // ==========================================
     public function bayar(Request $request, $id)
     {
         $jumlahRaw = preg_replace('/[^\d]/', '', $request->input('jumlah_bayar'));
@@ -530,9 +523,6 @@ class KeluargaController extends Controller
             ->with('success', "Pembayaran keluarga sebesar Rp " . number_format($jumlahBayar, 0, ',', '.') . " berhasil dan telah masuk ke riwayat pembayaran jamaah masing-masing!");
     }
 
-    // ==========================================
-    // PROSES REFUND
-    // ==========================================
     public function prosesRefund(Request $request, $id)
     {
         $jumlahRefundRaw = preg_replace('/[^\d]/', '', $request->input('jumlah_refund'));
@@ -577,9 +567,6 @@ class KeluargaController extends Controller
         }
     }
 
-    // ==========================================
-    // HAPUS TRANSAKSI
-    // ==========================================
     public function hapusTransaksi($idTransaksi)
     {
         return DB::transaction(function () use ($idTransaksi) {
@@ -656,9 +643,6 @@ class KeluargaController extends Controller
         };
     }
 
-    // ==========================================
-    // CETAK PEMBAYARAN (PDF)
-    // ==========================================
     public function cetakPembayaran($id)
     {
         $keluarga = $this->service->getById($id);
@@ -786,9 +770,6 @@ class KeluargaController extends Controller
         ];
     }
 
-    // ==========================================
-    // AJAX — KEBERANGKATAN BY PRODUK
-    // ==========================================
     public function getKeberangkatanByProduk(Request $request)
     {
         $request->validate([
@@ -814,9 +795,6 @@ class KeluargaController extends Controller
         ]);
     }
 
-    // ==========================================
-    // AJAX — HARGA PRODUK BY BULAN
-    // ==========================================
     public function getHargaProdukByBulan(Request $request)
     {
         $request->validate([
@@ -857,9 +835,6 @@ class KeluargaController extends Controller
         ], 404);
     }
 
-    // ==========================================
-    // AJAX — KAMAR BY HOTEL
-    // ==========================================
     public function getKamarsByHotel($idHotel)
     {
         $hotel = Hotel::findOrFail($idHotel);
