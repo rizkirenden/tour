@@ -67,7 +67,6 @@ class KeluargaController extends Controller
             'agent' => 'nullable|string|max:100',
             'fee_agent' => 'nullable|integer|min:0',
 
-            // ✅ NEW: keberangkatan_data (konsisten dengan Jamaah)
             'keberangkatan_data' => 'nullable|array',
             'keberangkatan_data.*.id_produk_keberangkatan' => 'required_with:keberangkatan_data|exists:produk_keberangkatans,id',
             'keberangkatan_data.*.id_produk_harga_bulanan' => 'nullable|exists:produk_harga_bulanan,id',
@@ -77,7 +76,6 @@ class KeluargaController extends Controller
             'keberangkatan_data.*.tahun_harga' => 'nullable|integer|min:2000|max:' . (date('Y') + 10),
             'keberangkatan_data.*.harga' => 'nullable|integer|min:0',
 
-            // Field lama (backward compat)
             'bulan_keberangkatan' => 'nullable|integer|min:1|max:12',
             'tahun_keberangkatan' => 'nullable|integer|min:2000|max:' . (date('Y') + 10),
             'id_produk_keberangkatan' => 'nullable|exists:produk_keberangkatans,id',
@@ -120,22 +118,21 @@ class KeluargaController extends Controller
             'jamaahs.*.pendampingan_fee' => 'nullable|integer|min:0',
             'jamaahs.*.pendampingan_fee_petugas' => 'nullable|integer|min:0',
 
+            // ✅ UPGRADE HOTEL (PER PAX)
             'upgrade_hotels' => 'nullable|array',
             'upgrade_hotels.*.id_hotel' => 'required_with:upgrade_hotels|exists:hotels,id_hotel',
             'upgrade_hotels.*.id_kamar' => 'nullable|exists:kamars,id_kamar',
             'upgrade_hotels.*.tipe_kamar' => 'nullable|string|max:100',
-            'upgrade_hotels.*.jumlah_kamar' => 'nullable|integer|min:1',
-            'upgrade_hotels.*.durasi_menginap' => 'nullable|integer|min:1',
-            'upgrade_hotels.*.harga_per_malam' => 'nullable|integer|min:0',
+            'upgrade_hotels.*.jumlah_pax' => 'nullable|integer|min:1',
+            'upgrade_hotels.*.harga_per_pax' => 'nullable|integer|min:0',
             'upgrade_hotels.*.catatan' => 'nullable|string',
 
             'jamaahs.*.upgrade_hotels' => 'nullable|array',
             'jamaahs.*.upgrade_hotels.*.id_hotel' => 'required_with:jamaahs.*.upgrade_hotels|exists:hotels,id_hotel',
             'jamaahs.*.upgrade_hotels.*.id_kamar' => 'nullable|exists:kamars,id_kamar',
             'jamaahs.*.upgrade_hotels.*.tipe_kamar' => 'nullable|string|max:100',
-            'jamaahs.*.upgrade_hotels.*.jumlah_kamar' => 'nullable|integer|min:1',
-            'jamaahs.*.upgrade_hotels.*.durasi_menginap' => 'nullable|integer|min:1',
-            'jamaahs.*.upgrade_hotels.*.harga_per_malam' => 'nullable|integer|min:0',
+            'jamaahs.*.upgrade_hotels.*.jumlah_pax' => 'nullable|integer|min:1',
+            'jamaahs.*.upgrade_hotels.*.harga_per_pax' => 'nullable|integer|min:0',
             'jamaahs.*.upgrade_hotels.*.catatan' => 'nullable|string',
         ]);
 
@@ -227,9 +224,8 @@ class KeluargaController extends Controller
                             'id_hotel' => $u->id_hotel,
                             'id_kamar' => $u->id_kamar,
                             'tipe_kamar' => $u->tipe_kamar,
-                            'jumlah_kamar' => $u->jumlah_kamar,
-                            'durasi_menginap' => $u->durasi_menginap,
-                            'harga_per_malam' => $u->harga_per_malam,
+                            'harga_per_pax' => $u->harga_per_pax,
+                            'jumlah_pax' => $u->jumlah_pax,
                         ];
                     })->toArray(),
                 ];
@@ -272,7 +268,6 @@ class KeluargaController extends Controller
             'agent' => 'nullable|string|max:100',
             'fee_agent' => 'nullable|integer|min:0',
 
-            // ✅ NEW: keberangkatan_data (konsisten dengan Jamaah)
             'keberangkatan_data' => 'nullable|array',
             'keberangkatan_data.*.id_produk_keberangkatan' => 'required_with:keberangkatan_data|exists:produk_keberangkatans,id',
             'keberangkatan_data.*.id_produk_harga_bulanan' => 'nullable|exists:produk_harga_bulanan,id',
@@ -282,7 +277,6 @@ class KeluargaController extends Controller
             'keberangkatan_data.*.tahun_harga' => 'nullable|integer|min:2000|max:' . (date('Y') + 10),
             'keberangkatan_data.*.harga' => 'nullable|integer|min:0',
 
-            // Field lama (backward compat)
             'bulan_keberangkatan' => 'nullable|integer|min:1|max:12',
             'tahun_keberangkatan' => 'nullable|integer|min:2000|max:' . (date('Y') + 10),
             'id_produk_keberangkatan' => 'nullable|exists:produk_keberangkatans,id',
@@ -326,22 +320,21 @@ class KeluargaController extends Controller
             'jamaahs.*.pendampingan_fee' => 'nullable|integer|min:0',
             'jamaahs.*.pendampingan_fee_petugas' => 'nullable|integer|min:0',
 
+            // ✅ UPGRADE HOTEL (PER PAX)
             'upgrade_hotels' => 'nullable|array',
             'upgrade_hotels.*.id_hotel' => 'required_with:upgrade_hotels|exists:hotels,id_hotel',
             'upgrade_hotels.*.id_kamar' => 'nullable|exists:kamars,id_kamar',
             'upgrade_hotels.*.tipe_kamar' => 'nullable|string|max:100',
-            'upgrade_hotels.*.jumlah_kamar' => 'nullable|integer|min:1',
-            'upgrade_hotels.*.durasi_menginap' => 'nullable|integer|min:1',
-            'upgrade_hotels.*.harga_per_malam' => 'nullable|integer|min:0',
+            'upgrade_hotels.*.jumlah_pax' => 'nullable|integer|min:1',
+            'upgrade_hotels.*.harga_per_pax' => 'nullable|integer|min:0',
             'upgrade_hotels.*.catatan' => 'nullable|string',
 
             'jamaahs.*.upgrade_hotels' => 'nullable|array',
             'jamaahs.*.upgrade_hotels.*.id_hotel' => 'required_with:jamaahs.*.upgrade_hotels|exists:hotels,id_hotel',
             'jamaahs.*.upgrade_hotels.*.id_kamar' => 'nullable|exists:kamars,id_kamar',
             'jamaahs.*.upgrade_hotels.*.tipe_kamar' => 'nullable|string|max:100',
-            'jamaahs.*.upgrade_hotels.*.jumlah_kamar' => 'nullable|integer|min:1',
-            'jamaahs.*.upgrade_hotels.*.durasi_menginap' => 'nullable|integer|min:1',
-            'jamaahs.*.upgrade_hotels.*.harga_per_malam' => 'nullable|integer|min:0',
+            'jamaahs.*.upgrade_hotels.*.jumlah_pax' => 'nullable|integer|min:1',
+            'jamaahs.*.upgrade_hotels.*.harga_per_pax' => 'nullable|integer|min:0',
             'jamaahs.*.upgrade_hotels.*.catatan' => 'nullable|string',
         ]);
 
@@ -853,9 +846,9 @@ class KeluargaController extends Controller
 
         $html = '';
         foreach ($kamars as $kamar) {
-            $kamarId = $kamar->id_kamar ?? $kamar->id;
-            $tipeKamar = e($kamar->tipe_kamar);
-            $harga = (int) ($kamar->harga ?? 0);
+            $kamarId        = $kamar->id_kamar ?? $kamar->id;
+            $tipeKamar      = e($kamar->tipe_kamar);
+            $harga          = (int) ($kamar->harga ?? 0);
             $hargaFormatted = 'Rp ' . number_format($harga, 0, ',', '.');
 
             $html .= '<div class="kamar-item bg-white border border-gray-200 rounded-lg p-2">'
@@ -868,29 +861,26 @@ class KeluargaController extends Controller
                 . '<div class="flex-1">'
                 . '<div class="flex items-center justify-between">'
                 . '<p class="text-xs font-medium text-gray-700">' . $tipeKamar . '</p>'
-                . '<p class="text-xs font-bold text-orange-600">' . $hargaFormatted . '</p>'
+                . '<p class="text-xs font-bold text-orange-600">' . $hargaFormatted . ' / pax</p>'
                 . '</div>'
-                . '<div class="grid grid-cols-3 gap-1 mt-1">'
+                . '<div class="grid grid-cols-2 gap-1 mt-1">'
                 . '<div>'
-                . '<label class="block text-[10px] text-gray-500">Kamar</label>'
+                . '<label class="block text-[10px] text-gray-500">Jumlah Pax</label>'
                 . '<input type="number" '
-                . 'class="kamar-jumlah w-full px-1.5 py-1 border border-gray-200 rounded text-xs disabled:opacity-50 disabled:bg-gray-50" '
-                . 'value="1" min="1" disabled>'
+                . 'class="kamar-jumlah-pax w-full px-1.5 py-1 border border-gray-200 rounded text-xs bg-gray-50" '
+                . 'value="1" min="1" readonly>'
                 . '</div>'
                 . '<div>'
-                . '<label class="block text-[10px] text-gray-500">Harga/Malam</label>'
+                . '<label class="block text-[10px] text-gray-500">Harga/Pax</label>'
                 . '<input type="text" '
-                . 'class="kamar-harga w-full px-1.5 py-1 border border-gray-200 rounded text-xs disabled:opacity-50 disabled:bg-gray-50" '
+                . 'class="kamar-harga-pax w-full px-1.5 py-1 border border-gray-200 rounded text-xs disabled:opacity-50 disabled:bg-gray-50" '
                 . 'value="' . $hargaFormatted . '" '
                 . 'oninput="formatRupiahKamar(this)" '
                 . 'onblur="formatRupiahKamar(this)" disabled>'
                 . '</div>'
-                . '<div>'
-                . '<label class="block text-[10px] text-gray-500">Malam</label>'
-                . '<input type="number" '
-                . 'class="kamar-durasi w-full px-1.5 py-1 border border-gray-200 rounded text-xs disabled:opacity-50 disabled:bg-gray-50" '
-                . 'value="1" min="1" disabled>'
                 . '</div>'
+                . '<div class="mt-1 text-[10px] text-orange-600 text-right">'
+                . 'Subtotal: <span class="font-bold subtotal-value">' . $hargaFormatted . '</span>'
                 . '</div>'
                 . '</div>'
                 . '</label>'

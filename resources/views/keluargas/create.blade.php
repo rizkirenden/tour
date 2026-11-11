@@ -459,7 +459,6 @@
                                             </div>
                                         </div>
 
-                                        {{-- ✅ Baris 3: WhatsApp + Tempat Lahir (Telepon DIHAPUS) --}}
                                         <div class="grid grid-cols-1 md:grid-cols-2 gap-3 mt-3">
                                             <div>
                                                 <label class="block text-xs font-medium text-gray-600 mb-1">
@@ -481,7 +480,6 @@
                                             </div>
                                         </div>
 
-                                        <!-- Baris 4 -->
                                         <div class="grid grid-cols-1 md:grid-cols-3 gap-3 mt-3">
                                             <div>
                                                 <label class="block text-xs font-medium text-gray-600 mb-1">
@@ -660,7 +658,6 @@
                                                 </div>
                                             </div>
 
-                                            <!-- Pembuatan Passport -->
                                             <div class="mt-3 pt-3 border-t border-gray-200">
                                                 @php
                                                     $isPassport = ($jamaah['is_pembuatan_passport'] ?? 0) == 1;
@@ -940,7 +937,6 @@
                                         </div>
                                     </div>
 
-                                    {{-- ✅ Baris 3: WhatsApp + Tempat Lahir (Telepon DIHAPUS) --}}
                                     <div class="grid grid-cols-1 md:grid-cols-2 gap-3 mt-3">
                                         <div>
                                             <label class="block text-xs font-medium text-gray-600 mb-1">
@@ -1360,6 +1356,22 @@
                 if (value === '' || isNaN(value)) value = '0';
                 const number = parseInt(value);
                 input.value = 'Rp ' + number.toLocaleString('id-ID');
+            }
+
+            function hitungSubtotalPax(item, defaultPax) {
+                const cb = item.querySelector('.kamar-checkbox');
+                if (!cb || !cb.checked) return 0;
+
+                const hargaPerPax = parseInt((item.querySelector('.kamar-harga-pax').value || '')
+                    .replace(/^Rp\s*/, '').replace(/\./g, '')) || 0;
+                const jumlahPax = parseInt(item.querySelector('.kamar-jumlah-pax').value) || defaultPax;
+
+                const subtotal = hargaPerPax * jumlahPax;
+
+                const previewEl = item.querySelector('.subtotal-value');
+                if (previewEl) previewEl.textContent = 'Rp ' + subtotal.toLocaleString('id-ID');
+
+                return subtotal;
             }
 
             function updateFeeAgentPerJamaah() {
@@ -1911,27 +1923,32 @@
                 const container = document.getElementById('upgradeKeluargaContainer');
                 if (!container) return;
 
+                const jumlahJamaah = document.querySelectorAll('.jamaah-row').length;
+
+                container.querySelectorAll('.kamar-jumlah-pax').forEach(input => {
+                    input.value = jumlahJamaah;
+                });
+
                 let total = 0;
                 container.querySelectorAll('.hotel-upgrade-item').forEach(hotelItem => {
                     const hotelCheckbox = hotelItem.querySelector('.upgrade-hotel-checkbox');
                     if (!hotelCheckbox || !hotelCheckbox.checked) return;
 
+                    let subtotalHotel = 0;
                     hotelItem.querySelectorAll('.kamar-item').forEach(item => {
-                        const cb = item.querySelector('.kamar-checkbox');
-                        if (!cb || !cb.checked) return;
-
-                        const jumlah = parseInt(item.querySelector('.kamar-jumlah').value) || 1;
-                        const harga = parseInt((item.querySelector('.kamar-harga').value || '')
-                            .replace(/^Rp\s*/, '').replace(/\./g, '')) || 0;
-                        const durasi = parseInt(item.querySelector('.kamar-durasi').value) || 1;
-                        total += jumlah * harga * durasi;
+                        subtotalHotel += hitungSubtotalPax(item, jumlahJamaah);
                     });
+
+                    const hotelId = hotelItem.dataset.hotelId;
+                    const subtotalEl = container.querySelector(`.subtotal-hotel-keluarga-${hotelId}`);
+                    if (subtotalEl) subtotalEl.textContent = 'Rp ' + subtotalHotel.toLocaleString('id-ID');
+
+                    total += subtotalHotel;
                 });
 
                 const totalEl = document.getElementById('totalUpgradeKeluarga');
                 if (totalEl) totalEl.textContent = 'Rp ' + total.toLocaleString('id-ID');
 
-                const jumlahJamaah = document.querySelectorAll('.jamaah-row').length;
                 const perJamaah = jumlahJamaah > 0 ? Math.round(total / jumlahJamaah) : 0;
                 const perEl = document.getElementById('perJamaahUpgradeKeluarga');
                 if (perEl) perEl.textContent = 'Rp ' + perJamaah.toLocaleString('id-ID');
@@ -1966,21 +1983,25 @@
                 const container = document.getElementById('upgradeJamaahContainer-' + jamaahIndex);
                 if (!container) return;
 
+                container.querySelectorAll('.kamar-jumlah-pax').forEach(input => {
+                    input.value = 1;
+                });
+
                 let total = 0;
                 container.querySelectorAll('.hotel-upgrade-item').forEach(hotelItem => {
                     const hotelCheckbox = hotelItem.querySelector('.upgrade-hotel-checkbox');
                     if (!hotelCheckbox || !hotelCheckbox.checked) return;
 
+                    let subtotalHotel = 0;
                     hotelItem.querySelectorAll('.kamar-item').forEach(item => {
-                        const cb = item.querySelector('.kamar-checkbox');
-                        if (!cb || !cb.checked) return;
-
-                        const jumlah = parseInt(item.querySelector('.kamar-jumlah').value) || 1;
-                        const harga = parseInt((item.querySelector('.kamar-harga').value || '')
-                            .replace(/^Rp\s*/, '').replace(/\./g, '')) || 0;
-                        const durasi = parseInt(item.querySelector('.kamar-durasi').value) || 1;
-                        total += jumlah * harga * durasi;
+                        subtotalHotel += hitungSubtotalPax(item, 1);
                     });
+
+                    const hotelId = hotelItem.dataset.hotelId;
+                    const subtotalEl = container.querySelector(`.subtotal-hotel-jamaah-${jamaahIndex}-${hotelId}`);
+                    if (subtotalEl) subtotalEl.textContent = 'Rp ' + subtotalHotel.toLocaleString('id-ID');
+
+                    total += subtotalHotel;
                 });
 
                 const totalEl = document.getElementById('totalUpgradeJamaah-' + jamaahIndex);
@@ -2000,11 +2021,18 @@
                             return;
                         }
 
+                        const jumlahJamaah = document.querySelectorAll('.jamaah-row').length;
+                        const defaultPax = scope === 'keluarga' ? jumlahJamaah : 1;
+
                         container.innerHTML = '<div class="grid grid-cols-1 gap-2">' + data.html + '</div>' +
                             `<div class="mt-1 flex items-center justify-between bg-orange-50 rounded px-2 py-1">
                                 <span class="text-[10px] font-medium text-gray-600">Subtotal hotel ini:</span>
                                 <span class="text-xs font-bold text-orange-600 subtotal-hotel-${scope}-${hotelId}">Rp 0</span>
                             </div>`;
+
+                        container.querySelectorAll('.kamar-jumlah-pax').forEach(input => {
+                            input.value = defaultPax;
+                        });
 
                         container.querySelectorAll('.kamar-checkbox').forEach(cb => {
                             cb.addEventListener('change', () => {
@@ -2020,7 +2048,7 @@
                             });
                         });
 
-                        container.querySelectorAll('.kamar-jumlah, .kamar-harga, .kamar-durasi').forEach(input => {
+                        container.querySelectorAll('.kamar-harga-pax').forEach(input => {
                             input.addEventListener('change', () => {
                                 updateUpgradeHiddenInputs(scope, hotelId, container);
                                 recalcUpgradeScope(scope);
@@ -2052,14 +2080,17 @@
 
                 let parentForm = null;
                 let fieldPrefix = '';
+                let defaultPax = 1;
 
                 if (scope === 'keluarga') {
                     parentForm = document.getElementById('keluargaForm');
-                    fieldPrefix = `upgrade_hotels`;
+                    fieldPrefix = 'upgrade_hotels';
+                    defaultPax = document.querySelectorAll('.jamaah-row').length;
                 } else {
                     const idx = parseInt(scope.replace('jamaah-', ''));
                     parentForm = document.getElementById('jamaah-row-' + idx);
                     fieldPrefix = `jamaahs[${idx}][upgrade_hotels]`;
+                    defaultPax = 1;
                 }
 
                 if (!parentForm) return;
@@ -2070,11 +2101,11 @@
                     const cb = item.querySelector('.kamar-checkbox');
                     if (!cb || !cb.checked) return;
 
-                    const jumlah = parseInt(item.querySelector('.kamar-jumlah').value) || 1;
-                    const harga = parseInt((item.querySelector('.kamar-harga').value || '')
+                    const hargaPerPax = parseInt((item.querySelector('.kamar-harga-pax').value || '')
                         .replace(/^Rp\s*/, '').replace(/\./g, '')) || 0;
-                    const durasi = parseInt(item.querySelector('.kamar-durasi').value) || 1;
-                    subtotal += jumlah * harga * durasi;
+                    const jumlahPax = parseInt(item.querySelector('.kamar-jumlah-pax').value) || defaultPax;
+                    const itemTotal = hargaPerPax * jumlahPax;
+                    subtotal += itemTotal;
 
                     const uniqueKey = `${fieldPrefix}[${hotelId}_${cb.value}]`;
                     const grp = document.createElement('div');
@@ -2085,9 +2116,8 @@
                         <input type="hidden" name="${uniqueKey}[id_hotel]" value="${hotelId}">
                         <input type="hidden" name="${uniqueKey}[id_kamar]" value="${cb.value}">
                         <input type="hidden" name="${uniqueKey}[tipe_kamar]" value="${cb.dataset.tipe}">
-                        <input type="hidden" name="${uniqueKey}[jumlah_kamar]" value="${jumlah}">
-                        <input type="hidden" name="${uniqueKey}[durasi_menginap]" value="${durasi}">
-                        <input type="hidden" name="${uniqueKey}[harga_per_malam]" value="${harga}">
+                        <input type="hidden" name="${uniqueKey}[jumlah_pax]" value="${jumlahPax}">
+                        <input type="hidden" name="${uniqueKey}[harga_per_pax]" value="${hargaPerPax}">
                     `;
                     parentForm.appendChild(grp);
                 });
@@ -2178,7 +2208,6 @@
                     '</div>' +
                     '<input type="hidden" name="jamaahs[' + idx + '][id_jamaah]" value="">' +
 
-                    // Baris 1
                     '<div class="grid grid-cols-1 md:grid-cols-3 gap-3">' +
                     '<div>' +
                     '<label class="block text-xs font-medium text-gray-600 mb-1">Nama Lengkap <span class="text-red-500">*</span></label>' +
@@ -2198,7 +2227,6 @@
                     '</div>' +
                     '</div>' +
 
-                    // Baris 2
                     '<div class="grid grid-cols-1 md:grid-cols-3 gap-3 mt-3">' +
                     '<div>' +
                     '<label class="block text-xs font-medium text-gray-600 mb-1">Pekerjaan <span class="text-red-500">*</span></label>' +
@@ -2227,7 +2255,6 @@
                     '</div>' +
                     '</div>' +
 
-                    // ✅ Baris 3: WhatsApp + Tempat Lahir (Telepon DIHAPUS)
                     '<div class="grid grid-cols-1 md:grid-cols-2 gap-3 mt-3">' +
                     '<div>' +
                     '<label class="block text-xs font-medium text-gray-600 mb-1">WhatsApp <span class="text-red-500">*</span></label>' +
@@ -2242,7 +2269,6 @@
                     '</div>' +
                     '</div>' +
 
-                    // Baris 4
                     '<div class="grid grid-cols-1 md:grid-cols-3 gap-3 mt-3">' +
                     '<div>' +
                     '<label class="block text-xs font-medium text-gray-600 mb-1">Tanggal Lahir</label>' +
@@ -2251,7 +2277,6 @@
                     '</div>' +
                     '</div>' +
 
-                    // ALAMAT
                     '<div class="mt-3 pt-3 border-t border-gray-200">' +
                     '<h6 class="text-xs font-semibold text-gray-700 mb-2 flex items-center">' +
                     '<i class="fas fa-map-marker-alt text-yellow-500 mr-1.5"></i> Alamat Domisili' +
@@ -2293,7 +2318,6 @@
                     '</div>' +
                     '</div>' +
 
-                    // KEBERANGKATAN
                     '<div class="mt-3 pt-3 border-t border-gray-200">' +
                     '<div class="bg-blue-50 rounded-lg p-3 border border-blue-100">' +
                     '<h6 class="text-xs font-semibold text-blue-700 mb-2 flex items-center">' +
@@ -2321,7 +2345,6 @@
                     '</div>' +
                     '</div>' +
 
-                    // PASSPORT
                     '<div class="mt-3 pt-3 border-t border-gray-200">' +
                     '<h6 class="text-xs font-semibold text-gray-700 mb-2 flex items-center">' +
                     '<i class="fas fa-passport text-yellow-500 mr-1.5"></i> Passport & Dokumen' +
@@ -2359,7 +2382,6 @@
                     '</div>' +
                     '</div>' +
 
-                    // PEMBUATAN PASSPORT
                     '<div class="mt-3 pt-3 border-t border-gray-200">' +
                     '<div class="mb-3">' +
                     '<label class="block text-xs font-medium text-gray-600 mb-1.5">' +
@@ -2421,7 +2443,6 @@
                     '</div>' +
                     '</div>' +
 
-                    // UPGRADE HOTEL JAMAAH
                     '<div class="mt-3 pt-3 border-t border-gray-200">' +
                     '<div class="flex items-center justify-between mb-2">' +
                     '<h6 class="text-xs font-semibold text-gray-700 flex items-center">' +
@@ -2453,7 +2474,6 @@
                     '</div>' +
                     '</div>' +
 
-                    // FILE UPLOAD
                     '<div class="grid grid-cols-1 md:grid-cols-4 gap-3 mt-3 pt-3 border-t border-gray-200">' +
                     '<div>' +
                     '<label class="block text-xs font-medium text-gray-600 mb-1">File KTP/KK</label>' +
@@ -2495,6 +2515,11 @@
                 }
 
                 jamaahIndex++;
+
+                document.querySelectorAll('#upgradeKeluargaContainer .kamar-jumlah-pax').forEach(input => {
+                    input.value = document.querySelectorAll('.jamaah-row').length;
+                });
+
                 hitungDiskonKelompok();
                 updateTotalUpgradeKeluarga();
                 updateFeeAgentPerJamaah();
@@ -2510,6 +2535,11 @@
                         const label = r.querySelector('.text-sm.font-medium');
                         if (label) label.textContent = 'Jamaah #' + (idx + 1);
                     });
+
+                    document.querySelectorAll('#upgradeKeluargaContainer .kamar-jumlah-pax').forEach(input => {
+                        input.value = document.querySelectorAll('.jamaah-row').length;
+                    });
+
                     hitungDiskonKelompok();
                     updateTotalUpgradeKeluarga();
                     updateFeeAgentPerJamaah();

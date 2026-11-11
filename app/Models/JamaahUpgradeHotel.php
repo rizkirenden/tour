@@ -17,18 +17,22 @@ class JamaahUpgradeHotel extends Model
         'id_hotel',
         'id_kamar',
         'tipe_kamar',
+        'harga_per_pax',
+        'jumlah_pax',
+        'total_harga',
         'jumlah_kamar',
         'durasi_menginap',
         'harga_per_malam',
-        'total_harga',
         'catatan',
     ];
 
     protected $casts = [
+        'harga_per_pax' => 'integer',
+        'jumlah_pax' => 'integer',
+        'total_harga' => 'integer',
         'jumlah_kamar' => 'integer',
         'durasi_menginap' => 'integer',
         'harga_per_malam' => 'integer',
-        'total_harga' => 'integer',
     ];
 
     public function jamaah()
@@ -51,14 +55,21 @@ class JamaahUpgradeHotel extends Model
         return $this->belongsTo(Kamar::class, 'id_kamar', 'id_kamar');
     }
 
+    protected static function booted()
+    {
+        static::saving(function ($model) {
+            $model->total_harga = (int) ($model->harga_per_pax ?? 0) * (int) ($model->jumlah_pax ?? 1);
+        });
+    }
+
     public function getTotalHargaFormattedAttribute()
     {
         return 'Rp ' . number_format((int) $this->total_harga, 0, ',', '.');
     }
 
-    public function getHargaPerMalamFormattedAttribute()
+    public function getHargaPerPaxFormattedAttribute()
     {
-        return 'Rp ' . number_format((int) $this->harga_per_malam, 0, ',', '.');
+        return 'Rp ' . number_format((int) $this->harga_per_pax, 0, ',', '.');
     }
 
     public function getIsKeluargaUpgradeAttribute()
@@ -66,9 +77,6 @@ class JamaahUpgradeHotel extends Model
         return !is_null($this->id_keluarga) && is_null($this->id_jamaah);
     }
 
-    /**
-     * Accessor safe untuk total_harga - selalu return integer
-     */
     public function getTotalHargaSafeAttribute(): int
     {
         return (int) ($this->total_harga ?? 0);

@@ -10,15 +10,26 @@ return new class extends Migration
     {
         Schema::create('jamaah_upgrade_hotels', function (Blueprint $table) {
             $table->id();
-            $table->unsignedBigInteger('id_jamaah')->nullable()->comment('null jika upgrade level keluarga');
-            $table->unsignedBigInteger('id_keluarga')->nullable()->comment('terisi jika upgrade level keluarga');
+
+            $table->unsignedBigInteger('id_jamaah')->nullable()
+                ->comment('null jika upgrade level keluarga');
+            $table->unsignedBigInteger('id_keluarga')->nullable()
+                ->comment('terisi jika upgrade level keluarga');
+
             $table->unsignedBigInteger('id_hotel');
             $table->unsignedBigInteger('id_kamar')->nullable();
             $table->string('tipe_kamar', 100)->nullable();
-            $table->integer('jumlah_kamar')->default(1);
-            $table->integer('durasi_menginap')->default(1);
-            $table->bigInteger('harga_per_malam')->default(0);
+
+            // HARGA PER PAX
+            $table->bigInteger('harga_per_pax')->default(0);
+            $table->integer('jumlah_pax')->default(1);
             $table->bigInteger('total_harga')->default(0);
+
+            // Field lama (info saja, tidak dipakai kalkulasi)
+            $table->integer('jumlah_kamar')->default(1)->nullable();
+            $table->integer('durasi_menginap')->default(1)->nullable();
+            $table->bigInteger('harga_per_malam')->default(0)->nullable();
+
             $table->text('catatan')->nullable();
             $table->timestamps();
 

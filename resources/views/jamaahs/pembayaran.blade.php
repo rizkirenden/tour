@@ -412,11 +412,9 @@
                                             <th class="px-3 py-2 text-left text-xs font-semibold text-gray-500 uppercase">
                                                 Tipe Kamar</th>
                                             <th class="px-3 py-2 text-right text-xs font-semibold text-gray-500 uppercase">
-                                                Jumlah</th>
+                                                Jumlah Pax</th>
                                             <th class="px-3 py-2 text-right text-xs font-semibold text-gray-500 uppercase">
-                                                Harga/Malam</th>
-                                            <th class="px-3 py-2 text-right text-xs font-semibold text-gray-500 uppercase">
-                                                Malam</th>
+                                                Harga/Pax</th>
                                             <th class="px-3 py-2 text-right text-xs font-semibold text-gray-500 uppercase">
                                                 Subtotal</th>
                                         </tr>
@@ -430,16 +428,12 @@
                                                     <p class="text-xs text-gray-400">{{ $upgrade->hotel->kota ?? '' }}</p>
                                                 </td>
                                                 <td class="px-3 py-2 text-gray-600">{{ $upgrade->tipe_kamar ?? '-' }}</td>
+                                                <td class="px-3 py-2 text-right text-gray-600">{{ $upgrade->jumlah_pax }}
+                                                    pax</td>
                                                 <td class="px-3 py-2 text-right text-gray-600">
-                                                    {{ $upgrade->jumlah_kamar }}</td>
-                                                <td class="px-3 py-2 text-right text-gray-600">
-                                                    Rp {{ number_format($upgrade->harga_per_malam, 0, ',', '.') }}
-                                                </td>
-                                                <td class="px-3 py-2 text-right text-gray-600">
-                                                    {{ $upgrade->durasi_menginap }}</td>
+                                                    {{ $upgrade->harga_per_pax_formatted }}</td>
                                                 <td class="px-3 py-2 text-right font-bold text-orange-600">
-                                                    Rp {{ number_format($upgrade->total_harga, 0, ',', '.') }}
-                                                </td>
+                                                    {{ $upgrade->total_harga_formatted }}</td>
                                             </tr>
                                         @endforeach
                                     </tbody>
@@ -518,8 +512,8 @@
                                         @php
                                             $isRefund = ($transaksi->jenis_mutasi ?? 'masuk') === 'keluar';
                                             $rowClass = $isRefund ? 'bg-amber-50/40' : '';
-                                            $jenisNama = $transaksi->jenis_nama; // accessor
-                                            $kodeJenis = $transaksi->jenis_kode; // accessor
+                                            $jenisNama = $transaksi->jenis_nama;
+                                            $kodeJenis = $transaksi->jenis_kode;
                                         @endphp
                                         <tr class="hover:bg-gray-50 transition-colors {{ $rowClass }}">
                                             <td class="px-3 py-2 text-gray-400 text-xs">{{ $loop->iteration }}</td>
@@ -707,7 +701,7 @@
                             @enderror
                         </div>
 
-                        <!-- ✅ Jenis Pembayaran (bukan lagi Jenis Transaksi) -->
+                        <!-- ✅ Jenis Pembayaran -->
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-1.5">
                                 Jenis Pembayaran <span class="text-red-500">*</span>
@@ -836,9 +830,6 @@
 
 @push('scripts')
     <script>
-        // ==========================================
-        // FORMAT RUPIAH
-        // ==========================================
         function formatRupiah(input) {
             let value = input.value.replace(/[^\d]/g, '');
             if (value === '') {
@@ -918,9 +909,6 @@
             }
         }
 
-        // ==========================================
-        // ✅ JENIS PEMBAYARAN INFO (pakai data-kode)
-        // ==========================================
         document.getElementById('id_jenis_pembayaran')?.addEventListener('change', function() {
             const selectedOption = this.options[this.selectedIndex];
             const kode = selectedOption.dataset.kode || '';
@@ -940,9 +928,6 @@
             }
         });
 
-        // ==========================================
-        // TOMBOL CEPAT JUMLAH BAYAR
-        // ==========================================
         function setJumlahBayar(persen) {
             const totalTagihan = {{ $jamaah->total_tagihan_setelah_diskon }};
             const sisaTagihan = {{ max(0, $jamaah->sisa_tagihan) }};
@@ -968,9 +953,6 @@
                 sisa.toLocaleString('id-ID') + '</span>';
         }
 
-        // ==========================================
-        // MODAL REFUND
-        // ==========================================
         function openRefundModal() {
             const modal = document.getElementById('refundModal');
             if (modal) modal.classList.remove('hidden');
@@ -981,11 +963,7 @@
             if (modal) modal.classList.add('hidden');
         }
 
-        // ==========================================
-        // DOM CONTENT LOADED
-        // ==========================================
         document.addEventListener('DOMContentLoaded', function() {
-            // ✅ Restore old value dari validasi gagal
             const oldJenis = '{{ old('id_jenis_pembayaran') }}';
             if (oldJenis) {
                 const sel = document.getElementById('id_jenis_pembayaran');
@@ -1000,7 +978,6 @@
                 formatRupiah(jumlahBayarInput);
             }
 
-            // Tutup modal kalau klik backdrop
             const refundModal = document.getElementById('refundModal');
             if (refundModal) {
                 refundModal.addEventListener('click', function(e) {
@@ -1009,9 +986,6 @@
             }
         });
 
-        // ==========================================
-        // SUBMIT FORM PEMBAYARAN
-        // ==========================================
         document.getElementById('formPembayaran').addEventListener('submit', function(e) {
             const buktiInput = document.getElementById('bukti_pembayaran');
             if (!buktiInput.files || buktiInput.files.length === 0) {
@@ -1029,9 +1003,6 @@
             input.value = rawValue;
         });
 
-        // ==========================================
-        // VALIDASI REFUND
-        // ==========================================
         const refundForm = document.querySelector('#refundModal form');
         if (refundForm) {
             refundForm.addEventListener('submit', function(e) {

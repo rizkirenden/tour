@@ -450,11 +450,9 @@
                                             <th class="px-3 py-2 text-left text-xs font-semibold text-gray-500 uppercase">
                                                 Tipe Kamar</th>
                                             <th class="px-3 py-2 text-right text-xs font-semibold text-gray-500 uppercase">
-                                                Jumlah</th>
+                                                Jumlah Pax</th>
                                             <th class="px-3 py-2 text-right text-xs font-semibold text-gray-500 uppercase">
-                                                Harga/Malam</th>
-                                            <th class="px-3 py-2 text-right text-xs font-semibold text-gray-500 uppercase">
-                                                Malam</th>
+                                                Harga/Pax</th>
                                             <th class="px-3 py-2 text-right text-xs font-semibold text-gray-500 uppercase">
                                                 Subtotal</th>
                                         </tr>
@@ -468,20 +466,18 @@
                                                     <p class="text-xs text-gray-400">{{ $upgrade->hotel->kota ?? '' }}</p>
                                                 </td>
                                                 <td class="px-3 py-2 text-gray-600">{{ $upgrade->tipe_kamar ?? '-' }}</td>
+                                                <td class="px-3 py-2 text-right text-gray-600">{{ $upgrade->jumlah_pax }}
+                                                    orang</td>
                                                 <td class="px-3 py-2 text-right text-gray-600">
-                                                    {{ $upgrade->jumlah_kamar }}</td>
-                                                <td class="px-3 py-2 text-right text-gray-600">Rp
-                                                    {{ number_format($upgrade->harga_per_malam, 0, ',', '.') }}</td>
-                                                <td class="px-3 py-2 text-right text-gray-600">
-                                                    {{ $upgrade->durasi_menginap }}</td>
-                                                <td class="px-3 py-2 text-right font-bold text-orange-600">Rp
-                                                    {{ number_format($upgrade->total_harga, 0, ',', '.') }}</td>
+                                                    {{ $upgrade->harga_per_pax_formatted }}</td>
+                                                <td class="px-3 py-2 text-right font-bold text-orange-600">
+                                                    {{ $upgrade->total_harga_formatted }}</td>
                                             </tr>
                                         @endforeach
                                     </tbody>
                                     <tfoot class="bg-orange-100 border-t-2 border-orange-300">
                                         <tr>
-                                            <td colspan="5" class="px-3 py-2 text-right font-bold text-gray-700">TOTAL
+                                            <td colspan="4" class="px-3 py-2 text-right font-bold text-gray-700">TOTAL
                                             </td>
                                             <td class="px-3 py-2 text-right font-bold text-orange-700">
                                                 {{ $keluarga->total_upgrade_hotel_formatted }}</td>

@@ -47,8 +47,7 @@
                         </h6>
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-1.5">Kode Keluarga /
-                                    Kelompok</label>
+                                <label class="block text-sm font-medium text-gray-700 mb-1.5">Kode Keluarga / Kelompok</label>
                                 <input type="text" value="{{ $keluarga->kode_keluarga }}"
                                     class="w-full px-4 py-2 border border-gray-200 rounded-xl bg-gray-100 text-sm cursor-not-allowed"
                                     readonly>
@@ -398,9 +397,7 @@
                                     $totalJamaahUp = 0;
                                     foreach ($jamaahUpgradeTotal as $up) {
                                         $totalJamaahUp +=
-                                            (int) ($up['jumlah_kamar'] ?? 1) *
-                                            (int) ($up['harga_per_malam'] ?? 0) *
-                                            (int) ($up['durasi_menginap'] ?? 1);
+                                            (int) ($up['harga_per_pax'] ?? 0) * (int) ($up['jumlah_pax'] ?? 1);
                                     }
                                 @endphp
                                 <div class="jamaah-row bg-gray-50 rounded-xl p-4 mb-3 border border-gray-200"
@@ -497,7 +494,6 @@
                                         </div>
                                     </div>
 
-                                    {{-- ✅ Baris 3: WhatsApp + Tempat Lahir (Telepon DIHAPUS) --}}
                                     <div class="grid grid-cols-1 md:grid-cols-2 gap-3 mt-3">
                                         <div>
                                             <label class="block text-xs font-medium text-gray-600 mb-1">
@@ -519,7 +515,6 @@
                                         </div>
                                     </div>
 
-                                    <!-- Baris 4 -->
                                     <div class="grid grid-cols-1 md:grid-cols-3 gap-3 mt-3">
                                         <div>
                                             <label class="block text-xs font-medium text-gray-600 mb-1">
@@ -693,7 +688,6 @@
                                             </div>
                                         </div>
 
-                                        <!-- Pembuatan Passport -->
                                         <div class="mt-3 pt-3 border-t border-gray-200">
                                             <div class="mb-3">
                                                 <label class="block text-xs font-medium text-gray-600 mb-1.5">
@@ -949,7 +943,6 @@
                             @endforeach
                         </div>
 
-                        {{-- Tombol Tambah Jamaah --}}
                         <div class="mt-4 flex justify-center">
                             <button type="button" onclick="addJamaah()"
                                 class="inline-flex items-center px-6 py-2.5 bg-green-500 text-white rounded-lg hover:bg-green-600 transition text-sm font-medium shadow-sm">
@@ -980,17 +973,15 @@
         </div>
     </div>
 
-    {{-- Data upgrade hotel disiapkan di PHP agar tidak memicu ParseError pada @json() --}}
     @php
         $existingUpgradeKeluarga = $keluarga->upgradeHotels
             ->map(function ($u) {
                 return [
-                    'id_hotel' => $u->id_hotel,
-                    'id_kamar' => $u->id_kamar,
-                    'tipe_kamar' => $u->tipe_kamar,
-                    'jumlah_kamar' => $u->jumlah_kamar,
-                    'durasi_menginap' => $u->durasi_menginap,
-                    'harga_per_malam' => $u->harga_per_malam,
+                    'id_hotel'      => $u->id_hotel,
+                    'id_kamar'      => $u->id_kamar,
+                    'tipe_kamar'    => $u->tipe_kamar,
+                    'harga_per_pax' => (int) $u->harga_per_pax,
+                    'jumlah_pax'    => (int) $u->jumlah_pax,
                 ];
             })
             ->values()
@@ -1002,12 +993,11 @@
                     $j->id_jamaah => $j->upgradeHotels
                         ->map(function ($u) {
                             return [
-                                'id_hotel' => $u->id_hotel,
-                                'id_kamar' => $u->id_kamar,
-                                'tipe_kamar' => $u->tipe_kamar,
-                                'jumlah_kamar' => $u->jumlah_kamar,
-                                'durasi_menginap' => $u->durasi_menginap,
-                                'harga_per_malam' => $u->harga_per_malam,
+                                'id_hotel'      => $u->id_hotel,
+                                'id_kamar'      => $u->id_kamar,
+                                'tipe_kamar'    => $u->tipe_kamar,
+                                'harga_per_pax' => (int) $u->harga_per_pax,
+                                'jumlah_pax'    => (int) $u->jumlah_pax,
                             ];
                         })
                         ->values()
@@ -1019,9 +1009,6 @@
 
     @push('scripts')
         <script>
-            // ==========================================
-            // GLOBAL DATA
-            // ==========================================
             var globalKeberangkatanList = [];
             var globalHargaBulananList = [];
 
@@ -1039,21 +1026,14 @@
             var EXISTING_UPGRADE_KELUARGA = {{ Illuminate\Support\Js::from($existingUpgradeKeluarga) }};
             var EXISTING_UPGRADE_JAMAAH = {{ Illuminate\Support\Js::from($existingUpgradeJamaah) }};
 
-            // ✅ SIMPAN NILAI AWAL dari server SEBELUM resetHiddenInputs() menghapusnya
-            // Variabel ini adalah "source of truth" untuk pre-select keberangkatan & harga.
-            // JANGAN di-reset kecuali user ganti produk paket.
             var INITIAL_ID_KEBERANGKATAN = parseInt(document.getElementById('id_produk_keberangkatan_hidden')?.value || 0) || 0;
             var INITIAL_ID_HARGA = parseInt(document.getElementById('id_produk_harga_bulanan_hidden')?.value || 0) || 0;
             var INITIAL_BULAN_KEBERANGKATAN = parseInt(document.getElementById('bulan_keberangkatan_hidden')?.value || 0) || 0;
             var INITIAL_TAHUN_KEBERANGKATAN = parseInt(document.getElementById('tahun_keberangkatan_hidden')?.value || 0) || 0;
 
-            // Sinkronkan dengan OLD_ID_* (dipakai untuk kuota check & comparison)
             if (INITIAL_ID_KEBERANGKATAN > 0) OLD_ID_KEBERANGKATAN = INITIAL_ID_KEBERANGKATAN;
             if (INITIAL_ID_HARGA > 0) OLD_ID_HARGA = INITIAL_ID_HARGA;
 
-            // ==========================================
-            // FORMAT RUPIAH
-            // ==========================================
             function formatRupiah(element) {
                 let raw = element.value.replace(/[^,\d]/g, '');
                 if (raw === '') {
@@ -1084,10 +1064,22 @@
                 input.value = 'Rp ' + number.toLocaleString('id-ID');
             }
 
-            // ==========================================
-            // ✅ HELPER: Inject hidden input keberangkatan_data
-            // (konsisten dengan pola Jamaah)
-            // ==========================================
+            function hitungSubtotalPax(item, defaultPax) {
+                const cb = item.querySelector('.kamar-checkbox');
+                if (!cb || !cb.checked) return 0;
+
+                const hargaPerPax = parseInt((item.querySelector('.kamar-harga-pax').value || '')
+                    .replace(/^Rp\s*/, '').replace(/\./g, '')) || 0;
+                const jumlahPax = parseInt(item.querySelector('.kamar-jumlah-pax').value) || defaultPax;
+
+                const subtotal = hargaPerPax * jumlahPax;
+
+                const previewEl = item.querySelector('.subtotal-value');
+                if (previewEl) previewEl.textContent = 'Rp ' + subtotal.toLocaleString('id-ID');
+
+                return subtotal;
+            }
+
             function injectKeberangkatanHiddenInputs(k, selectedHargaId) {
                 var wrapper = document.getElementById('keberangkatan-data-hidden-wrapper');
                 if (!wrapper) {
@@ -1133,9 +1125,6 @@
                     '<input type="hidden" name="keberangkatan_data[0][harga]" value="' + harga + '">';
             }
 
-            // ==========================================
-            // FEE AGENT
-            // ==========================================
             function updateFeeAgentPerJamaah() {
                 var feeAgentInput = document.getElementById('fee_agent');
                 var container = document.getElementById('feeAgentPerJamaahInfo');
@@ -1161,9 +1150,6 @@
 
             let jamaahIndex = {{ count($jamaahData) }};
 
-            // ==========================================
-            // PEMBUATAN PASSPORT
-            // ==========================================
             function setPembuatanPassportKeluarga(index, value) {
                 var hidden = document.getElementById('is_pembuatan_passport-' + index);
                 var btnYa = document.getElementById('btnYa-' + index);
@@ -1205,9 +1191,6 @@
                 }
             }
 
-            // ==========================================
-            // DISKON
-            // ==========================================
             function hitungDiskonKelompok() {
                 var selectDiskon = document.getElementById('id_diskon');
                 if (!selectDiskon) return;
@@ -1234,9 +1217,6 @@
                 }
             }
 
-            // ==========================================
-            // VALIDASI
-            // ==========================================
             function validateJamaahForm() {
                 var labels = {
                     nama_lengkap: 'Nama Lengkap',
@@ -1303,11 +1283,6 @@
                 }
             });
 
-            // ==========================================
-            // ✅ LOAD KEBERANGKATAN
-            // - TIDAK memanggil resetHiddenInputs() di awal
-            // - Baca tahun dari INITIAL_ID_KEBERANGKATAN / INITIAL_TAHUN_KEBERANGKATAN
-            // ==========================================
             function loadKeberangkatan() {
                 var produkPaket = document.getElementById('produk_paket');
                 var tahunSelect = document.getElementById('filter-tahun');
@@ -1320,9 +1295,6 @@
                 step1Container.classList.add('hidden');
                 step2Container.classList.add('hidden');
                 container.innerHTML = '';
-
-                // ✅ JANGAN panggil resetHiddenInputs() di sini.
-                // Nilai awal sudah disimpan di INITIAL_* dan OLD_*.
 
                 if (!produkPaket.value) {
                     placeholder.classList.remove('hidden');
@@ -1360,10 +1332,6 @@
                             tahunSelect.appendChild(option);
                         });
 
-                        // ✅ Tentukan tahun terpilih:
-                        // 1. Dari INITIAL_ID_KEBERANGKATAN (cocokkan dengan list)
-                        // 2. Fallback: INITIAL_TAHUN_KEBERANGKATAN
-                        // 3. Fallback: tahun pertama
                         var selectedTahun = null;
                         if (INITIAL_ID_KEBERANGKATAN > 0) {
                             var matchK = globalKeberangkatanList.find(k => parseInt(k.id) === INITIAL_ID_KEBERANGKATAN);
@@ -1388,11 +1356,6 @@
                     });
             }
 
-            // ==========================================
-            // ✅ RENDER KEBERANGKATAN BY TAHUN
-            // - Baca dari INITIAL_ID_KEBERANGKATAN (BUKAN dari DOM)
-            // - Auto-select keberangkatan & harga yang tersimpan
-            // ==========================================
             function renderKeberangkatanByTahun(tahun) {
                 var step2Container = document.getElementById('step-2-container');
                 var container = document.getElementById('keberangkatan-container');
@@ -1416,7 +1379,6 @@
                     return;
                 }
 
-                // ✅ Cari keberangkatan terpilih dari variabel global INITIAL_*
                 var selectedKeberangkatan = null;
                 if (INITIAL_ID_KEBERANGKATAN > 0) {
                     selectedKeberangkatan = filtered.find(k => parseInt(k.id) === INITIAL_ID_KEBERANGKATAN) || null;
@@ -1523,7 +1485,6 @@
                 if (hargaSel) hargaSel.addEventListener('change', handleHargaBulananChange);
 
                 if (selectedKeberangkatan) {
-                    // ✅ Set dropdown value & trigger handler agar hidden input dinamis terisi
                     document.getElementById('keberangkatan-select').value = selectedKeberangkatan.id;
                     handleKeberangkatanSelectChange({
                         target: {
@@ -1533,11 +1494,6 @@
                 }
             }
 
-            // ==========================================
-            // ✅ handleKeberangkatanSelectChange (DIUPDATE)
-            // - Baca currentIdHarga dari INITIAL_ID_HARGA (bukan dari DOM)
-            // - Reset harga hanya jika user GANTI keberangkatan
-            // ==========================================
             function handleKeberangkatanSelectChange(e) {
                 var selectedId = e.target.value;
                 var wrapper = document.getElementById('keberangkatan-harga-wrapper');
@@ -1559,14 +1515,12 @@
                     return;
                 }
 
-                // ✅ Baca dari INITIAL_ID_HARGA (BUKAN dari DOM hidden input)
                 var currentIdHarga = INITIAL_ID_HARGA > 0 ? INITIAL_ID_HARGA : '';
 
                 document.getElementById('id_produk_keberangkatan_hidden').value = k.id;
                 document.getElementById('bulan_keberangkatan_hidden').value = k.bulan;
                 document.getElementById('tahun_keberangkatan_hidden').value = k.tahun;
 
-                // ✅ Jika user pilih keberangkatan BERBEDA dari awal → reset harga
                 if (parseInt(selectedId) !== INITIAL_ID_KEBERANGKATAN) {
                     currentIdHarga = '';
                     document.getElementById('id_produk_harga_bulanan_hidden').value = '';
@@ -1642,19 +1596,14 @@
                 var hargaSel = wrapper.querySelector('.harga-bulanan-select');
                 if (hargaSel) {
                     hargaSel.addEventListener('change', handleHargaBulananChange);
-                    // ✅ Set value dropdown harga bulanan
                     hargaSel.value = currentIdHarga || '';
                 }
 
                 updateHargaInfo(currentBulanHarga, currentTahunHarga, currentHarga);
 
-                // ✅ Inject hidden input keberangkatan_data
                 injectKeberangkatanHiddenInputs(k, currentIdHarga);
             }
 
-            // ==========================================
-            // ✅ handleHargaBulananChange (DIUPDATE)
-            // ==========================================
             function handleHargaBulananChange(e) {
                 var sel = e.target;
                 var wrapper = sel.closest('.keberangkatan-harga-section');
@@ -1716,7 +1665,6 @@
                     kuotaInfoVal.className = kuotaColor;
                 }
 
-                // ✅ Re-inject hidden input dengan harga baru
                 injectKeberangkatanHiddenInputs(k, hargaBulananId);
             }
 
@@ -1728,11 +1676,6 @@
                 document.getElementById('hargaInfo').classList.remove('hidden');
             }
 
-            // ==========================================
-            // ✅ resetHiddenInputs (DIUPDATE)
-            // - Reset hidden STATIS & DINAMIS
-            // - Reset juga INITIAL_* karena ini artinya user ganti produk
-            // ==========================================
             function resetHiddenInputs() {
                 document.getElementById('bulan_keberangkatan_hidden').value = '';
                 document.getElementById('tahun_keberangkatan_hidden').value = '';
@@ -1743,7 +1686,6 @@
                 document.getElementById('hargaInfo').classList.add('hidden');
                 injectKeberangkatanHiddenInputs(null);
 
-                // ✅ Reset state awal (karena ini hanya dipanggil saat user ganti produk / form kosong)
                 INITIAL_ID_KEBERANGKATAN = 0;
                 INITIAL_ID_HARGA = 0;
                 INITIAL_BULAN_KEBERANGKATAN = 0;
@@ -1757,9 +1699,6 @@
                 return namaBulan[parseInt(bulan) - 1] || bulan;
             }
 
-            // ==========================================
-            // UPGRADE HOTEL KELUARGA
-            // ==========================================
             function toggleUpgradeKeluarga() {
                 const container = document.getElementById('upgradeKeluargaContainer');
                 container.classList.toggle('hidden');
@@ -1789,35 +1728,37 @@
                 const container = document.getElementById('upgradeKeluargaContainer');
                 if (!container) return;
 
+                const jumlahJamaah = document.querySelectorAll('.jamaah-row').length;
+
+                container.querySelectorAll('.kamar-jumlah-pax').forEach(input => {
+                    input.value = jumlahJamaah;
+                });
+
                 let total = 0;
                 container.querySelectorAll('.hotel-upgrade-item').forEach(hotelItem => {
                     const hotelCheckbox = hotelItem.querySelector('.upgrade-hotel-checkbox');
                     if (!hotelCheckbox || !hotelCheckbox.checked) return;
 
+                    let subtotalHotel = 0;
                     hotelItem.querySelectorAll('.kamar-item').forEach(item => {
-                        const cb = item.querySelector('.kamar-checkbox');
-                        if (!cb || !cb.checked) return;
-
-                        const jumlah = parseInt(item.querySelector('.kamar-jumlah').value) || 1;
-                        const harga = parseInt((item.querySelector('.kamar-harga').value || '')
-                            .replace(/^Rp\s*/, '').replace(/\./g, '')) || 0;
-                        const durasi = parseInt(item.querySelector('.kamar-durasi').value) || 1;
-                        total += jumlah * harga * durasi;
+                        subtotalHotel += hitungSubtotalPax(item, jumlahJamaah);
                     });
+
+                    const hotelId = hotelItem.dataset.hotelId;
+                    const subtotalEl = container.querySelector(`.subtotal-hotel-keluarga-${hotelId}`);
+                    if (subtotalEl) subtotalEl.textContent = 'Rp ' + subtotalHotel.toLocaleString('id-ID');
+
+                    total += subtotalHotel;
                 });
 
                 const totalEl = document.getElementById('totalUpgradeKeluarga');
                 if (totalEl) totalEl.textContent = 'Rp ' + total.toLocaleString('id-ID');
 
-                const jumlahJamaah = document.querySelectorAll('.jamaah-row').length;
                 const perJamaah = jumlahJamaah > 0 ? Math.round(total / jumlahJamaah) : 0;
                 const perEl = document.getElementById('perJamaahUpgradeKeluarga');
                 if (perEl) perEl.textContent = 'Rp ' + perJamaah.toLocaleString('id-ID');
             }
 
-            // ==========================================
-            // UPGRADE HOTEL JAMAAH
-            // ==========================================
             function toggleUpgradeJamaah(index) {
                 const container = document.getElementById('upgradeJamaahContainer-' + index);
                 if (container) container.classList.toggle('hidden');
@@ -1847,30 +1788,31 @@
                 const container = document.getElementById('upgradeJamaahContainer-' + jamaahIndex);
                 if (!container) return;
 
+                container.querySelectorAll('.kamar-jumlah-pax').forEach(input => {
+                    input.value = 1;
+                });
+
                 let total = 0;
                 container.querySelectorAll('.hotel-upgrade-item').forEach(hotelItem => {
                     const hotelCheckbox = hotelItem.querySelector('.upgrade-hotel-checkbox');
                     if (!hotelCheckbox || !hotelCheckbox.checked) return;
 
+                    let subtotalHotel = 0;
                     hotelItem.querySelectorAll('.kamar-item').forEach(item => {
-                        const cb = item.querySelector('.kamar-checkbox');
-                        if (!cb || !cb.checked) return;
-
-                        const jumlah = parseInt(item.querySelector('.kamar-jumlah').value) || 1;
-                        const harga = parseInt((item.querySelector('.kamar-harga').value || '')
-                            .replace(/^Rp\s*/, '').replace(/\./g, '')) || 0;
-                        const durasi = parseInt(item.querySelector('.kamar-durasi').value) || 1;
-                        total += jumlah * harga * durasi;
+                        subtotalHotel += hitungSubtotalPax(item, 1);
                     });
+
+                    const hotelId = hotelItem.dataset.hotelId;
+                    const subtotalEl = container.querySelector(`.subtotal-hotel-jamaah-${jamaahIndex}-${hotelId}`);
+                    if (subtotalEl) subtotalEl.textContent = 'Rp ' + subtotalHotel.toLocaleString('id-ID');
+
+                    total += subtotalHotel;
                 });
 
                 const totalEl = document.getElementById('totalUpgradeJamaah-' + jamaahIndex);
                 if (totalEl) totalEl.textContent = 'Rp ' + total.toLocaleString('id-ID');
             }
 
-            // ==========================================
-            // LOAD KAMARS
-            // ==========================================
             function loadKamarsUpgrade(scope, hotelId, container) {
                 container.innerHTML =
                     '<div class="text-xs text-gray-400 text-center py-2"><i class="fas fa-spinner fa-spin mr-1"></i> Memuat tipe kamar...</div>';
@@ -1884,14 +1826,18 @@
                             return;
                         }
 
-                        var subtotalClass = 'subtotal-hotel-' + scope + '-' + hotelId;
+                        const jumlahJamaah = document.querySelectorAll('.jamaah-row').length;
+                        const defaultPax = scope === 'keluarga' ? jumlahJamaah : 1;
 
-                        container.innerHTML =
-                            '<div class="grid grid-cols-1 gap-2">' + data.html + '</div>' +
-                            '<div class="mt-1 flex items-center justify-between bg-orange-50 rounded px-2 py-1">' +
-                            '<span class="text-[10px] font-medium text-gray-600">Subtotal hotel ini:</span>' +
-                            '<span class="text-xs font-bold text-orange-600 ' + subtotalClass + '">Rp 0</span>' +
-                            '</div>';
+                        container.innerHTML = '<div class="grid grid-cols-1 gap-2">' + data.html + '</div>' +
+                            `<div class="mt-1 flex items-center justify-between bg-orange-50 rounded px-2 py-1">
+                                <span class="text-[10px] font-medium text-gray-600">Subtotal hotel ini:</span>
+                                <span class="text-xs font-bold text-orange-600 subtotal-hotel-${scope}-${hotelId}">Rp 0</span>
+                            </div>`;
+
+                        container.querySelectorAll('.kamar-jumlah-pax').forEach(input => {
+                            input.value = defaultPax;
+                        });
 
                         container.querySelectorAll('.kamar-checkbox').forEach(cb => {
                             cb.addEventListener('change', () => {
@@ -1907,7 +1853,7 @@
                             });
                         });
 
-                        container.querySelectorAll('.kamar-jumlah, .kamar-harga, .kamar-durasi').forEach(input => {
+                        container.querySelectorAll('.kamar-harga-pax').forEach(input => {
                             input.addEventListener('change', () => {
                                 updateUpgradeHiddenInputs(scope, hotelId, container);
                                 recalcUpgradeScope(scope);
@@ -1959,19 +1905,23 @@
                     const match = matchExisting.find(u => parseInt(u.id_kamar) === parseInt(cb.value));
                     if (match) {
                         cb.checked = true;
-                        const jumlahInput = item.querySelector('.kamar-jumlah');
-                        const hargaInput = item.querySelector('.kamar-harga');
-                        const durasiInput = item.querySelector('.kamar-durasi');
-                        if (jumlahInput) jumlahInput.value = match.jumlah_kamar;
-                        if (hargaInput) hargaInput.value = 'Rp ' + parseInt(match.harga_per_malam).toLocaleString(
-                            'id-ID');
-                        if (durasiInput) durasiInput.value = match.durasi_menginap;
+
+                        const jumlahPaxInput = item.querySelector('.kamar-jumlah-pax');
+                        const hargaPaxInput  = item.querySelector('.kamar-harga-pax');
+                        if (jumlahPaxInput) jumlahPaxInput.value = match.jumlah_pax ?? 1;
+                        if (hargaPaxInput)  hargaPaxInput.value = 'Rp ' + parseInt(match.harga_per_pax || 0).toLocaleString('id-ID');
 
                         const inputs = item.querySelectorAll('input:not(.kamar-checkbox)');
                         inputs.forEach(input => {
                             input.disabled = false;
                             input.classList.remove('opacity-50', 'bg-gray-50');
                         });
+
+                        const previewEl = item.querySelector('.subtotal-value');
+                        if (previewEl) {
+                            const subtotal = (match.harga_per_pax || 0) * (match.jumlah_pax || 1);
+                            previewEl.textContent = 'Rp ' + subtotal.toLocaleString('id-ID');
+                        }
                     }
                 });
 
@@ -1988,22 +1938,22 @@
                 }
             }
 
-            // ==========================================
-            // HIDDEN INPUTS
-            // ==========================================
             function updateUpgradeHiddenInputs(scope, hotelId, container) {
                 removeUpgradeHiddenInputs(scope, hotelId);
 
                 let parentForm = null;
                 let fieldPrefix = '';
+                let defaultPax = 1;
 
                 if (scope === 'keluarga') {
                     parentForm = document.getElementById('keluargaForm');
                     fieldPrefix = 'upgrade_hotels';
+                    defaultPax = document.querySelectorAll('.jamaah-row').length;
                 } else {
                     const idx = parseInt(scope.replace('jamaah-', ''));
                     parentForm = document.getElementById('jamaah-row-' + idx);
                     fieldPrefix = 'jamaahs[' + idx + '][upgrade_hotels]';
+                    defaultPax = 1;
                 }
 
                 if (!parentForm) return;
@@ -2014,11 +1964,11 @@
                     const cb = item.querySelector('.kamar-checkbox');
                     if (!cb || !cb.checked) return;
 
-                    const jumlah = parseInt(item.querySelector('.kamar-jumlah').value) || 1;
-                    const harga = parseInt((item.querySelector('.kamar-harga').value || '')
+                    const hargaPerPax = parseInt((item.querySelector('.kamar-harga-pax').value || '')
                         .replace(/^Rp\s*/, '').replace(/\./g, '')) || 0;
-                    const durasi = parseInt(item.querySelector('.kamar-durasi').value) || 1;
-                    subtotal += jumlah * harga * durasi;
+                    const jumlahPax = parseInt(item.querySelector('.kamar-jumlah-pax').value) || defaultPax;
+                    const itemTotal = hargaPerPax * jumlahPax;
+                    subtotal += itemTotal;
 
                     var uniqueKey = fieldPrefix + '[' + hotelId + '_' + cb.value + ']';
                     var tipeKamar = cb.dataset.tipe || '';
@@ -2032,9 +1982,8 @@
                         '<input type="hidden" name="' + uniqueKey + '[id_hotel]" value="' + hotelId + '">' +
                         '<input type="hidden" name="' + uniqueKey + '[id_kamar]" value="' + cb.value + '">' +
                         '<input type="hidden" name="' + uniqueKey + '[tipe_kamar]" value="' + tipeKamar + '">' +
-                        '<input type="hidden" name="' + uniqueKey + '[jumlah_kamar]" value="' + jumlah + '">' +
-                        '<input type="hidden" name="' + uniqueKey + '[durasi_menginap]" value="' + durasi + '">' +
-                        '<input type="hidden" name="' + uniqueKey + '[harga_per_malam]" value="' + harga + '">';
+                        '<input type="hidden" name="' + uniqueKey + '[jumlah_pax]" value="' + jumlahPax + '">' +
+                        '<input type="hidden" name="' + uniqueKey + '[harga_per_pax]" value="' + hargaPerPax + '">';
 
                     parentForm.appendChild(grp);
                 });
@@ -2058,9 +2007,6 @@
                 parentForm.querySelectorAll(selector).forEach(el => el.remove());
             }
 
-            // ==========================================
-            // ADD JAMAAH
-            // ==========================================
             function addJamaah() {
                 const container = document.getElementById('jamaahContainer');
                 const row = document.createElement('div');
@@ -2130,7 +2076,6 @@
                     '</div>' +
                     '<input type="hidden" name="jamaahs[' + idx + '][id_jamaah]" value="">' +
 
-                    // Baris 1
                     '<div class="grid grid-cols-1 md:grid-cols-3 gap-3">' +
                     '<div>' +
                     '<label class="block text-xs font-medium text-gray-600 mb-1">Nama Lengkap <span class="text-red-500">*</span></label>' +
@@ -2150,7 +2095,6 @@
                     '</div>' +
                     '</div>' +
 
-                    // Baris 2
                     '<div class="grid grid-cols-1 md:grid-cols-3 gap-3 mt-3">' +
                     '<div>' +
                     '<label class="block text-xs font-medium text-gray-600 mb-1">Pekerjaan <span class="text-red-500">*</span></label>' +
@@ -2179,7 +2123,6 @@
                     '</div>' +
                     '</div>' +
 
-                    // ✅ Baris 3: WhatsApp + Tempat Lahir (Telepon DIHAPUS)
                     '<div class="grid grid-cols-1 md:grid-cols-2 gap-3 mt-3">' +
                     '<div>' +
                     '<label class="block text-xs font-medium text-gray-600 mb-1">WhatsApp <span class="text-red-500">*</span></label>' +
@@ -2194,7 +2137,6 @@
                     '</div>' +
                     '</div>' +
 
-                    // Baris 4
                     '<div class="grid grid-cols-1 md:grid-cols-3 gap-3 mt-3">' +
                     '<div>' +
                     '<label class="block text-xs font-medium text-gray-600 mb-1">Tanggal Lahir</label>' +
@@ -2203,7 +2145,6 @@
                     '</div>' +
                     '</div>' +
 
-                    // ALAMAT
                     '<div class="mt-3 pt-3 border-t border-gray-200">' +
                     '<h6 class="text-xs font-semibold text-gray-700 mb-2 flex items-center">' +
                     '<i class="fas fa-map-marker-alt text-yellow-500 mr-1.5"></i> Alamat Domisili' +
@@ -2245,7 +2186,6 @@
                     '</div>' +
                     '</div>' +
 
-                    // KEBERANGKATAN
                     '<div class="mt-3 pt-3 border-t border-gray-200">' +
                     '<div class="bg-blue-50 rounded-lg p-3 border border-blue-100">' +
                     '<h6 class="text-xs font-semibold text-blue-700 mb-2 flex items-center">' +
@@ -2273,7 +2213,6 @@
                     '</div>' +
                     '</div>' +
 
-                    // PASSPORT
                     '<div class="mt-3 pt-3 border-t border-gray-200">' +
                     '<h6 class="text-xs font-semibold text-gray-700 mb-2 flex items-center">' +
                     '<i class="fas fa-passport text-yellow-500 mr-1.5"></i> Passport & Dokumen' +
@@ -2311,7 +2250,6 @@
                     '</div>' +
                     '</div>' +
 
-                    // PEMBUATAN PASSPORT
                     '<div class="mt-3 pt-3 border-t border-gray-200">' +
                     '<div class="mb-3">' +
                     '<label class="block text-xs font-medium text-gray-600 mb-1.5">' +
@@ -2373,7 +2311,6 @@
                     '</div>' +
                     '</div>' +
 
-                    // UPGRADE HOTEL JAMAAH
                     '<div class="mt-3 pt-3 border-t border-gray-200">' +
                     '<div class="flex items-center justify-between mb-2">' +
                     '<h6 class="text-xs font-semibold text-gray-700 flex items-center">' +
@@ -2405,7 +2342,6 @@
                     '</div>' +
                     '</div>' +
 
-                    // FILE UPLOAD
                     '<div class="grid grid-cols-1 md:grid-cols-4 gap-3 mt-3 pt-3 border-t border-gray-200">' +
                     '<div>' +
                     '<label class="block text-xs font-medium text-gray-600 mb-1">File KTP/KK</label>' +
@@ -2447,6 +2383,11 @@
                 }
 
                 jamaahIndex++;
+
+                document.querySelectorAll('#upgradeKeluargaContainer .kamar-jumlah-pax').forEach(input => {
+                    input.value = document.querySelectorAll('.jamaah-row').length;
+                });
+
                 hitungDiskonKelompok();
                 updateTotalUpgradeKeluarga();
                 updateFeeAgentPerJamaah();
@@ -2462,6 +2403,11 @@
                         const label = r.querySelector('.text-sm.font-medium');
                         if (label) label.textContent = 'Jamaah #' + (idx + 1);
                     });
+
+                    document.querySelectorAll('#upgradeKeluargaContainer .kamar-jumlah-pax').forEach(input => {
+                        input.value = document.querySelectorAll('.jamaah-row').length;
+                    });
+
                     hitungDiskonKelompok();
                     updateTotalUpgradeKeluarga();
                     updateFeeAgentPerJamaah();
@@ -2470,14 +2416,10 @@
                 }
             }
 
-            // ==========================================
-            // EVENT LISTENERS
-            // ==========================================
             document.getElementById('filter-tahun').addEventListener('change', function() {
                 renderKeberangkatanByTahun(this.value);
             });
 
-            // ✅ Saat user ganti produk → reset SEMUA state termasuk INITIAL_*
             document.getElementById('produk_paket').addEventListener('change', function() {
                 OLD_ID_HARGA = 0;
                 OLD_ID_KEBERANGKATAN = 0;
@@ -2510,9 +2452,6 @@
                 }
             });
 
-            // ==========================================
-            // DOM READY
-            // ==========================================
             document.addEventListener('DOMContentLoaded', function() {
                 document.querySelectorAll('.kota-asal-select').forEach(select => {
                     if (select.value) select.dispatchEvent(new Event('change'));

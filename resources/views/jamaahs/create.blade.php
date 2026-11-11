@@ -126,7 +126,6 @@
                             </div>
                         </div>
 
-                        {{-- ✅ Telepon DIHAPUS — hanya WhatsApp --}}
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
                             <div>
                                 <label class="block text-sm font-medium text-gray-700 mb-1.5">
@@ -490,7 +489,8 @@
                             class="hidden bg-orange-50 rounded-lg p-3 border border-orange-200">
                             <p class="text-xs text-orange-700 mb-2">
                                 <i class="fas fa-info-circle mr-1"></i>
-                                Biaya upgrade hotel akan ditambahkan ke total tagihan jamaah.
+                                Biaya upgrade hotel dihitung <strong>per pax (per orang)</strong>. Untuk jamaah
+                                personal, jumlah pax = 1.
                             </p>
 
                             <div class="max-h-64 overflow-y-auto border border-gray-200 rounded-lg bg-white p-2 space-y-2">
@@ -714,6 +714,22 @@
             if (value === '' || isNaN(value)) value = '0';
             const number = parseInt(value);
             input.value = 'Rp ' + number.toLocaleString('id-ID');
+        }
+
+        function hitungSubtotalPax(item) {
+            const cb = item.querySelector('.kamar-checkbox');
+            if (!cb || !cb.checked) return 0;
+
+            const hargaPerPax = parseInt((item.querySelector('.kamar-harga-pax').value || '')
+                .replace(/^Rp\s*/, '').replace(/\./g, '')) || 0;
+            const jumlahPax = parseInt(item.querySelector('.kamar-jumlah-pax').value) || 1;
+
+            const subtotal = hargaPerPax * jumlahPax;
+
+            const previewEl = item.querySelector('.subtotal-value');
+            if (previewEl) previewEl.textContent = 'Rp ' + subtotal.toLocaleString('id-ID');
+
+            return subtotal;
         }
 
         function validateInformasiPribadi() {
@@ -1211,16 +1227,16 @@
                 const hotelCheckbox = hotelItem.querySelector('.upgrade-hotel-checkbox');
                 if (!hotelCheckbox || !hotelCheckbox.checked) return;
 
+                let subtotalHotel = 0;
                 hotelItem.querySelectorAll('.kamar-item').forEach(item => {
-                    const cb = item.querySelector('.kamar-checkbox');
-                    if (!cb || !cb.checked) return;
-
-                    const jumlah = parseInt(item.querySelector('.kamar-jumlah').value) || 1;
-                    const harga = parseInt((item.querySelector('.kamar-harga').value || '')
-                        .replace(/^Rp\s*/, '').replace(/\./g, '')) || 0;
-                    const durasi = parseInt(item.querySelector('.kamar-durasi').value) || 1;
-                    total += jumlah * harga * durasi;
+                    subtotalHotel += hitungSubtotalPax(item);
                 });
+
+                const hotelId = hotelItem.dataset.hotelId;
+                const subtotalEl = container.querySelector(`.subtotal-hotel-${hotelId}`);
+                if (subtotalEl) subtotalEl.textContent = 'Rp ' + subtotalHotel.toLocaleString('id-ID');
+
+                total += subtotalHotel;
             });
 
             const totalEl = document.getElementById('totalUpgradeHotel');
@@ -1246,6 +1262,10 @@
                             <span class="text-xs font-bold text-orange-600 subtotal-hotel-${hotelId}">Rp 0</span>
                         </div>`;
 
+                    container.querySelectorAll('.kamar-jumlah-pax').forEach(input => {
+                        input.value = 1;
+                    });
+
                     container.querySelectorAll('.kamar-checkbox').forEach(cb => {
                         cb.addEventListener('change', () => {
                             const parent = cb.closest('.kamar-item');
@@ -1260,7 +1280,7 @@
                         });
                     });
 
-                    container.querySelectorAll('.kamar-jumlah, .kamar-harga, .kamar-durasi').forEach(input => {
+                    container.querySelectorAll('.kamar-harga-pax').forEach(input => {
                         input.addEventListener('change', () => {
                             updateUpgradeHiddenInputs(hotelId, container);
                             updateTotalUpgradeHotel();
@@ -1290,11 +1310,11 @@
                 const cb = item.querySelector('.kamar-checkbox');
                 if (!cb || !cb.checked) return;
 
-                const jumlah = parseInt(item.querySelector('.kamar-jumlah').value) || 1;
-                const harga = parseInt((item.querySelector('.kamar-harga').value || '')
+                const hargaPerPax = parseInt((item.querySelector('.kamar-harga-pax').value || '')
                     .replace(/^Rp\s*/, '').replace(/\./g, '')) || 0;
-                const durasi = parseInt(item.querySelector('.kamar-durasi').value) || 1;
-                subtotal += jumlah * harga * durasi;
+                const jumlahPax = parseInt(item.querySelector('.kamar-jumlah-pax').value) || 1;
+                const itemTotal = hargaPerPax * jumlahPax;
+                subtotal += itemTotal;
 
                 const uniqueKey = `upgrade_hotels[${hotelId}_${cb.value}]`;
                 const grp = document.createElement('div');
@@ -1304,9 +1324,8 @@
                     <input type="hidden" name="${uniqueKey}[id_hotel]" value="${hotelId}">
                     <input type="hidden" name="${uniqueKey}[id_kamar]" value="${cb.value}">
                     <input type="hidden" name="${uniqueKey}[tipe_kamar]" value="${cb.dataset.tipe}">
-                    <input type="hidden" name="${uniqueKey}[jumlah_kamar]" value="${jumlah}">
-                    <input type="hidden" name="${uniqueKey}[durasi_menginap]" value="${durasi}">
-                    <input type="hidden" name="${uniqueKey}[harga_per_malam]" value="${harga}">
+                    <input type="hidden" name="${uniqueKey}[jumlah_pax]" value="${jumlahPax}">
+                    <input type="hidden" name="${uniqueKey}[harga_per_pax]" value="${hargaPerPax}">
                 `;
                 parentForm.appendChild(grp);
             });

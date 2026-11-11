@@ -287,7 +287,6 @@
                                                 {!! $jamaah->status_kawin_badge !!}
                                             </td>
 
-                                            {{-- ✅ WhatsApp saja (Telepon DIHAPUS) --}}
                                             <td class="px-3 py-2 text-gray-600 text-xs">
                                                 @if ($jamaah->wa)
                                                     <a href="https://wa.me/{{ preg_replace('/^0/', '62', preg_replace('/[^0-9]/', '', $jamaah->wa)) }}"
@@ -515,6 +514,15 @@
                             </span>
                         </h6>
 
+                        <div class="bg-blue-50 rounded-lg p-3 border border-blue-200 mb-4">
+                            <p class="text-xs text-blue-700">
+                                <i class="fas fa-info-circle mr-1"></i>
+                                Harga upgrade dihitung <strong>per pax (per orang)</strong>.
+                                Upgrade keluarga dibagi rata ke seluruh jamaah, upgrade personal dibebankan ke jamaah
+                                masing-masing.
+                            </p>
+                        </div>
+
                         <div class="grid grid-cols-1 md:grid-cols-3 gap-3 mb-4">
                             <div class="bg-white rounded-lg p-3 border border-orange-200 text-center">
                                 <p class="text-xs text-gray-500">Upgrade Keluarga</p>
@@ -552,13 +560,10 @@
                                                     Tipe Kamar</th>
                                                 <th
                                                     class="px-3 py-2 text-right text-xs font-semibold text-gray-500 uppercase">
-                                                    Jumlah</th>
+                                                    Jumlah Pax</th>
                                                 <th
                                                     class="px-3 py-2 text-right text-xs font-semibold text-gray-500 uppercase">
-                                                    Harga/Malam</th>
-                                                <th
-                                                    class="px-3 py-2 text-right text-xs font-semibold text-gray-500 uppercase">
-                                                    Malam</th>
+                                                    Harga/Pax</th>
                                                 <th
                                                     class="px-3 py-2 text-right text-xs font-semibold text-gray-500 uppercase">
                                                     Subtotal</th>
@@ -577,19 +582,17 @@
                                                     <td class="px-3 py-2 text-gray-600">{{ $upgrade->tipe_kamar ?? '-' }}
                                                     </td>
                                                     <td class="px-3 py-2 text-right text-gray-600">
-                                                        {{ $upgrade->jumlah_kamar }}</td>
-                                                    <td class="px-3 py-2 text-right text-gray-600">Rp
-                                                        {{ number_format($upgrade->harga_per_malam, 0, ',', '.') }}</td>
+                                                        {{ $upgrade->jumlah_pax }} orang</td>
                                                     <td class="px-3 py-2 text-right text-gray-600">
-                                                        {{ $upgrade->durasi_menginap }}</td>
-                                                    <td class="px-3 py-2 text-right font-bold text-orange-600">Rp
-                                                        {{ number_format($upgrade->total_harga, 0, ',', '.') }}</td>
+                                                        {{ $upgrade->harga_per_pax_formatted }}</td>
+                                                    <td class="px-3 py-2 text-right font-bold text-orange-600">
+                                                        {{ $upgrade->total_harga_formatted }}</td>
                                                 </tr>
                                             @endforeach
                                         </tbody>
                                         <tfoot class="bg-orange-100 border-t-2 border-orange-300">
                                             <tr>
-                                                <td colspan="6" class="px-3 py-2 text-right font-bold text-gray-700">
+                                                <td colspan="5" class="px-3 py-2 text-right font-bold text-gray-700">
                                                     TOTAL KELUARGA</td>
                                                 <td class="px-3 py-2 text-right font-bold text-orange-700">
                                                     {{ $keluarga->total_upgrade_hotel_formatted }}</td>
@@ -626,11 +629,11 @@
                                                         <span>
                                                             {{ $upgrade->hotel->nama_hotel ?? '-' }} -
                                                             {{ $upgrade->tipe_kamar }}
-                                                            ({{ $upgrade->jumlah_kamar }}x{{ $upgrade->durasi_menginap }}
-                                                            mlm)
+                                                            ({{ $upgrade->jumlah_pax }} pax ×
+                                                            {{ $upgrade->harga_per_pax_formatted }})
                                                         </span>
-                                                        <span class="font-medium text-orange-600">Rp
-                                                            {{ number_format($upgrade->total_harga, 0, ',', '.') }}</span>
+                                                        <span class="font-medium text-orange-600">
+                                                            {{ $upgrade->total_harga_formatted }}</span>
                                                     </li>
                                                 @endforeach
                                             </ul>

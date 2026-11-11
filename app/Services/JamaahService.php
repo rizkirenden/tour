@@ -172,12 +172,13 @@ class JamaahService
                 $hargaProduk = (int) ($keberangkatanData[0]['harga'] ?? 0);
             }
 
+            // ✅ HITUNG TOTAL UPGRADE (PER PAX)
+            // Personal jamaah: jumlah_pax selalu 1 per item, tapi kita baca dari input
             $totalUpgrade = 0;
             foreach ($upgradeHotels as $up) {
-                $jk = max(1, (int) ($up['jumlah_kamar'] ?? 1));
-                $dd = max(1, (int) ($up['durasi_menginap'] ?? 1));
-                $hh = (int) ($up['harga_per_malam'] ?? 0);
-                $totalUpgrade += $jk * $hh * $dd;
+                $hargaPerPax = (int) ($up['harga_per_pax'] ?? 0);
+                $jumlahPax   = (int) ($up['jumlah_pax'] ?? 1);
+                $totalUpgrade += $hargaPerPax * $jumlahPax;
             }
 
             $passportFee = $data['pendampingan_fee'] + $data['pendampingan_fee_petugas'];
@@ -335,12 +336,12 @@ class JamaahService
                 $hargaProduk = (int) ($keberangkatanData[0]['harga'] ?? 0);
             }
 
+            // ✅ HITUNG TOTAL UPGRADE (PER PAX)
             $totalUpgrade = 0;
             foreach ($upgradeHotels as $up) {
-                $jk = max(1, (int) ($up['jumlah_kamar'] ?? 1));
-                $dd = max(1, (int) ($up['durasi_menginap'] ?? 1));
-                $hh = (int) ($up['harga_per_malam'] ?? 0);
-                $totalUpgrade += $jk * $hh * $dd;
+                $hargaPerPax = (int) ($up['harga_per_pax'] ?? 0);
+                $jumlahPax   = (int) ($up['jumlah_pax'] ?? 1);
+                $totalUpgrade += $hargaPerPax * $jumlahPax;
             }
 
             $passportFee = $data['pendampingan_fee'] + $data['pendampingan_fee_petugas'];
@@ -408,8 +409,6 @@ class JamaahService
                     $jamaah->keberangkatan()->detach();
                 }
             } else {
-                // ✅ FIX: Kalau $keberangkatanData kosong TAPI produk/harga berubah,
-                // update harga di pivot yang sudah ada tanpa detach.
                 if ($hargaBerubah && $jamaah->keberangkatan->isNotEmpty()) {
                     $existingPivot = [];
                     foreach ($jamaah->keberangkatan as $keb) {
@@ -419,7 +418,7 @@ class JamaahService
                             'tahun_keberangkatan' => $keb->pivot->tahun_keberangkatan,
                             'bulan_harga' => $keb->pivot->bulan_harga,
                             'tahun_harga' => $keb->pivot->tahun_harga,
-                            'harga' => (int) $hargaProduk, // ← pakai harga baru
+                            'harga' => (int) $hargaProduk,
                         ];
                     }
                     $jamaah->keberangkatan()->sync($existingPivot);
@@ -450,7 +449,7 @@ class JamaahService
     }
 
     // ==========================================
-    // SAVE UPGRADE HOTELS
+    // SAVE UPGRADE HOTELS (PER PAX)
     // ==========================================
     private function saveUpgradeHotels($idJamaah, array $upgradeHotels)
     {
@@ -460,21 +459,23 @@ class JamaahService
             $idHotel = $item['id_hotel'] ?? null;
             if (!$idHotel) continue;
 
-            $jumlahKamar = max(1, (int) ($item['jumlah_kamar'] ?? 1));
-            $durasi = max(1, (int) ($item['durasi_menginap'] ?? 1));
-            $harga = (int) ($item['harga_per_malam'] ?? 0);
+            $hargaPerPax = (int) ($item['harga_per_pax'] ?? 0);
+            $jumlahPax   = (int) ($item['jumlah_pax'] ?? 1);
+            $totalHarga  = $hargaPerPax * $jumlahPax;
 
             JamaahUpgradeHotel::create([
-                'id_jamaah' => $idJamaah,
-                'id_keluarga' => null,
-                'id_hotel' => $idHotel,
-                'id_kamar' => $item['id_kamar'] ?? null,
-                'tipe_kamar' => $item['tipe_kamar'] ?? null,
-                'jumlah_kamar' => $jumlahKamar,
-                'durasi_menginap' => $durasi,
-                'harga_per_malam' => $harga,
-                'total_harga' => $jumlahKamar * $harga * $durasi,
-                'catatan' => $item['catatan'] ?? null,
+                'id_jamaah'       => $idJamaah,
+                'id_keluarga'     => null,
+                'id_hotel'        => $idHotel,
+                'id_kamar'        => $item['id_kamar'] ?? null,
+                'tipe_kamar'      => $item['tipe_kamar'] ?? null,
+                'harga_per_pax'   => $hargaPerPax,
+                'jumlah_pax'      => $jumlahPax,
+                'total_harga'     => $totalHarga,
+                'jumlah_kamar'    => $jumlahPax,
+                'durasi_menginap' => 1,
+                'harga_per_malam' => 0,
+                'catatan'         => $item['catatan'] ?? null,
             ]);
         }
     }
@@ -545,7 +546,7 @@ class JamaahService
     }
 
     // ==========================================
-    // PROSES REFUND — pakai JenisPembayaran
+    // PROSES REFUND
     // ==========================================
     public function prosesRefund($jamaahId, array $data)
     {
