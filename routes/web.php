@@ -19,6 +19,7 @@ use App\Http\Controllers\Transaksional\KeluargaController;
 use App\Http\Controllers\Transaksional\DepartureController;
 use App\Http\Controllers\Master\DokumenController;
 use App\Http\Controllers\Transaksional\RekapKeuanganController;
+use App\Http\Controllers\Transaksional\RekapPembayaranController;
 use App\Http\Controllers\Master\JenisPembayaranController;
 
 Route::get('/', [DashboardController::class, 'index'])->name('dashboard');
@@ -69,7 +70,7 @@ Route::prefix('master')->name('master.')->group(function () {
     Route::resource('perlengkapan', PerlengkapanController::class);
     Route::resource('paket-hotel', PaketHotelController::class);
     Route::resource('paket-tour', PaketTourController::class);
-      Route::resource('jenis-pembayaran', JenisPembayaranController::class)->parameters(['jenis-pembayaran' => 'jenis_pembayaran']);
+    Route::resource('jenis-pembayaran', JenisPembayaranController::class)->parameters(['jenis-pembayaran' => 'jenis_pembayaran']);
 });
 
 // ============================================
@@ -98,7 +99,8 @@ Route::prefix('transaksional')->name('transaksional.')->group(function () {
     Route::get('keluarga/{id}/pembayaran', [KeluargaController::class, 'pembayaran'])->name('keluarga.pembayaran');
     Route::post('keluarga/{id}/bayar', [KeluargaController::class, 'bayar'])->name('keluarga.bayar');
     Route::get('keluarga/{id}/cetak-pembayaran', [KeluargaController::class, 'cetakPembayaran'])->name('keluarga.cetak_pembayaran');
-Route::post('keluarga/{id}/proses-refund', [KeluargaController::class, 'prosesRefund'])->name('keluarga.proses-refund');
+    Route::post('keluarga/{id}/proses-refund', [KeluargaController::class, 'prosesRefund'])->name('keluarga.proses-refund');
+
     // ==========================================
     // KELUARGA - RESOURCE
     // ==========================================
@@ -126,10 +128,9 @@ Route::post('keluarga/{id}/proses-refund', [KeluargaController::class, 'prosesRe
     Route::delete('jamaah/transaksi/{id}', [JamaahController::class, 'hapusTransaksi'])->name('jamaah.hapus-transaksi');
     Route::get('jamaah/{id}/cetak-pdf', [JamaahController::class, 'cetakPdfRiwayat'])->name('jamaah.cetak-pdf');
     Route::post('jamaah/{id}/proses-refund', [JamaahController::class, 'prosesRefund'])->name('jamaah.proses-refund');
-     Route::get('jamaah/{id}/cetak-rekomendasi-passport', [JamaahController::class, 'cetakPdfRekomendasiPassport'])
+    Route::get('jamaah/{id}/cetak-rekomendasi-passport', [JamaahController::class, 'cetakPdfRekomendasiPassport'])
         ->name('jamaah.cetak-rekomendasi-passport');
 
-    Route::post('jamaah/{id}/proses-refund', [JamaahController::class, 'prosesRefund'])->name('jamaah.proses-refund');
     // ==========================================
     // JAMAAH - RESOURCE
     // ==========================================
@@ -253,10 +254,11 @@ Route::post('keluarga/{id}/proses-refund', [KeluargaController::class, 'prosesRe
     Route::post('departure/{id}/sync-jamaahs', [DepartureController::class, 'syncJamaahs'])
         ->name('departure.sync-jamaahs');
 
-               Route::post('departure/{id}/mark-selesai', [DepartureController::class, 'markSelesai'])
-            ->name('departure.mark-selesai');
-        Route::post('departure/{id}/batalkan-selesai', [DepartureController::class, 'batalkanSelesai'])
-            ->name('departure.batalkan-selesai');
+    Route::post('departure/{id}/mark-selesai', [DepartureController::class, 'markSelesai'])
+        ->name('departure.mark-selesai');
+    Route::post('departure/{id}/batalkan-selesai', [DepartureController::class, 'batalkanSelesai'])
+        ->name('departure.batalkan-selesai');
+
     // ==========================================
     // AJAX HELPER ROUTES (untuk Departure)
     // ==========================================
@@ -268,6 +270,7 @@ Route::post('keluarga/{id}/proses-refund', [KeluargaController::class, 'prosesRe
         ->name('get-kamars-by-hotel-with-selected');
     Route::get('get-kamars-by-hotel-for-tour/{idHotel}/{departureId}', [DepartureController::class, 'getKamarsByHotelForTour'])
         ->name('get-kamars-for-tour');
+
     // ==========================================
     // REKAP KEUANGAN
     // ==========================================
@@ -298,4 +301,22 @@ Route::post('keluarga/{id}/proses-refund', [KeluargaController::class, 'prosesRe
     Route::delete('rekap-keuangan/{id}', [RekapKeuanganController::class, 'destroyPengeluaran'])
         ->name('rekap-keuangan.pengeluaran.destroy')
         ->where('id', '[0-9]+');
+
+    // ==========================================
+    // REKAP PEMBAYARAN (Jamaah & Keluarga)
+    // ==========================================
+    Route::prefix('rekap-pembayaran')->name('rekap-pembayaran.')->group(function () {
+        Route::get('/', [RekapPembayaranController::class, 'index'])
+            ->name('index');
+        Route::get('/jamaah', [RekapPembayaranController::class, 'jamaah'])
+            ->name('jamaah');
+        Route::get('/keluarga', [RekapPembayaranController::class, 'keluarga'])
+            ->name('keluarga');
+        Route::get('/transaksi', [RekapPembayaranController::class, 'transaksi'])
+            ->name('transaksi');
+        Route::get('/export-csv', [RekapPembayaranController::class, 'exportCsv'])
+            ->name('export-csv');
+        Route::get('/export-pdf', [RekapPembayaranController::class, 'exportPdf'])
+            ->name('export-pdf');
+    });
 });

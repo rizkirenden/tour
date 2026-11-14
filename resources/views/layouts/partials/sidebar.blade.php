@@ -366,12 +366,13 @@
             </li>
 
 
-            <!-- Rekap Keuangan (collapsible) -->
-            <li x-data="{ open: {{ request()->routeIs('transaksional.rekap-keuangan.*') ? 'true' : 'false' }} }">
+            <!-- ✅ Rekap Keuangan (dengan sub-menu Rekap Pembayaran) -->
+            <li x-data="{ open: {{ request()->routeIs('transaksional.rekap-keuangan.*') || request()->routeIs('transaksional.rekap-pembayaran.*') ? 'true' : 'false' }} }">
 
                 <a @click="open = !open"
                     class="flex items-center justify-between px-3 py-2.5 rounded-xl cursor-pointer transition-all duration-200
-                {{ request()->routeIs('transaksional.rekap-keuangan.*')
+                {{ request()->routeIs('transaksional.rekap-keuangan.*') ||
+                request()->routeIs('transaksional.rekap-pembayaran.*')
                     ? 'bg-white/15 text-white'
                     : 'text-yellow-100 hover:bg-white/10 hover:text-white' }}">
 
@@ -389,16 +390,29 @@
 
                 <ul x-show="open" x-transition class="ml-3 mt-1 space-y-1">
 
-                    <!-- Dashboard Rekap -->
+                    <!-- Rekap Keuangan -->
                     <li>
                         <a href="{{ route('transaksional.rekap-keuangan.index') }}"
                             class="flex items-center px-3 py-2 rounded-lg text-sm transition-all duration-200
-                        {{ request()->routeIs('transaksional.rekap-keuangan.index')
+                        {{ request()->routeIs('transaksional.rekap-keuangan.*')
                             ? 'bg-white/15 text-white'
                             : 'text-yellow-200 hover:bg-white/10 hover:text-white' }}">
 
                             <i class="fas fa-money-bill-wave w-5 text-center text-xs"></i>
                             <span class="ml-3">Rekap Keuangan</span>
+                        </a>
+                    </li>
+
+                    <!-- ✅ Rekap Pembayaran -->
+                    <li>
+                        <a href="{{ route('transaksional.rekap-pembayaran.index') }}"
+                            class="flex items-center px-3 py-2 rounded-lg text-sm transition-all duration-200
+                        {{ request()->routeIs('transaksional.rekap-pembayaran.*')
+                            ? 'bg-white/15 text-white'
+                            : 'text-yellow-200 hover:bg-white/10 hover:text-white' }}">
+
+                            <i class="fas fa-chart-pie w-5 text-center text-xs"></i>
+                            <span class="ml-3">Rekap Pembayaran</span>
                         </a>
                     </li>
 
