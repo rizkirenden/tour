@@ -170,7 +170,19 @@
                                 required>{{ old('alamat') }}</textarea>
                         </div>
 
-                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4">
+                        {{-- ✅ PROVINSI DITAMBAHKAN SEBELUM KOTA/KABUPATEN --}}
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1.5">
+                                    Provinsi <span class="text-red-500">*</span>
+                                </label>
+                                <input type="text" name="provinsi" id="provinsi" value="{{ old('provinsi') }}"
+                                    class="w-full px-4 py-2 border border-gray-200 rounded-xl focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500 text-sm wajib-pribadi"
+                                    placeholder="Contoh: Jawa Barat" required>
+                                @error('provinsi')
+                                    <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+                                @enderror
+                            </div>
                             <div>
                                 <label class="block text-sm font-medium text-gray-700 mb-1.5">
                                     Kota / Kabupaten <span class="text-red-500">*</span>
@@ -180,6 +192,9 @@
                                     class="w-full px-4 py-2 border border-gray-200 rounded-xl focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500 text-sm wajib-pribadi"
                                     placeholder="Contoh: Kota Bandung / Kab. Sleman" required>
                             </div>
+                        </div>
+
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
                             <div>
                                 <label class="block text-sm font-medium text-gray-700 mb-1.5">
                                     Kecamatan <span class="text-red-500">*</span>
@@ -745,6 +760,7 @@
                 tempat_lahir: 'Tempat Lahir',
                 tanggal_lahir: 'Tanggal Lahir',
                 alamat: 'Alamat',
+                provinsi: 'Provinsi',
                 kota_kabupaten: 'Kota / Kabupaten',
                 kecamatan: 'Kecamatan',
                 kelurahan: 'Kelurahan / Desa'

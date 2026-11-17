@@ -73,6 +73,7 @@ class JamaahController extends Controller
             'pekerjaan' => 'nullable|string|max:100',
             'wa' => 'nullable|string|max:20',
             'alamat' => 'nullable|string',
+            'provinsi' => 'nullable|string|max:100',          // ✅ TAMBAHAN
             'kota_kabupaten' => 'nullable|string|max:100',
             'kecamatan' => 'nullable|string|max:100',
             'kelurahan' => 'nullable|string|max:100',
@@ -223,6 +224,7 @@ class JamaahController extends Controller
             'pekerjaan' => 'nullable|string|max:100',
             'wa' => 'nullable|string|max:20',
             'alamat' => 'nullable|string',
+            'provinsi' => 'nullable|string|max:100',          // ✅ TAMBAHAN
             'kota_kabupaten' => 'nullable|string|max:100',
             'kecamatan' => 'nullable|string|max:100',
             'kelurahan' => 'nullable|string|max:100',

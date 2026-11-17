@@ -26,6 +26,7 @@ return new class extends Migration
 
             // === ALAMAT LENGKAP ===
             $table->text('alamat')->nullable();
+            $table->string('provinsi', 100)->nullable()->comment('Provinsi domisili');          // ✅ TAMBAHAN
             $table->string('kota_kabupaten', 100)->nullable()->comment('Kota/Kabupaten domisili');
             $table->string('kecamatan', 100)->nullable()->comment('Kecamatan domisili');
             $table->string('kelurahan', 100)->nullable()->comment('Kelurahan/Desa domisili');
@@ -119,6 +120,7 @@ return new class extends Migration
             $table->index('nomor_paspor', 'idx_jamaah_paspor');
             $table->index('nama_lengkap', 'idx_jamaah_nama');
             $table->index('status_pembayaran', 'idx_jamaah_status');
+            $table->index('provinsi', 'idx_jamaah_provinsi');                                     // ✅ TAMBAHAN INDEX
         });
     }
 

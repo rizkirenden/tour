@@ -183,6 +183,12 @@
                                 <dt class="text-gray-500">Alamat</dt>
                                 <dd class="font-medium text-gray-700 text-right">{{ $jamaah->alamat ?? '-' }}</dd>
                             </div>
+
+                            {{-- ✅ PROVINSI DITAMBAHKAN SEBELUM KOTA/KABUPATEN --}}
+                            <div class="flex justify-between text-sm border-b border-gray-100 pb-2">
+                                <dt class="text-gray-500">Provinsi</dt>
+                                <dd class="font-medium text-gray-700">{{ $jamaah->provinsi ?? '-' }}</dd>
+                            </div>
                             <div class="flex justify-between text-sm border-b border-gray-100 pb-2">
                                 <dt class="text-gray-500">Kota / Kabupaten</dt>
                                 <dd class="font-medium text-gray-700">{{ $jamaah->kota_kabupaten ?? '-' }}</dd>

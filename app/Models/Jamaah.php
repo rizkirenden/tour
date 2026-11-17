@@ -26,6 +26,7 @@ class Jamaah extends Model
         'pekerjaan',
         'wa',
         'alamat',
+        'provinsi',              // ✅ SUDAH ADA
         'kota_kabupaten',
         'kecamatan',
         'kelurahan',
@@ -173,6 +174,23 @@ class Jamaah extends Model
             'harga',
             'id_produk_harga_bulanan'
         ])->withTimestamps();
+    }
+
+    // ==========================================
+    // ACCESSORS - ALAMAT
+    // ==========================================
+
+    public function getAlamatLengkapAttribute()
+    {
+        $parts = array_filter([
+            $this->alamat,
+            $this->kelurahan,
+            $this->kecamatan,
+            $this->kota_kabupaten,
+            $this->provinsi,
+        ]);
+
+        return !empty($parts) ? implode(', ', $parts) : '-';
     }
 
     // ==========================================
@@ -833,7 +851,9 @@ class Jamaah extends Model
                 ->orWhere('id_keberangkatan', 'like', '%' . $search . '%')
                 ->orWhere('produk_paket', 'like', '%' . $search . '%')
                 ->orWhere('nik', 'like', '%' . $search . '%')
-                ->orWhere('agent_name', 'like', '%' . $search . '%');
+                ->orWhere('agent_name', 'like', '%' . $search . '%')
+                ->orWhere('provinsi', 'like', '%' . $search . '%')
+                ->orWhere('kota_kabupaten', 'like', '%' . $search . '%');
         });
 
         $query->when($filters['status_pembayaran'] ?? null, function ($query, $status) {

@@ -185,7 +185,20 @@
                                 required>{{ old('alamat', $jamaah->alamat) }}</textarea>
                         </div>
 
-                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4">
+                        {{-- ✅ PROVINSI DITAMBAHKAN SEBELUM KOTA/KABUPATEN --}}
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1.5">
+                                    Provinsi <span class="text-red-500">*</span>
+                                </label>
+                                <input type="text" name="provinsi" id="provinsi"
+                                    value="{{ old('provinsi', $jamaah->provinsi) }}"
+                                    class="w-full px-4 py-2 border border-gray-200 rounded-xl focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500 text-sm wajib-pribadi"
+                                    placeholder="Contoh: Jawa Barat" required>
+                                @error('provinsi')
+                                    <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+                                @enderror
+                            </div>
                             <div>
                                 <label class="block text-sm font-medium text-gray-700 mb-1.5">
                                     Kota / Kabupaten <span class="text-red-500">*</span>
@@ -195,6 +208,9 @@
                                     class="w-full px-4 py-2 border border-gray-200 rounded-xl focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500 text-sm wajib-pribadi"
                                     placeholder="Contoh: Kota Bandung / Kab. Sleman" required>
                             </div>
+                        </div>
+
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
                             <div>
                                 <label class="block text-sm font-medium text-gray-700 mb-1.5">
                                     Kecamatan <span class="text-red-500">*</span>
@@ -839,6 +855,7 @@
                 tempat_lahir: 'Tempat Lahir',
                 tanggal_lahir: 'Tanggal Lahir',
                 alamat: 'Alamat',
+                provinsi: 'Provinsi',
                 kota_kabupaten: 'Kota / Kabupaten',
                 kecamatan: 'Kecamatan',
                 kelurahan: 'Kelurahan / Desa'
@@ -940,6 +957,10 @@
                             <span class="text-sm text-green-700 ml-2">${file.name}</span>
                         `;
                     }
+                } else {
+                    preview.classList.add('hidden');
+                    alert('Format file tidak didukung. Gunakan PDF, JPG, atau PNG.');
+                    input.value = '';
                 }
             }
         }
@@ -953,11 +974,11 @@
             var container = document.getElementById('keberangkatan-container');
 
             tahunSelect.innerHTML = '<option value="">-- Pilih Tahun --</option>';
+            step1Container.classList.add('hidden');
             step2Container.classList.add('hidden');
             container.innerHTML = '';
 
             if (!produkPaket.value) {
-                step1Container.classList.add('hidden');
                 placeholder.classList.remove('hidden');
                 return;
             }
@@ -966,13 +987,9 @@
             step1Container.classList.remove('hidden');
             tahunSelect.innerHTML = '<option value="">-- Memuat... --</option>';
 
-            var url =
-                `{{ route('transaksional.jamaah.keberangkatan-by-produk') }}?produk_paket=${encodeURIComponent(produkPaket.value)}`;
-            if (JAMAHA_ID) {
-                url += `&exclude_jamaah_id=${JAMAHA_ID}`;
-            }
-
-            fetch(url)
+            fetch(
+                    `{{ route('transaksional.jamaah.keberangkatan-by-produk') }}?produk_paket=${encodeURIComponent(produkPaket.value)}&exclude_jamaah_id=${JAMAHA_ID}`
+                )
                 .then(res => res.json())
                 .then(data => {
                     if (!data.success || !data.keberangkatan || data.keberangkatan.length === 0) {
@@ -984,14 +1001,11 @@
                     globalHargaBulananList = data.harga_bulanan || [];
 
                     var tahunSet = new Set();
-                    globalKeberangkatanList.forEach(function(k) {
-                        tahunSet.add(parseInt(k.tahun));
-                    });
-
+                    globalKeberangkatanList.forEach(k => tahunSet.add(parseInt(k.tahun)));
                     var tahunList = Array.from(tahunSet).sort((a, b) => a - b);
 
                     tahunSelect.innerHTML = '<option value="">-- Pilih Tahun --</option>';
-                    tahunList.forEach(function(tahun) {
+                    tahunList.forEach(tahun => {
                         var option = document.createElement('option');
                         option.value = tahun;
                         option.textContent = tahun;
@@ -999,25 +1013,11 @@
                     });
 
                     if (globalSelectedData && globalSelectedData.length > 0) {
-                        var selectedItem = globalSelectedData[0];
-                        var selId = parseInt(selectedItem.id_produk_keberangkatan);
-                        var selK = globalKeberangkatanList.find(function(k) {
-                            return parseInt(k.id) === selId;
-                        });
-
-                        var selectedTahun = null;
-                        if (selK) {
-                            selectedTahun = parseInt(selK.tahun);
-                        } else if (selectedItem.tahun_keberangkatan) {
-                            selectedTahun = parseInt(selectedItem.tahun_keberangkatan);
-                        }
-
-                        if (selectedTahun && tahunList.includes(selectedTahun)) {
-                            tahunSelect.value = selectedTahun;
-                            renderKeberangkatanByTahun(selectedTahun);
-                        } else if (tahunList.length > 0) {
-                            tahunSelect.value = tahunList[0];
-                            renderKeberangkatanByTahun(tahunList[0]);
+                        var oldItem = globalSelectedData[0];
+                        var oldTahun = parseInt(oldItem.tahun_keberangkatan);
+                        if (oldTahun && tahunList.includes(oldTahun)) {
+                            tahunSelect.value = oldTahun;
+                            renderKeberangkatanByTahun(oldTahun);
                         }
                     }
                 })
@@ -1055,23 +1055,17 @@
             if (globalSelectedData && globalSelectedData.length > 0) {
                 selectedItemData = globalSelectedData[0];
                 var oldId = parseInt(selectedItemData.id_produk_keberangkatan);
-                selectedKeberangkatan = filtered.find(function(k) {
-                    return parseInt(k.id) === oldId;
-                }) || null;
+                selectedKeberangkatan = filtered.find(k => parseInt(k.id) === oldId) || null;
             }
 
             var options = '<option value="">-- Pilih Keberangkatan --</option>';
             filtered.forEach(function(k) {
-                var isCurrentlySelected = selectedKeberangkatan &&
-                    parseInt(selectedKeberangkatan.id) === parseInt(k.id);
                 var isFull = k.kuota_default_is_full ? true : false;
-
                 var label = k.keberangkatan_formatted + ' — ' + k.harga_default_formatted;
-                if (isFull && !isCurrentlySelected) label += ' (KUOTA PENUH)';
-
-                var disabled = (isFull && !isCurrentlySelected) ? 'disabled' : '';
-                var selected = isCurrentlySelected ? 'selected' : '';
-
+                if (isFull) label += ' (KUOTA PENUH)';
+                var disabled = isFull ? 'disabled' : '';
+                var selected = (selectedKeberangkatan && parseInt(selectedKeberangkatan.id) === parseInt(k.id)) ?
+                    'selected' : '';
                 options += `<option value="${k.id}" ${selected} ${disabled}>${label}</option>`;
             });
 
@@ -1086,9 +1080,7 @@
                 var currentKuotaColor = k.kuota_default_is_full ? 'text-red-600' : 'text-blue-600';
 
                 if (currentIdHarga) {
-                    var match = globalHargaBulananList.find(function(h) {
-                        return parseInt(h.id) === parseInt(currentIdHarga);
-                    });
+                    var match = globalHargaBulananList.find(h => parseInt(h.id) === parseInt(currentIdHarga));
                     if (match) {
                         currentKuotaText = match.kuota_formatted;
                         currentKuotaColor = match.is_full ? 'text-red-600' :
@@ -1099,15 +1091,11 @@
                 var hargaOptions = '<option value="">-- Sama dengan keberangkatan (' + k.bulan_formatted +
                     ') --</option>';
                 globalHargaBulananList.forEach(function(h) {
-                    var isCurrentlySelected = (parseInt(h.id) === parseInt(currentIdHarga));
-                    var sel = isCurrentlySelected ? 'selected' : '';
+                    var sel = (parseInt(h.id) === parseInt(currentIdHarga)) ? 'selected' : '';
                     var full = h.is_full ? true : false;
-
-                    var dis = (full && !isCurrentlySelected) ? 'disabled' : '';
-
+                    var dis = full ? 'disabled' : '';
                     var kuotaLabel = h.is_full ? 'PENUH (' + h.kuota + ')' : h.kuota_formatted;
                     var styleAttr = full ? 'style="color:#ef4444;font-style:italic;"' : '';
-
                     hargaOptions += `<option value="${h.id}"
                         data-bulan="${h.bulan}" data-tahun="${h.tahun}"
                         data-harga="${h.harga}" data-kuota="${h.kuota || 0}"
@@ -1240,9 +1228,7 @@
                 isFull = k.kuota_default_is_full;
             }
 
-            var isOldSelection = (parseInt(hargaBulananId || 0) === OLD_ID_HARGA && OLD_ID_HARGA > 0);
-
-            if (isFull && !isOldSelection) {
+            if (isFull) {
                 alert('⚠️ Kuota untuk bulan/tahun ini sudah PENUH!\n\nSilakan pilih bulan/tahun lain.');
                 sel.value = '';
                 return;
@@ -1260,7 +1246,7 @@
             if (kuota <= 0) {
                 kuotaText = 'Tidak Terbatas';
                 kuotaColor = 'text-gray-500';
-            } else if (isFull && !isOldSelection) {
+            } else if (isFull) {
                 kuotaText = 'PENUH';
                 kuotaColor = 'text-red-600';
             } else {
@@ -1280,7 +1266,6 @@
         });
 
         document.getElementById('produk_paket').addEventListener('change', function() {
-            globalSelectedData = [];
             loadKeberangkatan();
         });
 
@@ -1401,57 +1386,12 @@
                             updateTotalUpgradeHotel();
                         });
                     });
-
-                    restoreExistingUpgrades(hotelId, container);
                 })
                 .catch(err => {
                     console.error(err);
                     container.innerHTML =
                         '<div class="text-xs text-red-500 text-center py-2">Gagal memuat kamar.</div>';
                 });
-        }
-
-        function restoreExistingUpgrades(hotelId, container) {
-            const matchExisting = (EXISTING_UPGRADE_HOTELS || []).filter(
-                u => parseInt(u.id_hotel) === parseInt(hotelId)
-            );
-
-            if (matchExisting.length === 0) {
-                updateUpgradeHiddenInputs(hotelId, container);
-                updateTotalUpgradeHotel();
-                return;
-            }
-
-            container.querySelectorAll('.kamar-item').forEach(item => {
-                const cb = item.querySelector('.kamar-checkbox');
-                if (!cb) return;
-
-                const match = matchExisting.find(u => parseInt(u.id_kamar) === parseInt(cb.value));
-                if (match) {
-                    cb.checked = true;
-
-                    const jumlahPaxInput = item.querySelector('.kamar-jumlah-pax');
-                    const hargaPaxInput = item.querySelector('.kamar-harga-pax');
-                    if (jumlahPaxInput) jumlahPaxInput.value = match.jumlah_pax ?? 1;
-                    if (hargaPaxInput) hargaPaxInput.value = 'Rp ' + parseInt(match.harga_per_pax || 0)
-                        .toLocaleString('id-ID');
-
-                    const inputs = item.querySelectorAll('input:not(.kamar-checkbox)');
-                    inputs.forEach(input => {
-                        input.disabled = false;
-                        input.classList.remove('opacity-50', 'bg-gray-50');
-                    });
-
-                    const previewEl = item.querySelector('.subtotal-value');
-                    if (previewEl) {
-                        const subtotal = (match.harga_per_pax || 0) * (match.jumlah_pax || 1);
-                        previewEl.textContent = 'Rp ' + subtotal.toLocaleString('id-ID');
-                    }
-                }
-            });
-
-            updateUpgradeHiddenInputs(hotelId, container);
-            updateTotalUpgradeHotel();
         }
 
         function updateUpgradeHiddenInputs(hotelId, container) {
@@ -1493,8 +1433,7 @@
         function removeUpgradeHiddenInputs(hotelId) {
             const parentForm = document.getElementById('jamaahForm');
             if (!parentForm) return;
-            parentForm.querySelectorAll(`.upgrade-hidden-group[data-hotel-id="${hotelId}"]`).forEach(el => el
-                .remove());
+            parentForm.querySelectorAll(`.upgrade-hidden-group[data-hotel-id="${hotelId}"]`).forEach(el => el.remove());
         }
 
         document.addEventListener('DOMContentLoaded', function() {
@@ -1506,21 +1445,10 @@
             }
 
             var produkPaket = document.getElementById('produk_paket');
-            if (produkPaket && produkPaket.value) {
-                loadKeberangkatan();
-            }
+            if (produkPaket && produkPaket.value) loadKeberangkatan();
 
             togglePembuatanPassport();
             updateTotalPendampingan();
-
-            setTimeout(function() {
-                if (EXISTING_UPGRADE_HOTELS && EXISTING_UPGRADE_HOTELS.length > 0) {
-                    document.querySelectorAll('#upgradeHotelContainer .upgrade-hotel-checkbox:checked')
-                        .forEach(function(cb) {
-                            cb.dispatchEvent(new Event('change'));
-                        });
-                }
-            }, 300);
 
             var form = document.getElementById('jamaahForm');
             if (form) {
@@ -1543,20 +1471,13 @@
                     if (keberangkatanSelect && keberangkatanSelect.value) {
                         var k = globalKeberangkatanList.find(item => parseInt(item.id) === parseInt(
                             keberangkatanSelect.value));
-                        var selectedIdKeberangkatan = parseInt(keberangkatanSelect.value);
                         var hargaSel = document.querySelector('.harga-bulanan-select');
                         var selectedHargaFull = false;
-
                         if (hargaSel && hargaSel.value) {
                             var opt = hargaSel.options[hargaSel.selectedIndex];
-                            var optId = parseInt(hargaSel.value);
-                            selectedHargaFull = (opt.dataset.isFull === '1') && (optId !== OLD_ID_HARGA);
+                            selectedHargaFull = opt.dataset.isFull === '1';
                         }
-
-                        var isOldKeberangkatan = (selectedIdKeberangkatan === OLD_ID_KEBERANGKATAN);
-                        var keberangkatanFull = (k && k.kuota_default_is_full) && !isOldKeberangkatan;
-
-                        if (keberangkatanFull || selectedHargaFull) {
+                        if ((k && k.kuota_default_is_full) || selectedHargaFull) {
                             e.preventDefault();
                             alert(
                                 '⚠️ Kuota bulan/tahun yang dipilih sudah PENUH!\n\nSilakan pilih bulan/tahun lain.'

@@ -523,7 +523,16 @@
                                                 </div>
                                             </div>
 
-                                            <div class="grid grid-cols-1 md:grid-cols-3 gap-3 mt-3">
+                                            {{-- ✅ PROVINSI DITAMBAHKAN SEBELUM KOTA/KABUPATEN --}}
+                                            <div class="grid grid-cols-1 md:grid-cols-2 gap-3 mt-3">
+                                                <div>
+                                                    <label
+                                                        class="block text-xs font-medium text-gray-600 mb-1">Provinsi</label>
+                                                    <input type="text" name="jamaahs[{{ $index }}][provinsi]"
+                                                        value="{{ $jamaah['provinsi'] ?? '' }}"
+                                                        class="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-yellow-500 text-sm"
+                                                        placeholder="Contoh: Jawa Barat">
+                                                </div>
                                                 <div>
                                                     <label class="block text-xs font-medium text-gray-600 mb-1">Kota /
                                                         Kabupaten</label>
@@ -533,6 +542,9 @@
                                                         class="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-yellow-500 text-sm"
                                                         placeholder="Kota/Kabupaten">
                                                 </div>
+                                            </div>
+
+                                            <div class="grid grid-cols-1 md:grid-cols-2 gap-3 mt-3">
                                                 <div>
                                                     <label
                                                         class="block text-xs font-medium text-gray-600 mb-1">Kecamatan</label>
@@ -994,7 +1006,15 @@
                                             </div>
                                         </div>
 
-                                        <div class="grid grid-cols-1 md:grid-cols-3 gap-3 mt-3">
+                                        {{-- ✅ PROVINSI DITAMBAHKAN SEBELUM KOTA/KABUPATEN --}}
+                                        <div class="grid grid-cols-1 md:grid-cols-2 gap-3 mt-3">
+                                            <div>
+                                                <label
+                                                    class="block text-xs font-medium text-gray-600 mb-1">Provinsi</label>
+                                                <input type="text" name="jamaahs[0][provinsi]"
+                                                    class="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-yellow-500 text-sm"
+                                                    placeholder="Contoh: Jawa Barat">
+                                            </div>
                                             <div>
                                                 <label class="block text-xs font-medium text-gray-600 mb-1">Kota /
                                                     Kabupaten</label>
@@ -1002,6 +1022,9 @@
                                                     class="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-yellow-500 text-sm"
                                                     placeholder="Kota/Kabupaten">
                                             </div>
+                                        </div>
+
+                                        <div class="grid grid-cols-1 md:grid-cols-2 gap-3 mt-3">
                                             <div>
                                                 <label
                                                     class="block text-xs font-medium text-gray-600 mb-1">Kecamatan</label>
@@ -2277,16 +2300,19 @@
                     '</div>' +
                     '</div>' +
 
+                    '{{-- ALAMAT DOMISILI --}}' +
                     '<div class="mt-3 pt-3 border-t border-gray-200">' +
                     '<h6 class="text-xs font-semibold text-gray-700 mb-2 flex items-center">' +
                     '<i class="fas fa-map-marker-alt text-yellow-500 mr-1.5"></i> Alamat Domisili' +
                     '</h6>' +
+
                     '<div class="grid grid-cols-1 md:grid-cols-2 gap-3">' +
                     '<div>' +
                     '<label class="block text-xs font-medium text-gray-600 mb-1">Hubungan Keluarga</label>' +
                     '<select name="jamaahs[' + idx + '][hubungan_keluarga]" ' +
                     'class="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-yellow-500 text-sm">' +
-                    '<option value="">-- Pilih Hubungan --</option>' + hubunganOptsHtml +
+                    '<option value="">-- Pilih Hubungan --</option>' +
+                    hubunganOptsHtml +
                     '</select>' +
                     '</div>' +
                     '<div>' +
@@ -2296,13 +2322,24 @@
                     'placeholder="Jl. / RT / RW / No.">' +
                     '</div>' +
                     '</div>' +
-                    '<div class="grid grid-cols-1 md:grid-cols-3 gap-3 mt-3">' +
+
+                    '{{-- ✅ PROVINSI DITAMBAHKAN SEBELUM KOTA/KABUPATEN --}}' +
+                    '<div class="grid grid-cols-1 md:grid-cols-2 gap-3 mt-3">' +
+                    '<div>' +
+                    '<label class="block text-xs font-medium text-gray-600 mb-1">Provinsi</label>' +
+                    '<input type="text" name="jamaahs[' + idx + '][provinsi]" ' +
+                    'class="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-yellow-500 text-sm" ' +
+                    'placeholder="Contoh: Jawa Barat">' +
+                    '</div>' +
                     '<div>' +
                     '<label class="block text-xs font-medium text-gray-600 mb-1">Kota / Kabupaten</label>' +
                     '<input type="text" name="jamaahs[' + idx + '][kota_kabupaten]" ' +
                     'class="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-yellow-500 text-sm" ' +
                     'placeholder="Kota/Kabupaten">' +
                     '</div>' +
+                    '</div>' +
+
+                    '<div class="grid grid-cols-1 md:grid-cols-2 gap-3 mt-3">' +
                     '<div>' +
                     '<label class="block text-xs font-medium text-gray-600 mb-1">Kecamatan</label>' +
                     '<input type="text" name="jamaahs[' + idx + '][kecamatan]" ' +
@@ -2318,37 +2355,44 @@
                     '</div>' +
                     '</div>' +
 
+                    '{{-- KEBERANGKATAN --}}' +
                     '<div class="mt-3 pt-3 border-t border-gray-200">' +
                     '<div class="bg-blue-50 rounded-lg p-3 border border-blue-100">' +
                     '<h6 class="text-xs font-semibold text-blue-700 mb-2 flex items-center">' +
                     '<i class="fas fa-plane text-blue-500 mr-1.5"></i> Keberangkatan' +
                     '</h6>' +
+
                     '<div class="grid grid-cols-1 md:grid-cols-3 gap-3">' +
                     '<div>' +
                     '<label class="block text-xs font-medium text-gray-600 mb-1">Kota Asal</label>' +
                     '<select name="jamaahs[' + idx + '][kota_asal]" ' +
                     'class="kota-asal-select w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-yellow-500 text-sm bg-white">' +
-                    '<option value="">-- Pilih Kota Asal --</option>' + kotaAsalOptsHtml +
+                    '<option value="">-- Pilih Kota Asal --</option>' +
+                    kotaAsalOptsHtml +
                     '</select>' +
                     '</div>' +
                     '<div>' +
                     '<label class="block text-xs font-medium text-gray-600 mb-1">Pulau</label>' +
                     '<input type="text" name="jamaahs[' + idx + '][pulau]" ' +
-                    'class="w-full px-3 py-2 border border-gray-200 rounded-lg bg-white text-sm cursor-not-allowed" readonly placeholder="Otomatis">' +
+                    'class="w-full px-3 py-2 border border-gray-200 rounded-lg bg-white text-sm cursor-not-allowed" ' +
+                    'readonly placeholder="Otomatis">' +
                     '</div>' +
                     '<div>' +
                     '<label class="block text-xs font-medium text-gray-600 mb-1">Bandara Keberangkatan</label>' +
                     '<input type="text" name="jamaahs[' + idx + '][bandara_keberangkatan]" ' +
-                    'class="w-full px-3 py-2 border border-gray-200 rounded-lg bg-white text-sm cursor-not-allowed" readonly placeholder="Otomatis">' +
+                    'class="w-full px-3 py-2 border border-gray-200 rounded-lg bg-white text-sm cursor-not-allowed" ' +
+                    'readonly placeholder="Otomatis">' +
                     '</div>' +
                     '</div>' +
                     '</div>' +
                     '</div>' +
 
+                    '{{-- PASSPORT & DOKUMEN --}}' +
                     '<div class="mt-3 pt-3 border-t border-gray-200">' +
                     '<h6 class="text-xs font-semibold text-gray-700 mb-2 flex items-center">' +
                     '<i class="fas fa-passport text-yellow-500 mr-1.5"></i> Passport & Dokumen' +
                     '</h6>' +
+
                     '<div class="grid grid-cols-1 md:grid-cols-2 gap-3">' +
                     '<div>' +
                     '<label class="block text-xs font-medium text-gray-600 mb-1">Nomor Paspor</label>' +
@@ -2363,6 +2407,7 @@
                     '</label>' +
                     '</div>' +
                     '</div>' +
+
                     '<div class="grid grid-cols-1 md:grid-cols-3 gap-3 mt-3">' +
                     '<div>' +
                     '<label class="block text-xs font-medium text-gray-600 mb-1">Tanggal Terbit Paspor</label>' +
@@ -2384,9 +2429,7 @@
 
                     '<div class="mt-3 pt-3 border-t border-gray-200">' +
                     '<div class="mb-3">' +
-                    '<label class="block text-xs font-medium text-gray-600 mb-1.5">' +
-                    'Apakah ada Pembuatan Passport? <span class="text-red-500">*</span>' +
-                    '</label>' +
+                    '<label class="block text-xs font-medium text-gray-600 mb-1.5">Apakah ada Pembuatan Passport? <span class="text-red-500">*</span></label>' +
                     '<div class="inline-flex rounded-lg overflow-hidden border border-gray-300">' +
                     '<button type="button" onclick="setPembuatanPassportKeluarga(' + idx + ', 1)" ' +
                     'id="btnYa-' + idx + '" ' +
@@ -2406,11 +2449,10 @@
                     'Pilih <b>YA</b> jika ada pendapatan perusahaan. Pilih <b>TIDAK</b> jika jamaah sudah punya passport.' +
                     '</p>' +
                     '</div>' +
+
                     '<div class="grid grid-cols-1 md:grid-cols-2 gap-3">' +
                     '<div>' +
-                    '<label class="block text-xs font-medium text-gray-600 mb-1">' +
-                    'Pembayaran Passport <span class="text-gray-400 text-xs">(boleh kosong)</span>' +
-                    '</label>' +
+                    '<label class="block text-xs font-medium text-gray-600 mb-1">Pembayaran Passport <span class="text-gray-400 text-xs">(boleh kosong)</span></label>' +
                     '<div class="relative">' +
                     '<span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-xs">Rp</span>' +
                     '<input type="text" name="jamaahs[' + idx + '][pendampingan_fee]" value="0" ' +
@@ -2421,9 +2463,7 @@
                     '</div>' +
                     '</div>' +
                     '<div id="feePetugasContainer-' + idx + '" class="hidden">' +
-                    '<label class="block text-xs font-medium text-gray-600 mb-1">' +
-                    'Pendapatan Perusahaan <span class="text-gray-400 text-xs">(fee petugas)</span>' +
-                    '</label>' +
+                    '<label class="block text-xs font-medium text-gray-600 mb-1">Pendapatan Perusahaan <span class="text-gray-400 text-xs">(fee petugas)</span></label>' +
                     '<div class="relative">' +
                     '<span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-xs">Rp</span>' +
                     '<input type="text" name="jamaahs[' + idx + '][pendampingan_fee_petugas]" ' +
@@ -2435,19 +2475,20 @@
                     '</div>' +
                     '</div>' +
                     '</div>' +
+
                     '<div class="mt-2 text-xs text-gray-500">' +
                     'Total Pembuatan Passport: ' +
-                    '<span class="font-bold text-blue-600" id="total-pendampingan-' + idx + '">Rp 0</span> ' +
+                    '<span class="font-bold text-blue-600" id="total-pendampingan-' + idx + '">Rp 0</span>' +
                     '<span class="text-gray-400">(Pembayaran + Pendapatan Perusahaan)</span>' +
                     '</div>' +
                     '</div>' +
                     '</div>' +
 
+                    '{{-- UPGRADE HOTEL JAMAAH --}}' +
                     '<div class="mt-3 pt-3 border-t border-gray-200">' +
                     '<div class="flex items-center justify-between mb-2">' +
                     '<h6 class="text-xs font-semibold text-gray-700 flex items-center">' +
-                    '<i class="fas fa-hotel text-orange-500 mr-1.5"></i>' +
-                    'Upgrade Hotel & Kamar Jamaah' +
+                    '<i class="fas fa-hotel text-orange-500 mr-1.5"></i> Upgrade Hotel & Kamar Jamaah' +
                     '<span class="ml-2 text-[10px] text-gray-400 font-normal">(opsional · khusus jamaah ini)</span>' +
                     '</h6>' +
                     '<button type="button" onclick="toggleUpgradeJamaah(' + idx + ')" ' +
@@ -2455,19 +2496,21 @@
                     '<i class="fas fa-plus mr-1"></i> Atur Hotel' +
                     '</button>' +
                     '</div>' +
+
                     '<div id="upgradeJamaahContainer-' + idx + '" ' +
                     'class="hidden bg-orange-50 rounded-lg p-3 border border-orange-200">' +
                     '<p class="text-xs text-orange-700 mb-2">' +
                     '<i class="fas fa-info-circle mr-1"></i>' +
                     'Biaya upgrade ini hanya dibebankan ke jamaah ini.' +
                     '</p>' +
+
                     '<div class="max-h-64 overflow-y-auto border border-gray-200 rounded-lg bg-white p-2 space-y-2">' +
                     hotelUpgradeOptions +
                     '</div>' +
+
                     '<div class="mt-2 flex items-center justify-between bg-white rounded-lg border border-orange-200 px-3 py-2">' +
                     '<span class="text-xs font-medium text-gray-700">' +
-                    '<i class="fas fa-calculator mr-1 text-orange-500"></i>' +
-                    'Total Upgrade Jamaah:' +
+                    '<i class="fas fa-calculator mr-1 text-orange-500"></i> Total Upgrade Jamaah:' +
                     '</span>' +
                     '<span id="totalUpgradeJamaah-' + idx + '" class="text-sm font-bold text-orange-600">Rp 0</span>' +
                     '</div>' +
@@ -2502,128 +2545,159 @@
                     '</div>';
 
                 container.appendChild(row);
-
-                var kotaAsalSelect = row.querySelector('.kota-asal-select');
-                if (kotaAsalSelect) {
-                    kotaAsalSelect.addEventListener('change', function() {
-                        var selectedOption = this.options[this.selectedIndex];
-                        var pulauInput = row.querySelector('input[name$="[pulau]"]');
-                        var bandaraInput = row.querySelector('input[name$="[bandara_keberangkatan]"]');
-                        if (pulauInput) pulauInput.value = selectedOption.dataset.pulau || '';
-                        if (bandaraInput) bandaraInput.value = selectedOption.dataset.bandara || '';
-                    });
-                }
-
                 jamaahIndex++;
-
-                document.querySelectorAll('#upgradeKeluargaContainer .kamar-jumlah-pax').forEach(input => {
-                    input.value = document.querySelectorAll('.jamaah-row').length;
-                });
-
-                hitungDiskonKelompok();
-                updateTotalUpgradeKeluarga();
                 updateFeeAgentPerJamaah();
+                hitungDiskonKelompok();
             }
 
             function removeJamaah(button) {
                 const row = button.closest('.jamaah-row');
                 const container = document.getElementById('jamaahContainer');
-                if (container.children.length > 1) {
-                    row.remove();
-                    const rows = container.querySelectorAll('.jamaah-row');
-                    rows.forEach((r, idx) => {
-                        const label = r.querySelector('.text-sm.font-medium');
-                        if (label) label.textContent = 'Jamaah #' + (idx + 1);
-                    });
 
-                    document.querySelectorAll('#upgradeKeluargaContainer .kamar-jumlah-pax').forEach(input => {
-                        input.value = document.querySelectorAll('.jamaah-row').length;
-                    });
-
-                    hitungDiskonKelompok();
-                    updateTotalUpgradeKeluarga();
-                    updateFeeAgentPerJamaah();
-                } else {
+                if (container.querySelectorAll('.jamaah-row').length <= 1) {
                     alert('Minimal harus ada 1 jamaah!');
+                    return;
+                }
+
+                if (confirm('Yakin ingin menghapus jamaah ini?')) {
+                    row.remove();
+                    reindexJamaah();
                 }
             }
 
-            document.getElementById('filter-tahun').addEventListener('change', function() {
-                renderKeberangkatanByTahun(this.value);
-            });
-            document.getElementById('produk_paket').addEventListener('change', loadKeberangkatan);
-            document.getElementById('id_diskon').addEventListener('change', hitungDiskonKelompok);
+            function reindexJamaah() {
+                const rows = document.querySelectorAll('.jamaah-row');
+                rows.forEach((row, newIndex) => {
+                    row.id = 'jamaah-row-' + newIndex;
 
-            document.addEventListener('change', function(e) {
-                if (e.target && e.target.classList.contains('kota-asal-select')) {
-                    const selectedOption = e.target.options[e.target.selectedIndex];
-                    const row = e.target.closest('.jamaah-row');
-                    if (row) {
-                        const pulauInput = row.querySelector('input[name$="[pulau]"]');
-                        const bandaraInput = row.querySelector('input[name$="[bandara_keberangkatan]"]');
-                        if (pulauInput) pulauInput.value = selectedOption.dataset.pulau || '';
-                        if (bandaraInput) bandaraInput.value = selectedOption.dataset.bandara || '';
+                    const label = row.querySelector('.text-sm.font-medium.text-gray-700');
+                    if (label && label.textContent.includes('Jamaah')) {
+                        label.textContent = 'Jamaah #' + (newIndex + 1);
                     }
-                }
-            });
 
-            document.addEventListener('input', function(e) {
-                if (e.target && e.target.name && e.target.name.includes('pendampingan_fee')) {
-                    const index = e.target.name.match(/\d+/)[0];
-                    updateTotalPendampingan(parseInt(index));
-                }
-            });
-
-            document.addEventListener('DOMContentLoaded', function() {
-                document.querySelectorAll('.kota-asal-select').forEach(select => {
-                    if (select.value) select.dispatchEvent(new Event('change'));
-                });
-                document.querySelectorAll('.jamaah-row').forEach((row, index) => {
-                    updateTotalPendampingan(index);
-                });
-
-                var produkPaket = document.getElementById('produk_paket');
-                if (produkPaket && produkPaket.value) loadKeberangkatan();
-
-                hitungDiskonKelompok();
-                updateFeeAgentPerJamaah();
-
-                const form = document.getElementById('keluargaForm');
-                if (form) {
-                    form.addEventListener('submit', function(e) {
-                        if (!validateJamaahForm()) {
-                            e.preventDefault();
-                            return false;
-                        }
-
-                        ['fee_agent'].forEach(id => {
-                            const input = document.getElementById(id);
-                            if (input) input.value = input.value.replace(/\./g, '');
-                        });
-                        document.querySelectorAll(
-                            '[name$="[pendampingan_fee]"], [name$="[pendampingan_fee_petugas]"]').forEach(
-                            input => {
-                                if (input.value) input.value = input.value.replace(/\./g, '');
-                            });
-
-                        var selectKeberangkatan = document.getElementById('keberangkatan-select');
-                        if (selectKeberangkatan && selectKeberangkatan.value) {
-                            var k = globalKeberangkatanList.find(item => parseInt(item.id) === parseInt(
-                                selectKeberangkatan.value));
-                            var hargaSel = document.querySelector('.harga-bulanan-select');
-                            var selectedHargaFull = false;
-                            if (hargaSel && hargaSel.value) {
-                                var opt = hargaSel.options[hargaSel.selectedIndex];
-                                selectedHargaFull = opt.dataset.isFull === '1';
-                            }
-                            if ((k && k.kuota_default_is_full) || selectedHargaFull) {
-                                e.preventDefault();
-                                alert('⚠️ Kuota bulan/tahun yang dipilih sudah PENUH!');
-                                return false;
-                            }
+                    row.querySelectorAll('input, select, textarea').forEach(input => {
+                        if (input.name) {
+                            input.name = input.name.replace(/jamaahs\[\d+\]/g, 'jamaahs[' + newIndex + ']');
                         }
                     });
+
+                    const btnYa = row.querySelector('[id^="btnYa-"]');
+                    const btnTidak = row.querySelector('[id^="btnTidak-"]');
+                    const hiddenPassport = row.querySelector('[id^="is_pembuatan_passport-"]');
+                    const feePetugasContainer = row.querySelector('[id^="feePetugasContainer-"]');
+                    const feePetugasInput = row.querySelector('[id^="pendampingan_fee_petugas-"]');
+                    const totalPendampingan = row.querySelector('[id^="total-pendampingan-"]');
+                    const upgradeJamaahContainer = row.querySelector('[id^="upgradeJamaahContainer-"]');
+                    const totalUpgradeJamaah = row.querySelector('[id^="totalUpgradeJamaah-"]');
+
+                    if (btnYa) btnYa.id = 'btnYa-' + newIndex;
+                    if (btnTidak) btnTidak.id = 'btnTidak-' + newIndex;
+                    if (hiddenPassport) hiddenPassport.id = 'is_pembuatan_passport-' + newIndex;
+                    if (feePetugasContainer) feePetugasContainer.id = 'feePetugasContainer-' + newIndex;
+                    if (feePetugasInput) feePetugasInput.id = 'pendampingan_fee_petugas-' + newIndex;
+                    if (totalPendampingan) totalPendampingan.id = 'total-pendampingan-' + newIndex;
+                    if (upgradeJamaahContainer) upgradeJamaahContainer.id = 'upgradeJamaahContainer-' + newIndex;
+                    if (totalUpgradeJamaah) totalUpgradeJamaah.id = 'totalUpgradeJamaah-' + newIndex;
+
+                    row.querySelectorAll('[onclick*="setPembuatanPassportKeluarga"]').forEach(el => {
+                        el.setAttribute('onclick',
+                            `setPembuatanPassportKeluarga(${newIndex}, ${el.id.includes('btnYa') ? 1 : 0})`);
+                    });
+
+                    row.querySelectorAll('[onclick*="toggleUpgradeJamaah"]').forEach(el => {
+                        el.setAttribute('onclick', `toggleUpgradeJamaah(${newIndex})`);
+                    });
+
+                    row.querySelectorAll('[oninput*="updateTotalPendampingan"]').forEach(el => {
+                        el.setAttribute('oninput', `formatRupiah(this); updateTotalPendampingan(${newIndex})`);
+                    });
+
+                    row.querySelectorAll('.hotel-upgrade-item').forEach(item => {
+                        item.dataset.scope = 'jamaah-' + newIndex;
+                        const hotelId = item.dataset.hotelId;
+                        const cb = item.querySelector('.upgrade-hotel-checkbox');
+                        const detailContainer = item.querySelector('[id^="hotelDetailContainer-"]');
+
+                        if (cb) {
+                            cb.dataset.scope = 'jamaah-' + newIndex;
+                            cb.setAttribute('onchange', `toggleHotelDetailJamaah(${newIndex}, ${hotelId})`);
+                        }
+
+                        if (detailContainer) {
+                            detailContainer.id = `hotelDetailContainer-${newIndex}-${hotelId}`;
+                        }
+                    });
+                });
+
+                jamaahIndex = rows.length;
+                updateFeeAgentPerJamaah();
+                hitungDiskonKelompok();
+                updateTotalUpgradeKeluarga();
+            }
+
+            document.addEventListener('DOMContentLoaded', function() {
+                const produkPaket = document.getElementById('produk_paket');
+                if (produkPaket && produkPaket.value) {
+                    loadKeberangkatan();
                 }
+
+                document.getElementById('id_diskon')?.addEventListener('change', hitungDiskonKelompok);
+                document.getElementById('fee_agent')?.addEventListener('input', updateFeeAgentPerJamaah);
+
+                document.querySelectorAll('.kota-asal-select').forEach(select => {
+                    select.addEventListener('change', function() {
+                        const opt = this.options[this.selectedIndex];
+                        const row = this.closest('.jamaah-row');
+                        if (row) {
+                            const pulauInput = row.querySelector('input[name$="[pulau]"]');
+                            const bandaraInput = row.querySelector(
+                                'input[name$="[bandara_keberangkatan]"]');
+                            if (pulauInput) pulauInput.value = opt.dataset.pulau || '';
+                            if (bandaraInput) bandaraInput.value = opt.dataset.bandara || '';
+                        }
+                    });
+                });
+
+                document.getElementById('keluargaForm')?.addEventListener('submit', function(e) {
+                    if (!validateJamaahForm()) {
+                        e.preventDefault();
+                        return false;
+                    }
+
+                    var rupiahInputs = ['fee_agent'];
+                    rupiahInputs.forEach(function(id) {
+                        var input = document.getElementById(id);
+                        if (input) {
+                            var raw = input.value.replace(/\./g, '');
+                            input.value = raw === '' ? '0' : raw;
+                        }
+                    });
+
+                    document.querySelectorAll('.jamaah-row').forEach(row => {
+                        row.querySelectorAll('input[name*="pendampingan_fee"]').forEach(input => {
+                            var raw = input.value.replace(/\./g, '');
+                            input.value = raw === '' ? '0' : raw;
+                        });
+                    });
+
+                    var keberangkatanSelect = document.getElementById('keberangkatan-select');
+                    if (keberangkatanSelect && keberangkatanSelect.value) {
+                        var k = globalKeberangkatanList.find(item => parseInt(item.id) === parseInt(
+                            keberangkatanSelect.value));
+                        var hargaSel = document.querySelector('.harga-bulanan-select');
+                        var selectedHargaFull = false;
+                        if (hargaSel && hargaSel.value) {
+                            var opt = hargaSel.options[hargaSel.selectedIndex];
+                            selectedHargaFull = opt.dataset.isFull === '1';
+                        }
+                        if ((k && k.kuota_default_is_full) || selectedHargaFull) {
+                            e.preventDefault();
+                            alert(
+                                '⚠️ Kuota bulan/tahun yang dipilih sudah PENUH!\n\nSilakan pilih bulan/tahun lain.');
+                            return false;
+                        }
+                    }
+                });
             });
         </script>
     @endpush

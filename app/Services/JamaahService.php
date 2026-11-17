@@ -40,7 +40,9 @@ class JamaahService
                     ->orWhere('id_keberangkatan', 'like', "%{$search}%")
                     ->orWhere('produk_paket', 'like', "%{$search}%")
                     ->orWhere('nik', 'like', "%{$search}%")
-                    ->orWhere('agent_name', 'like', "%{$search}%");
+                    ->orWhere('agent_name', 'like', "%{$search}%")
+                    ->orWhere('provinsi', 'like', "%{$search}%")          // ✅ TAMBAHAN
+                    ->orWhere('kota_kabupaten', 'like', "%{$search}%");   // ✅ TAMBAHAN
             });
         }
 
@@ -128,6 +130,9 @@ class JamaahService
             }
 
             $data['status_kawin'] = $data['status_kawin'] ?? null;
+
+            // ✅ PASTIKAN PROVINSI TERSIMPAN (default null jika kosong)
+            $data['provinsi'] = $data['provinsi'] ?? null;
 
             $diskonData = null;
             $nilaiDiskon = 0;
@@ -285,6 +290,9 @@ class JamaahService
             }
 
             $data['status_kawin'] = $data['status_kawin'] ?? null;
+
+            // ✅ PASTIKAN PROVINSI TERSIMPAN (default null jika kosong)
+            $data['provinsi'] = $data['provinsi'] ?? null;
 
             $diskonData = null;
             $nilaiDiskon = 0;
