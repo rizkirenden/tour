@@ -11,14 +11,15 @@
             font-size: 10px;
         }
 
-        th,
-        td {
-            border: 1px solid #000000;
+        /* Border hanya untuk tabel yang diberi class "bordered" */
+        table.bordered th,
+        table.bordered td {
+            border: 0.5pt solid #000000;
             padding: 4px 6px;
             vertical-align: top;
         }
 
-        th {
+        table.bordered th {
             background-color: #1E3A8A;
             color: #FFFFFF;
             font-weight: bold;
@@ -64,7 +65,7 @@
 
 <body>
 
-    {{-- ================= HEADER ================= --}}
+    {{-- ================= HEADER (tanpa border) ================= --}}
     <table>
         <tr>
             <td colspan="18" class="title">MANIFEST JAMAAH SIKOPAT</td>
@@ -107,55 +108,57 @@
         </tr>
     </table>
 
-    {{-- ================= TABEL DATA JAMAAH ================= --}}
-    <table>
+    {{-- ================= TABEL DATA JAMAAH (dengan border) ================= --}}
+    <table class="bordered" border="1" cellspacing="0" cellpadding="4">
         <thead>
             <tr>
-                <th style="width:35px;">No</th>
-                <th style="width:150px;">Nama</th>
-                <th style="width:35px;">Gender</th>
-                <th style="width:110px;">NIK</th>
-                <th style="width:80px;">Tempat Lahir</th>
-                <th style="width:70px;">Tanggal Lahir</th>
-                <th style="width:110px;">No Passport</th>
-                <th style="width:70px;">Passport Dibuat</th>
-                <th style="width:90px;">Tanggal Terbit Passport</th>
-                <th style="width:90px;">Tanggal Berakhir Passport</th>
-                <th style="width:90px;">Diterbitkan Di</th>
-                <th style="width:100px;">Hubungan</th>
-                <th style="width:160px;">Alamat</th>
-                <th style="width:80px;">Provinsi</th>
-                <th style="width:100px;">Kota/Kabupaten</th>
-                <th style="width:80px;">Kecamatan</th>
-                <th style="width:80px;">Kelurahan</th>
-                <th style="width:90px;">Pekerjaan</th>
+                <th style="width:35px; border:0.5pt solid #000000;">No</th>
+                <th style="width:150px; border:0.5pt solid #000000;">Nama</th>
+                <th style="width:35px; border:0.5pt solid #000000;">Gender</th>
+                <th style="width:110px; border:0.5pt solid #000000;">NIK</th>
+                <th style="width:80px; border:0.5pt solid #000000;">Tempat Lahir</th>
+                <th style="width:70px; border:0.5pt solid #000000;">Tanggal Lahir</th>
+                <th style="width:110px; border:0.5pt solid #000000;">No Passport</th>
+                <th style="width:70px; border:0.5pt solid #000000;">Passport Dibuat</th>
+                <th style="width:90px; border:0.5pt solid #000000;">Tanggal Terbit Passport</th>
+                <th style="width:90px; border:0.5pt solid #000000;">Tanggal Berakhir Passport</th>
+                <th style="width:90px; border:0.5pt solid #000000;">Diterbitkan Di</th>
+                <th style="width:100px; border:0.5pt solid #000000;">Hubungan</th>
+                <th style="width:160px; border:0.5pt solid #000000;">Alamat</th>
+                <th style="width:80px; border:0.5pt solid #000000;">Provinsi</th>
+                <th style="width:100px; border:0.5pt solid #000000;">Kota/Kabupaten</th>
+                <th style="width:80px; border:0.5pt solid #000000;">Kecamatan</th>
+                <th style="width:80px; border:0.5pt solid #000000;">Kelurahan</th>
+                <th style="width:90px; border:0.5pt solid #000000;">Pekerjaan</th>
             </tr>
         </thead>
         <tbody>
             @php $no = 1; @endphp
             @forelse ($jamaahList as $jamaah)
                 <tr>
-                    <td class="text-center">{{ $no++ }}</td>
-                    <td>
+                    <td class="text-center" style="border:0.5pt solid #000000;">{{ $no++ }}</td>
+                    <td style="border:0.5pt solid #000000;">
                         @if ($jamaah->is_kepala_keluarga)
                             <strong>{{ $jamaah->nama_lengkap }}</strong>
                         @else
                             {{ $jamaah->nama_lengkap }}
                         @endif
                     </td>
-                    <td class="text-center">{{ $jamaah->jenis_kelamin === 'L' ? 'L' : 'P' }}</td>
+                    <td class="text-center" style="border:0.5pt solid #000000;">
+                        {{ $jamaah->jenis_kelamin === 'L' ? 'L' : 'P' }}</td>
 
-                    {{-- ✅ NIK - paksa teks --}}
-                    <td class="teks-nik">{{ $jamaah->nik ?? '-' }}</td>
+                    {{-- NIK - paksa teks --}}
+                    <td class="teks-nik" style="border:0.5pt solid #000000;">{{ $jamaah->nik ?? '-' }}</td>
 
-                    <td>{{ $jamaah->tempat_lahir ?? '-' }}</td>
-                    <td class="text-center">{{ $jamaah->tanggal_lahir_formatted }}</td>
+                    <td style="border:0.5pt solid #000000;">{{ $jamaah->tempat_lahir ?? '-' }}</td>
+                    <td class="text-center" style="border:0.5pt solid #000000;">{{ $jamaah->tanggal_lahir_formatted }}
+                    </td>
 
-                    {{-- ✅ No Passport - paksa teks --}}
-                    <td class="teks-nik">{{ $jamaah->nomor_paspor ?? '-' }}</td>
+                    {{-- No Passport - paksa teks --}}
+                    <td class="teks-nik" style="border:0.5pt solid #000000;">{{ $jamaah->nomor_paspor ?? '-' }}</td>
 
-                    {{-- ✅ Passport Dibuat: Sudah / Belum --}}
-                    <td class="text-center">
+                    {{-- Passport Dibuat: Sudah / Belum --}}
+                    <td class="text-center" style="border:0.5pt solid #000000;">
                         @if (!empty($jamaah->nomor_paspor))
                             Sudah
                         @else
@@ -163,8 +166,8 @@
                         @endif
                     </td>
 
-                    {{-- ✅ Tanggal Terbit Passport --}}
-                    <td class="text-center">
+                    {{-- Tanggal Terbit Passport --}}
+                    <td class="text-center" style="border:0.5pt solid #000000;">
                         @if ($jamaah->paspor_terbit)
                             {{ $jamaah->paspor_terbit->format('d/m/Y') }}
                         @else
@@ -172,8 +175,8 @@
                         @endif
                     </td>
 
-                    {{-- ✅ Tanggal Berakhir Passport --}}
-                    <td class="text-center">
+                    {{-- Tanggal Berakhir Passport --}}
+                    <td class="text-center" style="border:0.5pt solid #000000;">
                         @if ($jamaah->paspor_expired)
                             {{ $jamaah->paspor_expired->format('d/m/Y') }}
                         @else
@@ -181,8 +184,8 @@
                         @endif
                     </td>
 
-                    {{-- ✅ Diterbitkan Di --}}
-                    <td class="text-center">
+                    {{-- Diterbitkan Di --}}
+                    <td class="text-center" style="border:0.5pt solid #000000;">
                         @if (!empty($jamaah->paspor_diterbitkan_di))
                             {{ $jamaah->paspor_diterbitkan_di }}
                         @else
@@ -190,51 +193,55 @@
                         @endif
                     </td>
 
-                    <td class="text-center">{{ $jamaah->hubungan_keluarga ?? '-' }}</td>
-                    <td>{{ $jamaah->alamat ?? '-' }}</td>
-                    <td>{{ $jamaah->provinsi ?? '-' }}</td>
-                    <td>{{ $jamaah->kota_kabupaten ?? '-' }}</td>
-                    <td>{{ $jamaah->kecamatan ?? '-' }}</td>
-                    <td>{{ $jamaah->kelurahan ?? '-' }}</td>
-                    <td>{{ $jamaah->pekerjaan ?? '-' }}</td>
+                    <td class="text-center" style="border:0.5pt solid #000000;">
+                        {{ $jamaah->hubungan_keluarga ?? '-' }}</td>
+                    <td style="border:0.5pt solid #000000;">{{ $jamaah->alamat ?? '-' }}</td>
+                    <td style="border:0.5pt solid #000000;">{{ $jamaah->provinsi ?? '-' }}</td>
+                    <td style="border:0.5pt solid #000000;">{{ $jamaah->kota_kabupaten ?? '-' }}</td>
+                    <td style="border:0.5pt solid #000000;">{{ $jamaah->kecamatan ?? '-' }}</td>
+                    <td style="border:0.5pt solid #000000;">{{ $jamaah->kelurahan ?? '-' }}</td>
+                    <td style="border:0.5pt solid #000000;">{{ $jamaah->pekerjaan ?? '-' }}</td>
                 </tr>
             @empty
                 <tr>
-                    <td colspan="18" class="text-center">Tidak ada data jamaah.</td>
+                    <td colspan="18" class="text-center" style="border:0.5pt solid #000000;">Tidak ada data jamaah.
+                    </td>
                 </tr>
             @endforelse
         </tbody>
     </table>
 
-    {{-- ================= REKAP KELUARGA ================= --}}
+    {{-- ================= REKAP KELUARGA (dengan border) ================= --}}
     <br>
-    <table>
+    <table class="bordered" border="1" cellspacing="0" cellpadding="4">
         <tr>
-            <td colspan="5" class="subtitle" style="background-color:#DBEAFE;">REKAP KELUARGA</td>
+            <td colspan="5" class="subtitle" style="background-color:#DBEAFE; border:0.5pt solid #000000;">REKAP
+                KELUARGA</td>
         </tr>
         <tr>
-            <th style="width:35px;">No</th>
-            <th style="width:200px;">Nama Keluarga</th>
-            <th style="width:180px;">Kepala Keluarga</th>
-            <th style="width:80px;">Jumlah</th>
-            <th style="width:400px;">Anggota</th>
+            <th style="width:35px; border:0.5pt solid #000000;">No</th>
+            <th style="width:200px; border:0.5pt solid #000000;">Nama Keluarga</th>
+            <th style="width:180px; border:0.5pt solid #000000;">Kepala Keluarga</th>
+            <th style="width:80px; border:0.5pt solid #000000;">Jumlah</th>
+            <th style="width:400px; border:0.5pt solid #000000;">Anggota</th>
         </tr>
         @php $noK = 1; @endphp
         @foreach ($groupedByKeluarga as $keluargaId => $anggota)
             <tr>
-                <td class="text-center">{{ $noK++ }}</td>
-                <td>{{ $anggota->first()->keluarga->nama_keluarga ?? 'Mandiri' }}</td>
-                <td>
+                <td class="text-center" style="border:0.5pt solid #000000;">{{ $noK++ }}</td>
+                <td style="border:0.5pt solid #000000;">
+                    {{ $anggota->first()->keluarga->nama_keluarga ?? 'Mandiri' }}</td>
+                <td style="border:0.5pt solid #000000;">
                     @php $kepala = $anggota->firstWhere('is_kepala_keluarga', true); @endphp
                     {{ $kepala->nama_lengkap ?? '-' }}
                 </td>
-                <td class="text-center">{{ $anggota->count() }}</td>
-                <td>{{ $anggota->pluck('nama_lengkap')->implode(', ') }}</td>
+                <td class="text-center" style="border:0.5pt solid #000000;">{{ $anggota->count() }}</td>
+                <td style="border:0.5pt solid #000000;">{{ $anggota->pluck('nama_lengkap')->implode(', ') }}</td>
             </tr>
         @endforeach
     </table>
 
-    {{-- ================= FOOTER ================= --}}
+    {{-- ================= FOOTER (tanpa border) ================= --}}
     <br>
     <table>
         <tr>
