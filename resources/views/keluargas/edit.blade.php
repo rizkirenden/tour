@@ -184,15 +184,39 @@
                                 <i class="fas fa-user-tie text-blue-500 mr-1"></i> Agent
                             </h6>
                             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                <div>
-                                    <label class="block text-sm font-medium text-gray-700 mb-1.5">Nama Agent</label>
-                                    <input type="text" name="agent" value="{{ old('agent', $keluarga->agent) }}"
-                                        class="w-full px-4 py-2 border border-gray-200 rounded-xl focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500 text-sm"
-                                        placeholder="Nama Agent (opsional)">
-                                    @error('agent')
-                                        <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
-                                    @enderror
-                                </div>
+                               <div>
+    <label class="block text-sm font-medium text-gray-700 mb-1.5">Nama Agent</label>
+    @php
+        $agentTerpilih = old('agent', $keluarga->agent);
+        $agentAda = $agents->contains('name', $agentTerpilih);
+    @endphp
+    <select name="agent" id="agent"
+        class="w-full px-4 py-2 border border-gray-200 rounded-xl focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500 text-sm">
+        <option value="">-- Tanpa Agent --</option>
+
+        @if ($agentTerpilih && !$agentAda)
+            <option value="{{ $agentTerpilih }}" selected>
+                {{ $agentTerpilih }} (belum terdaftar di master)
+            </option>
+        @endif
+
+        @foreach ($agents as $agent)
+            <option value="{{ $agent->name }}"
+                {{ $agentTerpilih == $agent->name ? 'selected' : '' }}>
+                {{ $agent->name }}{{ $agent->phone ? ' - ' . $agent->phone : '' }}
+            </option>
+        @endforeach
+    </select>
+    @error('agent')
+        <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+    @enderror
+    @if ($agentTerpilih && !$agentAda)
+        <p class="text-xs text-amber-600 mt-1">
+            <i class="fas fa-exclamation-triangle mr-1"></i>
+            Agent ini belum ada di master data. Daftarkan di menu Master Data → Agent.
+        </p>
+    @endif
+</div>
                                 <div>
                                     <label class="block text-sm font-medium text-gray-700 mb-1.5">
                                         Fee Agent Total Keluarga

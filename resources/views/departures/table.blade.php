@@ -79,6 +79,13 @@
                                 <i class="fas fa-file-pdf text-sm"></i>
                             </a>
 
+                            {{-- EXPORT EXCEL SIKOPAT - selalu boleh --}}
+                            <a href="{{ route('transaksional.departure.excel-sikopat', $item->id_departure) }}"
+                                class="p-2 text-emerald-600 hover:bg-emerald-50 rounded-lg transition-all duration-200"
+                                title="Export SIKOPAT (Excel)">
+                                <i class="fas fa-file-excel text-sm"></i>
+                            </a>
+
                             {{-- DETAIL - selalu boleh --}}
                             <a href="{{ route('transaksional.departure.show', $item->id_departure) }}"
                                 class="p-2 text-blue-500 hover:bg-blue-50 rounded-lg transition-all duration-200"
@@ -158,7 +165,7 @@
         function confirmSelesai(id) {
             if (confirm(
                     'Tandai perjalanan SELESAI?\n\nSetelah selesai, semua data keberangkatan ini TIDAK dapat diedit/ditambah/dihapus sampai dibatalkan.'
-                    )) {
+                )) {
                 document.getElementById('selesai-form-' + id).submit();
             }
         }

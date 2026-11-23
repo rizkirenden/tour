@@ -188,6 +188,19 @@
                         </a>
                     </li>
 
+                    <!-- Agent -->
+                    <li>
+                        <a href="{{ route('master.agent.index') }}"
+                            class="flex items-center px-3 py-2 rounded-lg text-sm transition-all duration-200
+    {{ request()->routeIs('master.agent.*')
+        ? 'bg-white/15 text-white'
+        : 'text-yellow-200 hover:bg-white/10 hover:text-white' }}">
+
+                            <i class="fas fa-user-tie w-5 text-center text-xs"></i>
+                            <span class="ml-3">Agent</span>
+                        </a>
+                    </li>
+
                     <!-- Setting Dokumen -->
                     <li>
                         <a href="{{ route('master.dokumen.index') }}"

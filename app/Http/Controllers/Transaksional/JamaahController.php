@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Transaksional;
 
 use App\Http\Controllers\Controller;
 use App\Services\JamaahService;
+use App\Models\Agent;
 use App\Models\MetodePembayaran;
 use App\Models\JenisTransaksi;
 use App\Models\JenisPembayaran;
@@ -49,12 +50,14 @@ class JamaahController extends Controller
         $kotaAsals = $this->service->getKotaAsals();
         $diskons = $this->service->getDiskons();
         $hotelOptions = Hotel::orderBy('kota')->orderBy('nama_hotel')->get();
+        $agents = Agent::orderBy('name')->get();
 
         return view('jamaahs.create', compact(
             'produkPakets',
             'kotaAsals',
             'diskons',
-            'hotelOptions'
+            'hotelOptions',
+            'agents'
         ));
     }
 
@@ -73,7 +76,7 @@ class JamaahController extends Controller
             'pekerjaan' => 'nullable|string|max:100',
             'wa' => 'nullable|string|max:20',
             'alamat' => 'nullable|string',
-            'provinsi' => 'nullable|string|max:100',          // ✅ TAMBAHAN
+            'provinsi' => 'nullable|string|max:100',
             'kota_kabupaten' => 'nullable|string|max:100',
             'kecamatan' => 'nullable|string|max:100',
             'kelurahan' => 'nullable|string|max:100',
@@ -103,7 +106,13 @@ class JamaahController extends Controller
             'file_visa' => 'nullable|file|mimes:jpeg,png,jpg,pdf|max:2048',
             'file_paspor' => 'nullable|file|mimes:jpeg,png,jpg,pdf|max:2048',
 
-            'agent_name' => 'nullable|string|max:100',
+            // ✅ AGENT: harus dari master data agent
+            'agent_name' => [
+                'nullable',
+                'string',
+                'max:100',
+                Rule::exists('agents', 'name')->whereNull('deleted_at'),
+            ],
             'fee_agent' => 'nullable|integer|min:0',
 
             'is_pembuatan_passport' => 'nullable|boolean',
@@ -121,6 +130,8 @@ class JamaahController extends Controller
 
             'keterangan_diskon' => 'nullable|string',
             'catatan_tambahan' => 'nullable|string'
+        ], [
+            'agent_name.exists' => 'Agent tidak terdaftar di master data.',
         ]);
 
         $validated['fee_agent'] = (int) ($validated['fee_agent'] ?? 0);
@@ -163,6 +174,7 @@ class JamaahController extends Controller
         $kotaAsals = $this->service->getKotaAsals();
         $diskons = $this->service->getDiskons();
         $hotelOptions = Hotel::orderBy('kota')->orderBy('nama_hotel')->get();
+        $agents = Agent::orderBy('name')->get();
 
         $selectedKeberangkatan = $jamaah->keberangkatan->map(function ($k) {
             return [
@@ -202,6 +214,7 @@ class JamaahController extends Controller
             'kotaAsals',
             'diskons',
             'hotelOptions',
+            'agents',
             'selectedKeberangkatan',
             'selectedUpgradeHotels'
         ));
@@ -224,7 +237,7 @@ class JamaahController extends Controller
             'pekerjaan' => 'nullable|string|max:100',
             'wa' => 'nullable|string|max:20',
             'alamat' => 'nullable|string',
-            'provinsi' => 'nullable|string|max:100',          // ✅ TAMBAHAN
+            'provinsi' => 'nullable|string|max:100',
             'kota_kabupaten' => 'nullable|string|max:100',
             'kecamatan' => 'nullable|string|max:100',
             'kelurahan' => 'nullable|string|max:100',
@@ -254,7 +267,21 @@ class JamaahController extends Controller
             'file_visa' => 'nullable|file|mimes:jpeg,png,jpg,pdf|max:2048',
             'file_paspor' => 'nullable|file|mimes:jpeg,png,jpg,pdf|max:2048',
 
-            'agent_name' => 'nullable|string|max:100',
+            // ✅ AGENT: nilai lama (belum ada di master) tetap boleh,
+            // nilai baru harus terdaftar di master data agent
+            'agent_name' => [
+                'nullable',
+                'string',
+                'max:100',
+                function ($attribute, $value, $fail) use ($jamaah) {
+                    if (empty($value) || $value === $jamaah->agent_name) {
+                        return;
+                    }
+                    if (!Agent::where('name', $value)->exists()) {
+                        $fail('Agent tidak terdaftar di master data.');
+                    }
+                },
+            ],
             'fee_agent' => 'nullable|integer|min:0',
 
             'is_pembuatan_passport' => 'nullable|boolean',

@@ -614,6 +614,79 @@ class Departure extends Model
     }
 
     // ==========================================
+// ACCESSORS - RATA-RATA PER JAMAAH
+// ==========================================
+
+/** Bagi angka total dengan jumlah jamaah (aman jika 0 jamaah) */
+public function perJamaah($total): int
+{
+    $n = $this->jamaahs->count();
+    return $n > 0 ? (int) round($total / $n) : 0;
+}
+
+public static function rp($angka): string
+{
+    $prefix = $angka < 0 ? '− ' : '';
+    return $prefix . 'Rp ' . number_format(abs($angka), 0, ',', '.');
+}
+
+/** Harga paket rata-rata (tagihan setelah diskon) */
+public function getRataTagihanPerJamaahAttribute(): int
+{
+    return $this->perJamaah($this->total_tagihan_jamaah);
+}
+
+/** Rata-rata diskon */
+public function getRataDiskonPerJamaahAttribute(): int
+{
+    return $this->perJamaah($this->total_diskon ?? 0);
+}
+
+/** Rata-rata yang SUDAH dibayar (net setelah refund) */
+public function getRataDibayarPerJamaahAttribute(): int
+{
+    return $this->perJamaah($this->total_net_dibayar_jamaah);
+}
+
+/** Rata-rata sisa tagihan */
+public function getRataSisaPerJamaahAttribute(): int
+{
+    return $this->perJamaah($this->total_sisa_tagihan);
+}
+
+/** Rata-rata pendapatan bersih (cash basis, termasuk passport & profit upgrade) */
+public function getRataPendapatanPerJamaahAttribute(): int
+{
+    return $this->perJamaah($this->total_pendapatan_bersih ?? 0);
+}
+
+/** Rata-rata pengeluaran = BUDGET/modal per jamaah */
+public function getRataPengeluaranPerJamaahAttribute(): int
+{
+    return $this->perJamaah($this->total_pengeluaran ?? 0);
+}
+
+/** Rata-rata laba saat ini (cash basis) */
+public function getRataLabaPerJamaahAttribute(): int
+{
+    return $this->perJamaah($this->keuntungan ?? 0);
+}
+
+/** PROYEKSI: pendapatan jika semua tagihan lunas */
+public function getProyeksiPendapatanLunasAttribute(): int
+{
+    return $this->total_tagihan_jamaah
+        + $this->total_pendapatan_perusahaan_passport
+        + max(0, $this->selisih_upgrade_hotel ?? 0);
+}
+
+/** PROYEKSI: laba per jamaah jika semua lunas */
+public function getRataProyeksiLabaPerJamaahAttribute(): int
+{
+    return $this->perJamaah($this->proyeksi_pendapatan_lunas - ($this->total_pengeluaran ?? 0));
+}
+
+    // ==========================================
     // ACCESSORS - STATUS
     // ==========================================
 
@@ -943,34 +1016,39 @@ class Departure extends Model
     // JAMAAH METHODS
     // ==========================================
 
-    public function addJamaah($jamaahId, $catatan = null)
-    {
-        if ($this->isLocked()) {
-            throw new \Exception('Perjalanan sudah selesai, tidak dapat menambah jamaah.');
-        }
-
-        $exists = DepartureJamaah::where('id_departure', $this->id_departure)
-            ->where('id_jamaah', $jamaahId)
-            ->exists();
-
-        if ($exists) throw new \Exception('Jamaah sudah terdaftar di departure ini.');
-
-        if ($this->kuota > 0 && $this->jamaah_terdaftar >= $this->kuota) {
-            throw new \Exception('Kuota sudah penuh! (Kuota: ' . $this->kuota . ', Terdaftar: ' . $this->jamaah_terdaftar . ')');
-        }
-
-        $this->jamaahs()->attach($jamaahId, [
-            'status_keberangkatan' => 'Terdaftar',
-            'catatan' => $catatan,
-        ]);
-
-        $this->jamaah_terdaftar = $this->jamaahs()->count();
-        $this->is_jamaah_complete = $this->jamaah_terdaftar > 0;
-        $this->save();
-
-        $this->recalculate();
-        return $this;
+   public function addJamaah($jamaahId, $catatan = null)
+{
+    if ($this->isLocked()) {
+        throw new \Exception('Perjalanan sudah selesai, tidak dapat menambah jamaah.');
     }
+
+    $exists = DepartureJamaah::where('id_departure', $this->id_departure)
+        ->where('id_jamaah', $jamaahId)
+        ->exists();
+
+    if ($exists) {
+        throw new \Exception('Jamaah sudah terdaftar di departure ini.');
+    }
+
+    // Hitung langsung dari tabel pivot, bukan dari kolom cache jamaah_terdaftar
+    $terdaftar = DepartureJamaah::where('id_departure', $this->id_departure)->count();
+
+    if ($this->kuota > 0 && $terdaftar >= $this->kuota) {
+        throw new \Exception('Kuota sudah penuh! (Kuota: ' . $this->kuota . ', Terdaftar: ' . $terdaftar . ')');
+    }
+
+    $this->jamaahs()->attach($jamaahId, [
+        'status_keberangkatan' => 'Terdaftar',
+        'catatan' => $catatan,
+    ]);
+
+    $this->jamaah_terdaftar = DepartureJamaah::where('id_departure', $this->id_departure)->count();
+    $this->is_jamaah_complete = $this->jamaah_terdaftar > 0;
+    $this->save();
+
+    $this->recalculate();
+    return $this;
+}
 
     public function removeJamaah($jamaahId)
     {

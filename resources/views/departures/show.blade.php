@@ -164,11 +164,11 @@
                 @php
                     $pendapatanPerusahaanPassport = $departure->total_pendapatan_perusahaan_passport;
                     $pembayaranPassport = $departure->total_pembayaran_passport;
-                    $totalTagihanJamaah       = $departure->total_tagihan_jamaah;
-                    $totalSudahDibayarJamaah  = $departure->total_dibayar_jamaah;
-                    $totalRefundJamaah        = $departure->total_refund_jamaah;
-                    $totalNetDibayarJamaah    = $departure->total_net_dibayar_jamaah;
-                    $totalSisaTagihan         = $departure->total_sisa_tagihan;
+                    $totalTagihanJamaah = $departure->total_tagihan_jamaah;
+                    $totalSudahDibayarJamaah = $departure->total_dibayar_jamaah;
+                    $totalRefundJamaah = $departure->total_refund_jamaah;
+                    $totalNetDibayarJamaah = $departure->total_net_dibayar_jamaah;
+                    $totalSisaTagihan = $departure->total_sisa_tagihan;
                 @endphp
 
                 <div class="bg-gray-50 rounded-xl p-5 border border-gray-100 mb-6">
@@ -222,35 +222,6 @@
                             <p class="text-[10px] text-purple-400 mt-0.5">Fee petugas</p>
                         </div>
                     </div>
-
-                    @if ($pendapatanPerusahaanPassport > 0 || $pembayaranPassport > 0)
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-3 mb-4">
-                            <div class="bg-green-50 rounded-lg p-3 border-2 border-green-300">
-                                <div class="flex items-center justify-between">
-                                    <div>
-                                        <p class="text-xs text-green-700 font-semibold"><i
-                                                class="fas fa-arrow-up mr-1"></i>Pendapatan Perusahaan Passport</p>
-                                        <p class="text-[10px] text-green-600 mt-0.5">Masuk ke PENDAPATAN (fee petugas dari
-                                            jamaah efektif YA)</p>
-                                    </div>
-                                    <p class="text-lg font-bold text-green-700">Rp
-                                        {{ number_format($pendapatanPerusahaanPassport, 0, ',', '.') }}</p>
-                                </div>
-                            </div>
-                            <div class="bg-red-50 rounded-lg p-3 border-2 border-red-300">
-                                <div class="flex items-center justify-between">
-                                    <div>
-                                        <p class="text-xs text-red-700 font-semibold"><i
-                                                class="fas fa-arrow-down mr-1"></i>Pembayaran Passport</p>
-                                        <p class="text-[10px] text-red-600 mt-0.5">Masuk ke PENGELUARAN (biaya pembuatan
-                                            passport)</p>
-                                    </div>
-                                    <p class="text-lg font-bold text-red-700">Rp
-                                        {{ number_format($pembayaranPassport, 0, ',', '.') }}</p>
-                                </div>
-                            </div>
-                        </div>
-                    @endif
 
                     <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
                         <div class="bg-white rounded-lg p-3 border border-emerald-200 text-center">
@@ -331,12 +302,32 @@
                 {{-- FEE PASSPORT & DAFTAR JAMAAH --}}
                 @php
                     $bulanNama = [
-                        1 => 'Jan', 2 => 'Feb', 3 => 'Mar', 4 => 'Apr', 5 => 'Mei', 6 => 'Jun',
-                        7 => 'Jul', 8 => 'Agu', 9 => 'Sep', 10 => 'Okt', 11 => 'Nov', 12 => 'Des',
+                        1 => 'Jan',
+                        2 => 'Feb',
+                        3 => 'Mar',
+                        4 => 'Apr',
+                        5 => 'Mei',
+                        6 => 'Jun',
+                        7 => 'Jul',
+                        8 => 'Agu',
+                        9 => 'Sep',
+                        10 => 'Okt',
+                        11 => 'Nov',
+                        12 => 'Des',
                     ];
                     $bulanFull = [
-                        1 => 'Januari', 2 => 'Februari', 3 => 'Maret', 4 => 'April', 5 => 'Mei', 6 => 'Juni',
-                        7 => 'Juli', 8 => 'Agustus', 9 => 'September', 10 => 'Oktober', 11 => 'November', 12 => 'Desember',
+                        1 => 'Januari',
+                        2 => 'Februari',
+                        3 => 'Maret',
+                        4 => 'April',
+                        5 => 'Mei',
+                        6 => 'Juni',
+                        7 => 'Juli',
+                        8 => 'Agustus',
+                        9 => 'September',
+                        10 => 'Oktober',
+                        11 => 'November',
+                        12 => 'Desember',
                     ];
                     $totalFeePassport = $departure->total_fee_passport;
                     $totalPembayaranPassport = $departure->total_pembayaran_passport;
@@ -360,10 +351,6 @@
                                     method="POST"
                                     onsubmit="return confirm('Mencari jamaah baru yang memenuhi kriteria. Lanjutkan?')">
                                     @csrf
-                                    <button type="submit"
-                                        class="inline-flex items-center px-3 py-1.5 bg-purple-500 text-white text-xs rounded-lg hover:bg-purple-600 transition">
-                                        <i class="fas fa-sync-alt mr-1"></i> Sync Jamaah
-                                    </button>
                                 </form>
                                 <button onclick="openJamaahModal()"
                                     class="inline-flex items-center px-3 py-1.5 bg-yellow-500 text-white text-xs rounded-lg hover:bg-yellow-600 transition">
@@ -499,10 +486,11 @@
                                     }
                                     // ✅ FIX: net dibayar setelah refund
                                     $jamaahSudahDibayar = (int) ($jamaah->total_dibayar ?? 0);
-                                    $jamaahTotalRefund  = (int) ($jamaah->total_refund ?? 0);
-                                    $jamaahNetDibayar   = max(0, $jamaahSudahDibayar - $jamaahTotalRefund);
-                                    $jamaahTagihan      = (int) ($jamaah->total_tagihan_setelah_diskon ?? ($jamaah->total_tagihan ?? 0));
-                                    $jamaahSisa         = max(0, $jamaahTagihan - $jamaahNetDibayar);
+                                    $jamaahTotalRefund = (int) ($jamaah->total_refund ?? 0);
+                                    $jamaahNetDibayar = max(0, $jamaahSudahDibayar - $jamaahTotalRefund);
+                                    $jamaahTagihan =
+                                        (int) ($jamaah->total_tagihan_setelah_diskon ?? ($jamaah->total_tagihan ?? 0));
+                                    $jamaahSisa = max(0, $jamaahTagihan - $jamaahNetDibayar);
                                 @endphp
                                 <div class="p-3 rounded-lg {{ $borderClass }} {{ $bgClass }} jamaah-item"
                                     data-name="{{ strtolower($jamaah->nama_lengkap) }}"
@@ -597,12 +585,16 @@
                                         </div>
                                         <div class="flex flex-col items-end gap-1 flex-shrink-0">
                                             @if ($jamaahTotalRefund > 0)
-                                                <span class="text-xs text-gray-400 line-through">{{ $jamaah->total_dibayar_formatted }}</span>
-                                                <span class="text-xs text-amber-600">−{{ $jamaah->total_refund_formatted }}</span>
-                                                <span class="text-xs text-emerald-600 font-bold">Rp {{ number_format($jamaahNetDibayar, 0, ',', '.') }}</span>
+                                                <span
+                                                    class="text-xs text-gray-400 line-through">{{ $jamaah->total_dibayar_formatted }}</span>
+                                                <span
+                                                    class="text-xs text-amber-600">−{{ $jamaah->total_refund_formatted }}</span>
+                                                <span class="text-xs text-emerald-600 font-bold">Rp
+                                                    {{ number_format($jamaahNetDibayar, 0, ',', '.') }}</span>
                                                 <span class="text-[9px] text-gray-400">NET</span>
                                             @else
-                                                <span class="text-xs text-emerald-600 font-bold">{{ $jamaah->total_dibayar_formatted }}</span>
+                                                <span
+                                                    class="text-xs text-emerald-600 font-bold">{{ $jamaah->total_dibayar_formatted }}</span>
                                                 <span class="text-[9px] text-gray-400">Dibayar</span>
                                             @endif
                                             @unless ($locked)
@@ -798,7 +790,8 @@
                     <div id="hotelList">
                         @if ($departure->hotelMekkah || $departure->hotelMadinah || $departure->hotelTransit)
                             @if ($departure->hotelMekkah)
-                                <div class="mb-4 hotel-item" data-nama="{{ strtolower($departure->hotel_mekkah_nama) }}">
+                                <div class="mb-4 hotel-item"
+                                    data-nama="{{ strtolower($departure->hotel_mekkah_nama) }}">
                                     <div class="flex items-center justify-between">
                                         <h5 class="text-sm font-semibold text-gray-700">
                                             {{ $departure->hotel_mekkah_nama }}</h5>
@@ -810,7 +803,8 @@
                                             @foreach ($hotelMekkahDetails as $detail)
                                                 <div class="bg-white rounded-lg p-3 border border-gray-200 hotel-detail-item"
                                                     data-hotel="mekkah">
-                                                    <p class="text-sm font-medium text-gray-700">{{ $detail->tipe_kamar }}
+                                                    <p class="text-sm font-medium text-gray-700">
+                                                        {{ $detail->tipe_kamar }}
                                                     </p>
                                                     <p class="text-xs text-gray-500">{{ $detail->jumlah_kamar }} Kamar ×
                                                         {{ $detail->harga_per_malam_formatted }} ×
@@ -1152,7 +1146,8 @@
                                             Diterima</span>
                                         <p class="text-xs text-gray-400 mt-0.5"><i
                                                 class="fas fa-info-circle mr-1"></i>Hanya dihitung dari perlengkapan yang
-                                            <strong>sudah diterima</strong> jamaah</p>
+                                            <strong>sudah diterima</strong> jamaah
+                                        </p>
                                     </div>
                                     <span
                                         class="text-lg font-bold text-purple-600">{{ $departure->total_harga_perlengkapan_formatted }}</span>
@@ -1731,8 +1726,6 @@
                                                 Jamaah</th>
                                             <th class="px-4 py-2 text-left text-xs font-semibold text-purple-700">Produk
                                             </th>
-                                            <th class="px-4 py-2 text-center text-xs font-semibold text-purple-700">Status
-                                                Pembayaran</th>
                                             <th class="px-4 py-2 text-right text-xs font-semibold text-purple-700">Fee
                                                 Agent</th>
                                         </tr>
@@ -1744,48 +1737,42 @@
                                                     data-agent="{{ strtolower($agentName) }}"
                                                     data-name="{{ strtolower($jamaah->nama_lengkap) }}">
                                                     <td class="px-4 py-2.5">
-                                                        @if ($loop->first)
-                                                            <span
-                                                                class="inline-flex items-center gap-1.5 px-2.5 py-1 bg-purple-100 text-purple-700 rounded-lg text-xs font-medium">
-                                                                <i
-                                                                    class="fas fa-user-tie text-purple-500"></i>{{ $agentName }}
-                                                            </span>
-                                                            <span
-                                                                class="text-xs text-gray-400 ml-1">({{ $jamaahs->count() }}
-                                                                jamaah)</span>
-                                                        @endif
+                                                        <span
+                                                            class="inline-flex items-center gap-1.5 px-2.5 py-1 bg-purple-100 text-purple-700 rounded-lg text-xs font-medium">
+                                                            <i
+                                                                class="fas fa-user-tie text-purple-500"></i>{{ $agentName }}
+                                                        </span>
                                                     </td>
                                                     <td class="px-4 py-2.5 font-medium text-gray-800">
                                                         {{ $jamaah->nama_lengkap }}</td>
                                                     <td class="px-4 py-2.5 text-gray-600">{{ $jamaah->produk_paket }}
                                                     </td>
-                                                    <td class="px-4 py-2.5 text-center">
-                                                        <span
-                                                            class="px-2 py-0.5 rounded-full text-xs font-medium {{ $jamaah->status_pembayaran == 'Lunas' ? 'bg-green-100 text-green-700' : ($jamaah->status_pembayaran == 'DP' ? 'bg-yellow-100 text-yellow-700' : ($jamaah->status_pembayaran == 'Setoran' ? 'bg-blue-100 text-blue-700' : 'bg-red-100 text-red-700')) }}">{{ $jamaah->status_pembayaran }}</span>
-                                                    </td>
                                                     <td class="px-4 py-2.5 text-right font-medium text-purple-600">
-                                                        @if ($loop->first)
-                                                            Rp {{ number_format($jamaah->fee_agent ?? 0, 0, ',', '.') }}
-                                                        @endif
+                                                        Rp {{ number_format($jamaah->fee_agent ?? 0, 0, ',', '.') }}
                                                     </td>
                                                 </tr>
                                             @endforeach
-                                            <tr class="bg-purple-50/50 border-t border-purple-200">
-                                                <td colspan="4"
-                                                    class="px-4 py-2 text-right text-sm font-medium text-purple-700">Total
-                                                    Fee Agent {{ $agentName }}</td>
-                                                <td class="px-4 py-2 text-right font-bold text-purple-700">Rp
-                                                    {{ number_format($jamaahs->sum('fee_agent'), 0, ',', '.') }}</td>
+                                            <tr class="bg-purple-50/50 border-t border-purple-200 agent-row"
+                                                data-agent="{{ strtolower($agentName) }}" data-name="">
+                                                <td colspan="3"
+                                                    class="px-4 py-2 text-right text-sm font-medium text-purple-700">
+                                                    Total Fee Agent {{ $agentName }} ({{ $jamaahs->count() }} jamaah)
+                                                </td>
+                                                <td class="px-4 py-2 text-right font-bold text-purple-700">
+                                                    Rp {{ number_format($jamaahs->sum('fee_agent'), 0, ',', '.') }}
+                                                </td>
                                             </tr>
                                         @endforeach
                                     </tbody>
                                     <tfoot class="bg-purple-100 border-t-2 border-purple-300">
                                         <tr>
-                                            <td colspan="4" class="px-4 py-3 text-right font-semibold text-gray-700"><i
-                                                    class="fas fa-calculator mr-2 text-purple-500"></i>Total Keseluruhan
-                                                Fee Agent</td>
-                                            <td class="px-4 py-3 text-right font-bold text-purple-700 text-lg">Rp
-                                                {{ number_format($jamaahsWithAgent->sum('fee_agent'), 0, ',', '.') }}</td>
+                                            <td colspan="3" class="px-4 py-3 text-right font-semibold text-gray-700">
+                                                <i class="fas fa-calculator mr-2 text-purple-500"></i>Total Keseluruhan Fee
+                                                Agent
+                                            </td>
+                                            <td class="px-4 py-3 text-right font-bold text-purple-700 text-lg">
+                                                Rp {{ number_format($jamaahsWithAgent->sum('fee_agent'), 0, ',', '.') }}
+                                            </td>
                                         </tr>
                                     </tfoot>
                                 </table>
@@ -1795,7 +1782,8 @@
                                     <p class="text-sm font-medium text-gray-600 mb-2 flex items-center gap-2">
                                         <i class="fas fa-user text-gray-400"></i> Jamaah Tanpa Agent
                                         <span
-                                            class="text-xs bg-orange-100 text-orange-700 px-2 py-0.5 rounded-full">{{ $jamaahsWithoutAgent->count() }} jamaah</span>
+                                            class="text-xs bg-orange-100 text-orange-700 px-2 py-0.5 rounded-full">{{ $jamaahsWithoutAgent->count() }}
+                                            jamaah</span>
                                     </p>
                                     <div class="overflow-x-auto">
                                         <table class="w-full text-sm border border-gray-200 rounded-lg">
@@ -1838,7 +1826,8 @@
                                 <p class="text-gray-400 text-sm mt-1">Semua jamaah terdaftar tanpa agent</p>
                                 @if ($departure->jamaahs->count() > 0)
                                     <p class="text-xs text-gray-400 mt-2">Total jamaah terdaftar:
-                                        <strong>{{ $departure->jamaahs->count() }}</strong> orang</p>
+                                        <strong>{{ $departure->jamaahs->count() }}</strong> orang
+                                    </p>
                                 @endif
                             </div>
                         @endif
@@ -1943,6 +1932,132 @@
                     </div>
                 </div>
 
+                {{-- RATA-RATA PER JAMAAH --}}
+                @php
+                    $nJamaah = $departure->jamaahs->count();
+                    $rataTagihan = $departure->rata_tagihan_per_jamaah;
+                    $rataDibayar = $departure->rata_dibayar_per_jamaah;
+                    $rataSisa = $departure->rata_sisa_per_jamaah;
+                    $rataDiskon = $departure->rata_diskon_per_jamaah;
+                    $rataPendapatan = $departure->rata_pendapatan_per_jamaah;
+                    $rataPengeluaran = $departure->rata_pengeluaran_per_jamaah;
+                    $rataLaba = $departure->rata_laba_per_jamaah;
+                    $rataLabaProyeksi = $departure->rata_proyeksi_laba_per_jamaah;
+                    $persenDibayar = $rataTagihan > 0 ? round(($rataDibayar / $rataTagihan) * 100, 1) : 0;
+                @endphp
+
+                <div class="bg-indigo-50 rounded-xl p-5 border-2 border-indigo-300 mb-6">
+                    <div class="flex items-center justify-between mb-4 flex-wrap gap-2">
+                        <h6 class="text-sm font-semibold text-gray-700 flex items-center">
+                            <i class="fas fa-user-check text-indigo-500 mr-2"></i> Rata-rata per Jamaah
+                            <span
+                                class="ml-2 text-xs bg-indigo-100 text-indigo-800 px-2 py-0.5 rounded-full">{{ $nJamaah }}
+                                jamaah</span>
+                        </h6>
+                    </div>
+
+                    <div class="mb-4 bg-white rounded-lg p-3 border border-indigo-200">
+                        <p class="text-xs text-gray-600">
+                            <i class="fas fa-info-circle text-indigo-500 mr-1"></i>
+                            Semua angka = total keberangkatan ÷ jumlah jamaah. Menunjukkan harga paket sebenarnya,
+                            berapa yang sudah dibayar, berapa budget pengeluaran, dan berapa laba untuk setiap jamaah.
+                        </p>
+                    </div>
+
+                    @if ($nJamaah > 0)
+                        {{-- BARIS 1: HARGA & PEMBAYARAN --}}
+                        <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-3">
+                            <div class="bg-white rounded-lg p-3 border border-gray-200 text-center">
+                                <p class="text-xs text-gray-500">Harga Paket (rata-rata)</p>
+                                <p class="text-sm font-bold text-gray-700">{{ \App\Models\Departure::rp($rataTagihan) }}
+                                </p>
+                                <p class="text-[10px] text-gray-400 mt-0.5">Setelah diskon</p>
+                            </div>
+                            <div class="bg-white rounded-lg p-3 border-2 border-emerald-400 text-center">
+                                <p class="text-xs text-emerald-700 font-semibold">Sudah Dibayar (net)</p>
+                                <p class="text-sm font-bold text-emerald-600">
+                                    {{ \App\Models\Departure::rp($rataDibayar) }}</p>
+                                <p class="text-[10px] text-emerald-500 mt-0.5">{{ $persenDibayar }}% dari harga paket</p>
+                            </div>
+                            <div class="bg-white rounded-lg p-3 border border-red-200 text-center">
+                                <p class="text-xs text-gray-500">Sisa Tagihan</p>
+                                <p class="text-sm font-bold text-red-600">{{ \App\Models\Departure::rp($rataSisa) }}</p>
+                                <p class="text-[10px] text-gray-400 mt-0.5">Belum dibayar</p>
+                            </div>
+                            <div class="bg-white rounded-lg p-3 border border-gray-200 text-center">
+                                <p class="text-xs text-gray-500">Diskon (rata-rata)</p>
+                                <p class="text-sm font-bold text-red-600">{{ \App\Models\Departure::rp($rataDiskon) }}
+                                </p>
+                                <p class="text-[10px] text-gray-400 mt-0.5">Info</p>
+                            </div>
+                        </div>
+
+                        {{-- BARIS 2: BUDGET & LABA --}}
+                        <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-3">
+                            <div class="bg-white rounded-lg p-3 border border-green-200 text-center">
+                                <p class="text-xs text-gray-500">Pendapatan Bersih</p>
+                                <p class="text-sm font-bold text-green-600">
+                                    {{ \App\Models\Departure::rp($rataPendapatan) }}</p>
+                                <p class="text-[10px] text-gray-400 mt-0.5">Cash basis / jamaah</p>
+                            </div>
+                            <div class="bg-white rounded-lg p-3 border-2 border-red-300 text-center">
+                                <p class="text-xs text-red-700 font-semibold">Budget Pengeluaran</p>
+                                <p class="text-sm font-bold text-red-600">
+                                    {{ \App\Models\Departure::rp($rataPengeluaran) }}</p>
+                                <p class="text-[10px] text-gray-400 mt-0.5">Modal / jamaah</p>
+                            </div>
+                            <div
+                                class="bg-white rounded-lg p-3 border-2 {{ $rataLaba >= 0 ? 'border-green-400' : 'border-red-400' }} text-center">
+                                <p
+                                    class="text-xs font-semibold {{ $rataLaba >= 0 ? 'text-green-700' : 'text-red-700' }}">
+                                    Laba Saat Ini</p>
+                                <p class="text-sm font-bold {{ $rataLaba >= 0 ? 'text-green-600' : 'text-red-600' }}">
+                                    {{ \App\Models\Departure::rp($rataLaba) }}</p>
+                                <p class="text-[10px] text-gray-400 mt-0.5">Berdasarkan uang masuk</p>
+                            </div>
+                            <div
+                                class="bg-white rounded-lg p-3 border-2 {{ $rataLabaProyeksi >= 0 ? 'border-blue-400' : 'border-red-400' }} text-center">
+                                <p class="text-xs font-semibold text-blue-700">Laba Jika Lunas</p>
+                                <p
+                                    class="text-sm font-bold {{ $rataLabaProyeksi >= 0 ? 'text-blue-600' : 'text-red-600' }}">
+                                    {{ \App\Models\Departure::rp($rataLabaProyeksi) }}</p>
+                                <p class="text-[10px] text-gray-400 mt-0.5">Proyeksi / jamaah</p>
+                            </div>
+                        </div>
+
+                        {{-- CONTOH PERHITUNGAN --}}
+                        <div class="p-3 bg-white rounded-lg border border-indigo-200">
+                            <div class="flex items-center justify-center flex-wrap gap-2 text-sm">
+                                <span class="px-2 py-1 bg-gray-100 text-gray-700 rounded font-semibold">Paket
+                                    {{ \App\Models\Departure::rp($rataTagihan) }}</span>
+                                <span class="text-gray-400">→ dibayar</span>
+                                <span
+                                    class="px-2 py-1 bg-emerald-100 text-emerald-700 rounded font-semibold">{{ \App\Models\Departure::rp($rataDibayar) }}</span>
+                                <span class="text-gray-400">− budget</span>
+                                <span
+                                    class="px-2 py-1 bg-red-100 text-red-700 rounded font-semibold">{{ \App\Models\Departure::rp($rataPengeluaran) }}</span>
+                                <span class="text-gray-400">=</span>
+                                <span
+                                    class="px-2 py-1 {{ $rataLaba >= 0 ? 'bg-green-500' : 'bg-red-500' }} text-white rounded font-bold">
+                                    {{ \App\Models\Departure::rp($rataLaba) }}</span>
+                            </div>
+                        </div>
+
+                        <p class="text-[10px] text-gray-500 mt-2">
+                            <i class="fas fa-exclamation-circle mr-1"></i>
+                            "Laba Jika Lunas" = (total tagihan + fee passport perusahaan + profit upgrade − total
+                            pengeluaran) ÷ jamaah.
+                            Pengeluaran perlengkapan &amp; jenis transaksi hanya terhitung yang <strong>sudah
+                                diterima</strong>,
+                            jadi proyeksi bisa lebih tinggi dari kenyataan jika masih ada yang belum diterima.
+                        </p>
+                    @else
+                        <div class="text-center py-4">
+                            <p class="text-gray-500 text-sm">Belum ada jamaah, rata-rata belum bisa dihitung.</p>
+                        </div>
+                    @endif
+                </div>
+
                 {{-- HASIL PERHITUNGAN --}}
                 @php
                     $hasilPendapatan = $departure->total_pendapatan_bersih ?? 0;
@@ -2036,7 +2151,7 @@
                                         Rp {{ number_format(abs($hasilAkhir), 0, ',', '.') }}</span>
                                 </div>
                             </div>
-                            <div class="mt-4 grid grid-cols-2 md:grid-cols-4 gap-2">
+                            <div class="mt-4 grid grid-cols-2 md:grid-cols-3 gap-2">
                                 <div class="bg-white rounded-lg p-2 border border-gray-200 text-center">
                                     <p class="text-[10px] text-gray-500">Margin Laba</p>
                                     <p class="text-sm font-bold {{ $isProfit ? 'text-green-600' : 'text-red-600' }}">
@@ -2050,17 +2165,6 @@
                                 <div class="bg-white rounded-lg p-2 border border-gray-200 text-center">
                                     <p class="text-[10px] text-gray-500">Total Jamaah</p>
                                     <p class="text-sm font-bold text-gray-700">{{ $departure->jamaahs->count() }} orang
-                                    </p>
-                                </div>
-                                <div class="bg-white rounded-lg p-2 border border-gray-200 text-center">
-                                    <p class="text-[10px] text-gray-500">Laba per Jamaah</p>
-                                    <p class="text-sm font-bold {{ $isProfit ? 'text-green-600' : 'text-red-600' }}">
-                                        @if ($departure->jamaahs->count() > 0)
-                                            {{ $hasilAkhir >= 0 ? '+' : '−' }} Rp
-                                            {{ number_format(abs($hasilAkhir) / $departure->jamaahs->count(), 0, ',', '.') }}
-                                        @else
-                                            Rp 0
-                                        @endif
                                     </p>
                                 </div>
                             </div>
@@ -2132,7 +2236,8 @@
                         class="px-4 py-2 bg-gray-200 rounded-lg hover:bg-gray-300 transition">Kembali</a>
                     @unless ($locked)
                         <a href="{{ route('transaksional.departure.edit', $departure->id_departure) }}"
-                            class="px-4 py-2 bg-yellow-500 text-white rounded-lg hover:bg-yellow-600 transition">Edit Dasar</a>
+                            class="px-4 py-2 bg-yellow-500 text-white rounded-lg hover:bg-yellow-600 transition">Edit
+                            Dasar</a>
                     @endunless
                 </div>
             </div>
@@ -2618,129 +2723,166 @@
                                             <p class="text-xs text-blue-600 mt-0.5"><i
                                                     class="fas fa-calendar-alt mr-1"></i>Bulan:
                                                 <strong>{{ date('F', mktime(0, 0, 0, $departure->bulan_keberangkatan, 1)) }}</strong>
-                                                · Tahun: <strong>{{ $departure->tahun_keberangkatan }}</strong></p>
+                                                · Tahun: <strong>{{ $departure->tahun_keberangkatan }}</strong>
+                                            </p>
                                         @endif
                                     </div>
                                 </div>
                             </div>
                         @endif
                         <div>
-                            <div class="relative">
-                                <i class="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm"></i>
-                                <input type="text" id="searchJamaahModal"
-                                    placeholder="Cari jamaah berdasarkan nama, produk, atau status..."
-                                    class="w-full pl-10 pr-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500 text-sm">
-                            </div>
-                            @php
-                                $lunasCount = $jamaahs->where('status_pembayaran', 'Lunas')->count();
-                                $belumLunasCount = $jamaahs->where('status_pembayaran', '!=', 'Lunas')->count();
-                            @endphp
-                            <div class="flex flex-wrap items-center gap-4 mt-2 text-xs">
-                                <span class="text-gray-400"><i class="fas fa-info-circle mr-1"></i> Ketik untuk mencari
-                                    jamaah</span>
-                                <span id="jamaahCountModal" class="font-medium">
-                                    <span class="text-gray-600">{{ $jamaahs->count() }} jamaah tersedia</span>
-                                    @if ($lunasCount > 0)
-                                        <span class="text-green-600 font-medium">· {{ $lunasCount }} Lunas</span>
-                                    @endif
-                                    @if ($belumLunasCount > 0)
-                                        <span class="text-red-600 font-bold">· {{ $belumLunasCount }} Belum Lunas</span>
-                                    @endif
-                                </span>
-                            </div>
-                        </div>
-                        <div class="grid grid-cols-2 md:grid-cols-3 gap-2 max-h-[50vh] overflow-y-auto border border-gray-200 rounded-xl p-4"
-                            id="jamaahModalList">
-                            @php
-                                $selectedJamaahs = $departure->jamaahs->pluck('id_jamaah')->toArray();
-                                $bulanNamaModal = [
-                                    1 => 'Jan', 2 => 'Feb', 3 => 'Mar', 4 => 'Apr', 5 => 'Mei', 6 => 'Jun',
-                                    7 => 'Jul', 8 => 'Agu', 9 => 'Sep', 10 => 'Okt', 11 => 'Nov', 12 => 'Des',
-                                ];
-                                $bulanFullModal = [
-                                    1 => 'Januari', 2 => 'Februari', 3 => 'Maret', 4 => 'April', 5 => 'Mei', 6 => 'Juni',
-                                    7 => 'Juli', 8 => 'Agustus', 9 => 'September', 10 => 'Oktober', 11 => 'November', 12 => 'Desember',
-                                ];
-                            @endphp
-                            @forelse($jamaahs as $jamaah)
-                                @php
-                                    $isLunas = $jamaah->status_pembayaran == 'Lunas';
-                                    $isRegistered = in_array($jamaah->id_jamaah, $selectedJamaahs);
-                                    $hasPassport = $jamaah->is_pembuatan_passport_efektif;
-                                    if ($isRegistered) {
-                                        $borderClass = 'border-2 border-blue-400';
-                                        $bgClass = 'bg-blue-50';
-                                        $badgeClass = 'bg-blue-500 text-white';
-                                        $badgeText = 'TERDAFTAR';
-                                    } elseif ($isLunas) {
-                                        $borderClass = 'border-2 border-green-500';
-                                        $bgClass = 'bg-green-50';
-                                        $badgeClass = 'bg-green-500 text-white';
-                                        $badgeText = 'LUNAS';
-                                    } else {
-                                        $borderClass = 'border-2 border-red-500';
-                                        $bgClass = 'bg-red-50';
-                                        $badgeClass = 'bg-red-500 text-white';
-                                        $badgeText = 'BELUM LUNAS';
-                                    }
-                                    $jamaahFeePassport = $jamaah->fee_passport;
-                                    $jamaahSudahDibayar = $jamaah->total_dibayar ?? 0;
-                                    $jamaahTotalRefund  = (int) ($jamaah->total_refund ?? 0);
-                                    $jamaahNetDibayar   = max(0, $jamaahSudahDibayar - $jamaahTotalRefund);
-                                    $jamaahTagihan      = $jamaah->total_tagihan_setelah_diskon ?? ($jamaah->total_tagihan ?? 0);
-                                    $jamaahSisa         = max(0, $jamaahTagihan - $jamaahNetDibayar);
-                                @endphp
-                                <label
-                                    class="jamaah-modal-item relative flex items-start p-2.5 {{ $borderClass }} {{ $bgClass }} rounded-lg hover:shadow-md transition cursor-pointer"
-                                    data-name="{{ strtolower($jamaah->nama_lengkap) }}"
-                                    data-produk="{{ strtolower($jamaah->produk_paket) }}"
-                                    data-status="{{ strtolower($jamaah->status_pembayaran) }}"
-                                    data-registered="{{ $isRegistered ? '1' : '0' }}">
-                                    <span
-                                        class="absolute -top-2 -right-1 text-[10px] font-bold px-2 py-0.5 rounded-full {{ $badgeClass }} shadow-sm whitespace-nowrap">{{ $badgeText }}</span>
-                                    <input type="checkbox" name="jamaah_ids[]" value="{{ $jamaah->id_jamaah }}"
-                                        {{ $isRegistered ? 'checked' : '' }}
-                                        class="w-4 h-4 text-yellow-500 border-gray-300 rounded focus:ring-yellow-500 flex-shrink-0 mt-0.5">
-                                    <div class="ml-2 overflow-hidden flex-1">
-                                        <p class="text-sm font-semibold text-gray-800 truncate pr-2">
-                                            {{ $jamaah->nama_lengkap }}</p>
-                                        <p class="text-xs text-gray-500 truncate">{{ $jamaah->produk_paket }}</p>
-                                        <p class="text-[10px] text-emerald-700 font-semibold truncate mt-0.5">
-                                            <i class="fas fa-wallet mr-0.5"></i> Dibayar:
-                                            <strong>Rp {{ number_format($jamaahSudahDibayar, 0, ',', '.') }}</strong>
-                                        </p>
-                                        @if ($jamaahTotalRefund > 0)
-                                            <p class="text-[10px] text-amber-700 font-semibold truncate mt-0.5">
-                                                <i class="fas fa-undo-alt mr-0.5"></i> Refund:
-                                                <strong>−Rp {{ number_format($jamaahTotalRefund, 0, ',', '.') }}</strong>
-                                            </p>
-                                            <p class="text-[10px] text-emerald-700 font-bold truncate mt-0.5">
-                                                <i class="fas fa-check-circle mr-0.5"></i> NET:
-                                                <strong>Rp {{ number_format($jamaahNetDibayar, 0, ',', '.') }}</strong>
-                                            </p>
-                                        @endif
-                                        @if ($hasPassport)
-                                            <p class="text-[10px] text-green-600 font-semibold truncate mt-0.5">
-                                                <i
-                                                    class="fas fa-passport mr-0.5"></i>{{ $jamaah->is_pembuatan_passport ? 'PASSPORT YA' : 'PASSPORT YA (EFEKTIF)' }}
-                                            </p>
-                                        @endif
-                                    </div>
-                                </label>
-                            @empty
-                                <div class="col-span-3 text-center py-8">
-                                    <div
-                                        class="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-3">
-                                        <i class="fas fa-users text-gray-300 text-2xl"></i>
-                                    </div>
-                                    <p class="text-gray-500 font-medium">Tidak ada jamaah yang tersedia</p>
+                            <div class="flex items-center gap-2">
+                                <div class="relative flex-1">
+                                    <i
+                                        class="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm"></i>
+                                    <input type="text" id="searchJamaahModal"
+                                        placeholder="Cari jamaah berdasarkan nama, produk, atau status..."
+                                        class="w-full pl-10 pr-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500 text-sm">
                                 </div>
-                            @endforelse
+                                <button type="button" id="btnSyncJamaahModal" onclick="syncJamaahModal()"
+                                    class="inline-flex items-center px-3 py-2.5 bg-purple-500 text-white text-sm rounded-xl hover:bg-purple-600 transition whitespace-nowrap">
+                                    <i class="fas fa-sync-alt mr-2"></i> Sinkron Jamaah Baru
+                                </button>
+                            </div>
+                            <div id="syncJamaahInfo" class="hidden mt-2"></div>
                         </div>
+                        @php
+                            $lunasCount = $jamaahs->where('status_pembayaran', 'Lunas')->count();
+                            $belumLunasCount = $jamaahs->where('status_pembayaran', '!=', 'Lunas')->count();
+                        @endphp
+                        <div class="flex flex-wrap items-center gap-4 mt-2 text-xs">
+                            <span class="text-gray-400"><i class="fas fa-info-circle mr-1"></i> Ketik untuk mencari
+                                jamaah</span>
+                            <span id="jamaahCountModal" class="font-medium">
+                                <span class="text-gray-600">{{ $jamaahs->count() }} jamaah tersedia</span>
+                                @if ($lunasCount > 0)
+                                    <span class="text-green-600 font-medium">· {{ $lunasCount }} Lunas</span>
+                                @endif
+                                @if ($belumLunasCount > 0)
+                                    <span class="text-red-600 font-bold">· {{ $belumLunasCount }} Belum Lunas</span>
+                                @endif
+                            </span>
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-2 md:grid-cols-3 gap-2 max-h-[50vh] overflow-y-auto border border-gray-200 rounded-xl p-4"
+                        id="jamaahModalList">
+                        @php
+                            $selectedJamaahs = $departure->jamaahs->pluck('id_jamaah')->toArray();
+                            $bulanNamaModal = [
+                                1 => 'Jan',
+                                2 => 'Feb',
+                                3 => 'Mar',
+                                4 => 'Apr',
+                                5 => 'Mei',
+                                6 => 'Jun',
+                                7 => 'Jul',
+                                8 => 'Agu',
+                                9 => 'Sep',
+                                10 => 'Okt',
+                                11 => 'Nov',
+                                12 => 'Des',
+                            ];
+                            $bulanFullModal = [
+                                1 => 'Januari',
+                                2 => 'Februari',
+                                3 => 'Maret',
+                                4 => 'April',
+                                5 => 'Mei',
+                                6 => 'Juni',
+                                7 => 'Juli',
+                                8 => 'Agustus',
+                                9 => 'September',
+                                10 => 'Oktober',
+                                11 => 'November',
+                                12 => 'Desember',
+                            ];
+                        @endphp
+                        @forelse($jamaahs as $jamaah)
+                            @php
+                                $isLunas = $jamaah->status_pembayaran == 'Lunas';
+                                $isRegistered = in_array($jamaah->id_jamaah, $selectedJamaahs);
+                                $hasPassport = $jamaah->is_pembuatan_passport_efektif;
+                                if ($isRegistered) {
+                                    $borderClass = 'border-2 border-blue-400';
+                                    $bgClass = 'bg-blue-50';
+                                    $badgeClass = 'bg-blue-500 text-white';
+                                    $badgeText = 'TERDAFTAR';
+                                } elseif ($isLunas) {
+                                    $borderClass = 'border-2 border-green-500';
+                                    $bgClass = 'bg-green-50';
+                                    $badgeClass = 'bg-green-500 text-white';
+                                    $badgeText = 'LUNAS';
+                                } else {
+                                    $borderClass = 'border-2 border-red-500';
+                                    $bgClass = 'bg-red-50';
+                                    $badgeClass = 'bg-red-500 text-white';
+                                    $badgeText = 'BELUM LUNAS';
+                                }
+                                $jamaahFeePassport = $jamaah->fee_passport;
+                                $jamaahSudahDibayar = $jamaah->total_dibayar ?? 0;
+                                $jamaahTotalRefund = (int) ($jamaah->total_refund ?? 0);
+                                $jamaahNetDibayar = max(0, $jamaahSudahDibayar - $jamaahTotalRefund);
+                                $jamaahTagihan = $jamaah->total_tagihan_setelah_diskon ?? ($jamaah->total_tagihan ?? 0);
+                                $jamaahSisa = max(0, $jamaahTagihan - $jamaahNetDibayar);
+                            @endphp
+                            <label
+                                class="jamaah-modal-item relative flex items-start p-2.5 {{ $borderClass }} {{ $bgClass }} rounded-lg hover:shadow-md transition cursor-pointer"
+                                data-name="{{ strtolower($jamaah->nama_lengkap) }}"
+                                data-produk="{{ strtolower($jamaah->produk_paket) }}"
+                                data-status="{{ strtolower($jamaah->status_pembayaran) }}"
+                                data-registered="{{ $isRegistered ? '1' : '0' }}">
+                                <span
+                                    class="absolute -top-2 -right-1 text-[10px] font-bold px-2 py-0.5 rounded-full {{ $badgeClass }} shadow-sm whitespace-nowrap">{{ $badgeText }}</span>
+                                <input type="checkbox" name="jamaah_ids[]" value="{{ $jamaah->id_jamaah }}"
+                                    {{ $isRegistered ? 'checked' : '' }}
+                                    class="w-4 h-4 text-yellow-500 border-gray-300 rounded focus:ring-yellow-500 flex-shrink-0 mt-0.5">
+                                <div class="ml-2 overflow-hidden flex-1">
+                                    <p class="text-sm font-semibold text-gray-800 truncate pr-2">
+                                        {{ $jamaah->nama_lengkap }}</p>
+                                    <p class="text-xs text-gray-500 truncate">{{ $jamaah->produk_paket }}</p>
+                                    <p class="text-[10px] text-emerald-700 font-semibold truncate mt-0.5">
+                                        <i class="fas fa-wallet mr-0.5"></i> Dibayar:
+                                        <strong>Rp {{ number_format($jamaahSudahDibayar, 0, ',', '.') }}</strong>
+                                    </p>
+                                    @if ($jamaahTotalRefund > 0)
+                                        <p class="text-[10px] text-amber-700 font-semibold truncate mt-0.5">
+                                            <i class="fas fa-undo-alt mr-0.5"></i> Refund:
+                                            <strong>−Rp {{ number_format($jamaahTotalRefund, 0, ',', '.') }}</strong>
+                                        </p>
+                                        <p class="text-[10px] text-emerald-700 font-bold truncate mt-0.5">
+                                            <i class="fas fa-check-circle mr-0.5"></i> NET:
+                                            <strong>Rp {{ number_format($jamaahNetDibayar, 0, ',', '.') }}</strong>
+                                        </p>
+                                    @endif
+                                    @if ($hasPassport)
+                                        <p class="text-[10px] text-green-600 font-semibold truncate mt-0.5">
+                                            <i
+                                                class="fas fa-passport mr-0.5"></i>{{ $jamaah->is_pembuatan_passport ? 'PASSPORT YA' : 'PASSPORT YA (EFEKTIF)' }}
+                                        </p>
+                                    @endif
+                                </div>
+                            </label>
+                        @empty
+                            <div class="col-span-3 text-center py-8">
+                                <div class="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-3">
+                                    <i class="fas fa-users text-gray-300 text-2xl"></i>
+                                </div>
+                                <p class="text-gray-500 font-medium">Tidak ada jamaah yang tersedia</p>
+                            </div>
+                        @endforelse
+                    </div>
+                    <div
+                        class="flex items-center justify-between text-sm bg-blue-50 rounded-lg px-4 py-2.5 border border-blue-200">
                         <div
                             class="flex items-center justify-between text-sm bg-blue-50 rounded-lg px-4 py-2.5 border border-blue-200">
-                            <div class="text-blue-700"><i class="fas fa-info-circle mr-2"></i>Centang jamaah yang akan
-                                dimasukkan ke keberangkatan ini</div>
+                            <div class="text-blue-700">
+                                <i class="fas fa-info-circle mr-2"></i>Centang jamaah yang akan dimasukkan ke
+                                keberangkatan ini
+                                @if ($departure->kuota > 0)
+                                    · Kuota: <strong id="kuotaTerpilih">0</strong> /
+                                    <strong>{{ $departure->kuota }}</strong>
+                                @endif
+                            </div>
                             <div class="flex items-center gap-3">
                                 <button type="button" onclick="selectAllJamaah()"
                                     class="text-blue-600 hover:text-blue-800 text-xs font-medium"><i
@@ -3250,7 +3392,7 @@
                             const kamarCheckbox = kamarItem.querySelector('.kamar-checkbox');
                             if (kamarCheckbox && kamarCheckbox.checked) {
                                 const jumlah = parseInt(kamarItem.querySelector('.kamar-jumlah').value) ||
-                                0;
+                                    0;
                                 const hargaInput = kamarItem.querySelector('.kamar-harga');
                                 let harga = 0;
                                 if (hargaInput) {
@@ -3259,7 +3401,7 @@
                                     harga = parseInt(rawValue) || 0;
                                 }
                                 const durasi = parseInt(kamarItem.querySelector('.kamar-durasi').value) ||
-                                1;
+                                    1;
                                 grandTotal += jumlah * harga * durasi;
                             }
                         });
@@ -3395,12 +3537,31 @@
         }
 
         // JAMAAH
+        function getJamaahCheckboxes() {
+            return document.querySelectorAll('#jamaahModalList .jamaah-modal-item input[type="checkbox"]');
+        }
+
+        function countCheckedJamaah() {
+            return document.querySelectorAll(
+                '#jamaahModalList .jamaah-modal-item input[type="checkbox"]:checked'
+            ).length;
+        }
+
+        function updateKuotaCounter() {
+            const el = document.getElementById('kuotaTerpilih');
+            if (!el) return;
+            const checked = countCheckedJamaah();
+            el.textContent = checked;
+            el.className = (KUOTA > 0 && checked >= KUOTA) ? 'text-red-600' : 'text-blue-800';
+        }
+
         function openJamaahModal() {
             document.getElementById('jamaahModal').classList.remove('hidden');
             document.getElementById('searchJamaahModal').value = '';
             document.querySelectorAll('.jamaah-modal-item').forEach(function(item) {
                 item.style.display = 'flex';
             });
+            updateKuotaCounter();
         }
 
         function closeJamaahModal() {
@@ -3414,18 +3575,179 @@
         }
 
         function selectAllJamaah() {
-            document.querySelectorAll('#jamaahModalList .jamaah-modal-item input[type="checkbox"]').forEach(function(
-                checkbox) {
-                checkbox.checked = true;
+            let limitReached = false;
+            let count = countCheckedJamaah();
+
+            document.querySelectorAll('#jamaahModalList .jamaah-modal-item').forEach(function(item) {
+                if (item.style.display === 'none') return; // hanya yang tampil (hasil filter)
+                const cb = item.querySelector('input[type="checkbox"]');
+                if (cb.checked) return;
+
+                if (KUOTA > 0 && count >= KUOTA) {
+                    limitReached = true;
+                    return;
+                }
+                cb.checked = true;
+                count++;
             });
+
+            if (limitReached) {
+                showToast('Dibatasi sesuai kuota: maksimal ' + KUOTA + ' jamaah', 'warning');
+            }
+            updateKuotaCounter();
         }
 
         function deselectAllJamaah() {
-            document.querySelectorAll('#jamaahModalList .jamaah-modal-item input[type="checkbox"]').forEach(function(
-                checkbox) {
+            getJamaahCheckboxes().forEach(function(checkbox) {
                 checkbox.checked = false;
             });
+            updateKuotaCounter();
         }
+
+        const SYNC_JAMAAH_URL = "{{ route('transaksional.departure.sync-jamaah-tersedia', $departure->id_departure) }}";
+
+        function escHtml(str) {
+            return String(str ?? '').replace(/[&<>"']/g, function(c) {
+                return {
+                    '&': '&amp;',
+                    '<': '&lt;',
+                    '>': '&gt;',
+                    '"': '&quot;',
+                    "'": '&#39;'
+                } [c];
+            });
+        }
+
+        function syncJamaahModal() {
+            const btn = document.getElementById('btnSyncJamaahModal');
+            const info = document.getElementById('syncJamaahInfo');
+            const list = document.getElementById('jamaahModalList');
+            const original = btn.innerHTML;
+
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> Mencari...';
+
+            fetch(SYNC_JAMAAH_URL, {
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest',
+                        'Accept': 'application/json'
+                    }
+                })
+                .then(res => res.json())
+                .then(data => {
+                    if (!data.success) {
+                        showToast(data.message || 'Gagal sinkron jamaah', 'error');
+                        return;
+                    }
+
+                    // id jamaah yang sudah ada di modal
+                    const existing = new Set(
+                        Array.from(list.querySelectorAll('input[name="jamaah_ids[]"]')).map(cb => cb.value)
+                    );
+
+                    // hapus placeholder "tidak ada jamaah" jika ada
+                    const empty = list.querySelector('.col-span-3');
+                    let added = 0;
+
+                    data.eligible.forEach(function(j) {
+                        if (existing.has(String(j.id_jamaah))) return;
+                        if (empty) empty.remove();
+
+                        const lunas = (j.status_pembayaran || '') === 'Lunas';
+                        const border = lunas ? 'border-2 border-green-500' : 'border-2 border-red-500';
+                        const bg = lunas ? 'bg-green-50' : 'bg-red-50';
+                        const badge = lunas ? 'bg-green-500 text-white' : 'bg-red-500 text-white';
+                        const badgeText = lunas ? 'LUNAS' : 'BELUM LUNAS';
+
+                        const label = document.createElement('label');
+                        label.className = 'jamaah-modal-item relative flex items-start p-2.5 ' + border + ' ' +
+                            bg +
+                            ' rounded-lg hover:shadow-md transition cursor-pointer ring-2 ring-purple-300';
+                        label.dataset.name = (j.nama_lengkap || '').toLowerCase();
+                        label.dataset.produk = (j.produk_paket || '').toLowerCase();
+                        label.dataset.status = (j.status_pembayaran || '').toLowerCase();
+                        label.dataset.registered = '0';
+                        label.innerHTML =
+                            '<span class="absolute -top-2 -right-1 text-[10px] font-bold px-2 py-0.5 rounded-full ' +
+                            badge + ' shadow-sm whitespace-nowrap">' + badgeText + '</span>' +
+                            '<input type="checkbox" name="jamaah_ids[]" value="' + escHtml(j.id_jamaah) +
+                            '" class="w-4 h-4 text-yellow-500 border-gray-300 rounded focus:ring-yellow-500 flex-shrink-0 mt-0.5">' +
+                            '<div class="ml-2 overflow-hidden flex-1">' +
+                            '<p class="text-sm font-semibold text-gray-800 truncate pr-2">' + escHtml(j
+                                .nama_lengkap) + '</p>' +
+                            '<p class="text-xs text-gray-500 truncate">' + escHtml(j.produk_paket) + '</p>' +
+                            '<p class="text-[10px] text-emerald-700 font-semibold truncate mt-0.5"><i class="fas fa-wallet mr-0.5"></i> Dibayar: <strong>Rp ' +
+                            Number(j.total_dibayar || 0).toLocaleString('id-ID') + '</strong></p>' +
+                            '</div>';
+
+                        list.prepend(label);
+                        added++;
+                    });
+
+                    // ringkasan hasil + alasan jamaah yang tidak lolos
+                    let html = '';
+                    if (added > 0) {
+                        html +=
+                            '<div class="text-xs bg-green-50 border border-green-200 text-green-700 rounded-lg px-3 py-2">' +
+                            '<i class="fas fa-check-circle mr-1"></i> ' + added +
+                            ' jamaah baru ditambahkan ke daftar (ditandai ring ungu). Centang lalu klik Simpan.</div>';
+                    } else {
+                        html +=
+                            '<div class="text-xs bg-gray-50 border border-gray-200 text-gray-600 rounded-lg px-3 py-2">' +
+                            '<i class="fas fa-info-circle mr-1"></i> Tidak ada jamaah baru yang memenuhi syarat.</div>';
+                    }
+
+                    if (data.excluded.length > 0) {
+                        html +=
+                            '<details class="mt-2 text-xs bg-amber-50 border border-amber-200 rounded-lg px-3 py-2">' +
+                            '<summary class="cursor-pointer text-amber-800 font-medium">' + data.excluded.length +
+                            ' jamaah dengan produk sama tidak lolos (lihat alasan)</summary><ul class="mt-2 space-y-1 text-amber-800">';
+                        data.excluded.forEach(function(x) {
+                            html += '<li><strong>' + escHtml(x.nama) + '</strong>: ' + escHtml(x.alasan) +
+                                '</li>';
+                        });
+                        html += '</ul></details>';
+                    }
+
+                    info.innerHTML = html;
+                    info.classList.remove('hidden');
+
+                    // refresh pencarian & penghitung
+                    document.getElementById('searchJamaahModal').value = '';
+                    document.querySelectorAll('.jamaah-modal-item').forEach(i => i.style.display = 'flex');
+                    if (typeof updateKuotaCounter === 'function') updateKuotaCounter();
+
+                    showToast(added > 0 ? added + ' jamaah baru ditemukan' : 'Tidak ada jamaah baru', added > 0 ?
+                        'success' : 'info');
+                })
+                .catch(err => {
+                    console.error(err);
+                    showToast('Terjadi kesalahan saat sinkron', 'error');
+                })
+                .finally(() => {
+                    btn.disabled = false;
+                    btn.innerHTML = original;
+                });
+        }
+
+        // Batasi centang manual agar tidak melebihi kuota
+        document.addEventListener('change', function(e) {
+            if (!e.target.matches('#jamaahModalList .jamaah-modal-item input[type="checkbox"]')) return;
+
+            if (KUOTA > 0 && countCheckedJamaah() > KUOTA) {
+                e.target.checked = false;
+                showToast('Kuota maksimal ' + KUOTA + ' jamaah', 'warning');
+            }
+            updateKuotaCounter();
+        });
+
+        // Cegah submit jika melebihi kuota (pengaman terakhir di sisi browser)
+        document.querySelector('#jamaahModal form')?.addEventListener('submit', function(e) {
+            if (KUOTA > 0 && countCheckedJamaah() > KUOTA) {
+                e.preventDefault();
+                showToast('Jumlah jamaah melebihi kuota (' + KUOTA + ')', 'error');
+            }
+        });
 
         // PERLENGKAPAN
         function openPerlengkapanModal() {
@@ -3455,7 +3777,7 @@
                 .then(data => {
                     content.innerHTML = data.html;
                     document.getElementById('perlengkapanDetailTitle').textContent = 'Detail: ' + data
-                    .nama_perlengkapan;
+                        .nama_perlengkapan;
                     const checkAll = document.getElementById(`perlengkapan-check-all-${perlengkapanId}`);
                     if (checkAll) {
                         checkAll.addEventListener('change', function() {
@@ -3469,10 +3791,10 @@
                         cb.addEventListener('change', function() {
                             const all = document.querySelectorAll(
                                 `#perlengkapan-jamaah-list-${perlengkapanId} .perlengkapan-jamaah-checkbox`
-                                );
+                            );
                             const checked = document.querySelectorAll(
                                 `#perlengkapan-jamaah-list-${perlengkapanId} .perlengkapan-jamaah-checkbox:checked`
-                                );
+                            );
                             if (checkAll) checkAll.checked = all.length === checked.length;
                         });
                     });
@@ -3544,7 +3866,7 @@
                         checkAll.addEventListener('change', function() {
                             document.querySelectorAll(
                                 `#jenis-transaksi-jamaah-list-${jenisTransaksiId} .jenis-transaksi-jamaah-checkbox`
-                                ).forEach(cb => cb.checked = this.checked);
+                            ).forEach(cb => cb.checked = this.checked);
                         });
                     }
                     document.querySelectorAll(
@@ -3553,10 +3875,10 @@
                             cb.addEventListener('change', function() {
                                 const all = document.querySelectorAll(
                                     `#jenis-transaksi-jamaah-list-${jenisTransaksiId} .jenis-transaksi-jamaah-checkbox`
-                                    );
+                                );
                                 const checked = document.querySelectorAll(
                                     `#jenis-transaksi-jamaah-list-${jenisTransaksiId} .jenis-transaksi-jamaah-checkbox:checked`
-                                    );
+                                );
                                 if (checkAll) checkAll.checked = all.length === checked.length;
                             });
                         });
@@ -3573,6 +3895,9 @@
         }
 
         const CSRF_TOKEN = '{{ csrf_token() }}';
+        const KUOTA = {{ (int) $departure->kuota }};
+
+
 
         function togglePerlengkapanStatusJamaah(departurePerlengkapanId, jamaahId, currentStatus) {
             const newStatus = currentStatus === 'Sudah Diterima' ? 'Belum Diterima' : 'Sudah Diterima';
@@ -3719,7 +4044,7 @@
 
         function recalculate(id) {
             if (confirm('Yakin ingin menghitung ulang data keuangan?')) document.getElementById('recalculate-form')
-        .submit();
+                .submit();
         }
 
         function formatRupiahJenisTransaksi(input, hiddenId) {

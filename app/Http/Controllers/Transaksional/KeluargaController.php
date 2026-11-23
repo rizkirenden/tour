@@ -5,6 +5,8 @@ namespace App\Http\Controllers\Transaksional;
 
 use App\Http\Controllers\Controller;
 use App\Services\KeluargaService;
+use App\Models\Agent;
+use App\Models\Keluarga;
 use App\Models\TransaksiPembayaran;
 use App\Models\MetodePembayaran;
 use App\Models\JenisPembayaran;
@@ -14,6 +16,7 @@ use App\Models\ProdukHargaBulanan;
 use App\Models\Hotel;
 use App\Models\Kamar;
 use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -48,13 +51,15 @@ class KeluargaController extends Controller
         $hubunganOptions = $this->service->getHubunganOptions();
         $diskons = $this->service->getDiskons();
         $hotelOptions = Hotel::orderBy('kota')->orderBy('nama_hotel')->get();
+        $agents = Agent::orderBy('name')->get();
 
         return view('keluargas.create', compact(
             'produkPakets',
             'kotaAsals',
             'hubunganOptions',
             'diskons',
-            'hotelOptions'
+            'hotelOptions',
+            'agents'
         ));
     }
 
@@ -64,7 +69,14 @@ class KeluargaController extends Controller
             'nama_keluarga' => 'required|string|max:100',
             'produk_paket' => 'required|string|max:100|exists:produk_pakets,nama_produk',
             'id_diskon' => 'nullable|exists:diskons,id_diskon',
-            'agent' => 'nullable|string|max:100',
+
+            // ✅ AGENT: harus dari master data agent
+            'agent' => [
+                'nullable',
+                'string',
+                'max:100',
+                Rule::exists('agents', 'name')->whereNull('deleted_at'),
+            ],
             'fee_agent' => 'nullable|integer|min:0',
 
             'keberangkatan_data' => 'nullable|array',
@@ -97,6 +109,7 @@ class KeluargaController extends Controller
             'jamaahs.*.status_kawin' => 'nullable|in:Belum Kawin,Kawin,Cerai Hidup,Cerai Mati',
             'jamaahs.*.wa' => 'required|string|max:20',
             'jamaahs.*.alamat' => 'nullable|string',
+            'jamaahs.*.provinsi' => 'nullable|string|max:100',
             'jamaahs.*.kota_kabupaten' => 'nullable|string|max:100',
             'jamaahs.*.kecamatan' => 'nullable|string|max:100',
             'jamaahs.*.kelurahan' => 'nullable|string|max:100',
@@ -134,6 +147,8 @@ class KeluargaController extends Controller
             'jamaahs.*.upgrade_hotels.*.jumlah_pax' => 'nullable|integer|min:1',
             'jamaahs.*.upgrade_hotels.*.harga_per_pax' => 'nullable|integer|min:0',
             'jamaahs.*.upgrade_hotels.*.catatan' => 'nullable|string',
+        ], [
+            'agent.exists' => 'Agent tidak terdaftar di master data.',
         ]);
 
         try {
@@ -183,6 +198,7 @@ class KeluargaController extends Controller
         $hubunganOptions = $this->service->getHubunganOptions();
         $diskons = $this->service->getDiskons();
         $hotelOptions = Hotel::orderBy('kota')->orderBy('nama_hotel')->get();
+        $agents = Agent::orderBy('name')->get();
 
         $jamaahData = old('jamaahs');
 
@@ -200,6 +216,7 @@ class KeluargaController extends Controller
                     'status_kawin' => $jamaah->status_kawin,
                     'wa' => $jamaah->wa,
                     'alamat' => $jamaah->alamat,
+                    'provinsi' => $jamaah->provinsi,
                     'kota_kabupaten' => $jamaah->kota_kabupaten,
                     'kecamatan' => $jamaah->kecamatan,
                     'kelurahan' => $jamaah->kelurahan,
@@ -238,7 +255,7 @@ class KeluargaController extends Controller
                 'pekerjaan' => '', 'hubungan_keluarga' => '', 'is_kepala_keluarga' => true,
                 'jenis_kelamin' => '', 'status_kawin' => '',
                 'wa' => '',
-                'alamat' => '', 'kota_kabupaten' => '', 'kecamatan' => '', 'kelurahan' => '',
+                'alamat' => '', 'provinsi' => '', 'kota_kabupaten' => '', 'kecamatan' => '', 'kelurahan' => '',
                 'kota_asal' => '', 'pulau' => '', 'bandara_keberangkatan' => '',
                 'nomor_paspor' => '', 'paspor_terbit' => null, 'paspor_expired' => null,
                 'paspor_diterbitkan_di' => '', 'tempat_lahir' => '', 'tanggal_lahir' => '',
@@ -255,17 +272,35 @@ class KeluargaController extends Controller
             'hubunganOptions',
             'diskons',
             'hotelOptions',
+            'agents',
             'jamaahData'
         ));
     }
 
     public function update(Request $request, $id)
     {
+        $keluargaLama = Keluarga::findOrFail($id);
+
         $validated = $request->validate([
             'nama_keluarga' => 'required|string|max:100',
             'produk_paket' => 'required|string|max:100|exists:produk_pakets,nama_produk',
             'id_diskon' => 'nullable|exists:diskons,id_diskon',
-            'agent' => 'nullable|string|max:100',
+
+            // ✅ AGENT: nilai lama (belum ada di master) tetap boleh,
+            // nilai baru harus terdaftar di master data agent
+            'agent' => [
+                'nullable',
+                'string',
+                'max:100',
+                function ($attribute, $value, $fail) use ($keluargaLama) {
+                    if (empty($value) || $value === $keluargaLama->agent) {
+                        return;
+                    }
+                    if (!Agent::where('name', $value)->exists()) {
+                        $fail('Agent tidak terdaftar di master data.');
+                    }
+                },
+            ],
             'fee_agent' => 'nullable|integer|min:0',
 
             'keberangkatan_data' => 'nullable|array',
@@ -299,6 +334,7 @@ class KeluargaController extends Controller
             'jamaahs.*.status_kawin' => 'nullable|in:Belum Kawin,Kawin,Cerai Hidup,Cerai Mati',
             'jamaahs.*.wa' => 'required|string|max:20',
             'jamaahs.*.alamat' => 'nullable|string',
+            'jamaahs.*.provinsi' => 'nullable|string|max:100',
             'jamaahs.*.kota_kabupaten' => 'nullable|string|max:100',
             'jamaahs.*.kecamatan' => 'nullable|string|max:100',
             'jamaahs.*.kelurahan' => 'nullable|string|max:100',

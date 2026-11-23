@@ -304,56 +304,61 @@ class DepartureService
     }
 
     public function updateJamaah($id, array $data)
-    {
-        return DB::transaction(function () use ($id, $data) {
-            $departure = Departure::findOrFail($id);
+{
+    return DB::transaction(function () use ($id, $data) {
+        $departure = Departure::findOrFail($id);
 
-            if (isset($data['jamaah_ids'])) {
-                $currentJamaahs = DepartureJamaah::where('id_departure', $id)
-                    ->pluck('id_jamaah')
-                    ->toArray();
-                $newJamaahs = $data['jamaah_ids'];
+        if (isset($data['jamaah_ids'])) {
+            // buang duplikat supaya hitungan akurat
+            $newJamaahs = array_values(array_unique($data['jamaah_ids']));
 
-                $toRemove = array_diff($currentJamaahs, $newJamaahs);
-                foreach ($toRemove as $jamaahId) {
-                    DepartureJamaah::where('id_departure', $id)
-                        ->where('id_jamaah', $jamaahId)
-                        ->delete();
-                }
-
-                $toAdd = array_diff($newJamaahs, $currentJamaahs);
-                foreach ($toAdd as $jamaahId) {
-                    $exists = DepartureJamaah::where('id_departure', $id)
-                        ->where('id_jamaah', $jamaahId)
-                        ->exists();
-
-                    if (!$exists) {
-                        DepartureJamaah::create([
-                            'id_departure' => $id,
-                            'id_jamaah' => $jamaahId,
-                            'status_keberangkatan' => 'Terdaftar',
-                            'catatan' => null,
-                        ]);
-                    }
-                }
-
-                $totalJamaah = DepartureJamaah::where('id_departure', $id)->count();
-                $departure->jamaah_terdaftar = $totalJamaah;
-                $departure->is_jamaah_complete = $totalJamaah > 0;
-                $departure->save();
-
-                $departure->recalculate();
+            // ✅ CEK KUOTA: daftar yang dikirim = kondisi akhir
+            if ($departure->kuota > 0 && count($newJamaahs) > $departure->kuota) {
+                throw new \Exception(
+                    'Kuota terlampaui! Kuota: ' . $departure->kuota .
+                    ', jamaah yang dipilih: ' . count($newJamaahs) .
+                    '. Kurangi ' . (count($newJamaahs) - $departure->kuota) . ' jamaah.'
+                );
             }
 
-            return $departure->load([
-                'jamaahs',
-                'jamaahs.diskon',
-                'jamaahs.upgradeHotels.hotel',
-                'jamaahs.keluarga.upgradeHotels.hotel',
-                'jamaahs.keluarga.jamaahs'
-            ]);
-        });
-    }
+            $currentJamaahs = DepartureJamaah::where('id_departure', $id)
+                ->pluck('id_jamaah')
+                ->toArray();
+
+            $toRemove = array_diff($currentJamaahs, $newJamaahs);
+            foreach ($toRemove as $jamaahId) {
+                DepartureJamaah::where('id_departure', $id)
+                    ->where('id_jamaah', $jamaahId)
+                    ->delete();
+            }
+
+            $toAdd = array_diff($newJamaahs, $currentJamaahs);
+            foreach ($toAdd as $jamaahId) {
+                DepartureJamaah::create([
+                    'id_departure' => $id,
+                    'id_jamaah' => $jamaahId,
+                    'status_keberangkatan' => 'Terdaftar',
+                    'catatan' => null,
+                ]);
+            }
+
+            $totalJamaah = DepartureJamaah::where('id_departure', $id)->count();
+            $departure->jamaah_terdaftar = $totalJamaah;
+            $departure->is_jamaah_complete = $totalJamaah > 0;
+            $departure->save();
+
+            $departure->recalculate();
+        }
+
+        return $departure->load([
+            'jamaahs',
+            'jamaahs.diskon',
+            'jamaahs.upgradeHotels.hotel',
+            'jamaahs.keluarga.upgradeHotels.hotel',
+            'jamaahs.keluarga.jamaahs'
+        ]);
+    });
+}
 
     public function updateHargaAsliUpgrade($departureId, $hargaAsli)
     {
@@ -1164,6 +1169,90 @@ class DepartureService
             return $pembayaran;
         });
     }
+
+    public function getSyncCandidates($departureId)
+{
+    $departure = Departure::findOrFail($departureId);
+
+    $currentIds = DepartureJamaah::where('id_departure', $departureId)
+        ->pluck('id_jamaah')
+        ->toArray();
+
+    // Jamaah yang sudah ada di departure LAIN berstatus Aktif/Berangkat
+    $busy = DepartureJamaah::select('departure_jamaahs.id_jamaah as id_jamaah', 'departures.nama_keberangkatan')
+        ->join('departures', 'departures.id_departure', '=', 'departure_jamaahs.id_departure')
+        ->join('status_keberangkatans', 'status_keberangkatans.id_status', '=', 'departures.id_status')
+        ->where('departures.id_departure', '!=', $departureId)
+        ->whereIn('status_keberangkatans.nama_status', ['Aktif', 'Berangkat'])
+        ->get()
+        ->keyBy('id_jamaah');
+
+    $produk = mb_strtolower(trim((string) $departure->produk_paket));
+    $bulan  = $departure->bulan_keberangkatan ? (int) $departure->bulan_keberangkatan : null;
+    $tahun  = $departure->tahun_keberangkatan ? (int) $departure->tahun_keberangkatan : null;
+
+    $query = Jamaah::with('keberangkatan')->whereNotIn('id_jamaah', $currentIds);
+
+    if ($produk !== '') {
+        $query->whereRaw('LOWER(TRIM(produk_paket)) = ?', [$produk]);
+    }
+
+    $eligible = [];
+    $excluded = [];
+
+    foreach ($query->orderBy('nama_lengkap')->get() as $j) {
+        // 1. Sudah di departure lain?
+        if ($busy->has($j->id_jamaah)) {
+            $excluded[] = [
+                'nama'   => $j->nama_lengkap,
+                'alasan' => 'Sudah terdaftar di "' . $busy[$j->id_jamaah]->nama_keberangkatan . '" (Aktif/Berangkat)',
+            ];
+            continue;
+        }
+
+        // 2. Cek bulan/tahun (hanya jika departure memakai filter bulan/tahun)
+        if ($bulan && $tahun) {
+            $cocok = false;
+
+            if ((int) $j->bulan_keberangkatan === $bulan && (int) $j->tahun_keberangkatan === $tahun) {
+                $cocok = true;
+            }
+
+            foreach ($j->keberangkatan as $k) {
+                $b = (int) ($k->pivot->bulan_keberangkatan ?? $k->bulan_keberangkatan ?? 0);
+                $t = (int) ($k->pivot->tahun_keberangkatan ?? $k->tahun_keberangkatan ?? 0);
+                if ($b === $bulan && $t === $tahun) {
+                    $cocok = true;
+                    break;
+                }
+            }
+
+            // bulan/tahun belum diisi sama sekali -> tetap diloloskan
+            if (!$cocok && empty($j->bulan_keberangkatan) && empty($j->tahun_keberangkatan)) {
+                $cocok = true;
+            }
+
+            if (!$cocok) {
+                $excluded[] = [
+                    'nama'   => $j->nama_lengkap,
+                    'alasan' => 'Bulan/tahun tidak cocok (jamaah: ' . ($j->bulan_keberangkatan ?: '-') . '/' . ($j->tahun_keberangkatan ?: '-') .
+                                ', departure: ' . $bulan . '/' . $tahun . ')',
+                ];
+                continue;
+            }
+        }
+
+        $eligible[] = [
+            'id_jamaah'         => $j->id_jamaah,
+            'nama_lengkap'      => $j->nama_lengkap,
+            'produk_paket'      => $j->produk_paket,
+            'status_pembayaran' => $j->status_pembayaran,
+            'total_dibayar'     => (int) ($j->total_dibayar ?? 0),
+        ];
+    }
+
+    return ['eligible' => $eligible, 'excluded' => $excluded];
+}
 
     // ==========================================
     // LOCK: PERJALANAN SELESAI

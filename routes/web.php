@@ -21,6 +21,7 @@ use App\Http\Controllers\Master\DokumenController;
 use App\Http\Controllers\Transaksional\RekapKeuanganController;
 use App\Http\Controllers\Transaksional\RekapPembayaranController;
 use App\Http\Controllers\Master\JenisPembayaranController;
+use App\Http\Controllers\Master\AgentController;
 
 Route::get('/', [DashboardController::class, 'index'])->name('dashboard');
 
@@ -71,6 +72,8 @@ Route::prefix('master')->name('master.')->group(function () {
     Route::resource('paket-hotel', PaketHotelController::class);
     Route::resource('paket-tour', PaketTourController::class);
     Route::resource('jenis-pembayaran', JenisPembayaranController::class)->parameters(['jenis-pembayaran' => 'jenis_pembayaran']);
+
+    Route::resource('agent', AgentController::class);
 });
 
 // ============================================
@@ -144,6 +147,10 @@ Route::prefix('transaksional')->name('transaksional.')->group(function () {
     // ---- PRINT MANIFEST (HARUS SEBELUM wildcard /{id}) ----
     Route::get('departure/{id}/manifest', [DepartureController::class, 'printManifest'])
         ->name('departure.manifest');
+
+         // ---- EXPORT EXCEL SIKOPAT ----
+    Route::get('departure/{id}/excel-sikopat', [DepartureController::class, 'exportExcelSikopat'])
+        ->name('departure.excel-sikopat');
 
     Route::post('departure/{id}/add-jamaah', [DepartureController::class, 'addJamaah'])
         ->name('departure.add-jamaah');
@@ -270,6 +277,8 @@ Route::prefix('transaksional')->name('transaksional.')->group(function () {
         ->name('get-kamars-by-hotel-with-selected');
     Route::get('get-kamars-by-hotel-for-tour/{idHotel}/{departureId}', [DepartureController::class, 'getKamarsByHotelForTour'])
         ->name('get-kamars-for-tour');
+    Route::get('departure/{id}/sync-jamaah-tersedia', [DepartureController::class, 'syncJamaahCandidates'])
+        ->name('departure.sync-jamaah-tersedia');
 
     // ==========================================
     // REKAP KEUANGAN

@@ -18,6 +18,8 @@ use Illuminate\Http\Request;
 use App\Models\DepartureJenisTransaksiJamaah;
 use Illuminate\Validation\Rule;
 use Barryvdh\DomPDF\Facade\Pdf;
+use App\Exports\ManifestSikopatExport;
+use Maatwebsite\Excel\Facades\Excel;
 use Illuminate\Support\Facades\Auth;
 
 class DepartureController extends Controller
@@ -791,20 +793,24 @@ class DepartureController extends Controller
             ->with('success', 'Data hotel berhasil diperbarui!');
     }
 
-    public function updateJamaah(Request $request, $id)
-    {
-        $this->assertUnlocked($id);
+   public function updateJamaah(Request $request, $id)
+{
+    $this->assertUnlocked($id);
 
-        $validated = $request->validate([
-            'jamaah_ids' => 'required|array|min:1',
-            'jamaah_ids.*' => 'exists:jamaahs,id_jamaah',
-        ]);
+    $validated = $request->validate([
+        'jamaah_ids' => 'required|array|min:1',
+        'jamaah_ids.*' => 'exists:jamaahs,id_jamaah',
+    ]);
 
-        $departure = $this->service->updateJamaah($id, $validated);
+    try {
+        $this->service->updateJamaah($id, $validated);
 
         return redirect()->route('transaksional.departure.show', $id)
             ->with('success', 'Daftar jamaah berhasil diperbarui!');
+    } catch (\Exception $e) {
+        return redirect()->back()->with('error', $e->getMessage());
     }
+}
 
     public function updatePerlengkapan(Request $request, $id)
     {
@@ -1272,5 +1278,38 @@ class DepartureController extends Controller
             return redirect()->back()
                 ->with('error', 'Gagal menghapus pembayaran tak terduga: ' . $e->getMessage());
         }
+    }
+
+    public function syncJamaahCandidates($id)
+{
+    try {
+        $result = $this->service->getSyncCandidates($id);
+
+        return response()->json([
+            'success'  => true,
+            'eligible' => $result['eligible'],
+            'excluded' => $result['excluded'],
+        ]);
+    } catch (\Exception $e) {
+        return response()->json(['success' => false, 'message' => $e->getMessage()], 500);
+    }
+}
+
+        /**
+     * Export manifest Excel SIKOPAT (data lengkap jamaah)
+     * Kolom tambahan: alamat, provinsi, kota/kabupaten, kecamatan,
+     * kelurahan, pekerjaan, hubungan keluarga
+     */
+    public function exportExcelSikopat($id)
+    {
+        $departure = $this->service->getById($id);
+
+        if (!$departure) {
+            return redirect()->back()->with('error', 'Departure tidak ditemukan.');
+        }
+
+        $fileName = 'SIKOPAT_' . $departure->kode_keberangkatan . '_' . date('Ymd_His') . '.xlsx';
+
+        return Excel::download(new ManifestSikopatExport($departure), $fileName);
     }
 }
